@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package >
+  <metadata>
+    <id>SME.VHDL</id>
+    <version>0.1</version>
+    <authors>Kenneth Skovhede</authors>
+    <owners>Kenneth Skovhede</owners>
+    <licenseUrl>https://raw.githubusercontent.com/kenkendk/sme/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/kenkendk/sme</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>VHDL support for Synchronous Message Exchange</description>
+    <releaseNotes>This is the initial relase of the SME library</releaseNotes>
+    <copyright>Copyright Kenneth Skovhede 2016</copyright>
+    <tags>SME hardware simulation GraphViz</tags>
+    <dependencies>
+      <dependency id="SME" version="0.1" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="CSVTracer/bin/Release/SME.Render.VHDL.CSVTracer.dll" target="lib/net45" />
+    <file src="Attributes/bin/Release/SME.Render.VHDL.Attributes.dll" target="lib/net45" />
+    <file src="Components/bin/Release/SME.Render.VHDL.Components.dll" target="lib/net45" />
+  </files>
+</package>
