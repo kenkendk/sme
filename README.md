@@ -11,4 +11,6 @@ This library is a re-implementation of the Python implementation described in th
 
 The library is used as a means for simulating and experimenting with designing a vector processor, named the [Bohrium Processing Unit](https://github.com/kenkendk/bohrium-processing-unit), capable of running [Bohrium](https://bh107.org) vector byte-code on FPGA hardware.
 
+The packages [SME](https://www.nuget.org/packages/SME/), [SME.GraphViz](https://www.nuget.org/packages/SME.GraphViZ/), and [SME.VHDL](https://www.nuget.org/packages/SME.VHDL/) are all available through [NuGet](https://www.nuget.org).
+
 
