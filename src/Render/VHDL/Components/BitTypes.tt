@@ -1,0 +1,157 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#
+	
+#>
+using System;
+using System.Diagnostics;
+
+namespace SME.Render.VHDL
+{
+	internal static class UIntFormatHelper
+	{
+		public static string ToBinaryString(ulong value, int width)
+		{
+			var res = new char[width];
+			for (var i = 0; i < width; i++)
+				res[width - 1 - i] = ((value >> i) & 0x1) == 0x1 ? '1' : '0';
+
+			return new string(res);
+		}
+	}
+
+	internal static class IntFormatHelper
+	{
+		public static string ToBinaryString(long value, int width)
+		{
+			var res = new char[width];
+			for (var i = 0; i < width; i++)
+                res[width - 1 - i] = ((value >> i) & 0x1) == 0x1 ? '1' : '0';
+
+			return new string(res);
+		}
+	}
+
+<# for(var i = 1; i < 64; i++) { #>
+<# if (i == 8 || i == 16 || i == 32 || i == 64) continue; #>
+	[DebuggerDisplay("{Value}")]
+	[VHDLType("STD_LOGIC_VECTOR(<#= i-1 #> downto 0)", "T_UINT<#=i #>")]
+	public struct UInt<#=i #> : ICSVSerializable {
+<# 
+	string dtype;
+	if (i <= 8)
+		dtype = "byte";
+	else if (i <= 16)
+		dtype = "ushort";
+	else if (i <= 8)
+		dtype = "uint";
+	else
+		dtype = "ulong";
+
+	var bitmask = string.Format("0x{0:x}", (1Lu << i) - 1);
+#>
+
+		private readonly <#= dtype #> Value;
+		private const int WIDTH = <#=i #>;
+
+		public UInt<#=i #>(<#= dtype #> v)
+		{
+			this.Value = (<#= dtype #>)(v & <#= bitmask #>);
+		}
+
+		public static implicit operator UInt<#=i #>(<#= dtype #> v)
+		{
+			return new UInt<#=i #>(v);
+		}
+
+		public static implicit operator <#= dtype #>(UInt<#=i #> v)
+		{
+			return (<#= dtype #>)(v.Value & <#= bitmask #>);
+		}
+
+		public static UInt<#=i #> operator++(UInt<#=i #> v) 
+		{
+			return new UInt<#=i #>((<#= dtype #>)(v + 1));
+		}
+
+		public static UInt<#=i #> operator--(UInt<#=i #> v) 
+		{
+			return new UInt<#=i #>((<#= dtype #>)(v - 1));
+		}
+
+		public override string ToString()
+		{
+			return Value.ToString();
+		}
+
+		string ICSVSerializable.Serialize()
+		{
+			return UIntFormatHelper.ToBinaryString(this.Value, WIDTH);
+		}
+	};
+
+<# } #>
+
+<# for(var i = 1; i < 64; i++) { #>
+<# if (i == 8 || i == 16 || i == 32 || i == 64) continue; #>
+	[DebuggerDisplay("{Value}")]
+	[VHDLType("STD_LOGIC_VECTOR(<#= i-1 #> downto 0)", "T_INT<#=i #>")]
+	public struct Int<#=i #> : ICSVSerializable {
+<# 
+	string dtype;
+	if (i <= 8)
+		dtype = "sbyte";
+	else if (i <= 16)
+		dtype = "short";
+	else if (i <= 8)
+		dtype = "int";
+	else
+		dtype = "long";
+
+	var bitmask = string.Format("0x{0:x}", (1Lu << i) - 1);
+#>
+
+		private readonly <#= dtype #> Value;
+		private const int WIDTH = <#=i #>;
+
+		public Int<#=i #>(<#= dtype #> v)
+		{
+			this.Value = (<#= dtype #>)(v & <#= bitmask #>);
+		}
+
+		public static implicit operator Int<#=i #>(<#= dtype #> v)
+		{
+			return new Int<#=i #>(v);
+		}
+
+		public static implicit operator <#= dtype #>(Int<#=i #> v)
+		{
+			return (<#= dtype #>)(v.Value & <#= bitmask #>);
+		}
+
+		public static Int<#=i #> operator++(Int<#=i #> v) 
+		{
+			return new Int<#=i #>((<#= dtype #>)(v + 1));
+		}
+
+		public static Int<#=i #> operator--(Int<#=i #> v) 
+		{
+			return new Int<#=i #>((<#= dtype #>)(v - 1));
+		}
+
+		public override string ToString()
+		{
+			return Value.ToString();
+		}
+
+		string ICSVSerializable.Serialize()
+		{
+			return IntFormatHelper.ToBinaryString(this.Value, WIDTH);
+		}
+	};
+
+<# } #>
+}

@@ -1,0 +1,47 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleTraderTester", "SimpleTraderTester\SimpleTraderTester.csproj", "{5BACD59D-D5BB-4AAF-B911-6786476BF151}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SME", "..\..\SME\SME.csproj", "{CDC88908-F9B8-40CB-B746-86C8A4C1871B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SME.Render.VHDL", "..\..\SME.Render\VHDL\SME.Render.VHDL.csproj", "{66C80AC7-DDE3-4DF3-A6F4-D20D1412B644}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SME.VHDLComponents", "..\..\SME.VHDLComponents\SME.VHDLComponents.csproj", "{5F8C5E91-D808-44C9-A911-CCB1FA17E510}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SME.Render.GraphViz", "..\..\SME.Render\GraphViz\SME.Render.GraphViz.csproj", "{268A0B13-B84C-42F1-96D9-96550ED2F71F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleTradeImplementation", "SimpleTradeImplementation\SimpleTradeImplementation.csproj", "{83BF7F48-BB3D-40C0-931D-B5BBCA93C92F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{268A0B13-B84C-42F1-96D9-96550ED2F71F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{268A0B13-B84C-42F1-96D9-96550ED2F71F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{268A0B13-B84C-42F1-96D9-96550ED2F71F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{268A0B13-B84C-42F1-96D9-96550ED2F71F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5BACD59D-D5BB-4AAF-B911-6786476BF151}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5BACD59D-D5BB-4AAF-B911-6786476BF151}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5BACD59D-D5BB-4AAF-B911-6786476BF151}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5BACD59D-D5BB-4AAF-B911-6786476BF151}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F8C5E91-D808-44C9-A911-CCB1FA17E510}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F8C5E91-D808-44C9-A911-CCB1FA17E510}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F8C5E91-D808-44C9-A911-CCB1FA17E510}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F8C5E91-D808-44C9-A911-CCB1FA17E510}.Release|Any CPU.Build.0 = Release|Any CPU
+		{66C80AC7-DDE3-4DF3-A6F4-D20D1412B644}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66C80AC7-DDE3-4DF3-A6F4-D20D1412B644}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66C80AC7-DDE3-4DF3-A6F4-D20D1412B644}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66C80AC7-DDE3-4DF3-A6F4-D20D1412B644}.Release|Any CPU.Build.0 = Release|Any CPU
+		{83BF7F48-BB3D-40C0-931D-B5BBCA93C92F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{83BF7F48-BB3D-40C0-931D-B5BBCA93C92F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{83BF7F48-BB3D-40C0-931D-B5BBCA93C92F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{83BF7F48-BB3D-40C0-931D-B5BBCA93C92F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CDC88908-F9B8-40CB-B746-86C8A4C1871B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CDC88908-F9B8-40CB-B746-86C8A4C1871B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CDC88908-F9B8-40CB-B746-86C8A4C1871B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CDC88908-F9B8-40CB-B746-86C8A4C1871B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
