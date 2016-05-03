@@ -6,7 +6,7 @@
     <ProjectGuid>{237223B7-BCC6-458A-9ED7-D85B15F12638}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>CSVTracer</RootNamespace>
-    <AssemblyName>CSVTracer</AssemblyName>
+    <AssemblyName>SME.Render.VHDL.CSVTracer</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
