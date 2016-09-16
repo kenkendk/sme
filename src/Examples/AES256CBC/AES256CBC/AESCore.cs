@@ -9,6 +9,17 @@ namespace AES256CBC
 	[ClockedProcess]
 	public class AESCore : SimpleProcess
 	{
+		[TopLevelOutputBus]
+		public interface IOutput : IBus
+		{
+			[InitialValue]
+			bool DataReady { get; set; }
+
+			ulong Data0 { get; set; }
+			ulong Data1 { get; set; }
+		}
+
+		[TopLevelInputBus]
 		public interface IInput : IBus
 		{
 			[InitialValue]
@@ -20,15 +31,6 @@ namespace AES256CBC
 			ulong Key1 { get; set; }
 			ulong Key2 { get; set; }
 			ulong Key3 { get; set; }
-
-			ulong Data0 { get; set; }
-			ulong Data1 { get; set; }
-		}
-
-		public interface IOutput : IBus
-		{
-			[InitialValue]
-			bool DataReady { get; set; }
 
 			ulong Data0 { get; set; }
 			ulong Data1 { get; set; }

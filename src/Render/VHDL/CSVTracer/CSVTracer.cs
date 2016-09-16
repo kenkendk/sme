@@ -9,7 +9,14 @@ namespace SME.Render.VHDL
 {
 	public class CSVTracer
 	{
-		private KeyValuePair<IBus, System.Reflection.PropertyInfo>[] m_props;
+		public class SignalEntry
+		{
+			public IBus Bus;
+			public System.Reflection.PropertyInfo Property;
+			public bool IsDriver;
+		}
+
+		private SignalEntry[] m_props;
 		private string m_filename;
 		private bool m_first = true;
 
@@ -38,19 +45,28 @@ namespace SME.Render.VHDL
 					else
 						af.Write(",");
 					
-					af.Write(VHDLName.BusSignalNameToVHDLName(null, p.Value));
+					af.Write(VHDLName.BusSignalNameToVHDLName(null, p.Property));
 				}
 
 				af.WriteLine();
 			}
 		}
 
-		public static IEnumerable<KeyValuePair<IBus, System.Reflection.PropertyInfo>> BuildPropertyMap()
+		public static IEnumerable<SignalEntry> BuildPropertyMap()
 		{
 			return
-				from bus in BusManager.Busses.Union(BusManager.ClockedBusses.Select(x => x.Key)).Distinct()
-					from prop in bus.BusType.GetProperties(System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public)
-					select new KeyValuePair<IBus, System.Reflection.PropertyInfo>(bus, prop);
+				 from bus in BusManager.Busses.Union(BusManager.ClockedBusses.Select(x => x.Key)).Distinct()
+				 from prop in bus.BusType.GetProperties(System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public)
+				 let isDriver = bus.BusType.CustomAttributes.Any(x => typeof(SME.TopLevelInputBusAttribute).IsAssignableFrom(x.AttributeType))
+				 orderby isDriver descending
+				 select new SignalEntry()
+				 {
+					 Bus = bus,
+					 Property = prop,
+					 IsDriver = isDriver
+				 }
+			 ;
+				              
 		}
 
 		public void OnClockTick()
@@ -74,7 +90,7 @@ namespace SME.Render.VHDL
 
 					try 
 					{
-						var value = p.Value.GetValue(p.Key);
+						var value = p.Property.GetValue(p.Bus);
 						if ((value as ICSVSerializable) != null)
 							af.Write(((ICSVSerializable)value).Serialize());
 						else if (value is bool)
@@ -83,6 +99,16 @@ namespace SME.Render.VHDL
 							af.Write(VHDLName.ConvertToValidVHDLName(value.GetType().FullName + "." + value.ToString()).ToLower());
 						else if (value is byte)
 							af.Write(Convert.ToString((byte)value, 2).PadLeft(8, '0'));
+						else if (value is long)
+							af.Write(
+								Convert.ToString((int)(((long)value >> 32) & 0xffffffff), 2).PadLeft(32, '0') +
+								Convert.ToString((int)((long)value & 0xffffffff), 2).PadLeft(32, '0')
+							);
+						else if (value is ulong)
+							af.Write(
+								Convert.ToString((int)(((ulong)value >> 32) & 0xffffffff), 2).PadLeft(32, '0') +
+								Convert.ToString((int)((ulong)value & 0xffffffff), 2).PadLeft(32, '0')
+							);
 						else
 							af.Write(value); 
 					}

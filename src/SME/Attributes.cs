@@ -79,5 +79,15 @@ namespace SME
 	/// Marker attribute for disabling automatic loading for a bus
 	/// </summary>
 	public class NoAutoLoadAttribute : Attribute {}
+
+	/// <summary>
+	/// Marker attribute to mark a bus as being the top-level input
+	/// </summary>
+	public class TopLevelInputBusAttribute : Attribute { }
+
+	/// <summary>
+	/// Marker attribute to mark a bus as being the top-level output
+	/// </summary>
+	public class TopLevelOutputBusAttribute : Attribute { }
 }
 
