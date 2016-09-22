@@ -7,7 +7,7 @@ using SME;
 namespace SimpleTraderTester
 {
 	[ClockedProcess]
-	class SimulationDriver : Process
+	class SimulationDriver : SimulationProcess
 	{
 		[OutputBus]
 		private SimpleTradeImplementation.ITraderInput Output;
@@ -48,11 +48,8 @@ namespace SimpleTraderTester
 				Directory.CreateDirectory(targetfolder);
 
 			var processes = Loader.LoadAssemblies(typeof(SimpleTradeImplementation.TraderCoreEWMA).Assembly).ToList();
-			processes.AddRange(Loader.LoadItems(new SimulationDriver()));
-
 			var tracer = new SME.Render.VHDL.CSVTracer(Path.Combine(targetfolder, "trace.csv"));
-			SME.Loader.RunUntilCompletion(processes, () => { tracer.OnClockTick(); });
-
+			SME.Loader.RunUntilCompletion(new SimulationDriver(), processes, () => { tracer.OnClockTick(); });
 		}
 	}
 }

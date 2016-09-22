@@ -315,6 +315,16 @@ namespace SME
 		/// </summary>
 		/// <param name="components">The started component instances.</param>
 		/// <param name="tickcallback">An optional method to call after each tick.</param>
+		public static DependencyGraph RunUntilCompletion(IProcess simulator, IEnumerable<IProcess> components, Action tickcallback = null)
+		{
+			return RunUntilCompletion(components.Union(new[] { simulator }), tickcallback);
+		}
+
+		/// <summary>
+		/// Runs all the specified component instances until a process quits
+		/// </summary>
+		/// <param name="components">The started component instances.</param>
+		/// <param name="tickcallback">An optional method to call after each tick.</param>
 		public static DependencyGraph RunUntilCompletion(IEnumerable<IProcess> components, Action tickcallback = null)
 		{
 			var dg = new DependencyGraph(components, tickcallback);
