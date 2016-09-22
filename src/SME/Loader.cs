@@ -12,48 +12,216 @@ namespace SME
 	/// </summary>
 	public static class Loader
 	{
+		/// <summary>
+		/// Internal list of started items
+		/// </summary>
 		private static List<Task> m_startedItems = new List<Task>();
 
+		/// <summary>
+		/// Helper variable to toggle assignment debug output
+		/// </summary>
 		public static bool DebugBusAssignments = false;
 
 		/// <summary>
-		/// Loads and starts all IComponent items in an assembly
+		/// Loads and starts all IProcess items in the assemblies
 		/// </summary>
 		/// <returns>The list of loaded components.</returns>
-		/// <param name="assembly">The assembly to load from. Defaults to the calling assembly.</param>
+		/// <param name="assemblies">The assemblies to load.</param>
 		/// <param name="clock">Optionally specify which clock to use.</param>
-		public static IEnumerable<IProcess> LoadAssembly(Assembly assembly = null, Clock clock = null)
+		public static IEnumerable<IProcess> LoadAssemblies(Clock clock, params Assembly[] assemblies)
 		{
-			assembly = assembly ?? Assembly.GetCallingAssembly();
+			return LoadAssemblies(assemblies, clock);
+		}
+
+		/// <summary>
+		/// Loads and starts all IProcess items in the assemblies
+		/// </summary>
+		/// <returns>The list of loaded components.</returns>
+		/// <param name="assemblies">The assemblies to load.</param>
+		/// <param name="clock">Optionally specify which clock to use.</param>
+		public static IEnumerable<IProcess> LoadAssemblies(IEnumerable<Assembly> assemblies, Clock clock = null)
+		{
+			return LoadAssemblies(assemblies.ToArray(), clock);
+		}
+
+		/// <summary>
+		/// Loads and starts all IProcess items in the assemblies
+		/// </summary>
+		/// <returns>The list of loaded components.</returns>
+		/// <param name="assemblies">The assemblies to load.</param>
+		public static IEnumerable<IProcess> LoadAssemblies(params Assembly[] assemblies)
+		{
+			return LoadAssemblies(assemblies, null);
+		}
+
+		/// <summary>
+		/// Loads and starts all IProcess items in an assembly
+		/// </summary>
+		/// <returns>The list of loaded components.</returns>
+		/// <param name="assembly">The assemblies to load.</param>
+		/// <param name="clock">Optionally specify which clock to use.</param>
+		public static IEnumerable<IProcess> LoadAssemblies(Assembly assembly = null, Clock clock = null)
+		{
+			return LoadAssemblies(new[] { assembly ?? Assembly.GetCallingAssembly() }, clock);
+		}
+
+		/// <summary>
+		/// Loads and starts all IProcess items in the assemblies
+		/// </summary>
+		/// <returns>The list of loaded components.</returns>
+		/// <param name="assemblies">The assembly to load from. Defaults to the calling assembly.</param>
+		/// <param name="clock">Optionally specify which clock to use.</param>
+		public static IEnumerable<IProcess> LoadAssemblies(Assembly[] assemblies, Clock clock)
+		{
 			clock = clock ?? Clock.DefaultClock;
 
-			if (assembly == Assembly.GetExecutingAssembly())
-				throw new Exception(string.Format("Attempted to load the {0} assembly itself, please specify the correct assembly when calling the {1} class", assembly.GetName().FullName, typeof(Loader).FullName));
+			var self = assemblies.Where(x => x == Assembly.GetExecutingAssembly()).FirstOrDefault();
+			if (self != null)
+				throw new Exception(string.Format("Attempted to load the {0} assembly itself, please specify the correct assembly when calling the {1} class", self.FullName, typeof(Loader).FullName));
+
+			return LoadItems(assemblies.SelectMany(x => x.GetTypes()));
+		}
+
+		/// <summary>
+		/// Loads and starts a specific types
+		/// </summary>
+		/// <returns>The list of loaded components.</returns>
+		/// <param name="types">The The types to start.</param>
+		/// <param name="clock">Optionally specify which clock to use.</param>
+		public static IEnumerable<IProcess> LoadItems(Clock clock, params Type[] types)
+		{
+			return LoadItems(types, clock);
+		}
+
+		/// <summary>
+		/// Loads and starts a specific types
+		/// </summary>
+		/// <returns>The list of loaded components.</returns>
+		/// <param name="types">The The types to start.</param>
+		/// <param name="clock">Optionally specify which clock to use.</param>
+		public static IEnumerable<IProcess> LoadItems(IEnumerable<Type> types, Clock clock = null)
+		{
+			return LoadItems(types.ToArray(), clock);
+		}
+
+		/// <summary>
+		/// Loads and starts a specific type
+		/// </summary>
+		/// <returns>The list of loaded components.</returns>
+		/// <param name="types">The The types to start.</param>
+		public static IEnumerable<IProcess> LoadItems(params Type[] types)
+		{
+			return LoadItems(types, null);
+		}
+
+		/// <summary>
+		/// Loads and starts a specific type
+		/// </summary>
+		/// <returns>The list of loaded components.</returns>
+		/// <param name="type">The The type to start.</param>
+		/// <param name="clock">Optionally specify which clock to use.</param>
+		public static IEnumerable<IProcess> LoadItem(Type type, Clock clock = null)
+		{
+			return LoadItems(new[] { type }, clock);
+		}
+
+		/// <summary>
+		/// Loads and starts a specific type
+		/// </summary>
+		/// <returns>The list of loaded components.</returns>
+		/// <param name="types">The The type to start.</param>
+		/// <param name="clock">Optionally specify which clock to use.</param>
+		public static IEnumerable<IProcess> LoadItems(Type[] types, Clock clock)
+		{
+			clock = clock ?? Clock.DefaultClock;
 
 			// We build it as a list to ensure we execute it all,
 			// even if the Enumerable is not iterated
 			var items = new List<IProcess>();
 
-			foreach (var t in from n in assembly.GetTypes() where typeof(IProcess).IsAssignableFrom(n) && !n.IsAbstract && n.IsClass select n)
-			{
-				IProcess p = null;
-				if (t.GetConstructor(new Type[] { typeof(Clock) }) != null)
-					p = (IProcess)AutoloadBusses(Activator.CreateInstance(t, new object[] { clock }, null), clock);
-				else if (t.GetConstructor(new Type[] { }) != null)
+			return LoadItems(
+				types
+				.Where(x => typeof(IProcess).IsAssignableFrom(x) && !x.IsAbstract && x.IsClass)
+				.Select(x =>
 				{
-					if (clock != Clock.DefaultClock)
-						throw new Exception(string.Format("Attempted to load {0} with a non-default clock, but constructor does not accept the clock", t.FullName));
-					
-						p = (IProcess)AutoloadBusses(Activator.CreateInstance(t, new object[] { }, null), clock);
-				}
+					IProcess p = null;
+					if (x.GetConstructor(new Type[] { typeof(Clock) }) != null)
+						p = Activator.CreateInstance(x, new object[] { clock }, null) as IProcess;
+					else if (x.GetConstructor(new Type[] { }) != null)
+						p = Activator.CreateInstance(x, new object[] { }, null) as IProcess;
 
+					return p;
+				})
+				.Where(x => x != null),
+				clock
+			);
+		}
+
+		/// <summary>
+		/// Loads and starts the supplied processes
+		/// </summary>
+		/// <returns>The list of loaded components.</returns>
+		/// <param name="items">The The types to start.</param>
+		/// <param name="clock">Optionally specify which clock to use.</param>
+		public static IEnumerable<IProcess> LoadItems(Clock clock, params IProcess[] items)
+		{
+			return LoadItems(items, clock);
+		}
+
+		/// <summary>
+		/// Loads and starts the supplied processes
+		/// </summary>
+		/// <returns>The list of loaded components.</returns>
+		/// <param name="items">The The types to start.</param>
+		public static IEnumerable<IProcess> LoadItems(params IProcess[] items)
+		{
+			return LoadItems(items, null);
+		}
+
+		/// <summary>
+		/// Loads and starts the supplied processes
+		/// </summary>
+		/// <returns>The list of loaded components.</returns>
+		/// <param name="items">The The types to start.</param>
+		/// <param name="clock">Optionally specify which clock to use.</param>
+		public static IEnumerable<IProcess> LoadItems(IEnumerable<IProcess> items, Clock clock = null)
+		{
+			return LoadItems(items.ToArray(), clock);
+		}
+
+		/// <summary>
+		/// Loads and starts the supplied process
+		/// </summary>
+		/// <returns>The list of loaded components.</returns>
+		/// <param name="item">The The type to start.</param>
+		/// <param name="clock">Optionally specify which clock to use.</param>
+		public static IEnumerable<IProcess> LoadItem(IProcess item, Clock clock = null)
+		{
+			return LoadItems(new[] { item }, clock);
+		}
+
+		/// <summary>
+		/// Loads and starts the supplied processes
+		/// </summary>
+		/// <returns>The list of loaded components.</returns>
+		/// <param name="items">The The type to start.</param>
+		/// <param name="clock">Optionally specify which clock to use.</param>
+		public static IEnumerable<IProcess> LoadItems(IProcess[] items, Clock clock)
+		{
+			clock = clock ?? Clock.DefaultClock;
+
+			var lst = new List<IProcess>();
+
+			foreach (var item in items)
+			{
+				var p = (IProcess)AutoloadBusses(item, clock);
 				StartTask(p);
 
 				if (p != null)
-					items.Add(p);
+					lst.Add(p);
 			}
 
-			return items;
+			return lst;
 		}
 
 		/// <summary>
@@ -165,7 +333,7 @@ namespace SME
 		public static DependencyGraph RunUntilCompletion(Assembly assembly = null, Action tickcallback = null)
 		{
 			assembly = assembly ?? Assembly.GetCallingAssembly();
-			return RunUntilCompletion(LoadAssembly(assembly), tickcallback);
+			return RunUntilCompletion(LoadAssemblies(assembly), tickcallback);
 		}
 
 		/// <summary>

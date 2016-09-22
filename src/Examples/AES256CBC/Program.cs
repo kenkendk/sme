@@ -11,11 +11,11 @@ namespace AES256CBCTester
 			if (!Directory.Exists(targetfolder))
 				Directory.CreateDirectory(targetfolder);
 
-			var items = SME.Loader.LoadAssembly(typeof(AES256CBC.AESCore).Assembly);
+			var items = SME.Loader.LoadAssemblies(typeof(AES256CBC.AESCore).Assembly);
 
 			var tracer = new SME.Render.VHDL.CSVTracer(Path.Combine(targetfolder, "trace.csv"));
 			SME.Loader.RunUntilCompletion(items, () => { tracer.OnClockTick(); });
-
+			SME.Render.VHDL.Renderer.Render(items, "output", null, "trace.csv");
 		}
 	}
 }
