@@ -8,22 +8,17 @@ namespace Tester
 		[InputBus, OutputBus]
 		private IMemoryInterface Interface;
 
-		private ulong[] m_data;
+		private readonly ulong[] m_data = new ulong[1024];
 		private int m_cycle = 0;
-
-		public SimpleMockMemory()
-			: base()
-		{
-			m_data = new ulong[1024];
-		}
 
 		protected override void OnTick()
 		{
-			Console.WriteLine("Phase: {0}", ++m_cycle);
+			DebugOutput = true;
+			PrintDebug("Phase: {0}", ++m_cycle);
 
 			if (Interface.ReadEnabled)
 			{
-				Console.WriteLine("Setting readvalue to {0}", m_data[Interface.ReadAddr]);
+				PrintDebug("Setting readvalue to {0}", m_data[Interface.ReadAddr]);
 				Interface.ReadValue = m_data[Interface.ReadAddr];
 			}
 
