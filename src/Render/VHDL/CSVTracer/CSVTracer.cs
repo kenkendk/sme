@@ -49,24 +49,6 @@ namespace SME.Render.VHDL
 			}
 
 			using (File.Create(m_filename)) { }
-
-			m_props = BuildPropertyMap().ToArray();
-
-			var first = true;
-			using (var af = File.AppendText(m_filename))
-			{
-				foreach (var p in m_props)
-				{
-					if (first)
-						first = false;
-					else
-						af.Write(",");
-					
-					af.Write(VHDLName.BusSignalNameToVHDLName(null, p.Property));
-				}
-
-				af.WriteLine();
-			}
 		}
 
 		public static IEnumerable<SignalEntry> BuildPropertyMap()
@@ -91,6 +73,24 @@ namespace SME.Render.VHDL
 			// Skip the very first clock tick to be in sync with the HW version
 			if (m_first)
 			{
+				m_props = BuildPropertyMap().ToArray();
+
+				var firstentry = true;
+				using (var af = File.AppendText(m_filename))
+				{
+					foreach (var p in m_props)
+					{
+						if (firstentry)
+							firstentry = false;
+						else
+							af.Write(",");
+
+						af.Write(VHDLName.BusSignalNameToVHDLName(null, p.Property));
+					}
+
+					af.WriteLine();
+				}
+
 				m_first = false;
 				return;
 			}
