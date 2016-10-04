@@ -22,7 +22,7 @@ namespace NoiseFilter
 		[InputBus]
 		private BorderDelayUpdate Delay;
 
-		private static readonly string[] IMAGES = new string[] { "image1.png" }; //, "image2.jpg", "image3.png" };
+		private static readonly string[] IMAGES = new string[] { "image1.png", "image2.jpg", "image3.png" };
 
 		/// <summary>
 		/// Run this instance.
