@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{91759F1E-3279-406C-B621-4C3296AF65A6}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>NoiseFilter</RootNamespace>
+    <AssemblyName>NoiseFilter</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Drawing" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="StecilApplier.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="BusDefinitions.cs" />
+    <Compile Include="ImageInputSimulator.cs" />
+    <Compile Include="StencilEmitter.cs" />
+    <Compile Include="ImageOutputSink.cs" />
+    <Compile Include="StencilConfig.cs" />
+    <Compile Include="BorderEmitter.cs" />
+    <Compile Include="Program.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="image1.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="image2.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="image3.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\SME\SME.csproj">
+      <Project>{CDC88908-F9B8-40CB-B746-86C8A4C1871B}</Project>
+      <Name>SME</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Render\VHDL\CSVTracer\SME.Render.VHDL.CSVTracer.csproj">
+      <Project>{237223B7-BCC6-458A-9ED7-D85B15F12638}</Project>
+      <Name>SME.Render.VHDL.CSVTracer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Render\VHDL\Attributes\SME.Render.VHDL.Attributes.csproj">
+      <Project>{ACA7B52C-7D5B-4FB4-8B30-BB150B58406A}</Project>
+      <Name>SME.Render.VHDL.Attributes</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Render\GraphViz\SME.Render.GraphViz.csproj">
+      <Project>{268A0B13-B84C-42F1-96D9-96550ED2F71F}</Project>
+      <Name>SME.Render.GraphViz</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+</Project>
