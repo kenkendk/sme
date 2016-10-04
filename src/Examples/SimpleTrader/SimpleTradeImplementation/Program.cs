@@ -1,9 +1,10 @@
-﻿using SME;
-using System;
-using System.IO;
+﻿using System;
 using System.Linq;
+using System.IO;
+using System.Threading.Tasks;
+using SME;
 
-namespace Tester
+namespace SimpleTraderTester
 {
 	class MainClass
 	{
@@ -11,10 +12,9 @@ namespace Tester
 		{
 			new Simulation()
 				.BuildCSVFile()
-				.BuildCSVFile()
+				.BuildGraph()
+				.BuildVHDL()
 				.Run(typeof(MainClass).Assembly);
-
-
 		}
 	}
 }

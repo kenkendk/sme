@@ -1,9 +1,8 @@
-﻿using SME;
-using System;
+﻿using System;
 using System.IO;
-using System.Linq;
+using SME;
 
-namespace Tester
+namespace AES256CBC
 {
 	class MainClass
 	{
@@ -11,10 +10,9 @@ namespace Tester
 		{
 			new Simulation()
 				.BuildCSVFile()
-				.BuildCSVFile()
+				.BuildGraph()
+				.BuildVHDL()
 				.Run(typeof(MainClass).Assembly);
-
-
 		}
 	}
 }

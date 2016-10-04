@@ -4,10 +4,42 @@ using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 
+namespace SME
+{
+	/// <summary>
+	/// Extension methods
+	/// </summary>
+	public static class GraphVizExtensionMethods
+	{
+		/// <summary>
+		/// Extension method for adding graph output to a simulation
+		/// </summary>
+		/// <returns>The runner.</returns>
+		/// <param name="self">The runner.</param>
+		/// <param name="filename">The output filename.</param>
+		public static Simulation BuildGraph(this Simulation self, string filename = "network.dot")
+		{
+			self.AddPostloader((processes, target) =>
+			{
+				SME.Render.GraphViz.Renderer.Render(processes, Path.Combine(target, filename));
+			});
+			return self;
+		}
+	}
+}
+
 namespace SME.Render.GraphViz
 {
+	/// <summary>
+	/// Class for generating a GraphViz display of the current network
+	/// </summary>
 	public static class Renderer
 	{
+		/// <summary>
+		/// Render the specified processes into a dot file.
+		/// </summary>
+		/// <param name="components">The proccesses to render.</param>
+		/// <param name="file">The filename to write into.</param>
 		public static void Render(IEnumerable<IProcess> components, string file)
 		{
 			var sb = new StringBuilder();

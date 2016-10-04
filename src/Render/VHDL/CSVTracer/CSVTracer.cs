@@ -4,6 +4,23 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 
+namespace SME
+{
+	/// <summary>
+	/// Extension methods
+	/// </summary>
+	public static class CSVExtensionMethods
+	{
+		public static Simulation BuildCSVFile(this Simulation self, string filename = "trace.csv")
+		{
+			var tracer = new SME.Render.VHDL.CSVTracer(Path.Combine(self.TargetFolder, filename));
+
+			self.AddTicker(x => tracer.OnClockTick());
+
+			return self;
+		}
+	}
+}
 
 namespace SME.Render.VHDL
 {

@@ -24,7 +24,6 @@ namespace SME
 		public SimulationProcess(Clock clock)
 			: base(clock)
 		{
-			SME.Loader.LoadItem(this, clock);
 		}
 	}
 }

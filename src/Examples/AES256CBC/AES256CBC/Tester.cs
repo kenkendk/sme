@@ -61,6 +61,7 @@ namespace AES256CBC
 
 			await ClockAsync();
 
+			Input.DataReady = false;
 			Input.LoadKey = true;
 			Input.Data0 = PackArrayToLong(iv, 0);
 			Input.Data1 = PackArrayToLong(iv, 8);

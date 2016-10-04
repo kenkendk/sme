@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Linq;
-using System.IO;
 using System.Threading.Tasks;
 using SME;
+using SME.Render.VHDL;
 
 namespace SimpleTraderTester
 {
 	[ClockedProcess]
+	[VHDLIgnore]
 	class SimulationDriver : SimulationProcess
 	{
 		[OutputBus]
@@ -17,7 +18,7 @@ namespace SimpleTraderTester
 			var rn = new Random();
 			Output.Valid = false;
 
-			foreach(var v in GenerateRandomValueSequence.GetUIntSequence().Take(500))
+			foreach (var v in GenerateRandomValueSequence.GetUIntSequence().Take(500))
 			{
 				await ClockAsync();
 
@@ -35,21 +36,6 @@ namespace SimpleTraderTester
 			await ClockAsync();
 			Output.Valid = false;
 			await ClockAsync();
-		}
-	}
-
-
-	class MainClass
-	{
-		public static void Main(string[] args)
-		{
-			var targetfolder = Path.GetFullPath("output");
-			if (!Directory.Exists(targetfolder))
-				Directory.CreateDirectory(targetfolder);
-
-			var processes = Loader.LoadAssemblies(typeof(SimpleTradeImplementation.TraderCoreEWMA).Assembly).ToList();
-			var tracer = new SME.Render.VHDL.CSVTracer(Path.Combine(targetfolder, "trace.csv"));
-			SME.Loader.RunUntilCompletion(new SimulationDriver(), processes, () => { tracer.OnClockTick(); });
 		}
 	}
 }
