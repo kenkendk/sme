@@ -44,7 +44,7 @@ namespace NoiseFilter
 			{
 
 				// Compute the filter
-				for (var i = 0; i < Input.Data.Length; i += 3)
+				for (var i = 0; i < Input.Data.Length; i += COLOR_WIDTH)
 					for (var j = 0; j < m_buffer.Length; j++)
 						m_buffer[j] += FILTER[i + j] * Input.Data[i + j];
 
