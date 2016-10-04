@@ -17,8 +17,12 @@ namespace SME
 		public BusProperty(string name)
 		{
 			Name = name;
-			if (!typeof(T).IsValueType)
-				throw new Exception(string.Format("Cannot create a field of non-vallue-type {0}", typeof(T).Name));
+
+			if (typeof(T).IsArray)
+				throw new Exception(string.Format("Cannot create a field with arrays ({0}), use the {1} type instead", name, typeof(IFixedArray<>)));
+
+			if (!typeof(T).IsValueType && !typeof(T).IsGenericType && typeof(T).GetGenericTypeDefinition() != typeof(IFixedArray<>))
+				throw new Exception(string.Format("Cannot create a field of non-value-type {0}", typeof(T).Name));
 		}
 	}
 
@@ -67,8 +71,12 @@ namespace SME
 			var props = t.GetProperties().Union(t.GetInterfaces().Where(x => x != typeof(IBus)).SelectMany(x => x.GetProperties())).Distinct();
 			foreach (var n in props)
 			{
-				if (!n.PropertyType.IsValueType)
+				if (n.PropertyType.IsArray)
+					throw new Exception(string.Format("Cannot create a field with arrays ({0}), use the {1} type instead", n.Name, typeof(IFixedArray<>)));
+
+				if (!n.PropertyType.IsValueType && !n.PropertyType.IsGenericType && n.PropertyType.GetGenericTypeDefinition() != typeof(IFixedArray<>))
 					throw new Exception(string.Format("Cannot create a field of non-value-type {0}", n.Name));
+
 				m_signalTypes[n.Name] = n.PropertyType;
 
 				SetDefaultValues(n, n.PropertyType);
@@ -95,6 +103,13 @@ namespace SME
 				m_readValues[n.Name] = Convert.ChangeType(((InitialValueAttribute)dfv[0]).Value ?? Activator.CreateInstance(memberType), memberType);
 			else if (BusType.GetCustomAttributes(typeof(InitializedBusAttribute), true).FirstOrDefault() != null)
 				m_readValues[n.Name] = Activator.CreateInstance(memberType);
+			else if (memberType.IsGenericType && memberType.GetGenericTypeDefinition() == typeof(IFixedArray<>))
+			{
+				var len = n.GetCustomAttributes(typeof(FixedArrayLengthAttribute), true).FirstOrDefault() as FixedArrayLengthAttribute;
+				if (len == null)
+					throw new Exception(string.Format("Field {0} on {1} is missing a length attribute, add a an attribute of type {2}", n.Name, n.DeclaringType.FullName, typeof(FixedArrayLengthAttribute).Name));
+				m_readValues[n.Name] = Activator.CreateInstance(typeof(FixedArray<>).MakeGenericType(memberType.GetGenericArguments()), len.Length);
+			}
 		}
 			
 		/// <summary>
@@ -152,6 +167,9 @@ namespace SME
 
 			m_writeValues.Clear();
 
+			foreach (var n in m_readValues.Values.Select(x => x as IFixedArrayInteraction).Where(x => x != null))
+				n.Propagate();
+
 			lst.ForEach(x => x.SetResult(true));
 		}
 
@@ -167,6 +185,10 @@ namespace SME
 					m_writeValues[x.Key] = x.Value;
 
 			m_stageValues.Clear();
+
+			foreach (var n in m_readValues.Values.Select(x => x as IFixedArrayInteraction).Where(x => x != null))
+				n.Forward();
+
 		}
 
 		/// <summary>

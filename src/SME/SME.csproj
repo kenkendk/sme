@@ -45,6 +45,7 @@
     <Compile Include="Process.cs" />
     <Compile Include="SimpleProcess.cs" />
     <Compile Include="SimulationProcess.cs" />
+    <Compile Include="FixedArray.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Simulation.cs" />
   </ItemGroup>

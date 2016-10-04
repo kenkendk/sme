@@ -89,5 +89,27 @@ namespace SME
 	/// Marker attribute to mark a bus as being the top-level output
 	/// </summary>
 	public class TopLevelOutputBusAttribute : Attribute { }
+
+	/// <summary>
+	/// Attribute for specifying the length of a FixedArray
+	/// </summary>
+	[AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
+	public class FixedArrayLengthAttribute : Attribute 
+	{
+		/// <summary>
+		/// Gets or sets the length or the fixed array.
+		/// </summary>
+		/// <value>The length.</value>
+		public int Length { get; set; }
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="T:SME.FixedArrayLength"/> class with the specified length.
+		/// </summary>
+		/// <param name="length">Length.</param>
+		public FixedArrayLengthAttribute(int length)
+		{
+			Length = length;
+		}
+	}
 }
 
