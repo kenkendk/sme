@@ -99,7 +99,7 @@ namespace SME
 			get 
 			{
 				if (!m_initialized[index])
-					throw new Exception($"Attempted to read index {index} before it has been written");
+					throw new ReadViolationException($"Attempted to read index {index} before it has been written");
 				return m_read[index];
 			}
 			set 

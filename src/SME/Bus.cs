@@ -27,6 +27,30 @@ namespace SME
 	}
 
 	/// <summary>
+	/// Read violation exception.
+	/// </summary>
+	[Serializable]
+	public class ReadViolationException : Exception
+	{
+		public ReadViolationException(string message)
+			: base(message)
+		{
+		}
+	}
+
+	/// <summary>
+	/// Write violation exception.
+	/// </summary>
+	[Serializable]
+	public class WriteViolationException : Exception
+	{
+		public WriteViolationException(string message)
+			: base(message)
+		{
+		}
+	}
+
+	/// <summary>
 	/// Backend for a DynamicProxy instance of an interface
 	/// </summary>
 	public class Bus : IBus
@@ -122,7 +146,7 @@ namespace SME
 			if (!m_signalTypes.ContainsKey(name))
 				throw new Exception(string.Format("No signal named {0} on bus {1}", name, BusType.FullName));
 			if (m_writeValues.ContainsKey(name))
-				throw new Exception(string.Format("Attempted to write {0} twice on {1}", name, BusType.FullName));
+				throw new WriteViolationException(string.Format("Attempted to write {0} twice on {1}", name, BusType.FullName));
 			m_stageValues[name] = value;
 		}
 
@@ -137,9 +161,9 @@ namespace SME
 				return obj;
 
 			if (m_signalTypes.ContainsKey(name))
-				throw new Exception(string.Format("Attempted to read the signal {0} on the bus {1} before the signal was set", name, BusType.FullName));
+				throw new ReadViolationException(string.Format("Attempted to read the signal {0} on the bus {1} before the signal was set", name, BusType.FullName));
 			else
-				throw new Exception(string.Format("Attempted to read the signal {0} on the bus {1}, which has no such signal", name, BusType.FullName));
+				throw new ReadViolationException(string.Format("Attempted to read the signal {0} on the bus {1}, which has no such signal", name, BusType.FullName));
 		}
 
 		/// <summary>
@@ -180,7 +204,7 @@ namespace SME
 		{
 			foreach (var x in m_stageValues)
 				if (m_writeValues.ContainsKey(x.Key))
-					throw new Exception(string.Format("Attempted to perform conflicting write {0} on {1}", x.Key, BusType.FullName));
+					throw new WriteViolationException(string.Format("Attempted to perform conflicting write {0} on {1}", x.Key, BusType.FullName));
 				else
 					m_writeValues[x.Key] = x.Value;
 
