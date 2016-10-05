@@ -31,6 +31,7 @@ namespace SME
 	/// <summary>
 	/// Helper class for setting a default value on a bus signal
 	/// </summary>
+	[AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
 	public class InitialValueAttribute : Attribute
 	{
 		public object Value { get; set; }
