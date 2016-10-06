@@ -90,7 +90,7 @@ namespace SME.Render.VHDL
 							var attr = p.Property.GetCustomAttributes(typeof(FixedArrayLengthAttribute), false).Cast<FixedArrayLengthAttribute>().FirstOrDefault();
 							var propname = VHDLName.BusSignalNameToVHDLName(null, p.Property);
 							foreach(var n in Enumerable.Range(0, attr.Length))
-								af.Write(string.Format("{0}[{1}]{2}", propname, n, n == attr.Length - 1 ? "" : ","));
+								af.Write(string.Format("{0}({1}){2}", propname, n, n == attr.Length - 1 ? "" : ","));
 						}
 						else
 							af.Write(VHDLName.BusSignalNameToVHDLName(null, p.Property));
