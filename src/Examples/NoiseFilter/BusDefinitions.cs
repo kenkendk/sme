@@ -89,7 +89,6 @@ namespace NoiseFilter
 	/// <summary>
 	/// A bus for signalling the input to delay
 	/// </summary>
-	[TopLevelInputBus]
 	public interface BorderDelayUpdate : IBus
 	{
 		[InitialValue]
