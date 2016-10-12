@@ -198,6 +198,12 @@ namespace SME.Render.VHDL
 				return ((bool)value) ? "1" : "0";
 			else if (itemtype.IsEnum)
 				return VHDLName.ConvertToValidVHDLName(value.GetType().FullName + "." + value.ToString()).ToLower();
+			else if (itemtype == typeof(byte) || itemtype == typeof(sbyte))
+				return Convert.ToString((byte)value, 2).PadLeft(8, '0');
+			else if (itemtype == typeof(ushort) || itemtype == typeof(short))
+				return Convert.ToString((ushort)value, 2).PadLeft(16, '0');
+			else if (itemtype == typeof(uint) || itemtype == typeof(int))
+				return Convert.ToString((uint)value, 2).PadLeft(32, '0');
 			else if (itemtype == typeof(long))
 				return
 					Convert.ToString((int)(((long)value >> 32) & 0xffffffff), 2).PadLeft(32, '0') +
