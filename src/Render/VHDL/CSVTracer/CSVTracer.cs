@@ -121,13 +121,14 @@ namespace SME.Render.VHDL
 
 							try
 							{
+								var eltype = p.Property.PropertyType.GetGenericArguments().First();
 								var array = p.Property.GetValue(p.Bus);
 								var m = array.GetType().GetProperties().Where(x => x.GetIndexParameters().Length == 1).FirstOrDefault();
 								foreach (var n in Enumerable.Range(0, attr.Length))
 								{
 									try
 									{
-										af.Write(ConvertToString(m.GetValue(array, new object[] { n })));
+										af.Write(ConvertToString(m.GetValue(array, new object[] { n }), eltype));
 									}
 									catch (Exception ex)
 									{
@@ -163,7 +164,7 @@ namespace SME.Render.VHDL
 						}
 						else
 						{
-							af.Write(ConvertToString(p.Property.GetValue(p.Bus)));
+							af.Write(ConvertToString(p.Property.GetValue(p.Bus), p.Property.PropertyType));
 						}
 					}
 					catch (Exception ex)
@@ -186,22 +187,23 @@ namespace SME.Render.VHDL
 			}
 		}
 
-		private string ConvertToString(object value)
+		private string ConvertToString(object value, Type itemtype)
 		{
-			if ((value as ICSVSerializable) != null)
+			if (value == null)
+				throw new ArgumentNullException(nameof(value));
+			
+			if (typeof(ICSVSerializable).IsAssignableFrom(itemtype))
 				return ((ICSVSerializable)value).Serialize();
-			else if (value is bool)
+			else if (itemtype == typeof(bool))
 				return ((bool)value) ? "1" : "0";
-			else if (value.GetType().IsEnum)
+			else if (itemtype.IsEnum)
 				return VHDLName.ConvertToValidVHDLName(value.GetType().FullName + "." + value.ToString()).ToLower();
-			else if (value is byte)
-				return Convert.ToString((byte)value, 2).PadLeft(8, '0');
-			else if (value is long)
+			else if (itemtype == typeof(long))
 				return
 					Convert.ToString((int)(((long)value >> 32) & 0xffffffff), 2).PadLeft(32, '0') +
 					Convert.ToString((int)((long)value & 0xffffffff), 2).PadLeft(32, '0')
 				;
-			else if (value is ulong)
+			else if (itemtype == typeof(ulong))
 				return
 					Convert.ToString((int)(((ulong)value >> 32) & 0xffffffff), 2).PadLeft(32, '0') +
 					Convert.ToString((int)((ulong)value & 0xffffffff), 2).PadLeft(32, '0')
