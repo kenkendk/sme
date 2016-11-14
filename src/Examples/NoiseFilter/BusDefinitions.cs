@@ -82,6 +82,9 @@ namespace NoiseFilter
 		[InitialValue]
 		bool IsValid { get; set; }
 
+		[InitialValue]
+		uint Index { get; set; }
+
 		[FixedArrayLength(COLOR_WIDTH * STENCIL_WIDTH * STENCIL_HEIGHT)]
 		IFixedArray<byte> Data { get; set; }
 	}
@@ -94,5 +97,4 @@ namespace NoiseFilter
 		[InitialValue]
 		bool IsReady { get; set; }
 	}
-
 }

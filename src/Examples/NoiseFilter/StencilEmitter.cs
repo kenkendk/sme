@@ -85,6 +85,9 @@ namespace NoiseFilter
 
 				var sourcepos = (Internal.InputIndex / COLOR_WIDTH) + (Data.IsValid ? 1 : 0);
 
+				//if (Internal.OutputIndex >= 47)
+				//	Console.WriteLine("{0}: {1} > {2}", Internal.OutputIndex, sourcepos, maxindex);
+
 				if (sourcepos > maxindex)
 				{
 					//Console.WriteLine("Stencil {0} {1}x{2} ->", Internal.OutputIndex, outputx, outputy);
@@ -120,6 +123,7 @@ namespace NoiseFilter
 					}
 
 					Output.IsValid = true;
+					Output.Index = Internal.OutputIndex + 1;
 					Internal.OutputIndex++;
 
 					if (Internal.OutputIndex == Internal.OutputPixels - 1)
