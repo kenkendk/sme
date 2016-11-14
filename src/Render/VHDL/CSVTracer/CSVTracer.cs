@@ -177,7 +177,7 @@ namespace SME.Render.VHDL
 						else
 						{
 
-							Console.WriteLine(string.Format("Failed to read item {0}.{1}, message: {2}", p.Property.DeclaringType.FullName, p.Property.Name, ex.Message));
+							Console.WriteLine(string.Format("Failed to read item {0}.{1}, message: {2}", p.Property.DeclaringType.FullName, p.Property.Name, ex));
 							af.Write("X");
 						}
 					}
@@ -198,12 +198,18 @@ namespace SME.Render.VHDL
 				return ((bool)value) ? "1" : "0";
 			else if (itemtype.IsEnum)
 				return VHDLName.ConvertToValidVHDLName(value.GetType().FullName + "." + value.ToString()).ToLower();
-			else if (itemtype == typeof(byte) || itemtype == typeof(sbyte))
+			else if (itemtype == typeof(byte))
 				return Convert.ToString((byte)value, 2).PadLeft(8, '0');
-			else if (itemtype == typeof(ushort) || itemtype == typeof(short))
+			else if (itemtype == typeof(ushort))
 				return Convert.ToString((ushort)value, 2).PadLeft(16, '0');
-			else if (itemtype == typeof(uint) || itemtype == typeof(int))
+			else if (itemtype == typeof(uint))
 				return Convert.ToString((uint)value, 2).PadLeft(32, '0');
+			else if (itemtype == typeof(sbyte))
+				return Convert.ToString((sbyte)value, 2).PadLeft(8, '0');
+			else if (itemtype == typeof(short))
+				return Convert.ToString((short)value, 2).PadLeft(16, '0');
+			else if (itemtype == typeof(int))
+				return Convert.ToString((int)value, 2).PadLeft(32, '0');
 			else if (itemtype == typeof(long))
 				return
 					Convert.ToString((int)(((long)value >> 32) & 0xffffffff), 2).PadLeft(32, '0') +
