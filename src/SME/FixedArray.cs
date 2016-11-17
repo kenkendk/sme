@@ -62,10 +62,7 @@ namespace SME
 		{
 			Forward();
 
-			var tmp = m_read;
-			m_read = m_write;
-			m_write = tmp;
-
+			Array.Copy(m_write, m_read, m_write.Length);
 			Array.Clear(m_written, 0, m_written.Length);
 		}
 
@@ -83,10 +80,7 @@ namespace SME
 				m_written[i] |= m_staged[i];
 			}
 
-			var tmp = m_write;
-			m_write = m_stage;
-			m_stage = tmp;
-
+			Array.Copy(m_stage, m_write, m_write.Length);
 			Array.Clear(m_staged, 0, m_staged.Length);
 		}
 
