@@ -25,7 +25,8 @@ namespace ColorBin
 			
 			if (Input.IsValid)
 			{
-				var color = (Input.R + Input.G + Input.B) / 3;
+				//R=0.299, G=0.587, B=0.114
+				var color = ((Input.R * 299u) + (Input.G * 587u) + (Input.B * 114u)) / 1000u;
 				if (color > HighThreshold)
 					counthigh++;
 				else if (color > MediumThreshold)
