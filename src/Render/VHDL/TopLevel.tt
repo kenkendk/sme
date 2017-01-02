@@ -1,0 +1,125 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="SME" #>
+<#@ import namespace="SME.Render.VHDL" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="SME.Render.VHDL.ILConvert" #>
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+library SYSTEM_TYPES;
+use work.SYSTEM_TYPES.ALL;
+
+library CUSTOM_TYPES;
+use work.CUSTOM_TYPES.ALL;
+
+-- User defined packages here
+-- #### USER-DATA-IMPORTS-START
+-- #### USER-DATA-IMPORTS-END
+
+entity <#= AssemblyNameToVHDL #> is
+  port(
+
+<# foreach (var bus in Processes.SelectMany(x => x.AllExternalBusses).Distinct(new TypeDefComp())) { #>
+    -- Bus <#= bus.FullName #> signals
+<#     foreach (var signal in bus.GetBusProperties()) { 
+	var signaltype = "inout";
+	if (signal.IsTopLevelInput && !signal.IsTopLevelOutput)
+		signaltype = "in";
+	else if (signal.IsTopLevelOutput && !signal.IsTopLevelInput)
+		signaltype = "out";	    
+#>
+    <#= signal.ToVHDLName(TopAssembly, null) #>: <#= signaltype #> <#= Renderer.ConvertToValidVHDLName(Information.VHDLType(signal)) #>;
+<#     } #>
+
+<# } #>
+
+<# foreach(var bus in Processes.SelectMany(x => x.ClockedBusses).Distinct(new TypeDefComp())) { #>
+    -- Clocked bus <#= bus.FullName #> forwarding signals
+<#     foreach (var signal in bus.GetBusProperties()) { #>
+    <#= signal.ToVHDLName(TopAssembly, null) #>_next: inout <#= Renderer.ConvertToValidVHDLName(Information.VHDLType(signal)) #>;
+<#     } #>
+            
+<# } #>
+
+
+   	-- User defined signals here
+    -- #### USER-DATA-ENTITYSIGNALS-START
+    -- #### USER-DATA-ENTITYSIGNALS-END
+
+	-- Reset signal
+    RST : in Std_logic;
+
+	-- Clock signal
+	CLK : in Std_logic
+  );
+end <#= AssemblyNameToVHDL #>;
+
+architecture RTL of <#= AssemblyNameToVHDL #> is  
+  -- User defined signals here
+  -- #### USER-DATA-SIGNALS-START
+  -- #### USER-DATA-SIGNALS-END
+
+begin
+
+<# foreach (var p in Processes) {
+	var buslist = ListSignals(p);
+
+	Mono.Cecil.TypeDefinition curbus = null;
+	string curtype = null; 
+#>
+
+    -- Entity  <#= p.ProcType.FullName #> signals
+    <#= p.ProcessNameToVHDLName() #>: entity work.<#= p.ProcessNameToVHDLName() #>
+    port map (
+<#    foreach (var e in buslist) { #>
+<#        if (curbus != e.Bus || curtype != e.Type) { 
+	          curbus = e.Bus;
+	          curtype = e.Type;
+#>
+
+        -- <#= e.Type #> bus <#= e.Bus.FullName #>
+<#        } #>
+        <#= e.Signal.ToVHDLName(p.ProcType, null) #> => <#= e.Signal.ToVHDLName(TopAssembly, null) #><#= IsClockedBus(e.Bus) && p.OutputBusses.Contains(e.Bus) ? "_next" : ""#>,
+<#    } #>
+
+        RST => RST,
+        CLK => CLK
+    );
+
+<# } #>
+
+    -- Propagate all clocked processes
+    process(
+<# foreach(var bus in ClockedBusses) { #>
+<#     foreach (var signal in bus.Properties) { #>
+        <#= signal.ToVHDLName(TopAssembly, null) #>_next,
+<#     } #>
+<# } #>
+        RST)
+    begin
+        if RST = '1' then
+<# foreach(var bus in ClockedBusses) { #>
+<#     foreach (var signal in bus.Properties) { #>
+            <#= signal.ToVHDLName(TopAssembly, null) #> <= <#= DefaultValue(signal) #>;
+<#     } #>
+<# } #>
+        else
+<# foreach(var bus in ClockedBusses) { #>
+<#     foreach (var signal in bus.Properties) { #>
+            <#= signal.ToVHDLName(TopAssembly, null) #> <= <#= signal.ToVHDLName(TopAssembly, null) #>_next;
+<#     } #>
+
+<# } #>
+        end if;
+    end process;
+
+-- User defined processes here
+-- #### USER-DATA-CODE-START
+-- #### USER-DATA-CODE-END
+
+end RTL;

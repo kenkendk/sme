@@ -1,0 +1,152 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="SME.Render.VHDL.ILConvert" #>
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use IEEE.NUMERIC_STD.ALL;
+use STD.TEXTIO.all;
+use IEEE.STD_LOGIC_TEXTIO.all;
+
+library SYSTEM_TYPES;
+use work.SYSTEM_TYPES.ALL;
+
+library CUSTOM_TYPES;
+use work.CUSTOM_TYPES.ALL;
+
+use work.csv_util.all;
+
+-- User defined packages here
+-- #### USER-DATA-IMPORTS-START
+-- #### USER-DATA-IMPORTS-END
+
+entity <#= VHDLName #>_tb is
+end;
+
+architecture TestBench of <#= VHDLName #>_tb is
+
+  signal CLOCK : Std_logic;
+  signal StopClock : BOOLEAN;
+  signal RESET : Std_logic;
+
+<# foreach (var signal in AllSignals) { #>
+  signal <#=signal.Name#> : <#=signal.VHDLTypeName#>;
+<# } #>
+
+begin
+
+  uut: entity work.<#= VHDLName #>
+  port map (
+
+<#foreach (var signal in AllSignals) { #>
+    <#=signal.Name#> => <#=signal.Name#>,
+<# } #>
+
+    RST => RESET,
+    CLK => CLOCK
+  );
+
+  Clk: process
+  begin
+    while not StopClock loop
+      CLOCK <= '1';
+      wait for <#= ClockPulseLength #> NS;
+      CLOCK <= '0';
+      wait for <#= ClockPulseLength #> NS;
+    end loop;
+    wait;
+  end process;
+
+
+TraceFileTester: process
+    file F: TEXT;
+    variable L: LINE;
+    variable Status: FILE_OPEN_STATUS;
+    constant filename : string := "<#= Tracefile #>";
+    variable clockcycle : integer := 0;
+    variable tmp : CSV_LINE_T;
+    variable readOK : boolean;
+    variable fieldno : integer := 0;
+
+begin
+
+    -- #### USER-DATA-CONDITONING-START
+    -- #### USER-DATA-CONDITONING-END
+
+    FILE_OPEN(Status, F, filename, READ_MODE);
+    if Status /= OPEN_OK then
+        report "Failed to open CSV trace file" severity Failure;
+    else
+        -- Verify the headers
+        READLINE(F, L);
+
+        fieldno := 0;
+<# foreach (var signal in DriverSignals.Union(VerifySignals)) { #>
+        read_csv_field(L, tmp);
+        assert are_strings_equal(tmp, "<#=signal.Name#>") report "Field #" & integer'image(fieldno) & " is not correctly named: " & truncate(tmp) severity Failure;
+        fieldno := fieldno + 1;
+<# } #>
+
+		RESET <= '1';
+        wait for <#= ClockPulseLength #> NS;
+        RESET <= '0';
+
+        -- Read a line each clock
+        while not ENDFILE(F) loop
+            READLINE(F, L);
+
+            fieldno := 0;
+
+            -- Write all driver signals out
+<# foreach (var signal in DriverSignals) { #>
+            read_csv_field(L, tmp);
+<#    if (signal.VHDLType.IsStdLogic || signal.VHDLType == VHDLTypes.SYSTEM_BOOL) { #>
+            if are_strings_equal(tmp, "U") then
+                <#=signal.Name#> <= 'U';
+            else
+                <#=signal.Name#> <= to_std_logic(truncate(tmp));
+            end if;
+<#    } else if (signal.VHDLType.IsStdLogicVector || signal.VHDLType.IsSystemType) { #>
+            if are_strings_equal(tmp, "U") then
+            	<#=signal.Name#> <= (others => 'U');
+            else
+                <#=signal.Name#> <= to_std_logic_vector(truncate(tmp));
+            end if;
+<#    } else { #>
+            <#=signal.Name#> <= <#=signal.VHDLType.ToSafeVHDLName()#>'value(truncate(tmp));
+<#    } #>
+            fieldno := fieldno + 1;
+<# } #>
+
+            wait until Rising_edge(CLOCK);
+
+            -- Compare each signal with the value in the CSV file
+<# foreach (var signal in VerifySignals) { #>
+	        read_csv_field(L, tmp);
+	        if not are_strings_equal(tmp, "U") then
+<#    if (signal.VHDLType.IsStdLogicVector || signal.VHDLType.IsSystemType) { #>
+            	assert are_strings_equal(str(<#=signal.Name#>), tmp) report "Value for <#=signal.Name#> in cycle " & integer'image(clockcycle) & " was: " & str(<#=signal.Name#>) & " but should have been: " & truncate(tmp) severity Error;
+<#    } else { #>
+            	assert are_strings_equal(<#=signal.VHDLType.ToSafeVHDLName()#>'image(<#=signal.Name#>), tmp) report "Value for <#=signal.Name#> in cycle " & integer'image(clockcycle) & " was: " & <#=signal.VHDLType.ToSafeVHDLName()#>'image(<#=signal.Name#>) & " but should have been: " & truncate(tmp) severity Error;
+<#    } #>
+            end if;
+            fieldno := fieldno + 1;
+
+<# } #>
+
+            clockcycle := clockcycle + 1;
+        end loop;
+
+        FILE_CLOSE(F);
+    end if;
+
+	report "completed after " & integer'image(clockcycle) & " clockcycles";
+    StopClock <= true;
+
+    wait;
+end process;
+end architecture TestBench;

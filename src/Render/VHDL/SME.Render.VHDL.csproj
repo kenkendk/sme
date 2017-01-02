@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{B6BDF863-F356-4DD7-8BA7-22B1DFFF7223}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>SME.Render.VHDL</RootNamespace>
+    <AssemblyName>SME.Render.VHDL</AssemblyName>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <Commandlineparameters>/Users/kenneth/Udvikler/BPU/src/BPUImplementation/bin/Debug/BPUImplementation.dll /Users/kenneth/Udvikler/bpu-sme/vhdl --csvpath=../../SimpleRange.csv</Commandlineparameters>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="Castle.Core">
+      <HintPath>..\..\packages\Castle.Core.3.3.3\lib\net45\Castle.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.NRefactory">
+      <HintPath>..\..\packages\ICSharpCode.NRefactory.5.5.1\lib\Net40\ICSharpCode.NRefactory.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.NRefactory.Cecil">
+      <HintPath>..\..\packages\ICSharpCode.NRefactory.5.5.1\lib\Net40\ICSharpCode.NRefactory.Cecil.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.NRefactory.CSharp">
+      <HintPath>..\..\packages\ICSharpCode.NRefactory.5.5.1\lib\Net40\ICSharpCode.NRefactory.CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.NRefactory.Xml">
+      <HintPath>..\..\packages\ICSharpCode.NRefactory.5.5.1\lib\Net40\ICSharpCode.NRefactory.Xml.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.Decompiler">
+      <HintPath>..\..\packages\ICSharpCode.Decompiler.2.3.1\lib\Net40\ICSharpCode.Decompiler.dll</HintPath>
+    </Reference>
+    <Reference Include="CommandLine">
+      <HintPath>..\..\packages\CommandLineParser.2.0.275-beta\lib\net45\CommandLine.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil">
+      <HintPath>..\..\packages\Mono.Cecil.0.9.6.4\lib\net45\Mono.Cecil.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Mdb">
+      <HintPath>..\..\packages\Mono.Cecil.0.9.6.4\lib\net45\Mono.Cecil.Mdb.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Mono.Cecil.Pdb">
+      <HintPath>..\..\packages\Mono.Cecil.0.9.6.4\lib\net45\Mono.Cecil.Pdb.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Mono.Cecil.Rocks">
+      <HintPath>..\..\packages\Mono.Cecil.0.9.6.4\lib\net45\Mono.Cecil.Rocks.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Renderer.cs" />
+    <Compile Include="Entity.cs">
+      <DependentUpon>Entity.tt</DependentUpon>
+    </Compile>
+    <Compile Include="TemplateHelpers.cs" />
+    <Compile Include="TopLevel.cs">
+      <DependentUpon>TopLevel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="TracefileTester.cs">
+      <DependentUpon>TracefileTester.tt</DependentUpon>
+    </Compile>
+    <Compile Include="ILConvert\HelperMethods.cs" />
+    <Compile Include="ILConvert\IMemberDefinitionHelpers.cs" />
+    <Compile Include="ILConvert\OperatorEnumHelpers.cs" />
+    <Compile Include="ILConvert\StatementHandlers.cs" />
+    <Compile Include="ILConvert\Converter.cs" />
+    <Compile Include="ILConvert\IndentedStringBuilder.cs" />
+    <Compile Include="ILConvert\GlobalInformation.cs" />
+    <Compile Include="CustomTypes.cs">
+      <DependentUpon>CustomTypes.tt</DependentUpon>
+    </Compile>
+    <Compile Include="ILConvert\MemberItem.cs" />
+    <Compile Include="ILConvert\VHDLTypeDescriptor.cs" />
+    <Compile Include="ILConvert\AugmentedExpression\VHDLAssignmentExpression.cs" />
+    <Compile Include="ILConvert\AugmentedExpression\VHDLIdentifierExpression.cs" />
+    <Compile Include="ILConvert\AugmentedExpression\VHDLPrimitiveExpression.cs" />
+    <Compile Include="ILConvert\AugmentedExpression\VHDLUnaryOperatorExpression.cs" />
+    <Compile Include="ILConvert\AugmentedExpression\VHDLTypedExpression.cs" />
+    <Compile Include="ILConvert\AugmentedExpression\VHDLMemberReferenceExpression.cs" />
+    <Compile Include="ILConvert\AugmentedExpression\VHDLBinaryOperatorExpression.cs" />
+    <Compile Include="ILConvert\AugmentedExpression\VHDLIndexerExpression.cs" />
+    <Compile Include="ILConvert\AugmentedExpression\VHDLCastExpression.cs" />
+    <Compile Include="ILConvert\AugmentedExpression\VHDLConditionalExpression.cs" />
+    <Compile Include="ILConvert\AugmentedExpression\VHDLInvocationExpression.cs" />
+    <Compile Include="ILConvert\AugmentedExpression\VHDLParenthesizedExpression.cs" />
+    <Compile Include="ILConvert\AugmentedExpression\IVHDLExpression.cs" />
+    <Compile Include="ILConvert\AugmentedExpression\VHDLConvertedExpression.cs" />
+    <Compile Include="ILConvert\AugmentedExpression\VHDLEmptyExpression.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="ILConvert\AugmentedExpression\VHDLArrayCreateExpression.cs" />
+    <Compile Include="ILConvert\AugmentedExpression\VHDLCheckedExpression.cs" />
+    <Compile Include="ILConvert\AugmentedExpression\VHDLUncheckedExpression.cs" />
+    <Compile Include="Attributes\Attributes.cs" />
+    <Compile Include="Attributes\IComponent.cs" />
+    <Compile Include="Attributes\VHDLName.cs" />
+    <Compile Include="Components\BitTypes.cs" />
+    <Compile Include="Components\DSP48E1.cs" />
+    <Compile Include="Components\SimpleDualPortMemory.cs" />
+    <Compile Include="Components\TrueDualPortMemory.cs" />
+    <Compile Include="CSVTracer\CSVTracer.cs" />
+    <Compile Include="CSVTracer\ICSVSerializable.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <None Include="Entity.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Entity.cs</LastGenOutput>
+    </None>
+    <None Include="TopLevel.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>TopLevel.cs</LastGenOutput>
+    </None>
+    <None Include="TracefileTester.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>TracefileTester.cs</LastGenOutput>
+    </None>
+    <None Include="packages.config" />
+    <None Include="CustomTypes.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>CustomTypes.cs</LastGenOutput>
+    </None>
+    <None Include="system_types.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>system_types.vhdl</LastGenOutput>
+    </None>
+    <None Include="Components\BitTypes.tt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="csv_util.vhdl" />
+    <EmbeddedResource Include="system_types.vhdl">
+      <DependentUpon>system_types.tt</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="ILConvert\" />
+    <Folder Include="ILConvert\AugmentedExpression\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\SME\SME.csproj">
+      <Project>{CDC88908-F9B8-40CB-B746-86C8A4C1871B}</Project>
+      <Name>SME</Name>
+    </ProjectReference>
+  </ItemGroup>
+</Project>

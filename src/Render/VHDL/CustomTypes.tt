@@ -1,0 +1,75 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+library SYSTEM_TYPES;
+use work.SYSTEM_TYPES.ALL;
+
+-- User defined packages here
+-- #### USER-DATA-IMPORTS-START
+-- #### USER-DATA-IMPORTS-END
+
+package CUSTOM_TYPES is
+
+-- User defined types here
+-- #### USER-DATA-CORETYPES-START
+-- #### USER-DATA-CORETYPES-END
+
+<# foreach(var t in Types) {#>
+    <#=t.Type#> <#=Renderer.ConvertToValidVHDLName(t.Name)#> is
+<#     foreach(var f in t.Members) { #>
+    <#= f #>
+<#     } #>
+
+<# } #>
+<# if (BusArrays.Any()) { #>
+    -- Bus array definitions
+<#     foreach(var t in BusArrays) {#>
+<#         if (t.Item2.IsSystemType) { #>
+    subtype <#=Renderer.ConvertToValidVHDLName(t.Item1)#>_type is <#=Renderer.ConvertToValidVHDLName(t.Item2.ToString())#>_ARRAY(0 to <#=t.Item3#> - 1);
+<#         } else { #>
+    type <#=Renderer.ConvertToValidVHDLName(t.Item1)#>_type is array (0 to <#=t.Item3#> - 1) of <#=Renderer.ConvertToValidVHDLName(t.Item2.ToString())#>;
+<#         } #>
+<#     } #>
+<# } #>
+
+<# foreach(var enumtype in EnumTypes) { #>
+    -- converts <#= enumtype #> into a string
+    pure function str(b: <#= enumtype #>) return string;
+<# } #>
+
+<# if (Constants.Count() > 0) { #>
+    -- Constant definitions
+<# } #>
+<# foreach(var c in Constants) { #>
+    <#= c #>;
+<# } #>
+
+
+-- User defined types here
+-- #### USER-DATA-TRAILTYPES-START
+-- #### USER-DATA-TRAILTYPES-END
+
+
+end CUSTOM_TYPES;
+
+package body CUSTOM_TYPES is
+<# foreach(var enumtype in EnumTypes) { #>
+    -- converts <#= enumtype #> into a string
+    pure function str(b: <#= enumtype #>) return string is
+    begin
+        return <#= enumtype #>'image(b);
+    end str;
+<# } #>
+
+-- User defined bodies here
+-- #### USER-DATA-BODY-START
+-- #### USER-DATA-BODY-END
+
+end CUSTOM_TYPES;

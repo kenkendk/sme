@@ -45,21 +45,13 @@
       <Project>{CDC88908-F9B8-40CB-B746-86C8A4C1871B}</Project>
       <Name>SME</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\Render\VHDL\Attributes\SME.Render.VHDL.Attributes.csproj">
-      <Project>{ACA7B52C-7D5B-4FB4-8B30-BB150B58406A}</Project>
-      <Name>SME.Render.VHDL.Attributes</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\..\..\SME.Render.VHDL\SME.Render.VHDL.csproj">
-      <Project>{B6BDF863-F356-4DD7-8BA7-22B1DFFF7223}</Project>
-      <Name>SME.Render.VHDL</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\Render\VHDL\CSVTracer\SME.Render.VHDL.CSVTracer.csproj">
-      <Project>{237223B7-BCC6-458A-9ED7-D85B15F12638}</Project>
-      <Name>SME.Render.VHDL.CSVTracer</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\..\Render\GraphViz\SME.Render.GraphViz.csproj">
       <Project>{268A0B13-B84C-42F1-96D9-96550ED2F71F}</Project>
       <Name>SME.Render.GraphViz</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Render\VHDL\SME.Render.VHDL.csproj">
+      <Project>{B6BDF863-F356-4DD7-8BA7-22B1DFFF7223}</Project>
+      <Name>SME.Render.VHDL</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

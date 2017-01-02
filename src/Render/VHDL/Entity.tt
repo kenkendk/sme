@@ -1,0 +1,259 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="SME" #>
+<#@ import namespace="SME.Render.VHDL" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="SME.Render.VHDL.ILConvert" #>
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+library SYSTEM_TYPES;
+use work.SYSTEM_TYPES.ALL;
+
+library CUSTOM_TYPES;
+use work.CUSTOM_TYPES.ALL;
+
+-- User defined packages here
+-- #### USER-DATA-IMPORTS-START
+-- #### USER-DATA-IMPORTS-END
+
+
+entity <#= il.ProcessNameToVHDLName() #> is
+  port(
+<# foreach (var bus in il.InputOnlyBusses) { #>
+    -- Input bus <#= bus.FullName #> signals
+<#     foreach (var signal in bus.GetBusProperties()) { #>
+    <#= signal.ToVHDLName(il.ProcType, null) #>: in <#= Renderer.ConvertToValidVHDLName(il.VHDLType(signal)) #>;
+<#     } #>
+<# } #>
+
+<# foreach (var bus in il.OutputOnlyBusses) { #>
+    -- Output bus <#= bus.FullName #> signals
+<#     foreach (var signal in il.WrittenProperties(bus)) { #>
+    <#= signal.ToVHDLName(il.ProcType, null) #>: out <#= Renderer.ConvertToValidVHDLName(il.VHDLType(signal)) #>;
+<#     } #>
+<# } #>
+
+<# foreach (var bus in il.InputOutputBusses) { #>
+    -- Input/output bus <#= bus.FullName #> signals
+<#     foreach (var signal in bus.GetBusProperties()) { #>
+    <#= signal.ToVHDLName(il.ProcType, null) #>: in <#= Renderer.ConvertToValidVHDLName(il.VHDLType(signal)) #>;
+<#     } #>
+<# } #>
+
+    -- Reset signal
+    RST : Std_logic;
+
+    -- Clock signal
+    CLK : Std_logic
+ );
+end <#= il.ProcessNameToVHDLName() #>;
+
+architecture RTL of <#= il.ProcessNameToVHDLName() #> is
+<# if (il.TypeDefinitions.Count() > 0) { #>
+
+   -- Type definitions
+<# } #>
+<# foreach (var t in il.TypeDefinitions) { #>
+  <#= t #>;
+<# } #>
+
+<# foreach (var bus in il.InternalBusses) { #>
+  -- Internal bus <#= bus.FullName #> signals
+<#     foreach (var signal in bus.GetBusProperties()) { #>
+<#         if (il.IsClockedProcess) { #>
+  signal <#= signal.ToVHDLName(il.ProcType, null) #>: <#= Renderer.ConvertToValidVHDLName(il.VHDLType(signal)) #>;
+<#         } else { #>
+  signal <#= signal.ToVHDLName(il.ProcType, null) #>, next_<#= signal.ToVHDLName(il.ProcType, null) #>: <#= Renderer.ConvertToValidVHDLName(il.VHDLType(signal)) #>;
+<#         } #>
+<#     } #>
+
+<# } #>
+
+<# if (il.VHDLSignals.Any()) { #>
+  -- Internal signals
+<# } #>
+<# foreach (var s in il.VHDLSignals) { #>
+  signal <#= Renderer.ConvertToValidVHDLName(s.Key) #> : <#= il.VHDLType(s.Value) #>;
+<# } #>
+
+<# if (IsComponent) { #>
+  -- Component declaration and signals
+<#= ComponentSignals #>
+<# } #>
+
+<# if (il.Methods.Any()) { #>
+  -- Internal methods
+<# } #>
+<# foreach (var s in il.Methods) { #>
+<#     foreach(var line in s) { #>
+  <#= line #>
+<#     } #>
+
+<# } #>
+
+
+
+  -- User defined signals, procedures and components here
+  -- #### USER-DATA-SIGNALS-START
+  -- #### USER-DATA-SIGNALS-END
+
+begin
+
+    -- #### USER-DATA-PROCESSES-START
+    -- #### USER-DATA-PROCESSES-END
+
+<# if (IsComponent) { #>
+    -- Component instantiation
+<#= ComponentProcesses #>
+<# } else { #>
+
+    process(
+<#     if (il.IsClockedProcess) { #>
+        -- #### USER-DATA-SENSITIVITY-START
+        -- #### USER-DATA-SENSITIVITY-END
+<#     } #>
+        CLK, 
+        RST
+    )
+
+<#     if (il.IsClockedProcess) { #>
+<#         if (il.VHDLVariables.Count() > 0) { #>
+    -- Internal variables
+<#             foreach(var s in il.VHDLVariables) { #>
+    <#=            s #>;
+<#             } #>
+<#         } #>
+<#     } #>
+
+    -- #### USER-DATA-CLOCKEDVARIABLES-START
+    -- #### USER-DATA-CLOCKEDVARIABLES-END
+    begin
+
+        -- Shared initialize code here
+        -- #### USER-DATA-CLOCKEDSHAREDINITIALIZECODE-START
+        -- #### USER-DATA-CLOCKEDSHAREDINITIALIZECODE-END
+
+        if RST = '1' then
+<#     if (il.IsClockedProcess) { #>
+<#         foreach(var s in il.VHDLProcessResetStaments) { #>
+            <#= s #>;
+<#         } #>
+
+<#     } else { #>
+<#          foreach(var s in il.VHDLClockResetStaments) { #>
+            <#= s #>;
+<#          } #>
+<#     } #>
+            -- Reset code here
+            -- #### USER-DATA-RESETCODE-START
+            -- #### USER-DATA-RESETCODE-END
+
+        elsif rising_edge(CLK) then
+
+            -- Initialize code here
+            -- #### USER-DATA-CLOCKEDINITIALIZECODE-START
+            -- #### USER-DATA-CLOCKEDINITIALIZECODE-END
+
+<#     if (!il.IsClockedProcess) { #>
+<#         foreach (var bus in il.InternalBusses) { #>
+            -- Propagate internal bus <#= bus.FullName #>
+<#             foreach (var signal in bus.GetBusProperties()) { #>
+            <#=    signal.ToVHDLName(il.ProcType, null) #> <= next_<#= signal.ToVHDLName(il.ProcType, null) #>;
+<#             } #>
+<#         } #>
+
+<#     } #>
+<#     if (il.IsClockedProcess) { #>
+
+<#     foreach(var line in il.VHDLBody) { #>
+            <#= line #>
+<#     } #>
+
+            -- #### USER-DATA-CODE-START
+            -- #### USER-DATA-CODE-END
+
+<#     } else { #>
+
+            -- #### USER-DATA-ONRISE-START
+            -- #### USER-DATA-ONRISE-END
+
+<#     } #>
+        end if;
+    end process;
+
+<#     if (!il.IsClockedProcess) { #>
+
+    process(
+        -- #### USER-DATA-SENSITIVITY-START
+        -- #### USER-DATA-SENSITIVITY-END
+<#         foreach(var signal in il.InputBusses.Union(il.ClockedInputBusses).Union(il.InternalBusses).SelectMany(x => x.GetBusProperties()).Select(x => x.ToVHDLName(il.ProcType, null))) { #>
+        <#= signal #>,
+<#         } #>
+<#         foreach(var signal in il.VHDLSignals) { #>
+        <#= Renderer.ConvertToValidVHDLName(signal.Key) #>,
+<#         } #>
+        RST
+    )
+<#         if (il.VHDLVariables.Count() > 0) { #>
+    -- Internal variables
+<#         } #>
+<#         foreach(var s in il.VHDLVariables) { #>
+    <#= s #>;
+<#         } #>
+
+    -- #### USER-DATA-NONCLOCKEDVARIABLES-START
+    -- #### USER-DATA-NONCLOCKEDVARIABLES-END
+	begin
+        -- Initialize code here
+        -- #### USER-DATA-NONCLOCKEDSHAREDINITIALIZECODE-START
+        -- #### USER-DATA-NONCLOCKEDSHAREDINITIALIZECODE-END
+
+        if RST = '1' then
+<#     foreach(var s in il.VHDLProcessResetStaments) { #>
+            <#= s #>;
+<#     } #>
+
+            -- Initialize code here
+            -- #### USER-DATA-NONCLOCKEDRESETCODE-START
+            -- #### USER-DATA-NONCLOCKEDRESETCODE-END
+        else
+
+<#     if (!il.IsClockedProcess) { #>
+<#         foreach (var bus in il.InternalBusses) { #>
+            -- Initialize internal bus <#= bus.FullName #>
+<#             foreach (var signal in bus.GetBusProperties()) { #>
+            next_<#=    signal.ToVHDLName(il.ProcType, null) #> <= <#= signal.ToVHDLName(il.ProcType, null) #>;
+<#             } #>
+<#         } #>
+<#     } #>
+
+            -- Initialize code here
+            -- #### USER-DATA-NONCLOCKEDINITIALIZECODE-START
+            -- #### USER-DATA-NONCLOCKEDINITIALIZECODE-END
+
+
+<#     foreach(var line in il.VHDLBody) { #>
+            <#= line #>
+<#     } #>
+
+        end if;
+
+        -- Non-clocked process actions here
+
+        -- #### USER-DATA-CODE-START
+        -- #### USER-DATA-CODE-END
+
+    end process;
+
+<#     } #>
+<# } #>
+end RTL;
+
+-- User defined architectures here
+-- #### USER-DATA-ARCH-START
+-- #### USER-DATA-ARCH-END

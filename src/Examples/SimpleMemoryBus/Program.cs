@@ -11,7 +11,6 @@ namespace Tester
 		{
 			new Simulation()
 				.BuildCSVFile()
-				.BuildCSVFile()
 				.Run(typeof(MainClass).Assembly);
 
 
