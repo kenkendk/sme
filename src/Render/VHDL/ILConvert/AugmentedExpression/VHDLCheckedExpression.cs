@@ -5,7 +5,7 @@ namespace SME.Render.VHDL.ILConvert.AugmentedExpression
 {
 	public class VHDLCheckedExpression : VHDLTypedExpression<CheckedExpression>
 	{
-		public VHDLCheckedExpression(Converter converter, CheckedExpression expression)
+		public VHDLCheckedExpression(VHDLConverter converter, CheckedExpression expression)
 			: base(converter, expression)
 		{
 			Console.WriteLine("Warning: \"checked\" is not supported and will be ignored for expression: {0}", expression);

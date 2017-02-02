@@ -4,15 +4,16 @@ using ICSharpCode.NRefactory.CSharp;
 using ICSharpCode.Decompiler;
 using ICSharpCode.NRefactory.TypeSystem;
 using Mono.Cecil;
-using SME.Render.VHDL.ILConvert.AugmentedExpression;
 
-namespace SME.Render.VHDL.ILConvert
+namespace SME.Render.Transpiler.ILConvert
 {
-	public partial class Converter
+	public abstract partial class Converter<TExpression, TTypeClass>
+		where TExpression : IAugmentedExpression
+		where TTypeClass : class
 	{
-		private string ReturnVariable { get; set; }
+		protected string ReturnVariable { get; set; }
 
-		public void OutputStatement(AstNode n)
+		public virtual void OutputStatement(AstNode n)
 		{
 			if (n is ExpressionStatement)
 				OutputStatement(n as ExpressionStatement);
@@ -91,7 +92,7 @@ namespace SME.Render.VHDL.ILConvert
 			}
 		}
 
-		public void OutputForStatement(ForStatement f)
+		public virtual void OutputForStatement(ForStatement f)
 		{
 			if (f.Initializers.Count != 1)
 				throw new Exception(string.Format("Only plain style for loops supported: {0}", f));
@@ -184,27 +185,27 @@ namespace SME.Render.VHDL.ILConvert
 			if (itro == null || itre.Operator != UnaryOperatorType.PostIncrement || itro.Identifier != name)
 				throw new Exception(string.Format("Only plain style for loops supported: {0}", f));
 
-			m_sb.AppendFormat("for {0} in {1} to {2} loop", Renderer.ConvertToValidVHDLName(name), startvalue, endvalue - 1);
-			m_sb.AppendLine();
+			EmitForLoopBegin(m_globalInformation.ToValidName(name), startvalue, endvalue);
 			m_sb.Indentation += 4;
 
 			// Store any existing value so we can put it back
-			Tuple<TypeReference, VHDLTypeDescriptor> prev;
+			Tuple<TypeReference, TTypeClass> prev;
 			m_localVariables.TryGetValue(name, out prev);
 			string tmpreg = null;
 			string prevrename = null;
+			var inttype = m_asm.MainModule.Import(typeof(int));
 
-			m_localVariables[name] = new Tuple<TypeReference, VHDLTypeDescriptor>(m_asm.MainModule.Import(typeof(int)), VHDLTypes.INTEGER);
+			m_localVariables[name] = new Tuple<TypeReference, TTypeClass>(m_asm.MainModule.Import(typeof(int)), m_globalInformation.GetNativeIntegerType());
 
 			if (increment != null)
 			{
-				tmpreg = RegisterTemporaryVariable(m_asm.MainModule.Import(typeof(int)), VHDLTypes.INTEGER);
+				tmpreg = RegisterTemporaryVariable(m_asm.MainModule.Import(typeof(int)), m_globalInformation.GetNativeIntegerType());
 				OutputStatement(
 					new ExpressionStatement(
 						new AssignmentExpression(
-							new IdentifierExpression(Renderer.ConvertToValidVHDLName(tmpreg)),
+							new IdentifierExpression(m_globalInformation.ToValidName(tmpreg)),
 							new BinaryOperatorExpression(
-								new IdentifierExpression(Renderer.ConvertToValidVHDLName(name)),
+								new IdentifierExpression(m_globalInformation.ToValidName(name)),
 								BinaryOperatorType.Multiply,
 								increment.Clone()
 							)
@@ -231,10 +232,14 @@ namespace SME.Render.VHDL.ILConvert
 			}
 
 			m_sb.Indentation -= 4;
-			m_sb.AppendLine("end loop;");
+			EmitForLoopEnd(m_globalInformation.ToValidName(name), startvalue, endvalue);
 		}
 
-		public void OutputReturnStatement(ReturnStatement r)
+
+		public abstract void EmitForLoopBegin(string loopvariable, int startvalue, int endvalue);
+		public abstract void EmitForLoopEnd(string loopvariable, int startvalue, int endvalue);
+
+		public virtual void OutputReturnStatement(ReturnStatement r)
 		{
 			OutputStatement(new ExpressionStatement(
 				new AssignmentExpression(
@@ -246,69 +251,15 @@ namespace SME.Render.VHDL.ILConvert
 			m_sb.AppendLine();
 		}
 
-		public void OutputBlockStatement(BlockStatement b)
+		public virtual void OutputBlockStatement(BlockStatement b)
 		{
 			foreach (var n in b.Children)
 				OutputStatement(n);
 		}
 
-		public void OutputSwitchStatement(SwitchStatement s)
-		{
-			var exp = ResolveExpression(s.Expression);
+		public abstract void OutputSwitchStatement(SwitchStatement s);
 
-			m_sb.AppendFormat("case {0} is", exp.ResolvedString);
-			m_sb.AppendLine();
-
-			m_sb.Indentation += 4;
-			var hasOthers = false;
-			foreach (var b in s.SwitchSections)
-			{
-				if (b.CaseLabels.Count() == 1 && b.CaseLabels.First().Expression == Expression.Null)
-				{
-					hasOthers = true;
-					m_sb.AppendFormat("when others =>");
-				}
-				else
-					m_sb.AppendFormat("when {0} =>", string.Join(" | ", b.CaseLabels.Select(x => WrapConverted(ResolveExpression(x.Expression), exp.VHDLType).ResolvedString)));
-				m_sb.AppendLine();
-				m_sb.Indentation += 4;
-				foreach(var ss in b.Statements)
-					if (!(ss is BreakStatement))
-						OutputStatement(ss);
-				m_sb.Indentation -= 4;
-			}
-
-			if (!hasOthers)
-			{
-				m_sb.AppendFormat("when others =>");
-				m_sb.AppendLine();
-			}
-			
-			m_sb.Indentation -= 4;
-			m_sb.AppendFormat("end case;");
-			m_sb.AppendLine();
-		}
-
-		public void OutputIfElseStatement(IfElseStatement s)
-		{
-			var condition = WrapConverted(ResolveExpression(s.Condition), VHDLTypes.BOOL);
-
-			m_sb.AppendFormat("if {0} then", condition.ResolvedString);
-			m_sb.AppendLine();
-			m_sb.Indentation += 4;
-			OutputStatement(s.TrueStatement);
-			m_sb.Indentation -= 4;
-			if (!s.FalseStatement.IsZero() && !(s.FalseStatement is EmptyStatement) && (s.FalseStatement != Statement.Null))
-			{
-				m_sb.Append("else");
-				m_sb.AppendLine();
-				m_sb.Indentation += 4;
-				OutputStatement(s.FalseStatement);
-				m_sb.Indentation -= 4;
-			}
-			m_sb.Append("end if;");
-			m_sb.AppendLine();
-		}
+		public abstract void OutputIfElseStatement(IfElseStatement s);
 
 		private void OutputStatement(ExpressionStatement s)
 		{
@@ -334,7 +285,7 @@ namespace SME.Render.VHDL.ILConvert
 				{
 					if (n.Initializer is MemberReferenceExpression)
 					{
-						m_busVariableMap[n.Name] = new VHDLMemberReferenceExpression(this, n.Initializer as MemberReferenceExpression).Member;
+						m_busVariableMap[n.Name] = ResolveIdentifierItem((n.Initializer as MemberReferenceExpression).MemberName); // new VHDLMemberReferenceExpression(this, n.Initializer as MemberReferenceExpression).Member;
 					}
 					else
 					{
@@ -350,7 +301,7 @@ namespace SME.Render.VHDL.ILConvert
 			{
 				foreach (var n in s.Variables)
 				{
-					m_localVariables.Add(n.Name, new Tuple<TypeReference, VHDLTypeDescriptor>(vartype, m_globalInformation.VHDLTypes.GetVHDLType((TypeReference)vartype)));
+					m_localVariables.Add(n.Name, new Tuple<TypeReference, TTypeClass>(vartype, m_globalInformation.GetOutputType((TypeReference)vartype)));
 					if (!n.Initializer.IsNull)
 						OutputStatement(new ExpressionStatement(new AssignmentExpression(new IdentifierExpression(n.Name), n.Initializer.Clone())));
 				}

@@ -1,4 +1,5 @@
 ﻿using System;
+using SME.Render.Transpiler.ILConvert;
 
 namespace SME.Render.VHDL.ILConvert.AugmentedExpression
 {
@@ -20,8 +21,8 @@ namespace SME.Render.VHDL.ILConvert.AugmentedExpression
 
 		#region IVHDLExpression implementation
 		public ICSharpCode.NRefactory.CSharp.Expression Expression { get { return m_parent.Expression; } }
-		public Converter Converter { get { return m_parent.Converter; } }
-		public IVHDLExpression WrappedExpression { get { return m_parent; } }
+		public VHDLConverter Converter { get { return m_parent.Converter; } }
+		public IAugmentedExpression WrappedExpression { get { return m_parent; } }
 		public VHDLTypeDescriptor VHDLType { get { return m_targettype; } }
 		public Mono.Cecil.TypeReference ResolvedSourceType { get { return m_parent.ResolvedSourceType; } }
 		public string ResolvedString

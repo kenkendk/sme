@@ -6,7 +6,7 @@ namespace SME.Render.VHDL.ILConvert.AugmentedExpression
 {
 	public class VHDLUnaryOperatorExpression : VHDLTypedExpression<UnaryOperatorExpression>
 	{
-		public VHDLUnaryOperatorExpression(Converter converter, UnaryOperatorExpression expression)
+		public VHDLUnaryOperatorExpression(VHDLConverter converter, UnaryOperatorExpression expression)
 			: base(converter, expression)
 		{
 		}
@@ -71,7 +71,7 @@ namespace SME.Render.VHDL.ILConvert.AugmentedExpression
 			var assignOperator = expisvariable ? ":=" : "<=";
 
 			if (Operand is VHDLMemberReferenceExpression)
-				Converter.RegisterSignalWrite((VHDLMemberReferenceExpression)Operand, true);
+				Converter.RegisterSignalWrite(((VHDLMemberReferenceExpression)Operand).Member, true);
 
 			switch (Expression.Operator)
 			{

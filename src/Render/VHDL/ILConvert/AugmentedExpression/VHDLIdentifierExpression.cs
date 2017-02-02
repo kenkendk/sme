@@ -2,12 +2,13 @@
 using System.Linq;
 using ICSharpCode.NRefactory.CSharp;
 using Mono.Cecil;
+using SME.Render.Transpiler.ILConvert;
 
 namespace SME.Render.VHDL.ILConvert.AugmentedExpression
 {
 	public class VHDLIdentifierExpression : VHDLTypedExpression<IdentifierExpression>
 	{
-		public VHDLIdentifierExpression(Converter converter, IdentifierExpression expression)
+		public VHDLIdentifierExpression(VHDLConverter converter, IdentifierExpression expression)
 			: base(converter, expression)
 		{
 		}
@@ -57,7 +58,7 @@ namespace SME.Render.VHDL.ILConvert.AugmentedExpression
 		protected override string ResolveToString()
 		{
 			if (ResolvedItem != null)
-				return Renderer.ConvertToValidVHDLName(m_resolvedItem.Item3);
+				return Converter.Information.ToValidName(m_resolvedItem.Item3);
 			else
 				throw new Exception(string.Format("Unknown identifier: {0}", Expression));
 		}

@@ -5,7 +5,7 @@ namespace SME.Render.VHDL.ILConvert.AugmentedExpression
 {
 	public class VHDLUncheckedExpression: VHDLTypedExpression<UncheckedExpression>
 	{
-		public VHDLUncheckedExpression(Converter converter, UncheckedExpression expression)
+		public VHDLUncheckedExpression(VHDLConverter converter, UncheckedExpression expression)
 			: base(converter, expression)
 		{
 			// Unchecked is what VHDL does, so no need to handle it

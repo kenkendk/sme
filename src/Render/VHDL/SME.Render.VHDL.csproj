@@ -49,9 +49,6 @@
     <Reference Include="ICSharpCode.Decompiler">
       <HintPath>..\..\packages\ICSharpCode.Decompiler.2.3.1\lib\Net40\ICSharpCode.Decompiler.dll</HintPath>
     </Reference>
-    <Reference Include="CommandLine">
-      <HintPath>..\..\packages\CommandLineParser.2.0.275-beta\lib\net45\CommandLine.dll</HintPath>
-    </Reference>
     <Reference Include="Mono.Cecil">
       <HintPath>..\..\packages\Mono.Cecil.0.9.6.4\lib\net45\Mono.Cecil.dll</HintPath>
     </Reference>
@@ -67,6 +64,9 @@
       <HintPath>..\..\packages\Mono.Cecil.0.9.6.4\lib\net45\Mono.Cecil.Rocks.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="CommandLine">
+      <HintPath>..\..\packages\CommandLineParser.2.1.1-beta\lib\net45\CommandLine.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -81,17 +81,9 @@
     <Compile Include="TracefileTester.cs">
       <DependentUpon>TracefileTester.tt</DependentUpon>
     </Compile>
-    <Compile Include="ILConvert\HelperMethods.cs" />
-    <Compile Include="ILConvert\IMemberDefinitionHelpers.cs" />
-    <Compile Include="ILConvert\OperatorEnumHelpers.cs" />
-    <Compile Include="ILConvert\StatementHandlers.cs" />
-    <Compile Include="ILConvert\Converter.cs" />
-    <Compile Include="ILConvert\IndentedStringBuilder.cs" />
-    <Compile Include="ILConvert\GlobalInformation.cs" />
     <Compile Include="CustomTypes.cs">
       <DependentUpon>CustomTypes.tt</DependentUpon>
     </Compile>
-    <Compile Include="ILConvert\MemberItem.cs" />
     <Compile Include="ILConvert\VHDLTypeDescriptor.cs" />
     <Compile Include="ILConvert\AugmentedExpression\VHDLAssignmentExpression.cs" />
     <Compile Include="ILConvert\AugmentedExpression\VHDLIdentifierExpression.cs" />
@@ -119,8 +111,10 @@
     <Compile Include="Components\DSP48E1.cs" />
     <Compile Include="Components\SimpleDualPortMemory.cs" />
     <Compile Include="Components\TrueDualPortMemory.cs" />
+    <Compile Include="ILConvert\VHDLConverter.cs" />
+    <Compile Include="ILConvert\VHDLGlobalInformation.cs" />
     <Compile Include="CSVTracer\CSVTracer.cs" />
-    <Compile Include="CSVTracer\ICSVSerializable.cs" />
+    <Compile Include="ILConvert\OperatorHelpers.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -156,11 +150,16 @@
   <ItemGroup>
     <Folder Include="ILConvert\" />
     <Folder Include="ILConvert\AugmentedExpression\" />
+    <Folder Include="CSVTracer\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\SME\SME.csproj">
       <Project>{CDC88908-F9B8-40CB-B746-86C8A4C1871B}</Project>
       <Name>SME</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Transpiler\SME.Render.Transpiler.csproj">
+      <Project>{B44A44F1-7D81-48BE-B092-85A330AC141A}</Project>
+      <Name>SME.Render.Transpiler</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

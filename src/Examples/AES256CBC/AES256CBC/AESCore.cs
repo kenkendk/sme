@@ -63,7 +63,7 @@ namespace AES256CBC
 		private const int EXPANDED_KEY_SIZE = Nb * (NUMBER_OF_REPETITIONS + 1);
 
 		#region implemented abstract members of SimpleProcess
-		[VHDLCompile]
+		[Compile]
 		private static void UnpackLongToArray([Out]byte[] target, byte offset, ulong value)
 		{
 			target[offset + 0] = (byte)((value >> (64 -  8)) & 0xff);
@@ -76,7 +76,7 @@ namespace AES256CBC
 			target[offset + 7] = (byte)((value >> (64 - 64)) & 0xff);
 		}
 
-		[VHDLCompile]
+		[Compile]
 		private static ulong PackArrayToLong([In]byte[] source, byte offset)
 		{
 
@@ -155,7 +155,7 @@ namespace AES256CBC
 
 		#endregion
 
-		[VHDLCompile]
+		[Compile]
 		private static uint SubByte (uint a)
 		{
 			uint value = 0xff & a;
@@ -169,7 +169,7 @@ namespace AES256CBC
 		}
 
 
-		[VHDLCompile]
+		[Compile]
 		public static void ExpandKey([In] byte[] key, uint[] expandedKey)
 		{
 			int pos = 0;
@@ -195,7 +195,7 @@ namespace AES256CBC
 
 
 		#region Encryption
-		[VHDLCompile]
+		[Compile]
 		private static void Encrypt128 ([In] byte[] indata, [Out] byte[] outdata, [In] uint[] ekey)
 		{
 			uint a0, a1, a2, a3, b0, b1, b2, b3;

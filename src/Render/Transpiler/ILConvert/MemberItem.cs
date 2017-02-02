@@ -4,7 +4,7 @@ using Mono.Cecil;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SME.Render.VHDL.ILConvert
+namespace SME.Render.Transpiler.ILConvert
 {
 	public class MemberItem
 	{
@@ -130,11 +130,6 @@ namespace SME.Render.VHDL.ILConvert
 		public bool IsVariable { get { return Item.IsVariable(); } }
 		public bool IsTopLevelInput { get { return Item.IsTopLevelInput(); } }
 		public bool IsTopLevelOutput { get { return Item.IsTopLevelOutput(); } }
-
-		public string ToVHDLName(TypeDefinition scope, Expression target)
-		{
-			return Item.ToVHDLName(scope, target, DeclaringType);
-		}
 	}
 }
 

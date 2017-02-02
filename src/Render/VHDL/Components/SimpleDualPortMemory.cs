@@ -2,11 +2,12 @@
 using SME;
 using System.Linq;
 using SME.Render.VHDL;
+using SME.Render.Transpiler;
 
 namespace SME.VHDLComponents
 {
 	[ClockedProcess]
-	[VHDLSuppressBody]
+	[SuppressBody]
 	public abstract class SimpleDualPortMemory<TAddress, TData> : SimpleProcess, IVHDLComponent
 	{
 		public SimpleDualPortMemory()
@@ -49,7 +50,7 @@ namespace SME.VHDLComponents
 		[NoAutoLoad]
 		protected IWriteIn WriteIn;
 
-		[VHDLIgnore]
+		[Ignore]
 		protected TData[] m_memory = new TData[1024];
 
 		protected abstract int ConvertAddress(TAddress adr);

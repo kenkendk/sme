@@ -1,12 +1,13 @@
 ﻿using System;
 using Mono.Cecil;
 using ICSharpCode.NRefactory.CSharp;
+using SME.Render.Transpiler.ILConvert;
 
 namespace SME.Render.VHDL.ILConvert.AugmentedExpression
 {
 	public class VHDLEmptyExpression : IVHDLExpression
 	{
-		public VHDLEmptyExpression(ILConvert.Converter converter, Expression expression)
+		public VHDLEmptyExpression(ILConvert.VHDLConverter converter, Expression expression)
 		{
 			this.Converter = converter;
 			this.Expression = expression;
@@ -24,8 +25,8 @@ namespace SME.Render.VHDL.ILConvert.AugmentedExpression
 		#region IVHDLExpression implementation
 
 		public ICSharpCode.NRefactory.CSharp.Expression Expression { get; private set; }
-		public Converter Converter { get; private set; }
-		public IVHDLExpression WrappedExpression { get; private set; }
+		public VHDLConverter Converter { get; private set; }
+		public IAugmentedExpression WrappedExpression { get; private set; }
 		public VHDLTypeDescriptor VHDLType { get; private set; }
 		public TypeReference ResolvedSourceType { get; private set; }
 		public string ResolvedString { get; private set; }

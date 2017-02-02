@@ -33,6 +33,7 @@ namespace SME.Render.VHDL
 			if (new string[] {"register", "record", "variable", "process", "if", "then", "else", "begin", "end", "architecture", "of", "is"}.Contains(r.ToLowerInvariant()))
 				r = "vhdl_" + r;
 			return r;
-		}	}
+		}	
+	}
 }
 

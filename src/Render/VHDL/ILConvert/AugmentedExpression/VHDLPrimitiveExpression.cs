@@ -1,12 +1,13 @@
 ﻿using System;
 using ICSharpCode.NRefactory.CSharp;
 using Mono.Cecil;
+using SME.Render.Transpiler.ILConvert;
 
 namespace SME.Render.VHDL.ILConvert.AugmentedExpression
 {
 	public class VHDLPrimitiveExpression : VHDLTypedExpression<PrimitiveExpression>
 	{
-		public VHDLPrimitiveExpression(Converter converter, PrimitiveExpression expression)
+		public VHDLPrimitiveExpression(VHDLConverter converter, PrimitiveExpression expression)
 			: base(converter, expression)
 		{
 		}

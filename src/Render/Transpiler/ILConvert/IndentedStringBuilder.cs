@@ -2,9 +2,9 @@
 using System.Text;
 using System.Collections.Generic;
 
-namespace SME.Render.VHDL.ILConvert
+namespace SME.Render.Transpiler.ILConvert
 {
-	internal class IndentedStringBuilder
+	public class IndentedStringBuilder
 	{
 		private int m_indent;
 		private List<string> m_sb = new List<string>();

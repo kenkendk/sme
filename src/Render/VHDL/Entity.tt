@@ -6,6 +6,8 @@
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#@ import namespace="SME.Render.VHDL.ILConvert" #>
+<#@ import namespace="SME.Render.Transpiler" #>
+<#@ import namespace="SME.Render.Transpiler.ILConvert" #>
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
@@ -74,10 +76,10 @@ architecture RTL of <#= il.ProcessNameToVHDLName() #> is
 
 <# } #>
 
-<# if (il.VHDLSignals.Any()) { #>
+<# if (il.Signals.Any()) { #>
   -- Internal signals
 <# } #>
-<# foreach (var s in il.VHDLSignals) { #>
+<# foreach (var s in il.Signals) { #>
   signal <#= Renderer.ConvertToValidVHDLName(s.Key) #> : <#= il.VHDLType(s.Value) #>;
 <# } #>
 
@@ -122,9 +124,9 @@ begin
     )
 
 <#     if (il.IsClockedProcess) { #>
-<#         if (il.VHDLVariables.Count() > 0) { #>
+<#         if (il.Variables.Count() > 0) { #>
     -- Internal variables
-<#             foreach(var s in il.VHDLVariables) { #>
+<#             foreach(var s in il.Variables) { #>
     <#=            s #>;
 <#             } #>
 <#         } #>
@@ -140,7 +142,7 @@ begin
 
         if RST = '1' then
 <#     if (il.IsClockedProcess) { #>
-<#         foreach(var s in il.VHDLProcessResetStaments) { #>
+<#         foreach(var s in il.ProcessResetStaments) { #>
             <#= s #>;
 <#         } #>
 
@@ -170,7 +172,7 @@ begin
 <#     } #>
 <#     if (il.IsClockedProcess) { #>
 
-<#     foreach(var line in il.VHDLBody) { #>
+<#     foreach(var line in il.Body) { #>
             <#= line #>
 <#     } #>
 
@@ -194,15 +196,15 @@ begin
 <#         foreach(var signal in il.InputBusses.Union(il.ClockedInputBusses).Union(il.InternalBusses).SelectMany(x => x.GetBusProperties()).Select(x => x.ToVHDLName(il.ProcType, null))) { #>
         <#= signal #>,
 <#         } #>
-<#         foreach(var signal in il.VHDLSignals) { #>
+<#         foreach(var signal in il.Signals) { #>
         <#= Renderer.ConvertToValidVHDLName(signal.Key) #>,
 <#         } #>
         RST
     )
-<#         if (il.VHDLVariables.Count() > 0) { #>
+<#         if (il.Variables.Count() > 0) { #>
     -- Internal variables
 <#         } #>
-<#         foreach(var s in il.VHDLVariables) { #>
+<#         foreach(var s in il.Variables) { #>
     <#= s #>;
 <#         } #>
 
@@ -214,7 +216,7 @@ begin
         -- #### USER-DATA-NONCLOCKEDSHAREDINITIALIZECODE-END
 
         if RST = '1' then
-<#     foreach(var s in il.VHDLProcessResetStaments) { #>
+<#     foreach(var s in il.ProcessResetStaments) { #>
             <#= s #>;
 <#     } #>
 
@@ -237,7 +239,7 @@ begin
             -- #### USER-DATA-NONCLOCKEDINITIALIZECODE-END
 
 
-<#     foreach(var line in il.VHDLBody) { #>
+<#     foreach(var line in il.Body) { #>
             <#= line #>
 <#     } #>
 

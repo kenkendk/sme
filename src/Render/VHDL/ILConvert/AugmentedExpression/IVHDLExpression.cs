@@ -1,17 +1,14 @@
 ﻿using System;
 using ICSharpCode.NRefactory.CSharp;
 using Mono.Cecil;
+using SME.Render.Transpiler.ILConvert;
 
 namespace SME.Render.VHDL.ILConvert.AugmentedExpression
 {
-	public interface IVHDLExpression
+	public interface IVHDLExpression : IAugmentedExpression
 	{
-		Expression Expression { get; }
-		Converter Converter { get; }
-		IVHDLExpression WrappedExpression { get; }
 		VHDLTypeDescriptor VHDLType { get; }
-		TypeReference ResolvedSourceType { get; }
-		string ResolvedString { get; }
+		VHDLConverter Converter { get; }
 	}
 }
 

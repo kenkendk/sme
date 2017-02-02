@@ -2,6 +2,7 @@
 using ICSharpCode.NRefactory.CSharp;
 using Mono.Cecil;
 using System.Collections.Generic;
+using SME.Render.Transpiler.ILConvert;
 
 namespace SME.Render.VHDL.ILConvert.AugmentedExpression
 {
@@ -18,7 +19,7 @@ namespace SME.Render.VHDL.ILConvert.AugmentedExpression
 		/// Gets the parent converter instance
 		/// </summary>
 		/// <value>The converter.</value>
-		public Converter Converter { get; private set; }
+		public VHDLConverter Converter { get; private set; }
 
 		/// <summary>
 		/// Gets the wrapped expression, null if not wrapped
@@ -70,13 +71,13 @@ namespace SME.Render.VHDL.ILConvert.AugmentedExpression
 
 		protected abstract string ResolveToString();
 
-		public VHDLTypedExpression(Converter converter, TExpression expression)
+		public VHDLTypedExpression(VHDLConverter converter, TExpression expression)
 		{
 			this.Converter = converter;
 			this.Expression = expression;
 		}
 
-		IVHDLExpression IVHDLExpression.WrappedExpression
+		IAugmentedExpression IAugmentedExpression.WrappedExpression
 		{
 			get
 			{
@@ -84,7 +85,7 @@ namespace SME.Render.VHDL.ILConvert.AugmentedExpression
 			}
 		}
 
-		Expression IVHDLExpression.Expression
+		Expression IAugmentedExpression.Expression
 		{
 			get
 			{

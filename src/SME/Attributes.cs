@@ -112,5 +112,63 @@ namespace SME
 			Length = length;
 		}
 	}
+
+
+	/// <summary>
+	/// Marker attribute for ignoring a member or process
+	/// </summary>
+	public class IgnoreAttribute : Attribute { }
+	/// <summary>
+	/// Marker attribute for attempting to compile a member method
+	/// </summary>
+	public class CompileAttribute : Attribute { }
+	/// <summary>
+	/// Marker attribute for supressing the body
+	/// </summary>
+	public class SuppressBodyAttribute : Attribute { }
+	/// <summary>
+	/// Marker attribute for supressing output
+	/// </summary>
+	public class SuppressOutputAttribute : Attribute { }
+	/// <summary>
+	/// Marker attribute for rendering a variable as a signal
+	/// </summary>
+	public class SignalAttribute : Attribute { }
+
+	/// <summary>
+	/// Attribute for marking an array argument as having a fixed size
+	/// </summary>
+	[AttributeUsage(AttributeTargets.Parameter, Inherited = false, AllowMultiple = false)]
+	public class RangeAttribute : Attribute
+	{
+		/// <summary>
+		/// Gets or sets the lower bound.
+		/// </summary>
+		public int LowerBound { get; set; }
+		/// <summary>
+		/// Gets or sets the upper bound.
+		/// </summary>
+		public int UpperBound { get; set; }
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="T:SME.Render.Transpiler.SMERangeAttribute"/> class.
+		/// </summary>
+		/// <param name="upperBound">The upper bound to use.</param>
+		public RangeAttribute(int upperBound)
+		{
+			UpperBound = upperBound;
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="T:SME.Render.Transpiler.SMERangeAttribute"/> class.
+		/// </summary>
+		/// <param name="lowerBound">The lower bound.</param>
+		/// <param name="upperBound">The upper bound.</param>
+		public RangeAttribute(int lowerBound, int upperBound)
+		{
+			LowerBound = lowerBound;
+			UpperBound = upperBound;
+		}
+	}
 }
 

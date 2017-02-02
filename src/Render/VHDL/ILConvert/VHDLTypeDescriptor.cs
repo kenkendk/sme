@@ -2,6 +2,7 @@
 using Mono.Cecil;
 using System.Linq;
 using System.Collections.Generic;
+using SME.Render.Transpiler.ILConvert;
 
 namespace SME.Render.VHDL.ILConvert
 {

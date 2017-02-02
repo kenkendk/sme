@@ -2,12 +2,13 @@
 using ICSharpCode.NRefactory.CSharp;
 using Mono.Cecil;
 using System.Collections.Generic;
+using SME.Render.Transpiler.ILConvert;
 
 namespace SME.Render.VHDL.ILConvert.AugmentedExpression
 {
 	public class VHDLMemberReferenceExpression : VHDLTypedExpression<MemberReferenceExpression>
 	{
-		public VHDLMemberReferenceExpression(Converter converter, MemberReferenceExpression expression)
+		public VHDLMemberReferenceExpression(VHDLConverter converter, MemberReferenceExpression expression)
 			: base(converter, expression)
 		{
 		}
@@ -77,7 +78,7 @@ namespace SME.Render.VHDL.ILConvert.AugmentedExpression
 		protected override string ResolveToString()
 		{
 			if (Member.DeclaringType.IsEnum)
-				return Renderer.ConvertToValidVHDLName(Member.DeclaringType.FullName + "." + Member.Name);
+				return Converter.Information.ToValidName(Member.DeclaringType.FullName + "." + Member.Name);
 
 			//TODO: Register a class-wide constant for this value?
 			if (IsArrayLengthReference)
@@ -86,24 +87,24 @@ namespace SME.Render.VHDL.ILConvert.AugmentedExpression
 			if (Member.DeclaringType.IsBusType() || IsConstantReference)
 			{
 				var rawname = Member.DeclaringType.FullName + "." + Member.Name;
-				if (rawname.StartsWith(Converter.ProcType.FullName + "/"))
+				if (rawname.StartsWith(Converter.ProcType.FullName + "/", StringComparison.Ordinal))
 					rawname = Member.DeclaringType.Name + "." + Member.Name;
-				else if (rawname.StartsWith(Converter.ProcType.Namespace + "."))
+				else if (rawname.StartsWith(Converter.ProcType.Namespace + ".", StringComparison.Ordinal))
 					rawname = rawname.Substring(Converter.ProcType.Namespace.Length + 1);
 				
-				return Renderer.ConvertToValidVHDLName(rawname);
+				return Converter.Information.ToValidName(rawname);
 			}
 			else
 			{				
 				if (Member.DeclaringType != Converter.ProcType)
 				{
 					if (Expression.Target is IdentifierExpression)
-						return Renderer.ConvertToValidVHDLName((Expression.Target as IdentifierExpression).Identifier) + "." + Renderer.ConvertToValidVHDLName(Member.Name);
+						return Converter.Information.ToValidName((Expression.Target as IdentifierExpression).Identifier) + "." + Converter.Information.ToValidName(Member.Name);
 
 					return Expression.ToString();
 				}
 
-				return Renderer.ConvertToValidVHDLName(Member.Name);
+				return Converter.Information.ToValidName(Member.Name);
 			}
 		}
 

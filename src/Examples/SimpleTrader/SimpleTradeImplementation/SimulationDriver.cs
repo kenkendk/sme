@@ -7,7 +7,7 @@ using SME.Render.VHDL;
 namespace SimpleTraderTester
 {
 	[ClockedProcess]
-	[VHDLIgnore]
+	[Ignore]
 	class SimulationDriver : SimulationProcess
 	{
 		[OutputBus]

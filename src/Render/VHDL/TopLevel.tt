@@ -6,6 +6,8 @@
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#@ import namespace="SME.Render.VHDL.ILConvert" #>
+<#@ import namespace="SME.Render.Transpiler" #>
+<#@ import namespace="SME.Render.Transpiler.ILConvert" #>
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
@@ -97,7 +99,7 @@ begin
     process(
 <# foreach(var bus in ClockedBusses) { #>
 <#     foreach (var signal in bus.Properties) { #>
-        <#= signal.ToVHDLName(TopAssembly, null) #>_next,
+        <#= signal.ToValidName(Information, TopAssembly, null) #>_next,
 <#     } #>
 <# } #>
         RST)
@@ -105,13 +107,13 @@ begin
         if RST = '1' then
 <# foreach(var bus in ClockedBusses) { #>
 <#     foreach (var signal in bus.Properties) { #>
-            <#= signal.ToVHDLName(TopAssembly, null) #> <= <#= DefaultValue(signal) #>;
+            <#= signal.ToValidName(Information, TopAssembly, null) #> <= <#= DefaultValue(signal) #>;
 <#     } #>
 <# } #>
         else
 <# foreach(var bus in ClockedBusses) { #>
 <#     foreach (var signal in bus.Properties) { #>
-            <#= signal.ToVHDLName(TopAssembly, null) #> <= <#= signal.ToVHDLName(TopAssembly, null) #>_next;
+            <#= signal.ToValidName(Information, TopAssembly, null) #> <= <#= signal.ToValidName(Information, TopAssembly, null) #>_next;
 <#     } #>
 
 <# } #>

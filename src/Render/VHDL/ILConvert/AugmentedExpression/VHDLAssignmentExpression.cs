@@ -1,12 +1,14 @@
 ﻿using System;
 using ICSharpCode.NRefactory.CSharp;
 using Mono.Cecil;
+using SME.Render.Transpiler;
+using SME.Render.Transpiler.ILConvert;
 
 namespace SME.Render.VHDL.ILConvert.AugmentedExpression
 {
 	public class VHDLAssignmentExpression : VHDLTypedExpression<AssignmentExpression>
 	{
-		public VHDLAssignmentExpression(Converter converter, AssignmentExpression expression)
+		public VHDLAssignmentExpression(VHDLConverter converter, AssignmentExpression expression)
 			: base(converter, expression)
 		{
 		}
@@ -63,15 +65,15 @@ namespace SME.Render.VHDL.ILConvert.AugmentedExpression
 				return "";
 
 			if (Left is VHDLMemberReferenceExpression)
-				Converter.RegisterSignalWrite(Left as VHDLMemberReferenceExpression, true);
+				Converter.RegisterSignalWrite((Left as VHDLMemberReferenceExpression).Member, true);
 			else if (Left is VHDLIndexerExpression && (Left as VHDLIndexerExpression).Target is VHDLMemberReferenceExpression)
-				Converter.RegisterSignalWrite((Left as VHDLIndexerExpression).Target as VHDLMemberReferenceExpression, true);
+				Converter.RegisterSignalWrite(((Left as VHDLIndexerExpression).Target as VHDLMemberReferenceExpression).Member, true);
 
 
 			if (Right is VHDLInvocationExpression && (Right as VHDLInvocationExpression).Target is VHDLMemberReferenceExpression)
 			{				
 				var member = ((VHDLMemberReferenceExpression)((VHDLInvocationExpression)Right).Target).Member;
-				if (member.Item.DeclaringType.IsSameTypeReference(Converter.ImportType<Process>()) || member.GetAttribute<VHDLIgnoreAttribute>() != null)
+				if (member.Item.DeclaringType.IsSameTypeReference(Converter.ImportType<Process>()) || member.GetAttribute<IgnoreAttribute>() != null)
 					return "-- " + Expression.ToString();
 			}
 
@@ -80,7 +82,7 @@ namespace SME.Render.VHDL.ILConvert.AugmentedExpression
 				var member = (Left as VHDLMemberReferenceExpression).Member;
 
 				// If the call is to the base class, or the target is an ignored field, suppress the output
-				if (member.Item.DeclaringType.IsSameTypeReference(Converter.ImportType<Process>()) || member.GetAttribute<VHDLIgnoreAttribute>() != null)
+				if (member.Item.DeclaringType.IsSameTypeReference(Converter.ImportType<Process>()) || member.GetAttribute<IgnoreAttribute>() != null)
 					return "-- " + Expression.ToString();
 			}
 
@@ -119,7 +121,7 @@ namespace SME.Render.VHDL.ILConvert.AugmentedExpression
 
 			// Optimizing output if we do not have VHDL conditionals, 
 			// but assign to a variable with the ternary operator
-			if (tmpright is VHDLConditionalExpression && !Converter.SUPPORTS_VHDL_2008)
+			if (tmpright is VHDLConditionalExpression && !VHDLConverter.SUPPORTS_VHDL_2008)
 			{
 				if (tmpright.Expression is ConditionalExpression)
 				{

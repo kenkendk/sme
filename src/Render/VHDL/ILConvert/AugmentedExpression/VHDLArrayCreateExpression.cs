@@ -2,13 +2,14 @@
 using System.Linq;
 using ICSharpCode.NRefactory.CSharp;
 using Mono.Cecil;
+using SME.Render.Transpiler.ILConvert;
 
 namespace SME.Render.VHDL.ILConvert.AugmentedExpression
 {
 	public class VHDLArrayCreateExpression : VHDLTypedExpression<ArrayCreateExpression>
 	{
 		private readonly MemberItem m_target;
-		public VHDLArrayCreateExpression(Converter converter, ArrayCreateExpression expression)
+		public VHDLArrayCreateExpression(VHDLConverter converter, ArrayCreateExpression expression)
 			: base(converter, expression)
 		{
 			var parent = expression.Parent as AssignmentExpression;

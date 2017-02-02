@@ -2,12 +2,14 @@
 using ICSharpCode.NRefactory.CSharp;
 using System.Linq;
 using Mono.Cecil;
+using SME.Render.Transpiler.ILConvert;
+using SME.Render.Transpiler;
 
 namespace SME.Render.VHDL.ILConvert.AugmentedExpression
 {
 	public class VHDLInvocationExpression : VHDLTypedExpression<InvocationExpression>
 	{
-		public VHDLInvocationExpression(Converter converter, InvocationExpression expression)
+		public VHDLInvocationExpression(VHDLConverter converter, InvocationExpression expression)
 			: base(converter, expression)
 		{
 		}
@@ -54,7 +56,7 @@ namespace SME.Render.VHDL.ILConvert.AugmentedExpression
 			var method = Converter.ResolveExpression(Expression.Target);
 			var args = Expression.Arguments.Zip((member.Item as MethodDefinition).Parameters, (a,b) => new { Parameter = b, Value = a }).Select(n => Converter.WrapConverted(Converter.ResolveExpression(n.Value), Converter.Information.VHDLTypes.GetVHDLType(n.Parameter)).ResolvedString).ToArray();
 
-			if (member.GetAttribute<VHDLCompileAttribute>() != null)
+			if (member.GetAttribute<CompileAttribute>() != null)
 			{
 				var mdef = member.Item as MethodDefinition;
 				Converter.RegisterMethodForCompilation(member.Item as MethodDefinition);

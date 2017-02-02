@@ -2,12 +2,13 @@
 using ICSharpCode.NRefactory.CSharp;
 using Mono.Cecil;
 using System.Linq;
+using SME.Render.Transpiler.ILConvert;
 
 namespace SME.Render.VHDL.ILConvert.AugmentedExpression
 {
 	public class VHDLCastExpression : VHDLTypedExpression<CastExpression>
 	{
-		public VHDLCastExpression(Converter converter, CastExpression expression)
+		public VHDLCastExpression(VHDLConverter converter, CastExpression expression)
 			: base(converter, expression)
 		{
 		}
@@ -30,7 +31,7 @@ namespace SME.Render.VHDL.ILConvert.AugmentedExpression
 			}
 		}
 
-		public static Expression RemoveUIntPtrCast(Converter converter, Expression child)
+		public static Expression RemoveUIntPtrCast(VHDLConverter converter, Expression child)
 		{
 			// This fixes a case where the NRefactory code injects a cast to UIntPtr, even though none is present in the code, nor the IL 
 			var wrap = false;
@@ -52,7 +53,7 @@ namespace SME.Render.VHDL.ILConvert.AugmentedExpression
 			return self;
 		}
 
-		public static Expression RemoveDoubleCast(Converter converter, VHDLCastExpression self, Expression child)
+		public static Expression RemoveDoubleCast(VHDLConverter converter, VHDLCastExpression self, Expression child)
 		{
 			// This fixes a case where the code has double castings that introduce unwanted parenthesis 
 

@@ -7,7 +7,7 @@ using SME.Render.VHDL;
 
 namespace AES256CBC
 {
-	[VHDLIgnore]
+	[Ignore]
 	//[ClockedProcess]
 	public class Tester : Process
 	{

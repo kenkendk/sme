@@ -4,7 +4,7 @@ using System.Linq;
 using ICSharpCode.NRefactory.CSharp;
 using System.Collections.Generic;
 
-namespace SME.Render.VHDL.ILConvert
+namespace SME.Render.Transpiler.ILConvert
 {
 	public static class HelperMethods
 	{
@@ -275,7 +275,7 @@ namespace SME.Render.VHDL.ILConvert
 			var inoutarg = (n.Attributes & ParameterAttributes.In) == ParameterAttributes.In && (n.Attributes & ParameterAttributes.Out) == ParameterAttributes.Out;
 			var inoutoverride = (n.Attributes & ParameterAttributes.Out) == ParameterAttributes.Out || (n.Attributes & ParameterAttributes.In) == ParameterAttributes.In;
 			var isarray = n.ParameterType.IsArray;
-			var argrange = n.GetAttribute<VHDLRangeAttribute>();
+			var argrange = n.GetAttribute<RangeAttribute>();
 			return inoutarg || (isarray && !inoutoverride) ? "inout" : (inarg ? "in" : "out");
 		}
 

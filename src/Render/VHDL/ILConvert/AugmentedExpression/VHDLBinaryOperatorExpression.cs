@@ -6,7 +6,7 @@ namespace SME.Render.VHDL.ILConvert.AugmentedExpression
 {
 	public class VHDLBinaryOperatorExpression : VHDLTypedExpression<BinaryOperatorExpression>
 	{
-		public VHDLBinaryOperatorExpression(Converter converter, BinaryOperatorExpression expression)
+		public VHDLBinaryOperatorExpression(VHDLConverter converter, BinaryOperatorExpression expression)
 			: base(converter, expression)
 		{
 		}

@@ -9,46 +9,39 @@ using Mono.Cecil;
 using System.Collections.Generic;
 using SME.Render.VHDL.ILConvert;
 using ICSharpCode.NRefactory.TypeSystem;
-using SME.Render.VHDL.ILConvert.AugmentedExpression;
 
-namespace SME.Render.VHDL.ILConvert
+namespace SME.Render.Transpiler.ILConvert
 {
-	public class Converter<T> : Converter
+	public abstract partial class Converter<TExpression, TTypeClass>
+		where TExpression : IAugmentedExpression
+		where TTypeClass : class
 	{
-		public Converter(GlobalInformation info, int indentation = 0)
-			: base(typeof(T), info, indentation)
-		{
-		}
-	}
+		protected readonly IndentedStringBuilder m_sb;
+		protected readonly TypeDefinition m_typedef;
+		protected readonly MethodDefinition m_methoddef;
+		protected readonly AssemblyDefinition m_asm;
+		protected readonly DecompilerContext m_context;
 
-	public partial class Converter
-	{
-		private readonly IndentedStringBuilder m_sb;
-		private readonly TypeDefinition m_typedef;
-		private readonly MethodDefinition m_methoddef;
-		private readonly AssemblyDefinition m_asm;
-		private readonly DecompilerContext m_context;
+		protected readonly List<string> m_imports = new List<string>();
+		protected readonly Dictionary<string, MemberItem> m_busVariableMap = new Dictionary<string, MemberItem>();
 
-		private readonly List<string> m_imports = new List<string>();
-		private readonly Dictionary<string, MemberItem> m_busVariableMap = new Dictionary<string, MemberItem>();
+		protected readonly Dictionary<string, Tuple<TypeReference, TTypeClass>> m_localVariables = new Dictionary<string, Tuple<TypeReference, TTypeClass>>();
+		protected readonly Dictionary<string, string> m_localRenames = new Dictionary<string, string>();
+		protected readonly Dictionary<string, TypeReference> m_classVariables = new Dictionary<string, TypeReference>();
+		protected readonly Dictionary<string, TypeReference> m_signals = new Dictionary<string, TypeReference>();
+		protected readonly Dictionary<string, object> m_fieldInitializers = new Dictionary<string, object>();
+		protected readonly Dictionary<PropertyDefinition, string> m_writtenSignals = new Dictionary<PropertyDefinition, string>();
+		protected readonly Dictionary<PropertyDefinition, string> m_simulationWrittenSignals = new Dictionary<PropertyDefinition, string>();
+		protected readonly Dictionary<MethodDefinition, Tuple<int, string[]>> m_compiledMethods = new Dictionary<MethodDefinition, Tuple<int, string[]>>();
 
-		private readonly Dictionary<string, Tuple<TypeReference, VHDLTypeDescriptor>> m_localVariables = new Dictionary<string, Tuple<TypeReference, VHDLTypeDescriptor>>();
-		private readonly Dictionary<string, string> m_localRenames = new Dictionary<string, string>();
-		private readonly Dictionary<string, TypeReference> m_classVariables = new Dictionary<string, TypeReference>();
-		private readonly Dictionary<string, TypeReference> m_signals = new Dictionary<string, TypeReference>();
-		private readonly Dictionary<string, object> m_fieldInitializers = new Dictionary<string, object>();
-		private readonly Dictionary<PropertyDefinition, string> m_writtenSignals = new Dictionary<PropertyDefinition, string>();
-		private readonly Dictionary<PropertyDefinition, string> m_simulationWrittenSignals = new Dictionary<PropertyDefinition, string>();
-		private readonly Dictionary<MethodDefinition, Tuple<int, string[]>> m_compiledMethods = new Dictionary<MethodDefinition, Tuple<int, string[]>>();
+		protected readonly GlobalInformation<TTypeClass> m_globalInformation;
 
-		private readonly GlobalInformation m_globalInformation;
-
-		public static bool SUPPORTS_VHDL_2008 = false;
-
-		private int m_varcount = 0;
+		protected int m_varcount = 0;
 
 		public TypeDefinition ProcType { get { return m_typedef; } }
-		public GlobalInformation Information { get { return m_globalInformation; } }
+		//public GlobalInformation<TTypeClass> Information { get { return m_globalInformation; } }
+		public MethodDefinition MethodDef { get { return m_methoddef; } }
+		public IDictionary<string, Tuple<TypeReference, TTypeClass>> LocalVariables { get { return m_localVariables; } }
 
 		public static TypeDefinition LoadType(Type t)
 		{			
@@ -64,17 +57,16 @@ namespace SME.Render.VHDL.ILConvert
 					select td).FirstOrDefault();
 		}
 
-		public Converter(IProcess process, GlobalInformation globalInformation, int indentation = 0)
+		public Converter(IProcess process, GlobalInformation<TTypeClass> globalInformation, int indentation = 0)
 			: this(process.GetType(), globalInformation, indentation)
 		{
 			
 		}
 
-		public Converter(Type process, GlobalInformation globalInformation, int indentation = 0)
+		public Converter(Type process, GlobalInformation<TTypeClass> globalInformation, int indentation = 0)
 			: this(LoadType(process), globalInformation, indentation)
 		{
 		}
-
 
 		public TypeReference ImportType<T>()
 		{
@@ -86,7 +78,7 @@ namespace SME.Render.VHDL.ILConvert
 			return m_asm.MainModule.Import(t);
 		}
 
-		public Converter(TypeDefinition process, GlobalInformation globalInformation, int indentation = 0)
+		public Converter(TypeDefinition process, GlobalInformation<TTypeClass> globalInformation, int indentation = 0)
 		{
 			m_globalInformation = globalInformation;
 
@@ -96,19 +88,15 @@ namespace SME.Render.VHDL.ILConvert
 			m_sb = new IndentedStringBuilder(indentation);
 			m_context = new DecompilerContext(m_typedef.Module) { CurrentType = m_typedef };
 
-
-
 			if (process == null)
 			{
-				m_sb.AppendFormat("-- Unable to find type {0} in {1}", process.FullName, process.Module.Assembly.Name.FullName);
-				m_sb.AppendLine();
+				m_sb.AppendLine(m_globalInformation.ToComment($"Unable to find type {process.FullName} in {process.Module.Assembly.Name.FullName}"));
 				return;
 			}
 
 			if (!process.IsAssignableFrom<SimpleProcess>())
 			{
-				m_sb.AppendFormat("-- Type {0} does not descend from {1}", process.FullName, typeof(SimpleProcess).FullName);
-				m_sb.AppendLine();
+				m_sb.AppendLine(m_globalInformation.ToComment($"Type {process.FullName} does not descend from {typeof(SimpleProcess).FullName}"));
 
 				/*
 				if (process.FullName == "BPUImplementation.MicrocodeDriver")
@@ -146,9 +134,9 @@ namespace SME.Render.VHDL.ILConvert
 				return;
 			}
 
-			if (process.GetAttribute<VHDLSuppressOutputAttribute>() != null)
+			if (process.GetAttribute<SuppressOutputAttribute>() != null)
 			{
-				m_sb.AppendLine("-- Supressed all VHDL Output");
+				m_sb.AppendLine(m_globalInformation.ToComment("Supressed all output"));
 				return;
 			}
 
@@ -160,15 +148,14 @@ namespace SME.Render.VHDL.ILConvert
 
 			if (m_methoddef == null)
 			{
-				m_sb.AppendFormat("-- Unable to find method OnTick in {0}", m_typedef.FullName);
-				m_sb.AppendLine();
+				m_sb.AppendLine(m_globalInformation.ToComment($"Unable to find method OnTick in {m_typedef.FullName}"));
 				return;
 			}
 				
 			DoParse();
 		}
 
-		private Converter(MethodDefinition m, GlobalInformation globalInformation, int indentation = 0)
+		private Converter(MethodDefinition m, GlobalInformation<TTypeClass> globalInformation, int indentation = 0)
 		{
 			m_globalInformation = globalInformation;
 			m_methoddef = m;
@@ -182,74 +169,33 @@ namespace SME.Render.VHDL.ILConvert
 
 			// Temporarily register parameters as local vars
 			foreach (var n in m_methoddef.Parameters)
-				m_localVariables[Renderer.ConvertToValidVHDLName(n.Name)] = new Tuple<TypeReference, VHDLTypeDescriptor>(n.ParameterType, m_globalInformation.VHDLTypes.GetVHDLType(n));
+				m_localVariables[globalInformation.ToValidName(n.Name)] = new Tuple<TypeReference, TTypeClass>(n.ParameterType, m_globalInformation.GetOutputType(n));
 
 			DoParse();
 
 			// Unregister parameters
 			foreach (var n in m_methoddef.Parameters)
-				m_localVariables.Remove(Renderer.ConvertToValidVHDLName(n.Name));
+				m_localVariables.Remove(globalInformation.ToValidName(n.Name));
 			
 			m_sb.Indentation -= 4;
 		}
 
-		private IEnumerable<string> VHDLMethod
+		private IEnumerable<string> Method
 		{
 			get
 			{
-				var method = Renderer.ConvertToValidVHDLName(m_methoddef.Name);
-
-				if (!m_methoddef.IsStatic)
-					throw new Exception("Non-static member functions are not yet supported");
-
-				var returntype = m_methoddef.ReturnType.FullName == "System.Void" ? null : Renderer.ConvertToValidVHDLName(Information.VHDLType(m_methoddef.ReturnType));
-
-				var margs = string.Join("; ",
-					from n in m_methoddef.Parameters
-					let inoutargstr = n.GetVHDLInOut()
-
-					select string.Format(
-						"{0}{1}: {2} {3}", 
-						string.Equals(inoutargstr, "in", StringComparison.OrdinalIgnoreCase) ? "constant " : "",
-						Renderer.ConvertToValidVHDLName(n.Name),
-						inoutargstr,
-						n.GetAttribute<VHDLRangeAttribute>() != null
-						? Renderer.ConvertToValidVHDLName(m_methoddef.Name + "_" + n.Name + "_type")
-						: Renderer.ConvertToValidVHDLName(m_globalInformation.VHDLTypes.GetVHDLType(n).ToString())
-					));
-
-				var indent = new string(' ', m_sb.Indentation);
-
-				if (string.IsNullOrWhiteSpace(returntype))
-					yield return string.Format("{0}procedure {1}({2}) {3} is", indent, method, margs, returntype);
-				else
-					yield return string.Format("{0}pure function {1}({2}) return {3} is", indent, method, margs, returntype);
-
-				foreach (var n in m_localVariables)
-				{
-					var decl = string.Format("{0}    variable {1}: {2}", indent, Renderer.ConvertToValidVHDLName(n.Key), n.Value.Item2.ToSafeVHDLName());
-					var assign = "";
-
-					yield return decl + assign + ";";
-				}
-
-				yield return indent + "begin";
-
-				foreach (var line in VHDLBody)
-					yield return line;
-
-				yield return string.Format("{0}end {1};", indent, method);
+				return RenderMethod(m_sb.Indentation);
 			}
 		}
 
-		public IEnumerable<string> VHDLBody { get { return m_sb.Lines; } }
+		public IEnumerable<string> Body { get { return m_sb.Lines; } }
 
 		public bool IsClockedProcess { get { return m_typedef.GetAttribute<ClockedProcessAttribute>() != null; } }
 
 		public IEnumerable<MemberItem> WrittenProperties(TypeDefinition t)
 		{
 			var lst = t.GetBusProperties();
-			if (t.IsBusType() && m_typedef.GetAttribute<VHDLSuppressBodyAttribute>() == null && m_typedef.GetAttribute<VHDLSuppressOutputAttribute>() == null && m_typedef.GetAttribute<VHDLIgnoreAttribute>() == null)
+			if (t.IsBusType() && m_typedef.GetAttribute<SuppressBodyAttribute>() == null && m_typedef.GetAttribute<SuppressOutputAttribute>() == null && m_typedef.GetAttribute<IgnoreAttribute>() == null)
 				lst = lst.Where(x => m_writtenSignals.ContainsKey(x.Item as PropertyDefinition) || m_simulationWrittenSignals.ContainsKey(x.Item as PropertyDefinition));
 			return lst;
 		}
@@ -380,41 +326,41 @@ namespace SME.Render.VHDL.ILConvert
 		}
 
 
-		public IEnumerable<string> VHDLVariables 
+		public IEnumerable<string> Variables 
 		{ 
 			get 
 			{ 
 				return  
 					(from n in m_classVariables
-						let member = new VHDLIdentifierExpression(this, new IdentifierExpression(n.Key)).ResolvedItem
-						where member.GetAttribute<VHDLIgnoreAttribute>() == null
+					 	let member = ResolveIdentifierItem(n.Key)
+						where member.GetAttribute<IgnoreAttribute>() == null
 							select string.Format("variable {0} : {1}", 
-					      	Renderer.ConvertToValidVHDLName(n.Key),
+					      	m_globalInformation.ToValidName(n.Key),
                             member.ItemType.IsArray 
-	                            ? Renderer.ConvertToValidVHDLName(member.Name + "_type")
+	                            ? m_globalInformation.ToValidName(member.Name + "_type")
 								: VHDLType(member.Item)))
 					
 					.Union(
 					from n in m_localVariables
 					  select string.Format("variable {0} : {1}", 
-						    Renderer.ConvertToValidVHDLName(n.Key), 
-							n.Value.Item2.ToSafeVHDLName())
+						    m_globalInformation.ToValidName(n.Key), 
+			                ToSafeName(n.Value.Item2))
 				);
 			} 
 		}
-		public IEnumerable<KeyValuePair<string, MemberItem>> VHDLSignals 
+		public IEnumerable<KeyValuePair<string, MemberItem>> Signals 
 		{ 
 			get 
 			{ 
 				return 
 					from n in m_signals
-					let member = new VHDLIdentifierExpression(this, new IdentifierExpression(n.Key)).ResolvedItem
-				 	where member.GetAttribute<VHDLIgnoreAttribute>() == null
+					let member = ResolveIdentifierItem(n.Key)
+				 	where member.GetAttribute<IgnoreAttribute>() == null
 						select new KeyValuePair<string, MemberItem>(n.Key, member);
 			} 
 		}
 
-		public IEnumerable<string> VHDLProcessResetStaments
+		public IEnumerable<string> ProcessResetStaments
 		{
 			get
 			{
@@ -439,7 +385,7 @@ namespace SME.Render.VHDL.ILConvert
 					}
 
 					foreach (var s in m_signals.Keys.Union(m_classVariables.Keys))
-						yield return ResolveMemberReset(new VHDLIdentifierExpression(this, new IdentifierExpression(s)).ResolvedItem, null);
+						yield return ResolveMemberReset(ResolveIdentifierItem(s), null);
 
 					foreach (var v in m_localVariables)
 						yield return ResolveResetStatement(new IdentifierExpression(v.Key));
@@ -469,75 +415,7 @@ namespace SME.Render.VHDL.ILConvert
 			}
 		}
 			
-		public IEnumerable<string> TypeDefinitions
-		{
-			get
-			{
-				foreach (var m in m_fieldInitializers)
-				{
-					var vhdlexpr = new VHDLIdentifierExpression(this, new IdentifierExpression(m.Key));
-					var resolvedItem = vhdlexpr.ResolvedItem;
-
-					var val = m.Value;
-
-					if (val is IMemberDefinition)
-					{
-						var mr = val as IMemberDefinition;
-						if (mr is FieldDefinition &&  m_globalInformation.Constants.ContainsKey(mr as FieldDefinition))
-							val = mr.ToVHDLName(mr.DeclaringType, null);
-						else if (mr.DeclaringType == m_typedef)
-							val = Renderer.ConvertToValidVHDLName(mr.Name);
-						else
-							val = mr.ToVHDLName(m_typedef, null);
-
-						val = string.Format("TO_INTEGER(UNSIGNED({0}))", val);
-					}
-
-					var vhdltype = resolvedItem.ItemType;
-
-					if (vhdltype.IsArray)
-					{
-						if (val is ArrayCreateExpression)
-							val = (val as ArrayCreateExpression).Initializer.Children.Count();
-
-						vhdltype = vhdltype.GetElementType();
-
-						var vlt = m_globalInformation.VHDLTypes.GetVHDLType(vhdltype);
-						if (vlt.IsSystemType)
-						{
-							yield return string.Format("subtype {0} is {2}_ARRAY(0 to {1} - 1)", Renderer.ConvertToValidVHDLName(m.Key + "_type"), val, vlt.ToString());
-						}
-						else
-						{
-							yield return string.Format("type {0} is array(0 to {1} - 1) of {2}", Renderer.ConvertToValidVHDLName(m.Key + "_type"), val, vlt.ToString());
-						}
-					}
-				}
-
-				foreach (var m in m_compiledMethods)
-				{
-					foreach (var p in m.Key.Parameters)
-					{
-						if (p.ParameterType.IsArray)
-						{
-							var argrange = p.GetAttribute<VHDLRangeAttribute>();
-							var vhdltype = m_globalInformation.VHDLTypes.GetVHDLType(p.ParameterType.GetElementType());
-							if (vhdltype.IsSystemType)
-							{
-								if (argrange != null)
-									yield return string.Format("subtype {0} is {3}_ARRAY({1} to {2} - 1)", Renderer.ConvertToValidVHDLName(m.Key.Name + "_" + p.Name + "_type"), argrange.ConstructorArguments.Count == 2 ? (int)argrange.ConstructorArguments.First().Value : 0, (int)argrange.ConstructorArguments.Last().Value, vhdltype.ToString());
-								continue;
-							}
-								
-							if (argrange == null)
-								yield return string.Format("type {0} is array(natural range <>) of {1}", Renderer.ConvertToValidVHDLName(m.Key.Name + "_" + p.Name + "_type"), vhdltype.ToString());
-							else
-								yield return string.Format("type {0} is array({1} to {2} - 1) of {3}", Renderer.ConvertToValidVHDLName(m.Key.Name + "_" + p.Name + "_type"), argrange.ConstructorArguments.Count == 2 ? (int)argrange.ConstructorArguments.First().Value : 0, (int)argrange.ConstructorArguments.Last().Value, vhdltype.ToString());
-						}
-					}
-				}
-			}
-		}
+		public IEnumerable<string> TypeDefinitions { get { return GetTypeDefinitions(); } }
 
 		public IEnumerable<IEnumerable<string>> Methods
 		{
@@ -572,38 +450,10 @@ namespace SME.Render.VHDL.ILConvert
 				return null;
 		}
 
-		public static string GetDefaultInitializer(GlobalInformation information, TypeReference vartype, IMemberDefinition member)
-		{
-			VHDLTypeDescriptor vhdltype;
-			TypeReference tr = vartype;
-
-			if (member != null)
-			{
-				vhdltype = information.VHDLTypes.GetVHDLType(member, tr);
-			}
-			else
-			{
-				vhdltype = information.VHDLTypes.GetVHDLType(tr);
-			}
-
-			var b = "{0}";
-			while (vhdltype.IsArray)
-			{
-				b = string.Format("(others => {0})", b);
-				vhdltype = information.VHDLTypes.GetByName(vhdltype.ElementName);
-			}
-
-			if (vhdltype.IsStdLogic)
-				return string.Format(b, "'0'");
-			else
-				return null;
-			// TODO: GetDefaultValue(vhdltype);
-		}
-
-		public string ResolveMemberReset(MemberItem signal, string varname)
+		public virtual object GetInitialValueForReset(MemberItem signal, string varname)
 		{
 			var itemtype = signal.ItemType;
-			var vhdltype = m_globalInformation.VHDLTypes.GetVHDLType(signal.Item, signal.ItemType);
+			var vhdltype = m_globalInformation.GetOutputType(signal.Item, signal.ItemType);
 			object initialvalue = null;
 
 			var attr = signal.GetAttribute<InitialValueAttribute>();
@@ -628,12 +478,13 @@ namespace SME.Render.VHDL.ILConvert
 					}
 				}
 			}
-			else if (m_fieldInitializers.ContainsKey(signal.Name) && (vhdltype.IsSystemType || vhdltype.IsArray))
-			{				
-				initialvalue = m_fieldInitializers[signal.Name];
-				if (vhdltype.IsArray && !(initialvalue is ArrayCreateExpression))
-					initialvalue = null;
-			}
+
+			return initialvalue;
+		}
+
+		public string ResolveMemberReset(MemberItem signal, string varname)
+		{
+			var initialvalue = GetInitialValueForReset(signal, varname);
 
 			var target = string.IsNullOrWhiteSpace(varname) ?
 				new MemberReferenceExpression(new ThisReferenceExpression(), signal.Name)
@@ -644,58 +495,6 @@ namespace SME.Render.VHDL.ILConvert
 			return ResolveResetStatement(target, initialvalue);
 		}
 
-		private string ResolveResetStatement(Expression target, object initialvalue = null)
-		{
-			var tg = ResolveExpression(target);
-			var itemtype = tg.ResolvedSourceType;
-			initialvalue = initialvalue ?? GetDefaultValue(itemtype);
-
-			if (initialvalue == null)
-			{
-				var assignoperator = IsVariableExpression(tg) ? ":=" : "<=";
-
-				string definit = null;
-				var tgtstr = tg.ResolvedString;
-				if (tg is VHDLMemberReferenceExpression)
-				{
-					var mr = (tg as VHDLMemberReferenceExpression).Member;
-					if (mr.GetAttribute<VHDLIgnoreAttribute>() != null)
-						return "-- " + target.ToString();
-
-
-					if (mr.DeclaringType.IsBusType() && !this.IsClockedProcess)
-					{
-						if (mr.GetAttribute<InternalBusAttribute>() != null)
-							tgtstr = "next_" + tg.ResolvedString;
-						else // if ((s.Left as MemberReferenceExpression).Target is IdentifierExpression)
-						{
-							mr = ResolveMemberReference((target as MemberReferenceExpression).Target);
-							if (mr.GetAttribute<InternalBusAttribute>() != null)
-								tgtstr = "next_" + tg.ResolvedString;
-						}
-					}
-
-					definit = GetDefaultInitializer(m_globalInformation, itemtype, mr.Item);
-				}
-
-				if (string.IsNullOrWhiteSpace(definit))
-					definit = GetDefaultInitializer(m_globalInformation, itemtype, null);
-
-				if (definit == null)
-					return string.Format("-- {0} {1} ???", tgtstr, assignoperator);
-				else
-					return string.Format("{0} {1} {2}", tgtstr, assignoperator, definit);
-			}
-			else
-			{
-				return ResolveExpression(
-					new AssignmentExpression(
-						target,
-						initialvalue is Expression ? (initialvalue as Expression).Clone() : new PrimitiveExpression(initialvalue)
-					)
-				).ResolvedString;
-			}
-		}
 
 		private void ParseConstructor()
 		{
@@ -765,16 +564,16 @@ namespace SME.Render.VHDL.ILConvert
 							{
 							}
 
-							m_sb.AppendLine(string.Format("-- Failed to parse constructor statement: {0}", s.ToString().Replace(Environment.NewLine, " ")));
+							m_sb.AppendLine(m_globalInformation.ToComment(string.Format("Failed to parse constructor statement: {0}", s.ToString().Replace(Environment.NewLine, " "))));
 						}
 						else if (s is InvocationExpression)
 						{
 							if (s.ToString() != "base..ctor ()")
-								m_sb.AppendLine(string.Format("-- Unparsed to parse constructor statement: {0}", s));
+								m_sb.AppendLine(m_globalInformation.ToComment(string.Format("-- Unparsed to parse constructor statement: {0}", s)));
 						}
 						else
 						{
-							m_sb.AppendLine(string.Format("-- Unparsed constructor statement: {0}", s));
+							m_sb.AppendLine(m_globalInformation.ToComment(string.Format("-- Unparsed constructor statement: {0}", s)));
 						}
 					}	
 				}
@@ -794,7 +593,7 @@ namespace SME.Render.VHDL.ILConvert
 						m_globalInformation.Constants[f] = statics[f.Name];
 					else if (f.IsStatic)
 						continue; // Don't care
-					else if (f.GetAttribute<VHDLSignalAttribute>() == null)
+					else if (f.GetAttribute<SignalAttribute>() == null)
 						m_classVariables.Add(f.Name, f.FieldType);
 					else
 						m_signals.Add(f.Name, f.FieldType);
@@ -814,20 +613,19 @@ namespace SME.Render.VHDL.ILConvert
 			var methodnode = sx.Members.Where(x => x is MethodDeclaration).FirstOrDefault() as MethodDeclaration;
 			if (methodnode == null)
 			{
-				m_sb.AppendFormat("-- Failed to locate body in {0}", m_typedef.FullName);
-				m_sb.AppendLine();
+				m_sb.AppendLine(m_globalInformation.ToComment(string.Format("-- Failed to locate body in {0}", m_typedef.FullName)));
 				return;
 			}
 				
 			//Console.WriteLine(methodnode);
 
-			if (m_typedef.GetAttribute<VHDLSuppressBodyAttribute>() != null)
+			if (m_typedef.GetAttribute<SuppressBodyAttribute>() != null)
 			{
-				m_sb.AppendLine("-- Supressed VHDL Body content");
+				m_sb.AppendLine(m_globalInformation.ToComment("-- Supressed VHDL Body content"));
 			}
 			else
 			{
-				this.ReturnVariable = m_methoddef.ReturnType.FullName == "System.Void" ? null : RegisterTemporaryVariable(m_methoddef.ReturnType);
+				ReturnVariable = m_methoddef.ReturnType.FullName == "System.Void" ? null : RegisterTemporaryVariable(m_methoddef.ReturnType);
 
 				foreach (var n in methodnode.Body.Children)
 					if (n.NodeType == NodeType.Statement)
@@ -856,8 +654,8 @@ namespace SME.Render.VHDL.ILConvert
 					var newmethods = m_compiledMethods.Where(x => x.Value == null).Select(x => x.Key).ToArray();
 					foreach (var c in newmethods)
 					{
-						var compiled = new Converter(c, m_globalInformation);
-						m_compiledMethods[c] = new Tuple<int, string[]>(0, compiled.VHDLMethod.ToArray());
+						var compiled = CreateNewConverter(c);
+						m_compiledMethods[c] = new Tuple<int, string[]>(0, compiled.Method.ToArray());
 
 						foreach (var m in compiled.m_compiledMethods)
 							if (!m_compiledMethods.ContainsKey(m.Key))
@@ -873,68 +671,14 @@ namespace SME.Render.VHDL.ILConvert
 
 		private IEnumerable<string> CompileMethod(MethodDefinition mdef)
 		{
-			return new Converter(mdef, m_globalInformation).VHDLMethod;
+			return CreateNewConverter(mdef).Method;
 		}
 
-		public IVHDLExpression ResolveExpression(Expression s)
+
+		public string RegisterTemporaryVariable(TypeReference vartype, TTypeClass vhdltype = null)
 		{
-			if (s is AssignmentExpression)
-				return new VHDLAssignmentExpression(this, s as AssignmentExpression);
-			else if (s is IdentifierExpression)
-				return new VHDLIdentifierExpression(this, s as IdentifierExpression);
-			else if (s is MemberReferenceExpression)
-				return new VHDLMemberReferenceExpression(this, s as MemberReferenceExpression);
-			else if (s is PrimitiveExpression)
-				return new VHDLPrimitiveExpression(this, s as PrimitiveExpression);
-			else if (s is BinaryOperatorExpression)
-				return new VHDLBinaryOperatorExpression(this, s as BinaryOperatorExpression);
-			else if (s is UnaryOperatorExpression)
-				return new VHDLUnaryOperatorExpression(this, s as UnaryOperatorExpression);
-			else if (s is IndexerExpression)
-				return new VHDLIndexerExpression(this, s as IndexerExpression);
-			else if (s is CastExpression)
-				return new VHDLCastExpression(this, s as CastExpression);
-			else if (s is ConditionalExpression)
-				return new VHDLConditionalExpression(this, s as ConditionalExpression);
-			else if (s is InvocationExpression)
-			{
-				var si = s as InvocationExpression;
-				var mt = si.Target as MemberReferenceExpression;
-
-				// Catch common translations
-				if (mt != null && (s as InvocationExpression).Arguments.Count == 1)
-				{
-					var mtm = new VHDLMemberReferenceExpression(this, mt);
-					if (mt.MemberName == "op_Implicit" || mt.MemberName == "op_Explicit")
-						return ResolveExpression(new CastExpression(AstType.Create(mtm.ResolvedSourceType.FullName), si.Arguments.First().Clone()));
-					else if (mt.MemberName == "op_Increment")
-						return ResolveExpression(new UnaryOperatorExpression(UnaryOperatorType.Increment, si.Arguments.First().Clone()));
-					else if (mt.MemberName == "op_Decrement")
-						return ResolveExpression(new UnaryOperatorExpression(UnaryOperatorType.Decrement, si.Arguments.First().Clone()));
-				}
-
-				return new VHDLInvocationExpression(this, s as InvocationExpression);
-			}
-			else if (s is ParenthesizedExpression)
-				return new VHDLParenthesizedExpression(this, s as ParenthesizedExpression);
-			else if (s is NullReferenceExpression)
-				return new VHDLEmptyExpression(this, s as NullReferenceExpression);
-			else if (s is ArrayCreateExpression)
-				return new VHDLArrayCreateExpression(this, s as ArrayCreateExpression);
-			else if (s is CheckedExpression)
-				return new VHDLCheckedExpression(this, s as CheckedExpression);
-			else if (s is UncheckedExpression)
-				return new VHDLUncheckedExpression(this, s as UncheckedExpression);
-			else if (s == Expression.Null)
-				return new VHDLEmptyExpression(this, null);
-			else
-				throw new Exception(string.Format("Unsupported expression: {0} ({1})", s, s.GetType().FullName));			
-		}
-
-		public string RegisterTemporaryVariable(TypeReference vartype, VHDLTypeDescriptor vhdltype = null)
-		{
-			var varname = Renderer.ConvertToValidVHDLName("tmpvar_" + (m_varcount++).ToString());
-			m_localVariables.Add(varname, new Tuple<TypeReference, VHDLTypeDescriptor>(vartype, vhdltype ?? m_globalInformation.VHDLTypes.GetVHDLType(vartype)));
+			var varname = m_globalInformation.ToValidName("tmpvar_" + (m_varcount++).ToString());
+			m_localVariables.Add(varname, new Tuple<TypeReference, TTypeClass>(vartype, vhdltype ?? m_globalInformation.GetOutputType(vartype)));
 
 			return varname;
 		}
@@ -955,10 +699,8 @@ namespace SME.Render.VHDL.ILConvert
 			m_sb.PrependLine(line, args);
 		}
 
-		public void RegisterSignalWrite(VHDLMemberReferenceExpression item, bool isSimulation)
+		public void RegisterSignalWrite(MemberItem member, bool isSimulation)
 		{
-			var member = item.Member;
-
 			// Register as written
 			if (member.Type == MemberItem.MemberType.Property && member.DeclaringType.IsBusType())
 			{
@@ -968,221 +710,7 @@ namespace SME.Render.VHDL.ILConvert
 					m_writtenSignals[member.Item as PropertyDefinition] = string.Empty;
 			}
 		}
-
-		public IVHDLExpression WrapConverted(IVHDLExpression s, VHDLTypeDescriptor target, bool fromCast = false)
-		{
-			if (s.VHDLType == target)
-				return s;
-
-			if (!s.VHDLType.IsStdLogicVector && !s.VHDLType.IsUnsigned && !s.VHDLType.IsSigned && s.VHDLType.IsArray && target.IsArray && m_globalInformation.VHDLTypes.GetByName(s.VHDLType.ElementName) == m_globalInformation.VHDLTypes.GetByName(target.ElementName))
-				return s;
-
-			var targetlengthstr = string.IsNullOrWhiteSpace(target.Alias) ? target.Length.ToString() : target.Alias + "'length";
-
-			if (target == VHDLTypes.SYSTEM_BOOL)
-			{
-				if (string.Equals("STD_LOGIC", s.VHDLType.Name, StringComparison.OrdinalIgnoreCase))
-					return s;
-				
-				if (s.VHDLType.IsNumeric || s.VHDLType.IsStdLogicVector)
-				{
-					return ResolveExpression(
-						new BinaryOperatorExpression(
-							s.Expression.Clone(),
-							BinaryOperatorType.InEquality,
-							new PrimitiveExpression(0)
-						)
-					);	
-				}
-				else if (s.VHDLType == VHDLTypes.BOOL)
-				{
-					return ResolveExpression(
-						new ConditionalExpression(
-							s.Expression.Clone(),
-							new PrimitiveExpression(true),
-							new PrimitiveExpression(false)
-						)
-					);	
-
-				}
-				else
-					throw new Exception(string.Format("Unexpected conversion from {0} to {1}", s.VHDLType, target));
-			}
-			else if (s.VHDLType == VHDLTypes.INTEGER && (target.IsStdLogicVector || target.IsNumeric))
-			{
-				if (target.IsSigned && target.IsNumeric)
-					return new VHDLConvertedExpression(s, target, string.Format("TO_SIGNED({0}, {1})", "{0}", targetlengthstr));
-				else if (target.IsUnsigned && target.IsNumeric)
-					return new VHDLConvertedExpression(s, target, string.Format("TO_UNSIGNED({0}, {1})", "{0}", targetlengthstr));
-				else if (target.IsStdLogicVector)
-					return new VHDLConvertedExpression(s, target, string.Format("STD_LOGIC_VECTOR(TO_UNSIGNED({0}, {1}))", "{0}", targetlengthstr));
-				else
-					throw new Exception(string.Format("Unexpected conversion from {0} to {1}", s.VHDLType, target));
-			}
-			else if (target.IsNumeric)
-			{
-				if (s.VHDLType.IsStdLogicVector || s.VHDLType.IsSigned || s.VHDLType.IsUnsigned)
-				{
-					var str = "{0}";
-					var resized = false;
-					string tmpvar = null;
-					if (target.Length != s.VHDLType.Length)
-					{
-						if (s.VHDLType.IsVHDLSigned || s.VHDLType.IsVHDLUnsigned)
-						{
-							resized = true;
-							str = string.Format("resize({0}, {1})", str, targetlengthstr);
-						}
-						else if (target.Length > s.VHDLType.Length)
-						{
-							// This must be a variable as bit concatenation is only allowed in assignment statements:
-							// http://stackoverflow.com/questions/209458/concatenating-bits-in-vhdl
-
-							// TODO: Not correct ResolvedSourceType, should be target
-							tmpvar = RegisterTemporaryVariable(s.ResolvedSourceType, m_globalInformation.VHDLTypes.GetStdLogicVector(target.Length));	
-							m_sb.PrependLine(string.Format("{0} := \"{1}\" & {2};", tmpvar, new string('0', target.Length - s.VHDLType.Length), s.ResolvedString));
-
-							resized = true;
-						}
-					}
-
-					if (s.VHDLType.IsVHDLSigned != target.IsSigned || s.VHDLType.IsVHDLUnsigned != target.IsUnsigned)
-						str = string.Format("{1}({0})", str, target.IsSigned ? "SIGNED" : "UNSIGNED");
-
-					if (target.Length != s.VHDLType.Length && !resized)
-						str = string.Format("resize({0}, {1})", str, targetlengthstr);
-
-					if (tmpvar != null)
-						s = ResolveExpression(new IdentifierExpression(tmpvar));
-					return new VHDLConvertedExpression(WrapIfComposite(s), target, str);
-				}
-
-
-				/*if (s.VHDLType.IsStdLogicVector && target.IsSigned)
-					return new VHDLConvertedExpression(s, target, "SIGNED({0})");
-				else if (s.VHDLType.IsStdLogicVector && target.IsUnsigned)
-					return new VHDLConvertedExpression(s, target, "UNSIGNED({0})");
-				else*/
-					throw new Exception(string.Format("Unexpected conversion from {0} to {1}", s.VHDLType, target));
-			}
-			else if (target.IsStdLogicVector)
-			{
-				if (s.VHDLType.IsNumeric)
-				{
-					if (s.VHDLType.Length == target.Length)
-						return new VHDLConvertedExpression(s, target, "STD_LOGIC_VECTOR({0})");
-					else
-					{
-						if (!fromCast)
-							Console.WriteLine("WARN: Incompatible array lengths, from {0} to {1}", s.VHDLType, target);
-							//throw new Exception(string.Format("Incompatible array lengths, from {0} to {1}", s.VHDLType, target));
-
-						return new VHDLConvertedExpression(s, target, string.Format("STD_LOGIC_VECTOR(resize({0}, {1}))", "{0}", targetlengthstr));
-					}
-						
-				}
-				else if (s.VHDLType.IsStdLogicVector)
-				{
-					if (target.Length == s.VHDLType.Length)
-						return new VHDLConvertedExpression(s, target, "{0}");
-
-					if (!fromCast)
-						Console.WriteLine("WARN: Incompatible array lengths, from {0} to {1}", s.VHDLType, target);
-						//throw new Exception(string.Format("Incompatible array lengths, from {0} to {1}", s.VHDLType, target));
-
-					if (target.Length < s.VHDLType.Length)
-					{
-						// We cannot select bits from a typecast
-						// TODO: Dirty to rely on the string, there are likely other cases that need the same wrapping
-						if (s.ResolvedString.StartsWith("STD_LOGIC_VECTOR(", StringComparison.OrdinalIgnoreCase))
-						{
-							var tmp = RegisterTemporaryVariable(s.ResolvedSourceType, s.VHDLType);	
-							m_sb.PrependLine(string.Format("{0} := {1};", tmp, s.ResolvedString));
-
-							return new VHDLConvertedExpression(ResolveExpression(new IdentifierExpression(tmp)), target, string.Format("{0}({1} downto 0)", "{0}", target.Length - 1));
-						}
-
-						return new VHDLConvertedExpression(s, target, string.Format("{0}({1} downto 0)", "{0}", target.Length - 1));
-
-					}
-					else if (s.VHDLType.IsSigned)
-						return new VHDLConvertedExpression(s, target, string.Format("STD_LOGIC_VECTOR(resize(SIGNED({0}), {1}))", "{0}", targetlengthstr));
-					else if (s.VHDLType.IsUnsigned)
-						return new VHDLConvertedExpression(s, target, string.Format("STD_LOGIC_VECTOR(resize(UNSIGNED({0}), {1}))", "{0}", targetlengthstr));
-					else
-					{
-						// TODO: Not correct ResolvedSourceType, should be target
-						var tmp = RegisterTemporaryVariable(s.ResolvedSourceType, target);	
-						m_sb.PrependLine(string.Format("{0} := \"{1}\" & {2};", tmp, new string('0', target.Length - s.VHDLType.Length), s.ResolvedString));
-
-						return ResolveExpression(new IdentifierExpression(tmp));
-
-						// This must be a variable as bit concatenation is only allowed in assignment statements:
-						// http://stackoverflow.com/questions/209458/concatenating-bits-in-vhdl
-
-						//return new VHDLConvertedExpression(s, target, string.Format("\"{1}\" & {0}", "{0}", new string('0', target.Length - s.VHDLType.Length)), true);
-
-					}
-
-				}
-				else if (s.VHDLType.IsSigned || s.VHDLType.IsUnsigned)
-				{
-					if (target.Length == s.VHDLType.Length)
-						return new VHDLConvertedExpression(s, target, string.Format("STD_LOGIC_VECTOR({0})", "{0}"));
-					else
-						return new VHDLConvertedExpression(s, target, string.Format("STD_LOGIC_VECTOR(resize({0}, {1}))", "{0}", targetlengthstr));
-				}
-				else
-					throw new Exception(string.Format("Unexpected conversion from {0} to {1}", s.VHDLType.Name, target.Name));
-			}
-			else if (target == VHDLTypes.INTEGER && (s.VHDLType.IsStdLogicVector || s.VHDLType.IsNumeric))
-			{
-				if (s.VHDLType.IsNumeric)
-					return new VHDLConvertedExpression(s, target, "TO_INTEGER({0})");
-
-				if (s.VHDLType.IsSigned)
-					return new VHDLConvertedExpression(s, target, "TO_INTEGER(SIGNED({0}))");
-				else
-					return new VHDLConvertedExpression(s, target, "TO_INTEGER(UNSIGNED({0}))");
-			}
-			else if (target == VHDLTypes.BOOL && s.VHDLType == VHDLTypes.SYSTEM_BOOL)
-			{
-				return new VHDLConvertedExpression(s, target, "{0} = '1'", true);
-			}
-			else if ((target.IsSigned || target.IsUnsigned) && s.VHDLType.IsStdLogicVector)
-			{
-				if (target.Length == s.VHDLType.Length)
-					return new VHDLConvertedExpression(s, target, string.Format("{1}({0})", "{0}", target.IsSigned ? "SIGNED" : "UNSIGNED"));
-				else
-					return new VHDLConvertedExpression(s, target, string.Format("resize({1}({0}), {2})", "{0}", target.IsSigned ? "SIGNED" : "UNSIGNED", targetlengthstr));
-			}
-			else if ((target.IsSigned || target.IsUnsigned) && s.VHDLType == VHDLTypes.INTEGER)
-			{
-				if (target.IsSigned)
-					return new VHDLConvertedExpression(s, target, string.Format("TO_SIGNED({0}, {1})", "{0}", target.Length));
-				else if (target.IsUnsigned)
-					return new VHDLConvertedExpression(s, target, string.Format("TO_UNSIGNED({0}, {1})", "{0}", target.Length));
-				else
-					throw new Exception("Unexpected case");
-			}
-			else
-				throw new Exception(string.Format("Unexpected target type: {0} for source: {1}", target, s.VHDLType));
-		}
-
-		public IVHDLExpression WrapIfComposite(IVHDLExpression s)
-		{
-			if (s is VHDLIndexerExpression || s is VHDLMemberReferenceExpression || s is VHDLPrimitiveExpression || s is VHDLIdentifierExpression || s is VHDLIndexerExpression || s is VHDLInvocationExpression || s is VHDLParenthesizedExpression || s is VHDLCastExpression)
-				return s;
-			else
-			{
-				if (s is VHDLConvertedExpression && !(s as VHDLConvertedExpression).NeedsWrapping)
-					return s;
-				
-				return new VHDLConvertedExpression(s, s.VHDLType, "({0})");
-			}
-		}
-
-			
+					
 		public TypeDefinition ResolveType(AstType t)
 		{
 			if (t is MemberType)
@@ -1276,10 +804,10 @@ namespace SME.Render.VHDL.ILConvert
 			return signedtypes.Any(x => x.FullName == tr.FullName || tr.IsAssignableFrom(x));
 		}
 
-		public Tuple<MemberItem, VHDLTypeDescriptor, string> ResolveLocalOrClassIdentifier(string name, Expression exp)
+		public Tuple<MemberItem, TTypeClass, string> ResolveLocalOrClassIdentifier(string name, Expression exp)
 		{
 			MemberItem res = null;
-			VHDLTypeDescriptor vhdl = null;
+			TTypeClass vhdl = null;
 
 			if (m_localRenames.ContainsKey(name))
 				name = m_localRenames[name];
@@ -1297,9 +825,9 @@ namespace SME.Render.VHDL.ILConvert
 				throw new Exception(string.Format("Unable to resolve identifier: {0} in {1}", name, exp));
 
 			if (vhdl == null)
-				vhdl = m_globalInformation.VHDLTypes.GetVHDLType(res.Item, res.ItemType);
+				vhdl = m_globalInformation.GetOutputType(res.Item, res.ItemType);
 
-			return new Tuple<MemberItem, VHDLTypeDescriptor, string>(res, vhdl, name);
+			return new Tuple<MemberItem, TTypeClass, string>(res, vhdl, name);
 		}
 			
 			
@@ -1363,10 +891,10 @@ namespace SME.Render.VHDL.ILConvert
 		{
 			var processname = m_typedef.FullName;
 			var asmname = m_typedef.Module.Assembly.Name.Name + '.';
-			if (processname.StartsWith(asmname))
+			if (processname.StartsWith(asmname, StringComparison.Ordinal))
 				processname = processname.Substring(asmname.Length);
 
-			return Renderer.ConvertToValidVHDLName(processname);
+			return m_globalInformation.ToValidName(processname);
 		}
 
 		public MemberItem ResolveMemberReferenceToVariable(MemberReferenceExpression s)
@@ -1514,36 +1042,39 @@ namespace SME.Render.VHDL.ILConvert
 			return m_globalInformation.StoreType(new MemberItem(s, lookup, sourcetype.Resolve()));
 		}
 
-		public bool IsVariableExpression(IVHDLExpression s)
-		{
-			var name = s is VHDLIdentifierExpression ? (s as VHDLIdentifierExpression).Identifier : null;
-			if (name != null && m_localRenames.ContainsKey(name))
-				name = m_localRenames[name];
 
-			if (s is VHDLMemberReferenceExpression && (s as VHDLMemberReferenceExpression).Member.IsVariable)
-				return true;
-			else if (s is VHDLIdentifierExpression && (m_localVariables.ContainsKey(name) || m_classVariables.ContainsKey(name)))
-				return true;
-			else if (s is VHDLIndexerExpression)
-				return IsVariableExpression((s as VHDLIndexerExpression).Target);
-			else
-				return false;
+		/// <summary>
+		/// Renders a method in the target language.
+		/// </summary>
+		/// <returns>The lines in the method.</returns>
+		/// <param name="indentation">The indentation to use.</param>
+		public abstract IEnumerable<string> RenderMethod(int indentation);
+
+		public abstract TExpression WrapConverted(TExpression s, TTypeClass target, bool fromCast = false);
+
+		public abstract TExpression WrapIfComposite(TExpression s);
+
+		public abstract TExpression ResolveExpression(Expression s);
+
+		public abstract MemberItem ResolveIdentifierItem(string name);
+
+		public abstract string ToSafeName(TTypeClass type);
+
+		public abstract string GetDefaultInitializer(TypeReference vartype, IMemberDefinition member);
+
+		public abstract string ResolveResetStatement(Expression target, object initialvalue = null);
+
+		public virtual Converter<TExpression, TTypeClass> CreateNewConverter(MethodDefinition method)
+		{
+			return (Converter<TExpression, TTypeClass>)Activator.CreateInstance(this.GetType(), method, m_globalInformation);
 		}
 
-		public bool IsConstantReference(VHDLMemberReferenceExpression s)
-		{
-			if (s.Member.Item is FieldDefinition)
-			{
-				var ft = s.Member.Item as FieldDefinition;
-				if (m_globalInformation.Constants.ContainsKey(ft))
-					return true;
+		public abstract bool IsVariableExpression(TExpression s);
 
-				if (ft.IsLiteral || (ft.IsStatic && ft.IsInitOnly))
-					return true;
-			}
+		public abstract bool IsConstantReference(TExpression m);
 
-			return false;
-		}
+		public abstract IEnumerable<string> GetTypeDefinitions();
+
 	}
 }
 

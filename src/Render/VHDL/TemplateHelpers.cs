@@ -4,14 +4,15 @@ using System.Collections.Generic;
 using SME.Render.VHDL.ILConvert;
 using Mono.Cecil;
 using ICSharpCode.NRefactory.CSharp;
+using SME.Render.Transpiler.ILConvert;
 
 namespace SME.Render.VHDL
 {
 	public partial class Entity
 	{
-		public Converter il;
+		public VHDLConverter il;
 		public IProcess proc;
-		public Entity(Converter il, IProcess proc) 
+		public Entity(VHDLConverter il, IProcess proc) 
 		{ 
 			this.il = il; 
 			this.proc = proc;
@@ -53,13 +54,13 @@ namespace SME.Render.VHDL
 
 	public partial class TopLevel
 	{
-		private readonly IEnumerable<Converter> Processes;
-		private readonly GlobalInformation Information;
+		private readonly IEnumerable<VHDLConverter> Processes;
+		private readonly VHDLGlobalInformation Information;
 
 		public string AssemblyNameToVHDL { get { return Renderer.ConvertToValidVHDLName(Processes.First().ProcType.Module.Assembly.Name.Name); } }
 		public TypeDefinition TopAssembly { get; private set; }
 
-		public TopLevel(GlobalInformation information, IEnumerable<Converter> processes) 
+		public TopLevel(VHDLGlobalInformation information, IEnumerable<VHDLConverter> processes) 
 		{ 
 			Processes = processes;
 			Information = information;
@@ -74,7 +75,7 @@ namespace SME.Render.VHDL
 			public MemberItem Signal;
 		}
 
-		private IEnumerable<PortMapEntry> ListSignals(Converter p)
+		private IEnumerable<PortMapEntry> ListSignals(VHDLConverter p)
 		{
 			return (
 				from bus in p.InputOnlyBusses
@@ -119,7 +120,7 @@ namespace SME.Render.VHDL
 
 			if (def == null)
 			{
-				def = Converter.GetDefaultValue(pd.PropertyType);
+				def = VHDLConverter.GetDefaultValue(pd.PropertyType);
 				if (def != null)
 				{
 					var proptype = Information.VHDLType(pd); 
@@ -130,7 +131,7 @@ namespace SME.Render.VHDL
 			}
 
 			if (def == null)
-				def = Converter.GetDefaultInitializer(Information, pd.PropertyType, pd);
+				def = VHDLConverter.GetDefaultInitializer(Information, pd.PropertyType, pd);
 
 			if (def == null)
 				return "???";
@@ -184,13 +185,13 @@ namespace SME.Render.VHDL
 		private int ClockPulseLength { get { return ClockLength / 2; } }
 		private int ClockLength { get; set; }
 
-		public TracefileTester(GlobalInformation info, IEnumerable<IProcess> processes, IEnumerable<CSVTracer.SignalEntry> props, string tracefilename = "../filename.csv", int clocklength = 10)
+		public TracefileTester(VHDLGlobalInformation info, IEnumerable<IProcess> processes, IEnumerable<Transpiler.CSVTracer.SignalEntry> props, string tracefilename = "../filename.csv", int clocklength = 10)
 		{
 			var all_split = new List<Signal>();
 			var all = new List<Signal>();
 			foreach (var s in props)
 			{
-				var name = Renderer.BusSignalNameToVHDLName(null, s.Property);
+				var name = info.BusSignalToValidName(null, s.Property);
 				
 				var tn =
 					s.Property.PropertyType.IsFixedArrayType()
@@ -231,7 +232,7 @@ namespace SME.Render.VHDL
 			AllSignals = all;
 			AllSignalSplit = all_split;
 
-			VHDLName = Renderer.AssemblyNameToVHDLName(processes);
+			VHDLName = info.AssemblyToValidName(processes);
 			Tracefile = tracefilename;
 			ClockLength = clocklength;
 		}
@@ -239,14 +240,14 @@ namespace SME.Render.VHDL
 
 	public partial class CustomTypes
 	{
-		private GlobalInformation Information { get; set; }
+		private VHDLGlobalInformation Information { get; set; }
 
 		public class CustomType
 		{
 			public readonly TypeDefinition m_typedef;
-			private readonly GlobalInformation m_info;
+			private readonly VHDLGlobalInformation m_info;
 
-			public CustomType(TypeDefinition typedef, TypeReference tr, VHDLTypeDescriptor vhdltype, GlobalInformation info)
+			public CustomType(TypeDefinition typedef, TypeReference tr, VHDLTypeDescriptor vhdltype, VHDLGlobalInformation info)
 			{
 				m_typedef = typedef;
 				m_info = info;
@@ -287,7 +288,7 @@ namespace SME.Render.VHDL
 
 		}
 
-		public CustomTypes(GlobalInformation info)
+		public CustomTypes(VHDLGlobalInformation info)
 		{
 			Information = info;
 		}
@@ -367,7 +368,7 @@ namespace SME.Render.VHDL
 							nx = Information.Constants[n];
 						else
 						{
-							var lk = new ILConvert.Converter(n.DeclaringType, Information).ParseStaticConstructor();
+							var lk = new ILConvert.VHDLConverter(n.DeclaringType, Information).ParseStaticConstructor();
 							nx = lk[n.Name];
 						}
 
@@ -400,7 +401,7 @@ namespace SME.Render.VHDL
 							{
 								var arc = nx as ArrayCreateExpression;
 
-								var varname = n.ToVHDLName(n.DeclaringType, null);
+								var varname = n.ToValidName(Information, n.DeclaringType, null);
 								var eltype = n.FieldType.GetElementType();
 								var vhdl_eltype = Information.VHDLType(eltype);
 
@@ -427,11 +428,11 @@ namespace SME.Render.VHDL
 							}
 							else
 							{
-								yield return string.Format("constant {0}: {1} := {2}({3})", n.ToVHDLName(n.DeclaringType, null), Information.VHDLType(n), convm, nx);
+								yield return string.Format("constant {0}: {1} := {2}({3})", n.ToValidName(Information, n.DeclaringType, null), Information.VHDLType(n), convm, nx);
 							}
 						}
 						else
-							yield return string.Format("-- constant {0}: {1} := ???", n.ToVHDLName(n.DeclaringType, null), Information.VHDLType(n));
+							yield return string.Format("-- constant {0}: {1} := ???", n.ToValidName(Information, n.DeclaringType, null), Information.VHDLType(n));
 					}
 
 				}

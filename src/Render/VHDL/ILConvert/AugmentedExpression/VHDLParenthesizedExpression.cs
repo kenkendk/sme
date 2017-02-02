@@ -5,7 +5,7 @@ namespace SME.Render.VHDL.ILConvert.AugmentedExpression
 {
 	public class VHDLParenthesizedExpression : VHDLTypedExpression<ParenthesizedExpression>
 	{
-		public VHDLParenthesizedExpression(Converter converter, ParenthesizedExpression expression)
+		public VHDLParenthesizedExpression(VHDLConverter converter, ParenthesizedExpression expression)
 			: base(converter, expression)
 		{
 		}

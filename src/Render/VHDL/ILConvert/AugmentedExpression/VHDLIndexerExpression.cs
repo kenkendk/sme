@@ -2,12 +2,13 @@
 using ICSharpCode.NRefactory.CSharp;
 using System.Linq;
 using Mono.Cecil;
+using SME.Render.Transpiler.ILConvert;
 
 namespace SME.Render.VHDL.ILConvert.AugmentedExpression
 {
 	public class VHDLIndexerExpression : VHDLTypedExpression<IndexerExpression>
 	{
-		public VHDLIndexerExpression(Converter converter, IndexerExpression expression)
+		public VHDLIndexerExpression(VHDLConverter converter, IndexerExpression expression)
 			: base(converter, expression)
 		{
 		}

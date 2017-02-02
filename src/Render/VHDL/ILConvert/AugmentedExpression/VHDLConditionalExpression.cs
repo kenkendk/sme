@@ -6,7 +6,7 @@ namespace SME.Render.VHDL.ILConvert.AugmentedExpression
 {
 	public class VHDLConditionalExpression : VHDLTypedExpression<ConditionalExpression>
 	{
-		public VHDLConditionalExpression(Converter converter, ConditionalExpression expression)
+		public VHDLConditionalExpression(VHDLConverter converter, ConditionalExpression expression)
 			: base(converter, expression)
 		{
 		}
@@ -70,7 +70,7 @@ namespace SME.Render.VHDL.ILConvert.AugmentedExpression
 
 		protected override string ResolveToString()
 		{
-			if (Converter.SUPPORTS_VHDL_2008)
+			if (VHDLConverter.SUPPORTS_VHDL_2008)
 			{
 				// Simpler with a conditional
 				return string.Format("{0} when {1} else {2}", True.ResolvedString, Condition.ResolvedString, False.ResolvedString);
