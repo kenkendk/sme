@@ -4,7 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using SME;
 
-namespace SimpleTraderTester
+namespace SimpleTrader
 {
 	class MainClass
 	{

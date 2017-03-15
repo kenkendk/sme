@@ -1,7 +1,7 @@
 ﻿using System;
 using SME;
 
-namespace SimpleTradeImplementation
+namespace SimpleTrader
 {
 	[ClockedProcess]
 	public class TraderCoreEWMA : SimpleProcess

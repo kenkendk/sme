@@ -1,7 +1,7 @@
 ﻿using System;
 using SME;
 
-namespace SimpleTradeImplementation
+namespace SimpleTrader
 {
 	/// <summary>
 	/// The top-level bus that communicates input values

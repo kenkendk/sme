@@ -3,14 +3,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using SME;
 
-namespace SimpleTraderTester
+namespace SimpleTrader
 {
 	[ClockedProcess]
 	[Ignore]
 	class SimulationDriver : SimulationProcess
 	{
 		[OutputBus]
-		private SimpleTradeImplementation.ITraderInput Output;
+		private SimpleTrader.ITraderInput Output;
 
 		public override async Task Run()
 		{

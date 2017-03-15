@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SimpleTraderTester
+namespace SimpleTrader
 {
 	/// <summary>
 	/// Generates a list of random uint values, simulating a trade sequence

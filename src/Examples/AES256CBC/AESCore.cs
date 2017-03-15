@@ -2,7 +2,7 @@
 using SME;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
-using SME.Render.VHDL;
+using SME.VHDL;
 
 namespace AES256CBC
 {
