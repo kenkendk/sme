@@ -240,7 +240,7 @@ namespace SME
 			{
 				n.Item.SignalInputReady().Wait();
 
-				foreach (var b in n.Item.InputBusses)
+				foreach (var b in n.Item.InputBusses.Where(x => !n.Item.OutputBusses.Contains(x)))
 					if (b.AnyStaged())
 						throw new Exception(string.Format("Process {0} has written the input bus {1}", n.Item.GetType().FullName, b.BusType.FullName));
 

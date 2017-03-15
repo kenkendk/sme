@@ -114,7 +114,7 @@ namespace SME
 					let attrIn = n.GetCustomAttributes(typeof(InputBusAttribute), true).FirstOrDefault()
 					let attrOut = n.GetCustomAttributes(typeof(OutputBusAttribute), true).FirstOrDefault()
 					let attrInternal = n.GetCustomAttributes(typeof(InternalBusAttribute), true).FirstOrDefault()
-					where attrInternal == null && (attrOut != null || (attrIn == attrOut))
+					where attrInternal == null && (attrOut != null || ((attrIn == null) == (attrOut == null)))
 					select (IBus)n.GetValue(this)).ToArray();
 
 			var inputList = 
@@ -122,7 +122,7 @@ namespace SME
 					let attrIn = n.GetCustomAttributes(typeof(InputBusAttribute), true).FirstOrDefault()
 					let attrOut = n.GetCustomAttributes(typeof(OutputBusAttribute), true).FirstOrDefault()
 					let attrInternal = n.GetCustomAttributes(typeof(InternalBusAttribute), true).FirstOrDefault()
-					where attrInternal == null && (attrOut == null || (attrIn == attrOut))
+				    where attrInternal == null && (attrOut == null || ((attrIn == null)  == (attrOut == null)))
 					select (IBus)n.GetValue(this)).ToArray();
 
 			if (((IProcess)this).IsClockedProcess)
