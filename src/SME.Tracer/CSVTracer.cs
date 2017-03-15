@@ -169,9 +169,6 @@ namespace SME.Tracer
 
 		public virtual string BusSignalToName(SignalEntry p)
 		{
-			if (p.IsInternal)
-				return ConvertToValidName(p.Property.DeclaringType.DeclaringType.Name + "." + p.Property.DeclaringType.Name + "." + p.Property.Name);
-			else	
-				return ConvertToValidName(p.Property.DeclaringType.Name + "." + p.Property.Name);
+			return p.SortKey;
 		}
 	}}

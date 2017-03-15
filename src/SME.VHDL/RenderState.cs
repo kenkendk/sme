@@ -637,7 +637,7 @@ namespace SME.VHDL
 		{
 			get
 			{
-				return Network.Busses.SelectMany(x => x.Signals);
+				return Network.Busses.Where(x => !x.IsInternal).SelectMany(x => x.Signals);
 			}
 		}
 
@@ -677,8 +677,8 @@ namespace SME.VHDL
 		{
 			var bus = (AST.Bus)s.Parent;
 			var st = bus.SourceType;
-			var name = st.Name + "." + s.Name; //((System.Reflection.MemberInfo)s.Source).Name;
-			if (bus.IsInternal)
+			var name = st.Name + "." + s.Name;
+			if (st.DeclaringType != null)
 				name = st.DeclaringType.Name + "." + name;
 			
 			return name;
@@ -694,8 +694,7 @@ namespace SME.VHDL
 				return Network.Busses
 					          .Where(x => x.IsTopLevelInput)
 					          .SelectMany(x => x.Signals)
-					          .OrderBy(x => x.Parent.Name)
-							  .ThenBy(x => x.Name)
+					          .OrderBy(x => TestBenchSignalName(x))
 					          .SelectMany(x => SplitArray(x));
 			}
 		}
@@ -710,8 +709,7 @@ namespace SME.VHDL
 				return Network.Busses
 					          .Where(x => !x.IsTopLevelInput && !x.IsInternal)
 					          .SelectMany(x => x.Signals)
-							  .OrderBy(x => x.Parent.Name)
-							  .ThenBy(x => x.Name)
+							  .OrderBy(x => TestBenchSignalName(x))
 							  .SelectMany(x => SplitArray(x));
 			}
 		}

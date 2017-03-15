@@ -23,18 +23,25 @@ use work.CUSTOM_TYPES.ALL;
 entity <#= Network.Name #> is
   port(
 
-<# foreach (var bus in Network.Busses) { 
+<# foreach (var bus in Network.Busses.Where(x => x.IsTopLevelInput || x.IsTopLevelOutput)) {
 	var signaltype = "inout"; 
 
 	if (bus.IsTopLevelInput && !bus.IsTopLevelOutput)
 		signaltype = "in";
 	else if (bus.IsTopLevelOutput && !bus.IsTopLevelInput)
 		signaltype = "out";
-
 	#>
-    -- Bus <#= bus.Name #> signals
+    -- Top-level bus <#= bus.Name #> signals
 <#     foreach (var signal in bus.Signals) { #>
     <#= bus.Name #>_<#= signal.Name #>: <#= signaltype #> <#= RS.VHDLWrappedTypeName(signal) #>;
+<#     } #>
+
+<# } #>
+
+<# foreach (var bus in Network.Busses.Where(x => !x.IsInternal)) { #>
+    -- Bus <#= bus.Name #> signals
+<#     foreach (var signal in bus.Signals) { #>
+    Internal_<#= bus.Name #>_<#= signal.Name #>: inout <#= RS.VHDLWrappedTypeName(signal) #>;
 <#     } #>
 
 <# } #>
@@ -83,7 +90,7 @@ begin
 #>
         -- <#= type #> bus <#= bus.Name #>
 <#		  foreach(var signal in bus.Signals) { #>
-        <#= bus.Name #>_<#= signal.Name #> => <#= bus.Name #>_<#= signal.Name #><#= bus.IsClocked && p.OutputBusses.Contains(bus) ? "_next" : ""#>,
+        <#= bus.Name #>_<#= signal.Name #> => Internal_<#= bus.Name #>_<#= signal.Name #><#= bus.IsClocked && p.OutputBusses.Contains(bus) ? "_next" : ""#>,
 <#        } #>
 
 <#    } #>
@@ -92,6 +99,38 @@ begin
     );
 
 <# } #>
+
+    -- Propagate all input signals
+    process(
+<# foreach(var bus in Network.Busses.Where(x => x.IsTopLevelInput)) { #>
+<#     foreach (var signal in bus.Signals) { #>
+        <#= bus.Name #>_<#= signal.Name #>,
+<#     } #>
+<# } #>
+        RST)
+    begin
+<# foreach(var bus in Network.Busses.Where(x => x.IsTopLevelInput)) { #>
+<#     foreach (var signal in bus.Signals) { #>
+        Internal_<#= bus.Name #>_<#= signal.Name #> <= <#= bus.Name #>_<#= signal.Name #>;
+<#     } #>
+<# } #>
+    end process;
+
+    -- Propagate all output signals
+    process(
+<# foreach(var bus in Network.Busses.Where(x => x.IsTopLevelOutput)) { #>
+<#     foreach (var signal in bus.Signals) { #>
+        Internal_<#= bus.Name #>_<#= signal.Name #>,
+<#     } #>
+<# } #>
+        RST)
+    begin
+<# foreach(var bus in Network.Busses.Where(x => x.IsTopLevelOutput)) { #>
+<#     foreach (var signal in bus.Signals) { #>
+        <#= bus.Name #>_<#= signal.Name #> <= Internal_<#= bus.Name #>_<#= signal.Name #>;
+<#     } #>
+<# } #>
+    end process;
 
     -- Propagate all clocked processes
     process(

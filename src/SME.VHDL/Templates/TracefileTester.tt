@@ -43,7 +43,7 @@ begin
   port map (
 
 <#foreach (var signal in RS.AllSignals) { #>
-    <#= signal.Parent.Name#>_<#=signal.Name#> => <#= signal.Parent.Name#>_<#=signal.Name#>,
+    <#= (((AST.Bus)signal.Parent).IsTopLevelInput || ((AST.Bus)signal.Parent).IsTopLevelOutput) ? "" : "Internal_" #><#= signal.Parent.Name#>_<#=signal.Name#> => <#= signal.Parent.Name#>_<#=signal.Name#>,
 <# } #>
 
     RST => RESET,
