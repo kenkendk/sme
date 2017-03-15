@@ -152,6 +152,9 @@ namespace SME.VHDL
 			var targetTypeLib = Path.Combine(TargetFolder, "Types_" + Naming.AssemblyNameToFileName(Processes));
 			File.WriteAllText(targetTypeLib, MergeUserData(new CustomTypes(this).TransformText(), targetTypeLib));
 
+			var exportTypeLib = Path.Combine(TargetFolder, "Export_" + Naming.AssemblyNameToFileName(Processes));
+			File.WriteAllText(exportTypeLib, MergeUserData(new ExportTopLevel(this).TransformText(), exportTypeLib));
+
 			File.WriteAllText(Path.Combine(TargetFolder, "Makefile"), new GHDL_Makefile(this).TransformText());
 
 			foreach (var p in Network.Processes)

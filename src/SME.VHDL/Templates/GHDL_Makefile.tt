@@ -3,7 +3,8 @@
 <#@ import namespace="System.Linq" #>
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
-all: test
+all: test export
+export: <#= RS.Network.Name #>_export
 
 # Use a temporary folder for compiled stuff
 WORKDIR=work
@@ -41,6 +42,9 @@ $(WORKDIR)/TestBench_<#= RS.Network.Name #>.o: TestBench_<#= RS.Network.Name #>.
 
 <#= RS.Network.Name.ToLower() #>_tb: $(WORKDIR)/TestBench_<#= RS.Network.Name #>.o
 	ghdl -e --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) <#= RS.Network.Name #>_tb
+
+<#= RS.Network.Name #>_export: $(WORKDIR)/<#= RS.Network.Name #>.o
+	ghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) Export_<#= RS.Network.Name #>.vhdl
 
 test: <#= RS.Network.Name.ToLower() #>_tb
 	./<#= RS.Network.Name.ToLower() #>_tb

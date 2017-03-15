@@ -1,0 +1,85 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="SME" #>
+<#@ import namespace="SME.VHDL" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="SME.AST" #>
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+-- library SYSTEM_TYPES;
+use work.SYSTEM_TYPES.ALL;
+
+-- library CUSTOM_TYPES;
+use work.CUSTOM_TYPES.ALL;
+
+-- User defined packages here
+-- #### USER-DATA-IMPORTS-START
+-- #### USER-DATA-IMPORTS-END
+
+entity <#= Network.Name #>_export is
+  port(
+
+<# foreach (var bus in Network.Busses.Where(x => x.IsTopLevelInput || x.IsTopLevelOutput)) {
+	var signaltype = "inout"; 
+
+	if (bus.IsTopLevelInput && !bus.IsTopLevelOutput)
+		signaltype = "in";
+	else if (bus.IsTopLevelOutput && !bus.IsTopLevelInput)
+		signaltype = "out";
+	#>
+    -- Top-level bus <#= bus.Name #> signals
+<#     foreach (var signal in bus.Signals) { #>
+    <#= bus.Name #>_<#= signal.Name #>: <#= signaltype #> <#= RS.VHDLWrappedTypeName(signal) #>;
+<#     } #>
+
+<# } #>
+
+    -- User defined signals here
+    -- #### USER-DATA-ENTITYSIGNALS-START
+    -- #### USER-DATA-ENTITYSIGNALS-END
+
+	-- Reset signal
+    RST : in Std_logic;
+
+	-- Clock signal
+	CLK : in Std_logic
+  );
+end <#= Network.Name #>_export;
+
+architecture RTL of <#= Network.Name #>_export is  
+  -- User defined signals here
+  -- #### USER-DATA-SIGNALS-START
+  -- #### USER-DATA-SIGNALS-END
+
+begin
+
+    -- Entity <#= Network.Name #> signals
+    <#= Network.Name #>: entity work.<#= Network.Name #>
+    port map (
+<#    foreach (var bus in Network.Busses.Where(x => x.IsTopLevelInput || x.IsTopLevelOutput)) { 
+	      var type = "Input/Output"; 
+
+	      if (bus.IsTopLevelInput && !bus.IsTopLevelOutput)
+		      type = "Input";
+	      else if (bus.IsTopLevelOutput && !bus.IsTopLevelInput)
+		      type = "Output";
+	#>
+        -- <#= type #> bus <#= bus.Name #>
+<#		  foreach(var signal in bus.Signals) { #>
+        <#= bus.Name #>_<#= signal.Name #> => <#= bus.Name #>_<#= signal.Name #>,
+<#        } #>
+
+<#    } #>
+        RST => RST,
+        CLK => CLK
+    );
+
+-- User defined processes here
+-- #### USER-DATA-CODE-START
+-- #### USER-DATA-CODE-END
+
+end RTL;

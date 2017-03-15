@@ -103,6 +103,9 @@
     <Compile Include="Templates\GHDL_Makefile.cs">
       <DependentUpon>GHDL_Makefile.tt</DependentUpon>
     </Compile>
+    <Compile Include="Templates\ExportTopLevel.cs">
+      <DependentUpon>ExportTopLevel.tt</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -133,6 +136,10 @@
     <None Include="Templates\GHDL_Makefile.tt">
       <Generator>TextTemplatingFilePreprocessor</Generator>
       <LastGenOutput>GHDL_Makefile.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\ExportTopLevel.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>ExportTopLevel.cs</LastGenOutput>
     </None>
   </ItemGroup>
   <ItemGroup>

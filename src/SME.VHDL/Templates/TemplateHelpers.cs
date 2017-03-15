@@ -17,6 +17,18 @@ namespace SME.VHDL.Templates
 		}
 	}
 
+	public partial class ExportTopLevel
+	{
+		public readonly Network Network;
+		public readonly RenderState RS;
+
+		public ExportTopLevel(RenderState renderer)
+		{
+			RS = renderer;
+			Network = renderer.Network;
+		}
+	}
+
 	public partial class CustomTypes
 	{
 		public readonly Network Network;
