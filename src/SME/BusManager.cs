@@ -18,7 +18,7 @@ namespace SME
 		/// <summary>
 		/// List of all internal buss instances
 		/// </summary>
-		private static List<IBus> m_internalBusses = new List<IBus>();
+		private static Dictionary<string, IBus> m_internalBusses = new Dictionary<string, IBus>();
 
 		/// <summary>
 		/// Lookup table of all clocked busses
@@ -37,8 +37,12 @@ namespace SME
 		{
 			if (internalBus)
 			{
+				var name = t.FullName;
+				if (m_internalBusses.ContainsKey(name))
+					return m_internalBusses[name];
+
 				var bus = Bus.CreateFromInterface(t, clock);
-				m_internalBusses.Add(bus);
+				m_internalBusses.Add(name, bus);
 				return bus;
 			}
 			else
@@ -85,7 +89,7 @@ namespace SME
 		/// Gets all internal busses
 		/// </summary>
 		/// <value>The busses.</value>
-		public static IEnumerable<IBus> InternalBusses { get { return m_internalBusses; } }
+		public static IEnumerable<IBus> InternalBusses { get { return m_internalBusses.Values; } }
 
 		/// <summary>
 		/// Gets the bus for a specific interface type and namespace.

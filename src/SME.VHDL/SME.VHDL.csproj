@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{E796351B-EB59-4686-9B54-DE4A284E0433}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>SME.VHDL</RootNamespace>
+    <AssemblyName>SME.VHDL</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="CommandLine">
+      <HintPath>..\packages\CommandLineParser.2.1.1-beta\lib\net45\CommandLine.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil">
+      <HintPath>..\packages\Mono.Cecil.0.9.6.4\lib\net45\Mono.Cecil.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Mdb">
+      <HintPath>..\packages\Mono.Cecil.0.9.6.4\lib\net45\Mono.Cecil.Mdb.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Pdb">
+      <HintPath>..\packages\Mono.Cecil.0.9.6.4\lib\net45\Mono.Cecil.Pdb.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Rocks">
+      <HintPath>..\packages\Mono.Cecil.0.9.6.4\lib\net45\Mono.Cecil.Rocks.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.NRefactory.Cecil">
+      <HintPath>..\packages\ICSharpCode.NRefactory.5.5.1\lib\Net40\ICSharpCode.NRefactory.Cecil.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.NRefactory.CSharp">
+      <HintPath>..\packages\ICSharpCode.NRefactory.5.5.1\lib\Net40\ICSharpCode.NRefactory.CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.NRefactory">
+      <HintPath>..\packages\ICSharpCode.NRefactory.5.5.1\lib\Net40\ICSharpCode.NRefactory.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.NRefactory.Xml">
+      <HintPath>..\packages\ICSharpCode.NRefactory.5.5.1\lib\Net40\ICSharpCode.NRefactory.Xml.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="ExtensionMethods.cs" />
+    <Compile Include="Naming.cs" />
+    <Compile Include="RenderState.cs" />
+    <Compile Include="VHDLType.cs" />
+    <Compile Include="IComponent.cs" />
+    <Compile Include="Attributes.cs" />
+    <Compile Include="Templates\CustomTypes.cs">
+      <DependentUpon>CustomTypes.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Templates\TopLevel.cs">
+      <DependentUpon>TopLevel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Templates\TracefileTester.cs">
+      <DependentUpon>TracefileTester.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Templates\TemplateHelpers.cs" />
+    <Compile Include="Templates\Entity.cs">
+      <DependentUpon>Entity.tt</DependentUpon>
+    </Compile>
+    <Compile Include="RenderStateProcess.cs" />
+    <Compile Include="OperatorHelpers.cs" />
+    <Compile Include="BitTypes.cs">
+      <DependentUpon>BitTypes.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Transformations\WrapIfComposite.cs" />
+    <Compile Include="Transformations\IASTTransform.cs" />
+    <Compile Include="Transformations\RemoveUIntPtrCast.cs" />
+    <Compile Include="Transformations\RemoveDoubleCast.cs" />
+    <Compile Include="Transformations\BuildTransformations.cs" />
+    <Compile Include="Transformations\AssignVhdlType.cs" />
+    <Compile Include="Transformations\AssignNames.cs" />
+    <Compile Include="Transformations\CheckCommonIssues.cs" />
+    <Compile Include="VHDLTypeConversion.cs" />
+    <Compile Include="CustomNodes\ConversionExpression.cs" />
+    <Compile Include="Transformations\InjectTypeConversions.cs" />
+    <Compile Include="Transformations\RemoveConditionals.cs" />
+    <Compile Include="Transformations\RemoveExtraParenthesis.cs" />
+    <Compile Include="Transformations\RewriteChainedAssignments.cs" />
+    <Compile Include="Transformations\RemoveSelfAssignments.cs" />
+    <Compile Include="Transformations\RewireCompositeAssignment.cs" />
+    <Compile Include="Transformations\FixForLoopIncrements.cs" />
+    <Compile Include="Templates\GHDL_Makefile.cs">
+      <DependentUpon>GHDL_Makefile.tt</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="Templates\CustomTypes.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>CustomTypes.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\system_types.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>system_types.vhdl</LastGenOutput>
+    </None>
+    <None Include="Templates\TopLevel.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>TopLevel.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\TracefileTester.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>TracefileTester.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Entity.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Entity.cs</LastGenOutput>
+    </None>
+    <None Include="BitTypes.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>BitTypes.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\GHDL_Makefile.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>GHDL_Makefile.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SME\SME.csproj">
+      <Project>{CDC88908-F9B8-40CB-B746-86C8A4C1871B}</Project>
+      <Name>SME</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SME.AST\SME.AST.csproj">
+      <Project>{B1C84452-3FA5-4176-BAB6-EF27DE76D452}</Project>
+      <Name>SME.AST</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Templates\system_types.vhdl">
+      <DependentUpon>system_types.tt</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Templates\csv_util.vhdl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Templates\" />
+    <Folder Include="Transformations\" />
+    <Folder Include="CustomNodes\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+</Project>

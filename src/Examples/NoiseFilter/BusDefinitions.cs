@@ -1,6 +1,5 @@
 ﻿using System;
 using SME;
-using SME.Render.VHDL;
 using static NoiseFilter.StencilConfig;
 
 namespace NoiseFilter

@@ -11,6 +11,7 @@ namespace Tester
 		{
 			new Simulation()
 				.BuildCSVFile()
+				.BuildVHDL()
 				.Run(typeof(MainClass).Assembly);
 
 

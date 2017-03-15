@@ -1,0 +1,178 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension=".vhdl" #>
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+package SYSTEM_TYPES is
+    subtype T_SYSTEM_BOOL   is std_logic;
+
+    subtype T_SYSTEM_UINT8  is std_logic_vector(7 downto 0);
+    subtype T_SYSTEM_UINT16 is std_logic_vector(15 downto 0);
+    subtype T_SYSTEM_UINT32 is std_logic_vector(31 downto 0);
+    subtype T_SYSTEM_UINT64 is std_logic_vector(63 downto 0);
+
+    subtype T_SYSTEM_INT8  is std_logic_vector(7 downto 0);
+    subtype T_SYSTEM_INT16 is std_logic_vector(15 downto 0);
+    subtype T_SYSTEM_INT32 is std_logic_vector(31 downto 0);
+    subtype T_SYSTEM_INT64 is std_logic_vector(63 downto 0);
+
+    type T_SYSTEM_UINT8_ARRAY  is array(natural range <>) of T_SYSTEM_UINT8;
+    type T_SYSTEM_UINT16_ARRAY is array(natural range <>) of T_SYSTEM_UINT16;
+    type T_SYSTEM_UINT32_ARRAY is array(natural range <>) of T_SYSTEM_UINT32;
+    type T_SYSTEM_UINT64_ARRAY is array(natural range <>) of T_SYSTEM_UINT64;
+
+    type T_SYSTEM_INT8_ARRAY  is array(natural range <>) of T_SYSTEM_INT8;
+    type T_SYSTEM_INT16_ARRAY is array(natural range <>) of T_SYSTEM_INT16;
+    type T_SYSTEM_INT32_ARRAY is array(natural range <>) of T_SYSTEM_INT32;
+    type T_SYSTEM_INT64_ARRAY is array(natural range <>) of T_SYSTEM_INT64;
+
+
+<# for(var i = 1; i < 64; i++) { 
+       if (i == 8 || i == 16 || i == 32 || i == 64)
+           continue;
+#>
+    subtype T_UINT<#= i #> is std_logic_vector(<#= i - 1 #> downto 0);
+<#}#>
+
+<# for(var i = 1; i < 64; i++) { 
+       if (i == 8 || i == 16 || i == 32 || i == 64)
+           continue;
+#>
+    subtype T_INT<#= i #> is std_logic_vector(<#= i - 1 #> downto 0);
+<#}#>
+
+<# for(var i = 1; i < 64; i++) { 
+       if (i == 8 || i == 16 || i == 32 || i == 64)
+           continue;
+#>
+    type T_UINT<#= i #>_ARRAY is array(natural range <>) of T_UINT<#= i #>;
+<#}#>
+
+<# for(var i = 1; i < 64; i++) { 
+       if (i == 8 || i == 16 || i == 32 || i == 64)
+           continue;
+#>
+    type T_INT<#= i #>_ARRAY is array(natural range <>) of T_INT<#= i #>;
+<#}#>
+
+
+<# for(var i = 1; i < 64; i++) { 
+       if (i == 8 || i == 16 || i == 32 || i == 64)
+           continue;
+#>
+    -- converts an integer to UINT<#= i #>
+    pure function UINT<#= i #>(v: integer) return T_UINT<#= i #>;
+
+<#}#>
+
+<# for(var i = 1; i < 64; i++) { 
+       if (i == 8 || i == 16 || i == 32 || i == 64)
+           continue;
+#>
+    -- converts an integer to INT<#= i #>
+    pure function INT<#= i #>(v: integer) return T_INT<#= i #>;
+
+<#}#>
+
+    -- converts an integer to SYSTEM_UINT8
+    pure function SYSTEM_UINT8(v: integer) return T_SYSTEM_UINT8;
+    -- converts an integer to SYSTEM_UINT16
+    pure function SYSTEM_UINT16(v: integer) return T_SYSTEM_UINT16;
+    -- converts an integer to SYSTEM_UINT32
+    pure function SYSTEM_UINT32(v: integer) return T_SYSTEM_UINT32;
+    -- converts an integer to SYSTEM_UINT64
+    pure function SYSTEM_UINT64(v: integer) return T_SYSTEM_UINT64;
+
+    -- converts an integer to SYSTEM_INT8
+    pure function SYSTEM_INT8(v: integer) return T_SYSTEM_INT8;
+    -- converts an integer to SYSTEM_INT16
+    pure function SYSTEM_INT16(v: integer) return T_SYSTEM_INT16;
+    -- converts an integer to SYSTEM_INT32
+    pure function SYSTEM_INT32(v: integer) return T_SYSTEM_INT32;
+    -- converts an integer to SYSTEM_INT64
+    pure function SYSTEM_INT64(v: integer) return T_SYSTEM_INT64;
+
+
+end SYSTEM_TYPES;
+
+
+package body SYSTEM_TYPES is
+
+<# for(var i = 1; i < 64; i++) { 
+       if (i == 8 || i == 16 || i == 32 || i == 64)
+           continue;
+#>
+    -- converts an integer to UINT<#= i #>
+    pure function UINT<#= i #>(v: integer) return T_UINT<#= i #> is
+    begin
+        return STD_LOGIC_VECTOR(TO_UNSIGNED(v, T_UINT<#= i #>'length));
+    end UINT<#= i #>;
+<#}#>
+
+<# for(var i = 1; i < 64; i++) { 
+       if (i == 8 || i == 16 || i == 32 || i == 64)
+           continue;
+#>
+    -- converts an integer to INT<#= i #>
+    pure function INT<#= i #>(v: integer) return T_INT<#= i #> is
+    begin
+        return STD_LOGIC_VECTOR(TO_SIGNED(v, T_INT<#= i #>'length));
+    end INT<#= i #>;
+<#}#>
+
+    -- converts an integer to SYSTEM_UINT8
+    pure function SYSTEM_UINT8(v: integer) return T_SYSTEM_UINT8 is
+    begin
+        return STD_LOGIC_VECTOR(TO_UNSIGNED(v, T_SYSTEM_UINT8'length));
+    end SYSTEM_UINT8;
+
+    -- converts an integer to SYSTEM_UINT16
+    pure function SYSTEM_UINT16(v: integer) return T_SYSTEM_UINT16 is
+    begin
+        return STD_LOGIC_VECTOR(TO_UNSIGNED(v, T_SYSTEM_UINT16'length));
+    end SYSTEM_UINT16;
+
+    -- converts an integer to SYSTEM_UINT32
+    pure function SYSTEM_UINT32(v: integer) return T_SYSTEM_UINT32 is
+    begin
+        return STD_LOGIC_VECTOR(TO_UNSIGNED(v, T_SYSTEM_UINT32'length));
+    end SYSTEM_UINT32;
+
+    -- converts an integer to SYSTEM_UINT64
+    pure function SYSTEM_UINT64(v: integer) return T_SYSTEM_UINT64 is
+    begin
+        return STD_LOGIC_VECTOR(TO_UNSIGNED(v, T_SYSTEM_UINT64'length));
+    end SYSTEM_UINT64;
+
+    -- converts an integer to SYSTEM_INT8
+    pure function SYSTEM_INT8(v: integer) return T_SYSTEM_INT8 is
+    begin
+        return STD_LOGIC_VECTOR(TO_SIGNED(v, T_SYSTEM_INT8'length));
+    end SYSTEM_INT8;
+
+    -- converts an integer to SYSTEM_INT16
+    pure function SYSTEM_INT16(v: integer) return T_SYSTEM_INT16 is
+    begin
+        return STD_LOGIC_VECTOR(TO_SIGNED(v, T_SYSTEM_INT16'length));
+    end SYSTEM_INT16;
+
+    -- converts an integer to SYSTEM_INT32
+    pure function SYSTEM_INT32(v: integer) return T_SYSTEM_INT32 is
+    begin
+        return STD_LOGIC_VECTOR(TO_SIGNED(v, T_SYSTEM_INT32'length));
+    end SYSTEM_INT32;
+
+    -- converts an integer to SYSTEM_INT64
+    pure function SYSTEM_INT64(v: integer) return T_SYSTEM_INT64 is
+    begin
+        return STD_LOGIC_VECTOR(TO_SIGNED(v, T_SYSTEM_INT64'length));
+    end SYSTEM_INT64;
+
+end SYSTEM_TYPES;
+

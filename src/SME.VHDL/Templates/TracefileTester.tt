@@ -1,0 +1,156 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="SME.VHDL" #>
+<#@ import namespace="SME.AST" #>
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+use STD.TEXTIO.all;
+use IEEE.STD_LOGIC_TEXTIO.all;
+
+--library SYSTEM_TYPES;
+use work.SYSTEM_TYPES.ALL;
+
+--library CUSTOM_TYPES;
+use work.CUSTOM_TYPES.ALL;
+
+use work.csv_util.all;
+
+-- User defined packages here
+-- #### USER-DATA-IMPORTS-START
+-- #### USER-DATA-IMPORTS-END
+
+entity <#= Network.Name #>_tb is
+end;
+
+architecture TestBench of <#= Network.Name #>_tb is
+
+  signal CLOCK : Std_logic;
+  signal StopClock : BOOLEAN;
+  signal RESET : Std_logic;
+
+<# foreach (var signal in RS.AllSignals) { #>
+  signal <#= signal.Parent.Name#>_<#= signal.Name#> : <#= RS.VHDLWrappedTypeName(signal) #>;
+<# } #>
+
+begin
+
+  uut: entity work.<#= Network.Name #>
+  port map (
+
+<#foreach (var signal in RS.AllSignals) { #>
+    <#= signal.Parent.Name#>_<#=signal.Name#> => <#= signal.Parent.Name#>_<#=signal.Name#>,
+<# } #>
+
+    RST => RESET,
+    CLK => CLOCK
+  );
+
+  Clk: process
+  begin
+    while not StopClock loop
+      CLOCK <= '1';
+      wait for <#= RS.ClockPulseLength #> NS;
+      CLOCK <= '0';
+      wait for <#= RS.ClockPulseLength #> NS;
+    end loop;
+    wait;
+  end process;
+
+
+TraceFileTester: process
+    file F: TEXT;
+    variable L: LINE;
+    variable Status: FILE_OPEN_STATUS;
+    constant filename : string := "<#= RS.CSVTracename #>";
+    variable clockcycle : integer := 0;
+    variable tmp : CSV_LINE_T;
+    variable readOK : boolean;
+    variable fieldno : integer := 0;
+
+begin
+
+    -- #### USER-DATA-CONDITONING-START
+    -- #### USER-DATA-CONDITONING-END
+
+    FILE_OPEN(Status, F, filename, READ_MODE);
+    if Status /= OPEN_OK then
+        report "Failed to open CSV trace file" severity Failure;
+    else
+        -- Verify the headers
+        READLINE(F, L);
+
+        fieldno := 0;
+<# foreach (var signal in RS.DriverSignals.Union(RS.VerifySignals)) { #>
+        read_csv_field(L, tmp);
+        assert are_strings_equal(tmp, "<#= RS.TestBenchSignalName(signal) #>") report "Field #" & integer'image(fieldno) & " is not correctly named: " & truncate(tmp) & ", expected <#= RS.TestBenchSignalName(signal) #>" severity Failure;
+        fieldno := fieldno + 1;
+<# } #>
+
+		RESET <= '1';
+        wait for <#= RS.ClockPulseLength #> NS;
+        RESET <= '0';
+
+        -- Read a line each clock
+        while not ENDFILE(F) loop
+            READLINE(F, L);
+
+            fieldno := 0;
+
+            -- Write all driver signals out
+<# foreach (var signal in RS.DriverSignals) { 
+       var vhdltype = RS.VHDLType(signal);
+#>
+            read_csv_field(L, tmp);
+<#    if (vhdltype.IsStdLogic || vhdltype == VHDLTypes.SYSTEM_BOOL) { #>
+            if are_strings_equal(tmp, "U") then
+                <#= signal.Parent.Name#>_<#=signal.Name#> <= 'U';
+            else
+                <#= signal.Parent.Name#>_<#=signal.Name#> <= to_std_logic(truncate(tmp));
+            end if;
+<#    } else if (vhdltype.IsStdLogicVector || vhdltype.IsSystemType) { #>
+            if are_strings_equal(tmp, "U") then
+            	<#= signal.Parent.Name#>_<#=signal.Name#> <= (others => 'U');
+            else
+                <#= signal.Parent.Name#>_<#=signal.Name#> <= to_std_logic_vector(truncate(tmp));
+            end if;
+<#    } else { #>
+            <#= signal.Parent.Name#>_<#=signal.Name#> <= <#= vhdltype.ToSafeVHDLName()#>'value(truncate(tmp));
+<#    } #>
+            fieldno := fieldno + 1;
+<# } #>
+
+            wait until Rising_edge(CLOCK);
+
+            -- Compare each signal with the value in the CSV file
+<# foreach (var signal in RS.VerifySignals) { 
+       var vhdltype = RS.VHDLType(signal);
+#>
+	        read_csv_field(L, tmp);
+	        if not are_strings_equal(tmp, "U") then
+<#    if (vhdltype.IsStdLogicVector || vhdltype.IsSystemType) { #>
+            	assert are_strings_equal(str(<#= signal.Parent.Name#>_<#=signal.Name#>), tmp) report "Value for <#= signal.Parent.Name#>_<#=signal.Name#> in cycle " & integer'image(clockcycle) & " was: " & str(<#= signal.Parent.Name#>_<#=signal.Name#>) & " but should have been: " & truncate(tmp) severity Error;
+<#    } else { #>
+            	assert are_strings_equal(<#= vhdltype.ToSafeVHDLName()#>'image(<#= signal.Parent.Name#>_<#=signal.Name#>), tmp) report "Value for <#= signal.Parent.Name#>_<#=signal.Name#> in cycle " & integer'image(clockcycle) & " was: " & <#= vhdltype.ToSafeVHDLName()#>'image(<#= signal.Parent.Name#>_<#=signal.Name#>) & " but should have been: " & truncate(tmp) severity Error;
+<#    } #>
+            end if;
+            fieldno := fieldno + 1;
+
+<# } #>
+
+            clockcycle := clockcycle + 1;
+        end loop;
+
+        FILE_CLOSE(F);
+    end if;
+
+	report "completed after " & integer'image(clockcycle) & " clockcycles";
+    StopClock <= true;
+
+    wait;
+end process;
+end architecture TestBench;

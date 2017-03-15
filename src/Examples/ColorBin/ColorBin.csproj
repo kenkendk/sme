@@ -29,6 +29,18 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Drawing" />
+    <Reference Include="Mono.Cecil">
+      <HintPath>..\..\packages\Mono.Cecil.0.9.6.4\lib\net45\Mono.Cecil.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Mdb">
+      <HintPath>..\..\packages\Mono.Cecil.0.9.6.4\lib\net45\Mono.Cecil.Mdb.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Pdb">
+      <HintPath>..\..\packages\Mono.Cecil.0.9.6.4\lib\net45\Mono.Cecil.Pdb.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Rocks">
+      <HintPath>..\..\packages\Mono.Cecil.0.9.6.4\lib\net45\Mono.Cecil.Rocks.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
@@ -46,9 +58,13 @@
       <Project>{268A0B13-B84C-42F1-96D9-96550ED2F71F}</Project>
       <Name>SME.Render.GraphViz</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Render\VHDL\SME.Render.VHDL.csproj">
-      <Project>{B6BDF863-F356-4DD7-8BA7-22B1DFFF7223}</Project>
-      <Name>SME.Render.VHDL</Name>
+    <ProjectReference Include="..\..\SME.Tracer\SME.Tracer.csproj">
+      <Project>{325E539D-9BA8-4EAE-BE6E-D7226A8E8B45}</Project>
+      <Name>SME.Tracer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\SME.VHDL\SME.VHDL.csproj">
+      <Project>{E796351B-EB59-4686-9B54-DE4A284E0433}</Project>
+      <Name>SME.VHDL</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -61,6 +77,9 @@
     <Content Include="image3.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

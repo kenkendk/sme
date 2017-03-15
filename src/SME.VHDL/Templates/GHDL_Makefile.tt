@@ -1,0 +1,52 @@
+﻿﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+all: test
+
+# Use a temporary folder for compiled stuff
+WORKDIR=work
+
+# All code should be VHDL93 compliant, 
+# but 93c is a bit easier to work with
+STD=93c
+
+# Eveything should compile with clean IEEE,
+# but the test-bench and CSV util's require
+# std_logic_textio from Synopsys
+IEEE=synopsys
+
+
+$(WORKDIR):
+	mkdir $(WORKDIR)
+
+$(WORKDIR)/system_types.o: system_types.vhdl $(WORKDIR)
+	ghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) system_types.vhdl
+
+$(WORKDIR)/Types_<#= RS.Network.Name #>.o: Types_<#= RS.Network.Name #>.vhdl $(WORKDIR)
+	ghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) Types_<#= RS.Network.Name #>.vhdl
+
+<# foreach (var file in Filenames) { #>
+$(WORKDIR)/<#= file #>.o: <#= file #>.vhdl $(WORKDIR)/system_types.o $(WORKDIR)/Types_<#= RS.Network.Name #>.o $(WORKDIR)
+	ghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) <#= file #>.vhdl
+<# } #>
+
+$(WORKDIR)/<#= RS.Network.Name #>.o: <#= RS.Network.Name #>.vhdl $(WORKDIR)/system_types.o $(WORKDIR)/Types_<#= RS.Network.Name #>.o <# foreach(var file in Filenames) { #>$(WORKDIR)/<#= file #>.o <# } #>
+
+	ghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) <#= RS.Network.Name #>.vhdl
+
+$(WORKDIR)/TestBench_<#= RS.Network.Name #>.o: TestBench_<#= RS.Network.Name #>.vhdl $(WORKDIR)/<#= RS.Network.Name #>.o
+	ghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) TestBench_<#= RS.Network.Name #>.vhdl
+
+<#= RS.Network.Name.ToLower() #>_tb: $(WORKDIR)/TestBench_<#= RS.Network.Name #>.o
+	ghdl -e --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) <#= RS.Network.Name #>_tb
+
+test: <#= RS.Network.Name.ToLower() #>_tb
+	./<#= RS.Network.Name.ToLower() #>_tb
+
+clean:
+	rm -rf $(WORKDIR) *.o <#= RS.Network.Name.ToLower() #>_tb
+
+
+.PHONY: all clean test

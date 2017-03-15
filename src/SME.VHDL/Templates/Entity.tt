@@ -1,0 +1,258 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="SME" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="SME.VHDL" #>
+<#@ import namespace="SME.AST" #>
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+-- library SYSTEM_TYPES;
+use work.SYSTEM_TYPES.ALL;
+
+-- library CUSTOM_TYPES;
+use work.CUSTOM_TYPES.ALL;
+
+-- User defined packages here
+-- #### USER-DATA-IMPORTS-START
+-- #### USER-DATA-IMPORTS-END
+
+
+entity <#= Process.Name #> is
+  port(
+<# foreach (var bus in Process.InputBusses.Where(x => !Process.OutputBusses.Contains(x))) { #>
+    -- Input bus <#= bus.Name #> signals
+<#     foreach (var signal in bus.Signals) { #>
+    <#= bus.Name #>_<#= signal.Name #>: in <#= RS.VHDLWrappedTypeName(signal) #>;
+<#     } #>
+<# } #>
+
+<# foreach (var bus in Process.OutputBusses.Where(x => !Process.InputBusses.Contains(x))) { #>
+    -- Output bus <#= bus.Name #> signals
+<#     foreach (var signal in RSP.WrittenSignals(bus)) { #>
+    <#= bus.Name #>_<#= signal.Name #>: out <#= RS.VHDLWrappedTypeName(signal) #>;
+<#     } #>
+<# } #>
+
+<# foreach (var bus in Process.InputBusses.Where(x => Process.OutputBusses.Contains(x))) { #>
+    -- Input/output bus <#= bus.Name #> signals
+<#     foreach (var signal in bus.Signals) { #>
+    <#= bus.Name #>_<#= signal.Name #>: inout <#= RS.VHDLWrappedTypeName(signal) #>;
+<#     } #>
+<# } #>
+
+    -- Reset signal
+    RST : Std_logic;
+
+    -- Clock signal
+    CLK : Std_logic
+ );
+end <#= Process.Name #>;
+
+architecture RTL of <#= Process.Name #> is
+<# if (RSP.TypeDefinitions.Count() > 0) { #>
+
+   -- Type definitions
+<# } #>
+<# foreach (var t in RSP.TypeDefinitions) { #>
+  <#= t #>;
+<# } #>
+
+<# foreach (var bus in Process.InternalBusses) { #>
+  -- Internal bus <#= bus.Name #> signals
+<#     foreach (var signal in bus.Signals) { #>
+<#         if (Process.IsClocked) { #>
+  signal <#= bus.Name #>_<#= signal.Name #>: <#= RS.VHDLWrappedTypeName(signal) #>;
+<#         } else { #>
+  signal <#= bus.Name #>_<#= signal.Name #>, next_<#= bus.Name #>_<#= signal.Name #>: <#= RS.VHDLWrappedTypeName(signal) #>;
+<#         } #>
+<#     } #>
+
+<# } #>
+
+<# if (Process.SharedSignals.Any()) { #>
+  -- Internal signals
+<# } #>
+<# foreach (var s in Process.SharedSignals) { #>
+  signal <#= s.Name #> : <#= RS.VHDLWrappedTypeName(s) #>;
+<# } #>
+
+<# if (RSP.IsComponent) { #>
+  -- Component declaration and signals
+<#= RSP.ComponentSignals #>
+<# } #>
+
+<# if (Process.Methods.Any()) { #>
+  -- Internal methods
+<# } #>
+<# foreach (var s in Process.Methods) { #>
+<#     foreach(var line in RSP.RenderMethod(s)) { #>
+  <#= line #>
+<#     } #>
+
+<# } #>
+
+
+
+  -- User defined signals, procedures and components here
+  -- #### USER-DATA-SIGNALS-START
+  -- #### USER-DATA-SIGNALS-END
+
+begin
+
+    -- #### USER-DATA-PROCESSES-START
+    -- #### USER-DATA-PROCESSES-END
+
+<# if (RSP.IsComponent) { #>
+    -- Component instantiation
+<#= RSP.ComponentProcesses #>
+<# } else { #>
+
+    process(
+<#     if (Process.IsClocked) { #>
+        -- #### USER-DATA-SENSITIVITY-START
+        -- #### USER-DATA-SENSITIVITY-END
+<#     } #>
+        CLK, 
+        RST
+    )
+
+<#     if (Process.IsClocked) { #>
+<#         if (RSP.Variables.Count() > 0) { #>
+    -- Internal variables
+<#             foreach(var s in RSP.Variables) { #>
+    variable <#= s.Name #> : <#= RS.VHDLWrappedTypeName(s) #>;
+<#             } #>
+<#         } #>
+<#     } #>
+
+    -- #### USER-DATA-CLOCKEDVARIABLES-START
+    -- #### USER-DATA-CLOCKEDVARIABLES-END
+    begin
+
+        -- Shared initialize code here
+        -- #### USER-DATA-CLOCKEDSHAREDINITIALIZECODE-START
+        -- #### USER-DATA-CLOCKEDSHAREDINITIALIZECODE-END
+
+        if RST = '1' then
+<#     if (Process.IsClocked) { #>
+<#         foreach(var s in RSP.ProcessResetStaments) { #>
+            <#= s #>
+<#         } #>
+
+<#     } else { #>
+<#          foreach(var s in RSP.ClockResetStaments) { #>
+            <#= s #>
+<#          } #>
+<#     } #>
+            -- Reset code here
+            -- #### USER-DATA-RESETCODE-START
+            -- #### USER-DATA-RESETCODE-END
+
+        elsif rising_edge(CLK) then
+
+            -- Initialize code here
+            -- #### USER-DATA-CLOCKEDINITIALIZECODE-START
+            -- #### USER-DATA-CLOCKEDINITIALIZECODE-END
+
+<#     if (!Process.IsClocked) { #>
+<#         foreach (var bus in Process.InternalBusses) { #>
+            -- Propagate internal bus <#= bus.Name #>
+<#             foreach (var signal in bus.Signals) { #>
+            <#= bus.Name#>_<#= signal.Name #> <= next_<#= bus.Name #>_<#= signal.Name #>;
+<#             } #>
+<#         } #>
+
+<#     } #>
+<#     if (Process.IsClocked) { #>
+
+<#     foreach(var line in RSP.RenderMethod(Process.MainMethod)) { #>
+            <#= line #>
+<#     } #>
+
+            -- #### USER-DATA-CODE-START
+            -- #### USER-DATA-CODE-END
+
+<#     } else { #>
+
+            -- #### USER-DATA-ONRISE-START
+            -- #### USER-DATA-ONRISE-END
+
+<#     } #>
+        end if;
+    end process;
+
+<#     if (!Process.IsClocked) { #>
+
+    process(
+        -- #### USER-DATA-SENSITIVITY-START
+        -- #### USER-DATA-SENSITIVITY-END
+<#         foreach(var signal in Process.InputBusses.Union(Process.InternalBusses).SelectMany(x => x.Signals)) { #>
+        <#= signal.Parent.Name #>_<#= signal.Name #>,
+<#         } #>
+<#         foreach(var signal in Process.SharedSignals) { #>
+        <#= signal.Name #>,
+<#         } #>
+        RST
+    )
+<#         if (RSP.Variables.Count() > 0) { #>
+    -- Internal variables
+<#         } #>
+<#         foreach(var s in RSP.Variables) { #>
+    variable <#= s.Name #> : <#= RS.VHDLWrappedTypeName(s) #>;
+<#         } #>
+
+    -- #### USER-DATA-NONCLOCKEDVARIABLES-START
+    -- #### USER-DATA-NONCLOCKEDVARIABLES-END
+	begin
+        -- Initialize code here
+        -- #### USER-DATA-NONCLOCKEDSHAREDINITIALIZECODE-START
+        -- #### USER-DATA-NONCLOCKEDSHAREDINITIALIZECODE-END
+
+        if RST = '1' then
+<#     foreach(var s in RSP.ProcessResetStaments) { #>
+            <#= s #>
+<#     } #>
+
+            -- Initialize code here
+            -- #### USER-DATA-NONCLOCKEDRESETCODE-START
+            -- #### USER-DATA-NONCLOCKEDRESETCODE-END
+        else
+
+<#     if (!Process.IsClocked) { #>
+<#         foreach (var bus in Process.InternalBusses) { #>
+            -- Initialize internal bus <#= bus.Name #>
+<#             foreach (var signal in bus.Signals) { #>
+            next_<#= bus.Name #>_<#= signal.Name #> <= <#= bus.Name #>_<#= signal.Name #>;
+<#             } #>
+<#         } #>
+<#     } #>
+
+            -- Initialize code here
+            -- #### USER-DATA-NONCLOCKEDINITIALIZECODE-START
+            -- #### USER-DATA-NONCLOCKEDINITIALIZECODE-END
+
+
+<#     foreach(var line in RSP.RenderMethod(Process.MainMethod)) { #>
+            <#= line #>
+<#     } #>
+
+        end if;
+
+        -- Non-clocked process actions here
+
+        -- #### USER-DATA-CODE-START
+        -- #### USER-DATA-CODE-END
+
+    end process;
+
+<#     } #>
+<# } #>
+end RTL;
+
+-- User defined architectures here
+-- #### USER-DATA-ARCH-START
+-- #### USER-DATA-ARCH-END

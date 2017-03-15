@@ -1,0 +1,125 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="SME" #>
+<#@ import namespace="SME.VHDL" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="SME.AST" #>
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+-- library SYSTEM_TYPES;
+use work.SYSTEM_TYPES.ALL;
+
+-- library CUSTOM_TYPES;
+use work.CUSTOM_TYPES.ALL;
+
+-- User defined packages here
+-- #### USER-DATA-IMPORTS-START
+-- #### USER-DATA-IMPORTS-END
+
+entity <#= Network.Name #> is
+  port(
+
+<# foreach (var bus in Network.Busses) { 
+	var signaltype = "inout"; 
+
+	if (bus.IsTopLevelInput && !bus.IsTopLevelOutput)
+		signaltype = "in";
+	else if (bus.IsTopLevelOutput && !bus.IsTopLevelInput)
+		signaltype = "out";
+
+	#>
+    -- Bus <#= bus.Name #> signals
+<#     foreach (var signal in bus.Signals) { #>
+    <#= bus.Name #>_<#= signal.Name #>: <#= signaltype #> <#= RS.VHDLWrappedTypeName(signal) #>;
+<#     } #>
+
+<# } #>
+
+<# foreach(var bus in Network.Busses.Where(x => x.IsClocked)) { #>
+    -- Clocked bus <#= bus.Name #> forwarding signals
+<#     foreach (var signal in bus.Signals) { #>
+    <#= bus.Name #>_<#= signal.Name #>_next: inout <#= RS.VHDLWrappedTypeName(signal) #>;
+<#     } #>
+            
+<# } 
+#>
+
+    -- User defined signals here
+    -- #### USER-DATA-ENTITYSIGNALS-START
+    -- #### USER-DATA-ENTITYSIGNALS-END
+
+	-- Reset signal
+    RST : in Std_logic;
+
+	-- Clock signal
+	CLK : in Std_logic
+  );
+end <#= Network.Name #>;
+
+architecture RTL of <#= Network.Name #> is  
+  -- User defined signals here
+  -- #### USER-DATA-SIGNALS-START
+  -- #### USER-DATA-SIGNALS-END
+
+begin
+
+<# foreach (var p in Network.Processes.Where(x => !x.IsSimulation)) { #>
+
+    -- Entity  <#= p.Name #> signals
+    <#= p.Name #>: entity work.<#= p.Name #>
+    port map (
+<#    foreach (var bus in p.InputBusses.Union(p.OutputBusses).Distinct()) { 
+	      var isInput = p.InputBusses.Contains(bus);
+	      var isOutput = p.OutputBusses.Contains(bus);
+	      var type = "Input/Output";
+	      if (isInput && !isOutput)
+	          type = "Input";
+	      else if (isOutput && !isInput)
+	          type = "Output";
+#>
+        -- <#= type #> bus <#= bus.Name #>
+<#		  foreach(var signal in bus.Signals) { #>
+        <#= bus.Name #>_<#= signal.Name #> => <#= bus.Name #>_<#= signal.Name #><#= bus.IsClocked && p.OutputBusses.Contains(bus) ? "_next" : ""#>,
+<#        } #>
+
+<#    } #>
+        RST => RST,
+        CLK => CLK
+    );
+
+<# } #>
+
+    -- Propagate all clocked processes
+    process(
+<# foreach(var bus in Network.Busses.Where(x => x.IsClocked)) { #>
+<#     foreach (var signal in bus.Signals) { #>
+        <#= bus.Name #>_<#= signal.Name #>_next,
+<#     } #>
+<# } #>
+        RST)
+    begin
+        if RST = '1' then
+<# foreach(var bus in Network.Busses.Where(x => x.IsClocked)) { #>
+<#     foreach (var signal in bus.Signals) { #>
+            <#= bus.Name #>_<#= signal.Name #> <= <#= RS.DefaultValue(signal) #>;
+<#     } #>
+<# } #>
+        else
+<# foreach(var bus in Network.Busses.Where(x => x.IsClocked)) { #>
+<#     foreach (var signal in bus.Signals) { #>
+            <#= bus.Name #>_<#= signal.Name #> <= <#= bus.Name #>_<#= signal.Name #>_next;
+<#     } #>
+
+<# } #>
+        end if;
+    end process;
+
+-- User defined processes here
+-- #### USER-DATA-CODE-START
+-- #### USER-DATA-CODE-END
+
+end RTL;

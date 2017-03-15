@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using SME;
-using SME.Render.VHDL;
 
 namespace SimpleTraderTester
 {

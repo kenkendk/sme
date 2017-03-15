@@ -59,8 +59,6 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Attributes\Attributes.cs" />
-    <Compile Include="CSVTracer\ICSVSerializable.cs" />
-    <Compile Include="CSVTracer\CSVTracer.cs" />
     <Compile Include="Renderer.cs" />
     <Compile Include="ILConvert\IAugmentedExpression.cs" />
     <Compile Include="ILConvert\Converter.cs" />
@@ -69,13 +67,11 @@
     <Compile Include="ILConvert\IMemberDefinitionHelpers.cs" />
     <Compile Include="ILConvert\IndentedStringBuilder.cs" />
     <Compile Include="ILConvert\MemberItem.cs" />
-    <Compile Include="ILConvert\OperatorEnumHelpers.cs" />
     <Compile Include="ILConvert\StatementHandlers.cs" />
     <Compile Include="ILConvert\IGlobalInformation.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Attributes\" />
-    <Folder Include="CSVTracer\" />
     <Folder Include="ILConvert\" />
   </ItemGroup>
   <ItemGroup>

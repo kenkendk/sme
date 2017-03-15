@@ -1,7 +1,7 @@
 ﻿using System;
 using ICSharpCode.NRefactory.CSharp;
 
-namespace SME.Render.VHDL.ILConvert
+namespace SME.AST
 {
 	public static class OperatorEnumHelpers
 	{

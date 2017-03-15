@@ -1,0 +1,82 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+-- library SYSTEM_TYPES;
+use work.SYSTEM_TYPES.ALL;
+
+-- User defined packages here
+-- #### USER-DATA-IMPORTS-START
+-- #### USER-DATA-IMPORTS-END
+
+package CUSTOM_TYPES is
+
+-- User defined types here
+-- #### USER-DATA-CORETYPES-START
+-- #### USER-DATA-CORETYPES-END
+
+<# foreach(var t in RS.CustomTypes) {#>
+    type <#= t.ToSafeVHDLName()#> is
+<#     foreach(var f in RS.ListMembers(t)) { #>
+    <#= f #>
+<#     } #>
+
+<# } #>
+<# if (RS.BusArrays.Any()) { #>
+    -- Bus array definitions
+<#     foreach(var signal in RS.BusArrays) {
+         var vhdltype = RS.VHDLType(signal);
+         var elementtype = RS.TypeScope.GetByName(vhdltype.ElementName);
+         var bus = signal.Parent as AST.Bus;
+         var arraylength = RS.GetArrayLength(signal);
+
+         if (elementtype.IsSystemType) { #>
+    subtype <#= bus.Name#>_<#= signal.Name#>_type is <#= elementtype.ToSafeVHDLName()#>_ARRAY(0 to <#= arraylength#> - 1);
+<#         } else if (RS.USE_EXPLICIT_LITERAL_ARRAY_LENGTH) { #>
+    type <#= bus.Name#>_<#= signal.Name#>_type is array (0 to <#= arraylength - 1 #>) of <#= elementtype.ToSafeVHDLName()#>;
+<#         } else { #>
+    type <#= bus.Name#>_<#= signal.Name#>_type is array (0 to <#= arraylength#> - 1) of <#= elementtype.ToSafeVHDLName()#>;
+<#         } #>
+<#     } #>
+<# } #>
+
+<# foreach(var enumtype in RS.EnumTypes) { #>
+    -- converts <#= enumtype.Name #> into a string
+    pure function str(b: <#= enumtype.ToSafeVHDLName() #>) return string;
+<# } #>
+
+<# if (RS.Constants.Any()) { #>
+    -- Constant definitions
+<# } #>
+<# foreach(var c in RS.Constants) { #>
+    <#= c #>;
+<# } #>
+
+
+-- User defined types here
+-- #### USER-DATA-TRAILTYPES-START
+-- #### USER-DATA-TRAILTYPES-END
+
+
+end CUSTOM_TYPES;
+
+package body CUSTOM_TYPES is
+<# foreach(var enumtype in RS.EnumTypes) { #>
+    -- converts <#= enumtype #> into a string
+    pure function str(b: <#= enumtype.ToSafeVHDLName() #>) return string is
+    begin
+        return <#= enumtype.ToSafeVHDLName() #>'image(b);
+    end str;
+<# } #>
+
+-- User defined bodies here
+-- #### USER-DATA-BODY-START
+-- #### USER-DATA-BODY-END
+
+end CUSTOM_TYPES;

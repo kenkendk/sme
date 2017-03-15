@@ -1,8 +1,6 @@
 ﻿using SME;
 using System;
-using SME.Render.VHDL;
 using System.Threading.Tasks;
-using System.Linq;
 
 namespace ColorBin
 {
