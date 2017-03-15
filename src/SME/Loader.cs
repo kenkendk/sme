@@ -137,8 +137,6 @@ namespace SME
 
 			// We build it as a list to ensure we execute it all,
 			// even if the Enumerable is not iterated
-			var items = new List<IProcess>();
-
 			return LoadItems(
 				types
 				.Where(x => typeof(IProcess).IsAssignableFrom(x) && !x.IsAbstract && x.IsClass)
@@ -154,7 +152,7 @@ namespace SME
 				})
 				.Where(x => x != null),
 				clock
-			);
+			).ToList();
 		}
 
 		/// <summary>
