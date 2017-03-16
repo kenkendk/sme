@@ -63,17 +63,13 @@ namespace SME.VHDL.Transformations
 				else
 					tvhdl = le_type;
 
-				// If we have a constant, see if that is a larger type
-				if (le is AST.PrimitiveExpression)
-					le_type = State.TypeScope.GetVHDLType(((AST.PrimitiveExpression)le).Value.GetType());
-				if (re is AST.PrimitiveExpression && boe.Operator != BinaryOperatorType.ShiftLeft && boe.Operator != BinaryOperatorType.ShiftRight)
-					re_type = State.TypeScope.GetVHDLType(((AST.PrimitiveExpression)re).Value.GetType());
-
-				// Pick the largest side, if any
-				if (le_type.Length > tvhdl.Length)
-					tvhdl = le_type;
-				else if (re_type.Length > tvhdl.Length)
-					tvhdl = re_type;
+				// As we are in depth-first post-order, we may not have acted on the type-cast yet
+				// so we peek up the tree to see if the result is forced to a particular type
+				var tp = boe.Parent;
+				if (tp is AST.ParenthesizedExpression)
+					tp = tp.Parent;
+				if (tp is AST.CastExpression)
+					tvhdl = State.TypeScope.GetVHDLType(((AST.CastExpression)tp).SourceResultType);
 
 				if ((boe.Operator.IsArithmeticOperator() || boe.Operator.IsCompareOperator()))
 				{
