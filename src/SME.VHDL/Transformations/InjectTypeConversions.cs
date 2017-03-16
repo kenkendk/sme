@@ -75,7 +75,6 @@ namespace SME.VHDL.Transformations
 				else if (re_type.Length > tvhdl.Length)
 					tvhdl = re_type;
 
-
 				if ((boe.Operator.IsArithmeticOperator() || boe.Operator.IsCompareOperator()))
 				{
 					if (tvhdl != VHDLTypes.INTEGER)
