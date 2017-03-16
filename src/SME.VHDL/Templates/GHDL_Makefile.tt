@@ -4,7 +4,10 @@
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
 all: test export
+
+testbench: <#= RS.Network.Name.ToLower() #>_tb
 export: <#= RS.Network.Name #>_export
+build: export testbench
 
 # Use a temporary folder for compiled stuff
 WORKDIR=work
@@ -17,6 +20,9 @@ STD=93c
 # but the test-bench and CSV util's require
 # std_logic_textio from Synopsys
 IEEE=synopsys
+
+# VCD trace file for GTKWave
+VCDFILE=trace.vcd
 
 
 $(WORKDIR):
@@ -47,10 +53,10 @@ $(WORKDIR)/TestBench_<#= RS.Network.Name #>.o: TestBench_<#= RS.Network.Name #>.
 	ghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) Export_<#= RS.Network.Name #>.vhdl
 
 test: <#= RS.Network.Name.ToLower() #>_tb
-	./<#= RS.Network.Name.ToLower() #>_tb
+	ghdl -r --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) <#= RS.Network.Name #>_tb --vcd=$(VCDFILE)
 
 clean:
 	rm -rf $(WORKDIR) *.o <#= RS.Network.Name.ToLower() #>_tb
 
 
-.PHONY: all clean test
+.PHONY: all clean test export build
