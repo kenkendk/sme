@@ -140,12 +140,12 @@ begin
         if RST = '1' then
 <#     if (Process.IsClocked) { #>
 <#         foreach(var s in RSP.ProcessResetStaments) { #>
-            <#= s #>
+            <#= s.Substring("next_".Length) #>
 <#         } #>
 
 <#     } else { #>
 <#          foreach(var s in RSP.ClockResetStaments) { #>
-            <#= s #>
+            <#= s.Substring("next_".Length) #>
 <#          } #>
 <#     } #>
             -- Reset code here
