@@ -348,13 +348,10 @@ namespace SME.VHDL
 				return TypeLookup[element] = VHDLType(((IdentifierExpression)element).Target);
 			else if (element is InvocationExpression)
 				return TypeLookup[element] = VHDLType(((InvocationExpression)element).Target);
+			else if (element is CastExpression)
+				return TypeLookup[element] = TypeScope.GetVHDLType(((CastExpression)element).SourceResultType);
 			else if (element is PrimitiveExpression)
 			{
-				if (element.SourceResultType.IsArrayType())
-				{
-					var source = element.SourceExpression;
-				}
-
 				var rawtype = TypeScope.GetVHDLType(element.SourceResultType);
 				if (rawtype.IsNumeric || rawtype.IsSigned || rawtype.IsUnsigned)
 					return TypeLookup[element] = VHDLTypes.INTEGER;
