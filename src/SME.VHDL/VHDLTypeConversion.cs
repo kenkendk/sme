@@ -112,7 +112,8 @@ namespace SME.VHDL
 					{
 						if (svhdl.IsSystemSigned)
 						{
-							str = string.Format("resize(SIGNED({0}), {1})", str, targetlengthstr);
+							// Resizing with signed is bad because we may chop the upper bit
+							str = string.Format("SIGNED(resize(UNSIGNED({0}), {1}))", str, targetlengthstr);
 							svhdl = render.TypeScope.NumericEquivalent(svhdl);
 							resized = true;
 						}
@@ -122,7 +123,13 @@ namespace SME.VHDL
 							svhdl = render.TypeScope.NumericEquivalent(svhdl);
 							resized = true;
 						}
-						else if (svhdl.IsVHDLSigned || svhdl.IsVHDLUnsigned)
+						else if (svhdl.IsVHDLSigned)
+						{
+							// Resizing with signed is bad because we may chop the upper bit
+							resized = true;
+							str = string.Format("SIGNED(resize(UNSIGNED({0}), {1}))", str, targetlengthstr);
+						}
+						else if (svhdl.IsVHDLUnsigned)
 						{
 							resized = true;
 							str = string.Format("resize({0}, {1})", str, targetlengthstr);
@@ -201,7 +208,10 @@ namespace SME.VHDL
 							Console.WriteLine("WARN: Incompatible array lengths, from {0} to {1}", svhdl, target);
 						//throw new Exception(string.Format("Incompatible array lengths, from {0} to {1}", svhdl, target));
 
-						return WrapExpression(render, s, string.Format("STD_LOGIC_VECTOR(resize({0}, {1}))", "{0}", targetlengthstr), target);
+						if (target.Length < svhdl.Length && svhdl.IsNumericSigned)
+							return WrapExpression(render, s, string.Format("STD_LOGIC_VECTOR(resize(UNSIGNED({0}), {1}))", "{0}", targetlengthstr), target);
+						else
+							return WrapExpression(render, s, string.Format("STD_LOGIC_VECTOR(resize({0}, {1}))", "{0}", targetlengthstr), target);
 					}
 				}
 				else if (svhdl.IsStdLogicVector)
