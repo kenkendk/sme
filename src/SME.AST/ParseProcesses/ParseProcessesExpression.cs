@@ -86,8 +86,22 @@ namespace SME.AST
 		/// <param name="method">The method where the statement is found.</param>
 		/// <param name="statement">The statement where the expression is found.</param>
 		/// <param name="expression">The expression to decompile</param>
-		protected AssignmentExpression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.NRefactory.CSharp.AssignmentExpression expression)
+		protected Expression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.NRefactory.CSharp.AssignmentExpression expression)
 		{
+			if (expression.ToString().StartsWith("base.DebugOutput = ", StringComparison.Ordinal))
+				return new EmptyExpression()
+				{
+					Parent = statement,
+					SourceExpression = expression,
+				};
+
+			if (expression.ToString().StartsWith("this.DebugOutput = ", StringComparison.Ordinal))
+				return new EmptyExpression()
+				{
+					Parent = statement,
+					SourceExpression = expression,
+				};
+
 			var res = new AssignmentExpression()
 			{
 				Operator = expression.Operator,
