@@ -3,7 +3,7 @@ using SME;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Collections.Generic;
-using SME.Render.VHDL;
+using SME.VHDL;
 
 namespace AES256CBC
 {
@@ -11,7 +11,6 @@ namespace AES256CBC
 	//[ClockedProcess]
 	public class Tester : Process
 	{
-
 		public static byte[] StringToByteArray(string hex) {
 			return Enumerable.Range(0, hex.Length)
 				.Where(x => x % 2 == 0)
