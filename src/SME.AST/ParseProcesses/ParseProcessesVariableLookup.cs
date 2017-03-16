@@ -35,7 +35,7 @@ namespace SME.AST
 		/// <param name="method">The method where the statement is found.</param>
 		/// <param name="statement">The statement where the expression is found.</param>
 		/// <param name="expression">The expression to examine.</param>
-		protected DataElement TryLocateDataElement(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.NRefactory.CSharp.Expression expression)
+		protected ASTItem TryLocateElement(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.NRefactory.CSharp.Expression expression)
 		{
 			if (expression is ICSharpCode.NRefactory.CSharp.InvocationExpression)
 			{
@@ -47,7 +47,7 @@ namespace SME.AST
 			{
 				var e = expression as ICSharpCode.NRefactory.CSharp.IndexerExpression;
 				var target = e.Target;
-				return LocateDataElement(network, proc, method, statement, target);				
+				return LocateDataElement(network, proc, method, statement, target);
 			}
 			else if (expression is ICSharpCode.NRefactory.CSharp.IdentifierExpression)
 			{
@@ -75,13 +75,26 @@ namespace SME.AST
 				var e = expression as ICSharpCode.NRefactory.CSharp.MemberReferenceExpression;
 
 				var parts = new List<string>();
-				while (e != null)
+				ICSharpCode.NRefactory.CSharp.Expression ec = e;
+				while (ec != null)
 				{
-					parts.Add(e.MemberName);
-					if (e.Target is ICSharpCode.NRefactory.CSharp.ThisReferenceExpression)
+					if (ec is ICSharpCode.NRefactory.CSharp.MemberReferenceExpression)
+					{
+						parts.Add(((ICSharpCode.NRefactory.CSharp.MemberReferenceExpression)ec).MemberName);
+						ec = ((ICSharpCode.NRefactory.CSharp.MemberReferenceExpression)ec).Target;
+					}
+					else if (ec is ICSharpCode.NRefactory.CSharp.ThisReferenceExpression)
+					{
 						parts.Add("this");
-
-					e = e.Target as ICSharpCode.NRefactory.CSharp.MemberReferenceExpression;
+						ec = null;
+						break;
+					}
+					else if (ec is ICSharpCode.NRefactory.CSharp.IdentifierExpression)
+					{
+						parts.Add(((ICSharpCode.NRefactory.CSharp.IdentifierExpression)ec).Identifier);
+						ec = null;
+						break;
+					}
 				}
 
 				parts.Reverse();
@@ -89,6 +102,8 @@ namespace SME.AST
 
 
 				ASTItem current = null;
+				if (proc != null)
+					current = proc;
 
 				if (parts.First() == "this")
 				{
@@ -154,18 +169,33 @@ namespace SME.AST
 				if (current == null)
 					throw new Exception($"Failed to fully resolve {fullname}");
 
-				if (!(current is DataElement))
-					throw new Exception($"Failed to fully resolve {fullname}, got a result of type {current.GetType().FullName}");
-
-				return (DataElement)current;
-
-
-				throw new Exception($"Must resolve {fullname} in {statement.SourceStatement}");
+				return current;
 			}
 			else
 			{
 				throw new Exception($"Unable to find a data element for an expression of type {expression.GetType().FullName}");
 			}
+		}
+
+		/// <summary>
+		/// Locates the target for an expression.
+		/// </summary>
+		/// <returns>The data element.</returns>
+		/// <param name="network">The top-level network.</param>
+		/// <param name="proc">The process where the method is located.</param>
+		/// <param name="method">The method where the statement is found.</param>
+		/// <param name="statement">The statement where the expression is found.</param>
+		/// <param name="expression">The expression to examine.</param>
+		protected DataElement TryLocateDataElement(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.NRefactory.CSharp.Expression expression)
+		{
+			var el = TryLocateElement(network, proc, method, statement, expression);
+			if (el == null)
+				return null;
+
+			if (!(el is DataElement))
+				throw new Exception($"Failed to fully resolve {expression.ToString()}, got a result of type {el.GetType().FullName}");
+
+			return (DataElement)el;
 		}
 
 		/// <summary>
@@ -350,6 +380,10 @@ namespace SME.AST
 		/// <param name="expression">The expression used to initialize the bus.</param>
 		protected virtual Bus LocateBus(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.NRefactory.CSharp.Expression expression)
 		{
+			var de = TryLocateElement(network, proc, method, null, expression);
+			if (de is AST.Bus)
+				return de as AST.Bus;
+
 			throw new Exception("Need to walk the tree?");
 		}
 	}

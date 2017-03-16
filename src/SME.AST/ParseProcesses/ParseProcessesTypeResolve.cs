@@ -57,7 +57,7 @@ namespace SME.AST
 				return arraytype.GetArrayElementType();
 			}
 			else if (expression is ICSharpCode.NRefactory.CSharp.CastExpression)
-				return LoadType((expression as ICSharpCode.NRefactory.CSharp.CastExpression).Type);
+				return LoadType((expression as ICSharpCode.NRefactory.CSharp.CastExpression).Type, method);
 			else if (expression is ICSharpCode.NRefactory.CSharp.ConditionalExpression)
 				return ResolveExpressionType(network, proc, method, statement, (expression as ICSharpCode.NRefactory.CSharp.ConditionalExpression).TrueExpression);
 			else if (expression is ICSharpCode.NRefactory.CSharp.InvocationExpression)
@@ -106,32 +106,19 @@ namespace SME.AST
 			if (asm == null)
 				return null;
 
-			TypeReference res = asm
-				.Modules
-				.Select(x => x.GetType(t.FullName))
-				.FirstOrDefault(x => x != null);
+			var res = LoadTypeByName(t.FullName, asm.Modules);
 
 			if (res == null && t.IsGenericType)
 			{
 				var gt = t.GetGenericTypeDefinition();
 
-				var gtd = asm
-					.Modules
-					.SelectMany(
-						m => m.GetTypes()
-						.Where(x => x.Name == gt.Name && (!gt.IsNested || (x.DeclaringType.FullName == gt.DeclaringType.FullName)))
-						)
-					.FirstOrDefault();
-
+				var gtd = LoadTypeByName(gt.FullName, asm.Modules);
 				if (gtd != null)
 				{
-					var gta = t.GetGenericArguments().Select(x => LoadType(x)).ToArray();
-
 					var gtr = new GenericInstanceType(gtd);
 					foreach(var ga in t.GetGenericArguments().Select(x => LoadType(x)))
 						gtr.GenericArguments.Add(ga);
 
-					//var gtr = gtd.MakeGenericInstanceType(gta);
 					res = gtr;
 				}
 			}
@@ -142,16 +129,6 @@ namespace SME.AST
 				res = new ArrayType(LoadType(el));
 			}
 
-
-			if (res == null && t.IsNested)
-				res = asm
-					.Modules
-					.SelectMany(
-						m => m.GetTypes()
-				            .Where(x => x.Name == t.Name && x.DeclaringType.FullName == t.DeclaringType.FullName)
-			        	)
-					.FirstOrDefault();
-
 			if (res == null)
 				throw new Exception($"Failed to load {t.FullName}, the following types were found in the assembly: {string.Join(",", asm.Modules.SelectMany(x => x.GetTypes()).Select(x => x.FullName))}");
 
@@ -159,11 +136,57 @@ namespace SME.AST
 		}
 
 		/// <summary>
+		/// Loads the specified reflection Type and returns the equivalent CeCil TypeDefinition
+		/// </summary>
+		/// <returns>The loaded type.</returns>
+		/// <param name="name">The full name of the type to load.</param>
+		/// <param name="modules">The modules to look in</param>
+		protected virtual TypeReference LoadTypeByName(string name, params ModuleDefinition[] modules)
+		{
+			return LoadTypeByName(name, modules.AsEnumerable());
+		}
+
+		/// <summary>
+		/// Loads the specified reflection Type and returns the equivalent CeCil TypeDefinition
+		/// </summary>
+		/// <returns>The loaded type.</returns>
+		/// <param name="name">The full name of the type to load.</param>
+		/// <param name="modules">The modules to look in</param>
+		protected virtual TypeReference LoadTypeByName(string name, IEnumerable<ModuleDefinition> modules)
+		{
+			var parts = name.Split('.', '+', '/').Reverse().ToArray();
+			foreach (var e in modules.SelectMany(m => m.GetTypes()))
+			{
+				var c = e;
+                var lastns = string.Empty;
+				var failed = false;
+				for (var i = 0; i < parts.Length - 1; i++)
+				{
+                    if (c != null && c.Name == parts[i])
+                    {
+                        lastns = c.Namespace; 
+                        c = c.DeclaringType;
+                    }
+                    else
+                    {
+                        failed = true;
+                        break;
+                    }
+				}
+
+				if (!failed && c == null && lastns == parts[parts.Length - 1])
+					return e;
+			}
+
+			return null;
+		}
+
+		/// <summary>
 		/// Loads the specified AstType and returns the equivalent CeCil TypeDefinition
 		/// </summary>
 		/// <returns>The loaded type.</returns>
 		/// <param name="t">The type to load.</param>
-		protected virtual TypeReference LoadType(ICSharpCode.NRefactory.CSharp.AstType t)
+		protected virtual TypeReference LoadType(ICSharpCode.NRefactory.CSharp.AstType t, Method sourcemethod = null)
 		{
 			if (t is ICSharpCode.NRefactory.CSharp.PrimitiveType)
 				switch (((ICSharpCode.NRefactory.CSharp.PrimitiveType)t).KnownTypeCode)
@@ -200,6 +223,19 @@ namespace SME.AST
 				var t0 = typeof(int).Assembly.GetType("System." + typename);
 				if (t0 != null)
 					return LoadType(t0);
+			}
+
+			if (t is ICSharpCode.NRefactory.CSharp.MemberType)
+			{
+				var mt = t as ICSharpCode.NRefactory.CSharp.MemberType;
+				var t0 = LoadTypeByName(mt.ToString(), sourcemethod.SourceMethod.Module);
+
+				if (t0 != null)
+					return t0;
+
+				t0 = LoadTypeByName(sourcemethod.SourceMethod.DeclaringType.Namespace + "." + mt.ToString(), sourcemethod.SourceMethod.Module);
+				if (t0 != null)
+					return t0;
 			}
 
 			throw new Exception($"Failed to load {t.ToString()}");

@@ -124,7 +124,7 @@ namespace SME.AST
 		/// <param name="statement">The decompiler statement to process.</param>
 		protected virtual Statement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.NRefactory.CSharp.VariableDeclarationStatement statement)
 		{
-			var vartype = LoadType(statement.Type);
+			var vartype = LoadType(statement.Type, method);
 			if (vartype.IsBusType())
 			{
 				foreach (var n in statement.Variables)
