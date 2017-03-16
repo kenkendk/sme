@@ -190,7 +190,7 @@ begin
     process(
         -- #### USER-DATA-SENSITIVITY-START
         -- #### USER-DATA-SENSITIVITY-END
-<#         foreach(var signal in Process.InputBusses.Union(Process.InternalBusses).SelectMany(x => x.Signals)) { #>
+<#         foreach(var signal in Process.InputBusses.Union(Process.InternalBusses).Where(x => !Process.OutputBusses.Contains(x)).SelectMany(x => x.Signals)) { #>
         <#= signal.Parent.Name #>_<#= signal.Name #>,
 <#         } #>
 <#         foreach(var signal in Process.SharedSignals) { #>
