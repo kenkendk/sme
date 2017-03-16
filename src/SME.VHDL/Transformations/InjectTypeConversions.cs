@@ -55,10 +55,26 @@ namespace SME.VHDL.Transformations
 				var le = boe.Left;
 				var re = boe.Right;
 
+				var le_type = State.VHDLType(le);
+				var re_type = State.VHDLType(re);
+
 				if (le is AST.PrimitiveExpression && !(re is AST.PrimitiveExpression) && boe.Operator != BinaryOperatorType.ShiftLeft && boe.Operator != BinaryOperatorType.ShiftRight)
-					tvhdl = State.VHDLType(re);
+					tvhdl = re_type;
 				else
-					tvhdl = State.VHDLType(le);
+					tvhdl = le_type;
+
+				// If we have a constant, see if that is a larger type
+				if (le is AST.PrimitiveExpression)
+					le_type = State.TypeScope.GetVHDLType(((AST.PrimitiveExpression)le).Value.GetType());
+				if (re is AST.PrimitiveExpression && boe.Operator != BinaryOperatorType.ShiftLeft && boe.Operator != BinaryOperatorType.ShiftRight)
+					re_type = State.TypeScope.GetVHDLType(((AST.PrimitiveExpression)re).Value.GetType());
+
+				// Pick the largest side, if any
+				if (le_type.Length > tvhdl.Length)
+					tvhdl = le_type;
+				else if (re_type.Length > tvhdl.Length)
+					tvhdl = re_type;
+
 
 				if ((boe.Operator.IsArithmeticOperator() || boe.Operator.IsCompareOperator()))
 				{
