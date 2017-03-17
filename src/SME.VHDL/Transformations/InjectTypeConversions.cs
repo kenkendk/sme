@@ -69,7 +69,14 @@ namespace SME.VHDL.Transformations
 				if (tp is AST.ParenthesizedExpression)
 					tp = tp.Parent;
 				if (tp is AST.CastExpression)
-					tvhdl = State.TypeScope.GetVHDLType(((AST.CastExpression)tp).SourceResultType);
+				{
+					// If we are being cast, make sure the cast is not narrowing,
+					// because we loose precision with that
+					// The cast expression will cut the precision for us later, if needed
+					var xt = State.TypeScope.GetVHDLType(((AST.CastExpression)tp).SourceResultType);
+					if ((xt.IsNumeric || xt.IsStdLogicVector) && (tvhdl.IsNumeric || tvhdl.IsStdLogicVector) && xt.Length > tvhdl.Length)
+						tvhdl = xt;
+				}
 
 				if ((boe.Operator.IsArithmeticOperator() || boe.Operator.IsCompareOperator()))
 				{
