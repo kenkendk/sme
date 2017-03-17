@@ -60,7 +60,7 @@ architecture RTL of <#= Network.Name #> is
   -- #### USER-DATA-SIGNALS-END
 
   -- Internal wiring signals for clocked processes
-<# foreach (var bus in Network.Busses.Where(x => !x.IsInternal && x.IsClocked)) { #>
+<# foreach (var bus in Network.Busses.Where(x => !x.IsInternal && x.IsClocked && !feedbacks.Contains(x))) { #>
 <#     foreach (var signal in bus.Signals) { #>
     signal <#= bus.Name #>_<#= signal.Name #>_next: <#= RS.VHDLWrappedTypeName(signal) #>;
 <#     } #>
@@ -124,7 +124,7 @@ begin
     -- Propagate all feedback signals immediately
 <# foreach(var bus in feedbacks) { #>
 <#     foreach (var signal in bus.Signals) { #>
-    <#= bus.Name #>_<#= signal.Name #> <= <#= bus.Name #>_<#= signal.Name #>_next;
+    <#= bus.Name #>_<#= signal.Name #> <= <#= bus.Name #>_<#= signal.Name #><#= bus.IsClocked ? "_current" : "_next" #>;
 <#     } #>
 <# } #>
 
@@ -134,7 +134,7 @@ begin
         RST)
     begin
         if RST = '1' then
-<# foreach(var bus in Network.Busses.Where(x => !x.IsInternal && x.IsClocked)) { #>
+<# foreach(var bus in Network.Busses.Where(x => !x.IsInternal && x.IsClocked && !feedbacks.Contains(x))) { #>
 <#     foreach (var signal in bus.Signals) { #>
             <#= bus.Name #>_<#= signal.Name #> <= <#= RS.DefaultValue(signal) #>;
 <#     } #>
@@ -146,7 +146,7 @@ begin
 
 <# } #>
         elsif rising_edge(CLK) then
-<# foreach(var bus in Network.Busses.Where(x => !x.IsInternal && x.IsClocked)) { #>
+<# foreach(var bus in Network.Busses.Where(x => !x.IsInternal && x.IsClocked && !feedbacks.Contains(x))) { #>
 <#     foreach (var signal in bus.Signals) { #>
             <#= bus.Name #>_<#= signal.Name #> <= <#= bus.Name #>_<#= signal.Name #>_next;
 <#     } #>

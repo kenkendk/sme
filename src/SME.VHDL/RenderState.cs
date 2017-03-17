@@ -137,23 +137,15 @@ namespace SME.VHDL
 			Transformations.BuildTransformations.Transform(Network, this);
 		}
 
+		/// <summary>
+		/// Performs some checks to see if the network uses features that are not supported by the VHDL render
+		/// </summary>
+		/// <param name="network">The network to validate.</param>
 		private static void ValidateNetwork(AST.Network network)
 		{
 			var sp = network.Processes.SelectMany(x => x.InternalBusses).FirstOrDefault(x => x.IsTopLevelInput || x.IsTopLevelOutput);
 			if (sp != null)
 				throw new Exception($"Cannot have an internal bus that is also toplevel input or output: {sp.Name}");
-
-			sp = network.Processes.SelectMany(x => x.InputBusses.Union(x.OutputBusses)).FirstOrDefault(x => x.IsTopLevelInput && x.IsTopLevelOutput);
-			if (sp != null)
-				throw new Exception($"Cannot have a bus that is both top-level input and top-level output: {sp.Name}");
-			
-			sp = network.Processes.SelectMany(x => x.InputBusses.Select(y => new { Proc = x, Bus = y})).Where(x => !x.Bus.IsClocked && x.Proc.OutputBusses.Contains(x.Bus)).Select(x => x.Bus).FirstOrDefault();
-			if (sp != null)
-				throw new Exception($"A bus cannot simultaneously be input and output, unless it is clocked: {sp.Name}");
-			
-			sp = network.Processes.SelectMany(x => x.OutputBusses.Select(y => new { Proc = x, Bus = y })).Where(x => !x.Bus.IsClocked && x.Proc.InputBusses.Contains(x.Bus)).Select(x => x.Bus).FirstOrDefault();
-			if (sp != null)
-				throw new Exception($"A bus cannot simultaneously be output and input, unless it is clocked: {sp.Name}");
 		}
 
 		/// <summary>
@@ -773,7 +765,7 @@ namespace SME.VHDL
 		{
 			get
 			{
-				return Network.Processes.SelectMany(x => x.InputBusses.Where(y => x.OutputBusses.Contains(y) && y.IsTopLevelOutput && !y.IsClocked));
+				return Network.Processes.SelectMany(x => x.InputBusses.Where(y => x.OutputBusses.Contains(y) && y.IsTopLevelOutput));
 			}
 		}
 	}
