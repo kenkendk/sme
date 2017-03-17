@@ -95,6 +95,16 @@ namespace SME.AST
 						ec = null;
 						break;
 					}
+					else if (ec is ICSharpCode.NRefactory.CSharp.TypeReferenceExpression)
+					{
+						// Static reference, we store it as global
+						ec = null;
+						break;
+					}
+					else
+					{
+						throw new Exception($"Unexpected element in reference chain: {ec.GetType().FullName}");
+					}
 				}
 
 				parts.Reverse();
@@ -102,9 +112,6 @@ namespace SME.AST
 
 
 				ASTItem current = null;
-				if (proc != null)
-					current = proc;
-
 				if (parts.First() == "this")
 				{
 					parts.RemoveAt(0);
