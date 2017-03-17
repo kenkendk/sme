@@ -28,7 +28,7 @@ namespace SME.AST
 		/// </summary>
 		public System.Reflection.Assembly Source;
 		/// <summary>
-		/// The SME input busses
+		/// The network busses
 		/// </summary>
 		public Bus[] Busses;
 
