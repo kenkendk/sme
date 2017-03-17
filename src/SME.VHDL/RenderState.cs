@@ -385,7 +385,16 @@ namespace SME.VHDL
 		/// <param name="element">The element to get the default value for.</param>
 		public string DefaultValue(AST.DataElement element)
 		{
-			return element.DefaultValue == null ? " (others => '0')" : element.DefaultValue.ToString();
+			var tvhdl = VHDLType(element);
+			var def = "'0'";
+			while (tvhdl.IsArray)
+			{
+				def = string.Format("(others => {0})", def);
+				tvhdl = TypeScope.GetByName(tvhdl.ElementName);
+			}
+
+			//TODO: Handle initializers
+			return def;
 		}
 
 		/// <summary>
