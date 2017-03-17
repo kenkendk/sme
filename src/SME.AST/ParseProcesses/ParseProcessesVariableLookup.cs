@@ -61,6 +61,13 @@ namespace SME.AST
 				if (method != null && method.LocalVariables.TryGetValue(name, out variable))
 					return variable;
 
+				if (method != null)
+				{
+					var p = method.Parameters.FirstOrDefault(x => x.Name == name);
+					if (p != null)
+						return p;
+				}
+
 				if (proc.Variables.TryGetValue(name, out variable))
 					return variable;
 
@@ -120,10 +127,48 @@ namespace SME.AST
 					current = proc;
 				}
 
+				var first = true;
 				foreach (var el in parts)
 				{
-					// For "this" we only check the current process
-					if (current == proc)
+					var isIsFirst = first;
+					first = false;
+
+					if (current == null)
+					{
+						var pe = network.ConstantLookup.Keys.FirstOrDefault(x => x.Name == el);
+						if (pe != null)
+						{
+							current = network.ConstantLookup[pe];
+							continue;
+						}
+					}
+
+					if (current == method || (isIsFirst && current == null))
+					{
+						//if (method.LocalRenames.ContainsKey(el))
+						//	el = method.LocalRenames[el];
+
+						if (method.LocalVariables.ContainsKey(el))
+						{
+							current = method.LocalVariables[el];
+							continue;
+						}
+
+						var p = method.Parameters.FirstOrDefault(x => x.Name == el);
+						if (p != null)
+						{
+							current = p;
+							continue;
+						}
+
+						if (method.ReturnVariable != null && !string.IsNullOrWhiteSpace(method.ReturnVariable.Name) && el == method.ReturnVariable.Name)
+						{
+							current = method.ReturnVariable;
+							continue;
+						}
+					}
+
+					if (current == proc || (isIsFirst && current == null))
 					{
 						if (proc.BusInstances.ContainsKey(el))
 						{
@@ -142,22 +187,25 @@ namespace SME.AST
 							current = proc.Variables[el];
 							continue;
 						}
+
+						if (proc.Methods != null)
+						{
+							var p = proc.Methods.FirstOrDefault(x => x.Name == el);
+							if (p != null)
+							{
+								current = p;
+								continue;
+							}
+						}
 					}
-					else if (current is Bus)
+
+					if (current is Bus)
 					{
 						current = ((Bus)current).Signals.FirstOrDefault(x => x.Name == el);
 						if (current != null)
 							continue;
 					}
-					else if (current == null)
-					{
-						var pe = network.ConstantLookup.Keys.FirstOrDefault(x => x.Name == el);
-						if (pe != null)
-						{
-							current = network.ConstantLookup[pe];
-							continue;
-						}
-					}
+
 
 					if (el == "Length" && (current is DataElement) && ((DataElement)current).CecilType.IsArrayType())
 					{

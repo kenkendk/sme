@@ -10,6 +10,15 @@ namespace SME.AST
 	public partial class ParseProcesses
 	{
 		/// <summary>
+		/// Cache with typenames
+		/// </summary>
+		protected Dictionary<Type, TypeReference> m_typelookup = new Dictionary<Type, TypeReference>();
+		/// <summary>
+		/// Cache with assemblies
+		/// </summary>
+		protected Dictionary<string, AssemblyDefinition> m_assemblies = new Dictionary<string, AssemblyDefinition>();
+
+		/// <summary>
 		/// Examines the given expression and returns the resulting output type from the expression
 		/// </summary>
 		/// <returns>The expression type.</returns>
@@ -25,7 +34,23 @@ namespace SME.AST
 			else if (expression is ICSharpCode.NRefactory.CSharp.IdentifierExpression)
 				return LocateDataElement(network, proc, method, statement, expression as ICSharpCode.NRefactory.CSharp.IdentifierExpression).CecilType;
 			else if (expression is ICSharpCode.NRefactory.CSharp.MemberReferenceExpression)
-				return LocateDataElement(network, proc, method, statement, expression as ICSharpCode.NRefactory.CSharp.MemberReferenceExpression).CecilType;
+			{
+				var el = TryLocateElement(network, proc, method, statement, expression as ICSharpCode.NRefactory.CSharp.MemberReferenceExpression);
+				if (el == null)
+					throw new Exception($"Location failed for expression {expression}");
+				else if (el is DataElement)
+					return ((DataElement)el).CecilType;
+				else if (el is Method)
+				{
+					var rv = ((Method)el).ReturnVariable;
+					if (rv == null)
+						return null;
+
+					return rv.CecilType;
+				}
+				else
+					throw new Exception($"Unexpected result for {expression} {el.GetType().FullName}");
+			}
 			else if (expression is ICSharpCode.NRefactory.CSharp.PrimitiveExpression)
 				return LoadType((expression as ICSharpCode.NRefactory.CSharp.PrimitiveExpression).Value.GetType());
 			else if (expression is ICSharpCode.NRefactory.CSharp.BinaryOperatorExpression)
@@ -68,16 +93,22 @@ namespace SME.AST
 				// Catch common translations
 				if (mt != null && (expression as ICSharpCode.NRefactory.CSharp.InvocationExpression).Arguments.Count == 1)
 				{
-					var mtm = Decompile(network, proc, method, statement, mt);
 					if (mt.MemberName == "op_Implicit" || mt.MemberName == "op_Explicit")
+					{
+						var mtm = Decompile(network, proc, method, statement, mt);
 						return ResolveExpressionType(network, proc, method, statement, new ICSharpCode.NRefactory.CSharp.CastExpression(ICSharpCode.NRefactory.CSharp.AstType.Create(mtm.SourceResultType.FullName), si.Arguments.First().Clone()));
+					}
 					else if (mt.MemberName == "op_Increment")
 						return ResolveExpressionType(network, proc, method, statement, new ICSharpCode.NRefactory.CSharp.UnaryOperatorExpression(ICSharpCode.NRefactory.CSharp.UnaryOperatorType.Increment, si.Arguments.First().Clone()));
 					else if (mt.MemberName == "op_Decrement")
 						return ResolveExpressionType(network, proc, method, statement, new ICSharpCode.NRefactory.CSharp.UnaryOperatorExpression(ICSharpCode.NRefactory.CSharp.UnaryOperatorType.Decrement, si.Arguments.First().Clone()));
 				}
 
-				return ResolveExpressionType(network, proc, method, statement, expression as ICSharpCode.NRefactory.CSharp.InvocationExpression);
+				var m = proc.CecilType.Resolve().GetMethods().FirstOrDefault(x => x.Name == mt.MemberName);
+				if (m != null)
+					return m.ReturnType;
+
+				return ResolveExpressionType(network, proc, method, statement, (expression as ICSharpCode.NRefactory.CSharp.InvocationExpression).Target);
 			}
 			else if (expression is ICSharpCode.NRefactory.CSharp.ParenthesizedExpression)
 				return ResolveExpressionType(network, proc, method, statement, (expression as ICSharpCode.NRefactory.CSharp.ParenthesizedExpression).Expression);
@@ -102,7 +133,14 @@ namespace SME.AST
 		/// <param name="t">The type to load.</param>
 		protected virtual TypeReference LoadType(Type t)
 		{
-			var asm = AssemblyDefinition.ReadAssembly(t.Assembly.Location);
+			if (m_typelookup.ContainsKey(t))
+				return m_typelookup[t];
+
+			AssemblyDefinition asm;
+			m_assemblies.TryGetValue(t.Assembly.Location, out asm);
+			if (asm == null)
+				asm = m_assemblies[t.Assembly.Location] = AssemblyDefinition.ReadAssembly(t.Assembly.Location);
+			
 			if (asm == null)
 				return null;
 
@@ -132,7 +170,7 @@ namespace SME.AST
 			if (res == null)
 				throw new Exception($"Failed to load {t.FullName}, the following types were found in the assembly: {string.Join(",", asm.Modules.SelectMany(x => x.GetTypes()).Select(x => x.FullName))}");
 
-			return res;
+			return m_typelookup[t] = res;
 		}
 
 		/// <summary>
