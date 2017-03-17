@@ -144,7 +144,7 @@ begin
         if RST = '1' then
 <#     if (Process.IsClocked) { #>
 <#         foreach(var s in RSP.ProcessResetStaments) { #>
-            <#= s.Substring("next_".Length) #>
+            <#= s #>
 <#         } #>
 
 <#     } else { #>
