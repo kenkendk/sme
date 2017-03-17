@@ -195,7 +195,7 @@ namespace SME.AST
 		/// <summary>
 		/// The method being accessed
 		/// </summary>
-		public DataElement Target;
+		public Method Target;
 		/// <summary>
 		/// The expression for the method
 		/// </summary>
@@ -215,6 +215,17 @@ namespace SME.AST
 		/// The item being targeted
 		/// </summary>
 		public DataElement Target;
+	}
+
+	/// <summary>
+	/// An expression targeting a member
+	/// </summary>
+	public class MethodReferenceExpression : Expression
+	{
+		/// <summary>
+		/// The item being targeted
+		/// </summary>
+		public Method Target;
 	}
 
 	/// <summary>

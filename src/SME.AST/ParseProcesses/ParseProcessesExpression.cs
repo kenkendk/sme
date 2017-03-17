@@ -50,9 +50,12 @@ namespace SME.AST
 				// Catch common translations
 				if (mt != null && (expression as ICSharpCode.NRefactory.CSharp.InvocationExpression).Arguments.Count == 1)
 				{
-					var mtm = Decompile(network, proc, method, statement, mt);
+
 					if (mt.MemberName == "op_Implicit" || mt.MemberName == "op_Explicit")
+					{
+						var mtm = Decompile(network, proc, method, statement, mt);
 						return Decompile(network, proc, method, statement, new ICSharpCode.NRefactory.CSharp.CastExpression(AstType.Create(mtm.SourceResultType.FullName), si.Arguments.First().Clone()));
+					}
 					else if (mt.MemberName == "op_Increment")
 						return Decompile(network, proc, method, statement, new ICSharpCode.NRefactory.CSharp.UnaryOperatorExpression(UnaryOperatorType.Increment, si.Arguments.First().Clone()));
 					else if (mt.MemberName == "op_Decrement")
@@ -316,17 +319,19 @@ namespace SME.AST
 		{
 			var res = new InvocationExpression()
 			{
-				SourceResultType = ResolveExpressionType(network, proc, method, statement, expression),
+				//SourceResultType = ResolveExpressionType(network, proc, method, statement, expression),
 				SourceExpression = expression,
-				Target = LocateDataElement(network, proc, method, statement, expression),
-				TargetExpression = Decompile(network, proc, method, statement, expression.Target),
+				//Target = LocateDataElement(network, proc, method, statement, expression),
+				//TargetExpression = Decompile(network, proc, method, statement, expression.Target),
 				ArgumentExpressions = expression.Arguments.Select(x => Decompile(network, proc, method, statement, x)).ToArray(),
 				Parent = statement
 			};
 
-			res.TargetExpression.Parent = res;
 			foreach (var x in res.ArgumentExpressions)
 				x.Parent = res;
+
+			// Register for later lookup
+			proc.MethodTargets.Enqueue(new Tuple<Statement, MethodState, InvocationExpression>(statement, method, res));
 
 			return res;
 		}

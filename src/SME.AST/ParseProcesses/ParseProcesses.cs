@@ -52,7 +52,7 @@ namespace SME.AST
 			/// <summary>
 			/// The list of methods to process
 			/// </summary>
-			public readonly Queue<Mono.Cecil.MethodDefinition> MethodTargets = new Queue<Mono.Cecil.MethodDefinition>();
+			public readonly Queue<Tuple<AST.Statement, MethodState, AST.InvocationExpression>> MethodTargets = new Queue<Tuple<AST.Statement, MethodState, AST.InvocationExpression>>();
 			/// <summary>
 			/// The decompiler context.
 			/// </summary>

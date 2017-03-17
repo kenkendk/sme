@@ -510,7 +510,7 @@ namespace SME.AST
 					foreach (var x in p.All(visitor))
 						yield return x;
 			}
-			else if (expression is MemberReferenceExpression)
+			else if (expression is MemberReferenceExpression || expression is MethodReferenceExpression)
 			{
 			}
 			else if (expression is ParenthesizedExpression)

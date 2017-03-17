@@ -104,13 +104,35 @@ namespace SME.AST
 
 			var methods = new List<MethodState>();
 
-			while (proc.MethodTargets.Count > 0)
+			while(proc.MethodTargets.Count > 0)
 			{
-				var mr = proc.MethodTargets.Dequeue();
-				if (methods.Any(x => x.Name == mr.Name))
-					continue;
-				
-				methods.Add(Decompile(network, proc, mr));
+				var tp = proc.MethodTargets.Dequeue();
+				var ix = tp.Item3;
+
+				var ic = (ix.SourceExpression as ICSharpCode.NRefactory.CSharp.InvocationExpression);
+				var r = ic.Target as ICSharpCode.NRefactory.CSharp.MemberReferenceExpression;
+
+				// TODO: Maybe we can support overloads here as well
+				var dm = methods.FirstOrDefault(x => x.Name == r.MemberName);
+				if (dm == null)
+				{
+					var mr = proctype.Methods.FirstOrDefault(x => x.Name == r.MemberName);
+					if (mr == null)
+						throw new Exception($"Unable to resolve method call to {r}");
+					dm = Decompile(network, proc, mr);
+					methods.Add(dm);
+				}
+
+				proc.Methods = methods.ToArray();
+				ix.Target = dm;
+				ix.TargetExpression = new MethodReferenceExpression()
+				{
+					Parent = ix,
+					SourceExpression = ix.SourceExpression,
+					SourceResultType = dm.ReturnVariable.CecilType,
+					Target = dm
+				};
+				ix.SourceResultType = ix.TargetExpression.SourceResultType;
 			}
 
 			proc.Methods = methods.ToArray();
@@ -136,6 +158,16 @@ namespace SME.AST
 			res.Parameters = method.Parameters.Select(x => ParseParameter(network, proc, res, x)).ToArray();
 			res.Statements = Decompile(network, proc, res);
 			res.Variables = res.LocalVariables.Values.ToArray();
+
+			if (res.ReturnVariable == null)
+			{
+				res.ReturnVariable = new Variable()
+				{
+					CecilType = method.ReturnType,
+					Parent = res,
+					Source = method
+				};
+			}
 
 			return res;
 		}
