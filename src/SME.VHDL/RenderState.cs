@@ -764,5 +764,17 @@ namespace SME.VHDL
 				DefaultValue = variabletype.IsValueType ? Activator.CreateInstance(Type.GetType(variabletype.FullName)) : null
 			};
 		}
+
+		/// <summary>
+		/// Gets all bus instances that require a feedback loop
+		/// </summary>
+		/// <value>The feedback busses.</value>
+		public IEnumerable<AST.Bus> FeedbackBusses
+		{
+			get
+			{
+				return Network.Processes.SelectMany(x => x.InputBusses.Where(y => x.OutputBusses.Contains(y) && y.IsTopLevelOutput && !y.IsClocked));
+			}
+		}
 	}
 }

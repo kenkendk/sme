@@ -137,12 +137,6 @@ foreach (var signal in RS.AllSignals) {
             #line hidden
             
             #line 46 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( (((AST.Bus)signal.Parent).IsTopLevelInput || ((AST.Bus)signal.Parent).IsTopLevelOutput) ? "" : "Internal_" ));
-            
-            #line default
-            #line hidden
-            
-            #line 46 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Parent.Name));
             
             #line default

@@ -40,7 +40,11 @@ entity <#= Process.Name #> is
 <# foreach (var bus in Process.InputBusses.Where(x => Process.OutputBusses.Contains(x))) { #>
     -- Input/output bus <#= bus.Name #> signals
 <#     foreach (var signal in bus.Signals) { #>
-    <#= bus.Name #>_<#= signal.Name #>: inout <#= RS.VHDLWrappedTypeName(signal) #>;
+    <#= bus.Name #>_<#= signal.Name #>: in <#= RS.VHDLWrappedTypeName(signal) #>;
+<#     } #>
+
+<#     foreach (var signal in bus.Signals) { #>
+    out_<#= bus.Name #>_<#= signal.Name #>: out <#= RS.VHDLWrappedTypeName(signal) #>;
 <#     } #>
 <# } #>
 
@@ -196,6 +200,7 @@ begin
 <#         foreach(var signal in Process.SharedSignals) { #>
         <#= signal.Name #>,
 <#         } #>
+        CLK,
         RST
     )
 <#         if (RSP.Variables.Count() > 0) { #>

@@ -528,9 +528,15 @@ namespace SME.VHDL
 
 			var prefix = string.Empty;
 
-
-			if (!Process.IsClocked && target.Parent is AST.Bus && ((target.Parent as AST.Bus).IsClocked || (target.Parent as AST.Bus).IsInternal))
-				prefix = "next_";
+			if (target.Parent is AST.Bus)
+			{
+				var pbus = target.Parent as AST.Bus;
+				if (Process.InputBusses.Contains(pbus) && Process.OutputBusses.Contains(pbus))
+					prefix = "out_";
+				else if (!Process.IsClocked && (pbus.IsClocked || pbus.IsInternal))
+					prefix = "next_";
+				
+			}
 			
 			return string.Format("{0}{1} {2} {3}", prefix, RenderExpression(e.Left), target is Signal ? "<=" : ":=" , RenderExpression(e.Right));
 		}
