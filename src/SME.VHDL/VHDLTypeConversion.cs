@@ -233,11 +233,12 @@ namespace SME.VHDL
 						if (svhdl.IsStdLogicVector) //.ToString().StartsWith("STD_LOGIC_VECTOR(", StringComparison.OrdinalIgnoreCase))
 						{
 							var tmp = render.RegisterTemporaryVariable(method, s.SourceResultType);
-							render.TypeLookup[tmp] = target;
+							render.TypeLookup[tmp] = svhdl;
 
 							var aleft = new IdentifierExpression()
 							{
 								Name = tmp.Name,
+								Target = tmp,
 								SourceExpression = s.SourceExpression,
 								SourceResultType = s.SourceResultType
 							};
@@ -254,13 +255,8 @@ namespace SME.VHDL
 							{
 								Expression = aexp,
 								Parent = method,
-								SourceStatement = s.SourceExpression
+								SourceStatement = s.SourceExpression.Clone()
 							};
-
-							aexp.Parent = astm;
-							aleft.Parent = s.Parent = aexp;
-
-							s.PrependStatement(astm);
 
 							var iexp = new IdentifierExpression()
 							{
@@ -270,8 +266,10 @@ namespace SME.VHDL
 							};
 
 							s.ReplaceWith(iexp);
+							s.PrependStatement(astm);
+							astm.UpdateParents();
 
-							return WrapExpression(render, s, string.Format("{0}({1} downto 0)", "{0}", target.Length - 1), target);
+							return WrapExpression(render, iexp, string.Format("{0}({1} downto 0)", "{0}", target.Length - 1), target);
 						}
 
 						return WrapExpression(render, s, string.Format("{0}({1} downto 0)", "{0}", target.Length - 1), target);
@@ -307,7 +305,7 @@ namespace SME.VHDL
 						var asstm = new ExpressionStatement()
 						{
 							Expression = wrapped,
-							SourceStatement = s.SourceExpression
+							SourceStatement = s.SourceExpression.Clone()
 						};
 
 						s.PrependStatement(asstm);

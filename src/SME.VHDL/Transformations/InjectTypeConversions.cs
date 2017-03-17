@@ -142,6 +142,7 @@ namespace SME.VHDL.Transformations
 					VHDLTypeConversion.ConvertExpression(State, Method, cse.Expression, tvhdl, true)
 				);
 				State.TypeLookup[cse] = State.TypeLookup[res] = tvhdl;
+				return res;
 			}
 			else if (el is AST.IndexerExpression)
 			{
