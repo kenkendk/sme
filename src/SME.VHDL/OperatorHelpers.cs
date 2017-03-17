@@ -1,6 +1,7 @@
 ﻿using System;
 using ICSharpCode.NRefactory.CSharp;
 using Mono.Cecil;
+using SME.AST;
 
 namespace SME.VHDL
 {
@@ -166,6 +167,22 @@ namespace SME.VHDL
 			default:
 				return string.Format("({0})", op);
 			}
+		}
+
+		/// <summary>
+		/// Gets a string indicating if the method parameter is an in or out parameter
+		/// </summary>
+		/// <returns>The parameter direction string.</returns>
+		/// <param name="n">The parameter to examine.</param>
+		public static string GetVHDLInOut(this ParameterDefinition n)
+		{
+			var inarg = (n.Attributes & ParameterAttributes.Out) != ParameterAttributes.Out;
+			var outarg = (n.Attributes & ParameterAttributes.Out) == ParameterAttributes.Out && (n.Attributes & ParameterAttributes.In) != ParameterAttributes.In;
+			var inoutarg = (n.Attributes & ParameterAttributes.In) == ParameterAttributes.In && (n.Attributes & ParameterAttributes.Out) == ParameterAttributes.Out;
+			var inoutoverride = (n.Attributes & ParameterAttributes.Out) == ParameterAttributes.Out || (n.Attributes & ParameterAttributes.In) == ParameterAttributes.In;
+			var isarray = n.ParameterType.IsArray;
+			var argrange = n.GetAttribute<RangeAttribute>();
+			return inoutarg || (isarray && !inoutoverride) ? "inout" : (inarg ? "in" : "out");
 		}
 	}
 }

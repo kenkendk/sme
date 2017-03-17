@@ -154,6 +154,9 @@ namespace SME.VHDL
 
 				foreach (var v in allitems)
 				{
+					if (v is AST.Parameter)
+						continue;
+					
 					if (v.CecilType.IsArrayType())
 					{
 						int arraylen;
@@ -222,10 +225,39 @@ namespace SME.VHDL
 			if (method == null)
 				yield break;
 
-			//Console.WriteLine(method.ToJson());
+			var margs = string.Join("; ",
+                    from n in method.Parameters
+                    let inoutargstr = ((ParameterDefinition)n.Source).GetVHDLInOut()
 
-			foreach (var s in method.Statements.SelectMany(x => RenderStatement(method, x, 0)))
+					select string.Format(
+						"{0}{1}: {2} {3}",
+						string.Equals(inoutargstr, "in", StringComparison.OrdinalIgnoreCase) ? "constant " : "",
+						n.Name,
+						inoutargstr,
+						((ParameterDefinition)n.Source).GetAttribute<RangeAttribute>() != null
+                            ? method.Name + "_" + n.Name + "_type"
+                            : Parent.VHDLWrappedTypeName(n)
+					));
+
+			if (method.ReturnVariable == null || method.ReturnVariable.CecilType.IsSameTypeReference(typeof(void)))
+				yield return $"procedure {method.Name}({margs}) is";
+			else
+				yield return $"pure function {method.Name}({margs}) return {Parent.VHDLWrappedTypeName(method.ReturnVariable)} is";
+
+			foreach (var n in method.Variables)
+				yield return $"    variable {n.Name}: {Parent.VHDLWrappedTypeName(n)};";
+
+			foreach (var m in Parent.TemporaryVariables)
+				if (m.Key == method)
+					foreach (var n in m.Value.Values)
+						yield return $"    variable {n.Name}: {Parent.VHDLWrappedTypeName(n)};";
+
+			yield return "begin";
+
+			foreach (var s in method.Statements.SelectMany(x => RenderStatement(method, x, 4)))
 				yield return s;
+
+			yield return $"end {method.Name};";
 		}
 
 		/// <summary>
@@ -456,6 +488,8 @@ namespace SME.VHDL
 				return RenderExpression(expression as InvocationExpression);
 			else if (expression is AST.MemberReferenceExpression)
 				return RenderExpression(expression as MemberReferenceExpression);
+			else if (expression is AST.MethodReferenceExpression)
+				return RenderExpression(expression as MethodReferenceExpression);
 			else if (expression is AST.ParenthesizedExpression)
 				return RenderExpression(expression as ParenthesizedExpression);
 			else if (expression is AST.PrimitiveExpression)
@@ -625,7 +659,7 @@ namespace SME.VHDL
 		}
 
 		/// <summary>
-		/// Renders a single MemeberReferenceExpression to VHDL
+		/// Renders a single MemberReferenceExpression to VHDL
 		/// </summary>
 		/// <returns>The VHDL equivalent of the expression.</returns>
 		/// <param name="e">The expression to render</param>
@@ -639,6 +673,19 @@ namespace SME.VHDL
 			if (string.IsNullOrEmpty(e.Target.Name))
 				throw new Exception($"Cannot emit empty expression: {e.SourceExpression}");
 
+
+			return e.Target.Name;
+		}
+
+		/// <summary>
+		/// Renders a single MethodReferenceExpression to VHDL
+		/// </summary>
+		/// <returns>The VHDL equivalent of the expression.</returns>
+		/// <param name="e">The expression to render</param>
+		private string RenderExpression(AST.MethodReferenceExpression e)
+		{
+			if (string.IsNullOrEmpty(e.Target.Name))
+				throw new Exception($"Cannot emit empty expression: {e.SourceExpression}");
 
 			return e.Target.Name;
 		}
@@ -895,7 +942,7 @@ namespace SME.VHDL
 						yield return v;
 
 				foreach (var m in Parent.TemporaryVariables)
-					if (m.Key == Process.MainMethod || (Process.Methods ?? new Method[0]).Contains(m.Key))
+					if (m.Key == Process.MainMethod)
 						foreach (var v in m.Value.Values)
 							yield return v;
 			}

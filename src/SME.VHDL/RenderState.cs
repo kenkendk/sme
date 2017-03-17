@@ -295,10 +295,22 @@ namespace SME.VHDL
 
 			if (element.Source is IMemberDefinition)
 				return TypeLookup[element] = TypeScope.GetVHDLType(element.Source as IMemberDefinition, element.CecilType);
+			else if (element.Source is ParameterDefinition)
+				return TypeLookup[element] = TypeScope.GetVHDLType(element.Source as ParameterDefinition);
 			else if (element.Source is System.Reflection.PropertyInfo)
 				return TypeLookup[element] = TypeScope.GetVHDLType(element.Source as System.Reflection.PropertyInfo);
 			else
 				return TypeLookup[element] = TypeScope.GetVHDLType(element.CecilType);
+		}
+
+		/// <summary>
+		/// Returns the VHDL type for a data element
+		/// </summary>
+		/// <returns>The VHDL type.</returns>
+		/// <param name="element">The element to get the type for.</param>
+		public VHDLType VHDLType(AST.Method element)
+		{
+			return VHDLType(element.ReturnVariable);
 		}
 
 		/// <summary>
