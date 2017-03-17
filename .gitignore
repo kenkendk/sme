@@ -234,3 +234,7 @@ _Pvt_Extensions
 
 # FAKE - F# Make
 .fake/
+src/SME.VHDL/Templates/ExportTopLevel.cs
+src/SME.VHDL/Templates/GHDL_Makefile.cs
+src/SME.VHDL/Templates/CustomTypes.cs
+src/SME.VHDL/Templates/TracefileTester.cs
