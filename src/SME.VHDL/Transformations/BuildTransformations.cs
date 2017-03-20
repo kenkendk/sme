@@ -54,6 +54,7 @@ namespace SME.VHDL.Transformations
 					new InjectTypeConversions(state, m),
 					new RewireCompositeAssignment(state, m),
 					new FixForLoopIncrements(state, m),
+					new RewireUnaryOperators(state, m),
 				}, () => m.DepthFirstPostOrder());
 
 

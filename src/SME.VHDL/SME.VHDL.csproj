@@ -106,6 +106,7 @@
     <Compile Include="Templates\ExportTopLevel.cs">
       <DependentUpon>ExportTopLevel.tt</DependentUpon>
     </Compile>
+    <Compile Include="Transformations\RewireUnaryOperators.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
