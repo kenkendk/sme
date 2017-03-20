@@ -238,7 +238,7 @@ namespace SME.VHDL
 							inoutargstr,
 							((ParameterDefinition)n.Source).GetAttribute<RangeAttribute>() != null
 								? method.Name + "_" + n.Name + "_type"
-								: Parent.VHDLWrappedTypeName(n)
+		                        : Parent.VHDLType(n).ToSafeVHDLName()
 						));
 
 				if (method.ReturnVariable == null || method.ReturnVariable.CecilType.IsSameTypeReference(typeof(void)))
