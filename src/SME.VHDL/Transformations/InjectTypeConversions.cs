@@ -165,7 +165,19 @@ namespace SME.VHDL.Transformations
 				if (n != r)
 					return null;
 			}
+			else if (el is AST.UnaryOperatorExpression)
+			{
+				var uoe = el as AST.UnaryOperatorExpression;
+				if (uoe.Operator == UnaryOperatorType.Not)
+				{
+					var tvhdl = VHDLTypes.BOOL;					
+					var n = VHDLTypeConversion.ConvertExpression(State, Method, uoe.Operand, tvhdl, false);
+					State.TypeLookup[n] = tvhdl;
+					if (n != uoe.Operand)
+						return null;
+				}
 
+			}
 			return res;
 		}
 	}
