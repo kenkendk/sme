@@ -177,6 +177,18 @@ namespace SME.VHDL.Transformations
 						return null;
 				}
 
+			else if (el is AST.InvocationExpression)
+			{
+				var ie = el as AST.InvocationExpression;
+				var changed = false;
+				foreach (var a in ie.ArgumentExpressions)
+				{
+					if (a is AST.PrimitiveExpression)
+					{
+						var tvhdl = State.TypeScope.GetVHDLType(a.SourceResultType);
+						changed |= VHDLTypeConversion.ConvertExpression(State, Method, a, tvhdl, false) != a;
+					}
+				}
 			}
 			return res;
 		}
