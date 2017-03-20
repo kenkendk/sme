@@ -15,6 +15,7 @@ namespace SME.VHDL.Transformations
 		private static readonly Type[] SIMPLE_TYPES = new [] {
 			typeof(IndexerExpression),
 			typeof(MemberReferenceExpression),
+			typeof(MethodReferenceExpression),
 			typeof(PrimitiveExpression),
 			typeof(IdentifierExpression),
 			typeof(IndexerExpression),
