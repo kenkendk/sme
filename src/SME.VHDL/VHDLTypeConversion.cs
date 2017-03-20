@@ -397,45 +397,5 @@ namespace SME.VHDL
 
 			return self;
 		}
-
-		public static void PrependStatement(this Expression source, Statement target)
-		{
-			var p = source.Parent;
-			while (p != null && !(p is Statement))
-				p = p.Parent;
-
-			var stm = p as Statement;
-			if (stm == null)
-				throw new Exception("Unable to find a parent statement");
-
-			stm.PrependStatement(target);
-		}
-
-		public static void PrependStatement(this Statement source, Statement target)
-		{
-			if (source is BlockStatement)
-			{
-				var bst = source as BlockStatement;
-				var n = new Statement[bst.Statements.Length + 1];
-				Array.Copy(bst.Statements, 0, n, 1, bst.Statements.Length);
-				n[0] = target;
-				target.Parent = bst;
-				bst.Statements = n;
-				return;
-			}
-			else
-			{
-				var blst = new BlockStatement()
-				{
-					Parent = source.Parent,
-					SourceStatement = source.SourceStatement,
-					Statements = new Statement[] { target, source }
-				};
-
-				source.ReplaceWith(blst);
-				target.Parent = source.Parent = blst;
-			}
-		}
-
 	}
 }

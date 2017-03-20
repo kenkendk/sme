@@ -867,5 +867,103 @@ namespace SME.AST
 				return true;
 			})) { }
 		}
+
+		/// <summary>
+		/// Inserts a statement before the source expression
+		/// </summary>
+		/// <param name="source">The source expression.</param>
+		/// <param name="target">The statement to insert.</param>
+		public static void PrependStatement(this Expression source, Statement target)
+		{
+			var p = source.Parent;
+			while (p != null && !(p is Statement))
+				p = p.Parent;
+
+			var stm = p as Statement;
+			if (stm == null)
+				throw new Exception("Unable to find a parent statement");
+
+			stm.PrependStatement(target);
+		}
+
+		/// <summary>
+		/// Inserts a statement before the source statement
+		/// </summary>
+		/// <param name="source">The source statement.</param>
+		/// <param name="target">The statement to insert.</param>
+		public static void PrependStatement(this Statement source, Statement target)
+		{
+			if (source is BlockStatement)
+			{
+				var bst = source as BlockStatement;
+				var n = new Statement[bst.Statements.Length + 1];
+				Array.Copy(bst.Statements, 0, n, 1, bst.Statements.Length);
+				n[0] = target;
+				target.Parent = bst;
+				bst.Statements = n;
+				return;
+			}
+			else
+			{
+				var blst = new BlockStatement()
+				{
+					Parent = source.Parent,
+					SourceStatement = source.SourceStatement,
+					Statements = new Statement[] { target, source }
+				};
+
+				source.ReplaceWith(blst);
+				target.Parent = source.Parent = blst;
+			}
+		}
+
+		/// <summary>
+		/// Inserts a statement after the source expression
+		/// </summary>
+		/// <param name="source">The source expression.</param>
+		/// <param name="target">The statement to insert.</param>
+		public static void AppendStatement(this Expression source, Statement target)
+		{
+			var p = source.Parent;
+			while (p != null && !(p is Statement))
+				p = p.Parent;
+
+			var stm = p as Statement;
+			if (stm == null)
+				throw new Exception("Unable to find a parent statement");
+
+			stm.AppendStatement(target);
+		}
+
+		/// <summary>
+		/// Inserts a statement after the source statement
+		/// </summary>
+		/// <param name="source">The source statement.</param>
+		/// <param name="target">The statement to insert.</param>
+		public static void AppendStatement(this Statement source, Statement target)
+		{
+			if (source is BlockStatement)
+			{
+				var bst = source as BlockStatement;
+				var n = new Statement[bst.Statements.Length + 1];
+				Array.Copy(bst.Statements, 0, n, 0, bst.Statements.Length);
+				n[n.Length - 1] = target;
+				target.Parent = bst;
+				bst.Statements = n;
+				return;
+			}
+			else
+			{
+				var blst = new BlockStatement()
+				{
+					Parent = source.Parent,
+					SourceStatement = source.SourceStatement,
+					Statements = new Statement[] { source, target }
+				};
+
+				source.ReplaceWith(blst);
+				target.Parent = source.Parent = blst;
+			}
+		}
 	}
 }
