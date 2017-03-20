@@ -4,11 +4,11 @@ install:
   - nuget restore src/SME.sln
 script:
   - xbuild /p:Configuration=Release src/SME.sln
-  - mono ./src/Examples/ColorBin/bin/Release/ColorBin.exe
-  - mono ./src/Examples/SimpleTrader/bin/Release/SimpleTrader.exe
-  - mono ./src/Examples/NoisFilter/bin/Release/NoiseFilter.exe
-  - mono ./src/Examples/NoisFilter/bin/Release/AES256CBC.exe
-  - cd "$TRAVIS_BUILD_DIR" && cd /src/Examples/ColorBin/bin/Release/output && make test
-  - cd "$TRAVIS_BUILD_DIR" && cd /src/Examples/SimpleTrader/bin/Release/output && make test
-  - cd "$TRAVIS_BUILD_DIR" && cd /src/Examples/NoiseFilter/bin/Release/output && make test
-  - cd "$TRAVIS_BUILD_DIR" && cd /src/Examples/AES256CBC/bin/Release/output && make test
+  - cd "$TRAVIS_BUILD_DIR/src/Examples/ColorBin/bin/Release" && mono ./src/Examples/ColorBin/bin/Release/ColorBin.exe
+  - cd "$TRAVIS_BUILD_DIR/src/Examples/SimpleTrader/bin/Release" && mono ./src/Examples/SimpleTrader/bin/Release/SimpleTrader.exe
+  - cd "$TRAVIS_BUILD_DIR/src/Examples/NoiseFilter/bin/Release" && mono ./src/Examples/NoisFilter/bin/Release/NoiseFilter.exe
+  - cd "$TRAVIS_BUILD_DIR/src/Examples/AES256CBC/bin/Release" && mono ./src/Examples/NoisFilter/bin/Release/AES256CBC.exe
+  - cd "$TRAVIS_BUILD_DIR/src/Examples/ColorBin/bin/Release/output" && make test
+  - cd "$TRAVIS_BUILD_DIR/src/Examples/SimpleTrader/bin/Release/output" && make test
+  - cd "$TRAVIS_BUILD_DIR/src/Examples/NoiseFilter/bin/Release/output" && make test
+  - cd "$TRAVIS_BUILD_DIR/src/Examples/AES256CBC/bin/Release/output" && make test
