@@ -228,9 +228,10 @@ namespace SME.VHDL
 
 					if (target.Length < svhdl.Length)
 					{
-						// We cannot select bits from a typecast
-						// TODO: Dirty to rely on the string, there are likely other cases that need the same wrapping
-						if (svhdl.IsStdLogicVector) //.ToString().StartsWith("STD_LOGIC_VECTOR(", StringComparison.OrdinalIgnoreCase))
+						// If the expression is a simple identifier, we can select bits from it
+						// otherwise we need to inject a variable with the expression
+						// and select the required bits from it
+						if (!(s is IdentifierExpression || s is MemberReferenceExpression || s is IndexerExpression))
 						{
 							var tmp = render.RegisterTemporaryVariable(method, s.SourceResultType);
 							render.TypeLookup[tmp] = svhdl;
