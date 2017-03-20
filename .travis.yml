@@ -2,7 +2,6 @@ language: csharp
 solution: src/SME.sln
 install:
   - nuget restore src/SME.sln
-  - nuget install NUnit.Runners -Version 3.4.0 -OutputDirectory testrunner
 script:
   - xbuild /p:Configuration=Release src/SME.sln
   - mono ./src/Examples/ColorBin/bin/Release/ColorBin.exe
