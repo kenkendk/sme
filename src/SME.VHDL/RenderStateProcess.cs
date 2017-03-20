@@ -225,39 +225,45 @@ namespace SME.VHDL
 			if (method == null)
 				yield break;
 
-			var margs = string.Join("; ",
-                    from n in method.Parameters
-                    let inoutargstr = ((ParameterDefinition)n.Source).GetVHDLInOut()
+			if (method != Process.MainMethod)
+			{
+				var margs = string.Join("; ",
+						from n in method.Parameters
+						let inoutargstr = ((ParameterDefinition)n.Source).GetVHDLInOut()
 
-					select string.Format(
-						"{0}{1}: {2} {3}",
-						string.Equals(inoutargstr, "in", StringComparison.OrdinalIgnoreCase) ? "constant " : "",
-						n.Name,
-						inoutargstr,
-						((ParameterDefinition)n.Source).GetAttribute<RangeAttribute>() != null
-                            ? method.Name + "_" + n.Name + "_type"
-                            : Parent.VHDLWrappedTypeName(n)
-					));
+						select string.Format(
+							"{0}{1}: {2} {3}",
+							string.Equals(inoutargstr, "in", StringComparison.OrdinalIgnoreCase) ? "constant " : "",
+							n.Name,
+							inoutargstr,
+							((ParameterDefinition)n.Source).GetAttribute<RangeAttribute>() != null
+								? method.Name + "_" + n.Name + "_type"
+								: Parent.VHDLWrappedTypeName(n)
+						));
 
-			if (method.ReturnVariable == null || method.ReturnVariable.CecilType.IsSameTypeReference(typeof(void)))
-				yield return $"procedure {method.Name}({margs}) is";
-			else
-				yield return $"pure function {method.Name}({margs}) return {Parent.VHDLWrappedTypeName(method.ReturnVariable)} is";
+				if (method.ReturnVariable == null || method.ReturnVariable.CecilType.IsSameTypeReference(typeof(void)))
+					yield return $"procedure {method.Name}({margs}) is";
+				else
+					yield return $"pure function {method.Name}({margs}) return {Parent.VHDLWrappedTypeName(method.ReturnVariable)} is";
 
-			foreach (var n in method.Variables)
-				yield return $"    variable {n.Name}: {Parent.VHDLWrappedTypeName(n)};";
+				foreach (var n in method.Variables)
+					yield return $"    variable {n.Name}: {Parent.VHDLWrappedTypeName(n)};";
 
-			foreach (var m in Parent.TemporaryVariables)
-				if (m.Key == method)
-					foreach (var n in m.Value.Values)
-						yield return $"    variable {n.Name}: {Parent.VHDLWrappedTypeName(n)};";
+				foreach (var m in Parent.TemporaryVariables)
+					if (m.Key == method)
+						foreach (var n in m.Value.Values)
+							yield return $"    variable {n.Name}: {Parent.VHDLWrappedTypeName(n)};";
 
-			yield return "begin";
+				yield return "begin";
+			}
 
-			foreach (var s in method.Statements.SelectMany(x => RenderStatement(method, x, 4)))
+			foreach (var s in method.Statements.SelectMany(x => RenderStatement(method, x, method == Process.MainMethod ? 0 : 4)))
 				yield return s;
 
-			yield return $"end {method.Name};";
+			if (method != Process.MainMethod)
+			{
+				yield return $"end {method.Name};";
+			}
 		}
 
 		/// <summary>
@@ -375,7 +381,6 @@ namespace SME.VHDL
 			var indent2 = new string(' ', indentation);
 
 			indentation += 4;
-			var indent3 = new string(' ', indentation);
 
 			yield return $"{indent}case {RenderExpression(s.SwitchExpression)} is";
 
