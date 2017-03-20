@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ICSharpCode.NRefactory.CSharp;
 using SME.AST;
 
@@ -176,7 +177,7 @@ namespace SME.VHDL.Transformations
 					if (n != uoe.Operand)
 						return null;
 				}
-
+			}
 			else if (el is AST.InvocationExpression)
 			{
 				var ie = el as AST.InvocationExpression;
