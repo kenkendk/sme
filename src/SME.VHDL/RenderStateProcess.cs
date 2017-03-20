@@ -759,7 +759,6 @@ namespace SME.VHDL
 				var tvhdl = Parent.VHDLType(e);
 				if (tvhdl.IsStdLogicVector)
 				{
-
 					var pe = e.Expression as PrimitiveExpression;
 					string binstr = null;
 					if (pe.Value is ulong)
@@ -800,7 +799,12 @@ namespace SME.VHDL
 					}
 
 					if (!string.IsNullOrWhiteSpace(binstr))
-						return string.Format("STD_LOGIC_VECTOR(\"{0}\")", binstr);
+					{
+						if (tvhdl.Length > 0)
+							binstr = binstr.PadLeft(tvhdl.Length, '0');
+						
+						return string.Format("STD_LOGIC_VECTOR'(\"{0}\")", binstr);
+					}
 				}
 			}
 
