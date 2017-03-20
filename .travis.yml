@@ -1,7 +1,9 @@
 language: csharp
 solution: src/SME.sln
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y ghdl
 install:
-  - apt-get install ghdl
   - nuget restore src/SME.sln
 script:
   - xbuild /p:Configuration=Release src/SME.sln
