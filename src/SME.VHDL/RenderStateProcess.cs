@@ -660,7 +660,7 @@ namespace SME.VHDL
 		/// <param name="e">The expression to render</param>
 		private string RenderExpression(AST.InvocationExpression e)
 		{
-			return RenderExpression(e.TargetExpression) + "(" + string.Join(",", e.ArgumentExpressions.Select(x => RenderExpression(x))) + ")";
+			return RenderExpression(e.TargetExpression) + "(" + string.Join(", ", e.ArgumentExpressions.Select(x => RenderExpression(x))) + ")";
 		}
 
 		/// <summary>
