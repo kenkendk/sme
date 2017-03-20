@@ -135,6 +135,7 @@ namespace SME.AST
 				ix.SourceResultType = ix.TargetExpression.SourceResultType;
 			}
 
+			methods.Reverse();
 			proc.Methods = methods.ToArray();
 			proc.SharedSignals = proc.Signals.Values.ToArray();
 			proc.SharedVariables = proc.Variables.Values.ToArray();
