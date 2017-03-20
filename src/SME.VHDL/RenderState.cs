@@ -457,7 +457,6 @@ namespace SME.VHDL
 					.Where(x => x.CecilType.IsFixedArrayType())
 					.Distinct();
 				
-				var y = res.ToArray();
 				return res;
 			}
 		}

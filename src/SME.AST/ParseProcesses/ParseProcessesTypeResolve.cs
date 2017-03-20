@@ -61,7 +61,7 @@ namespace SME.AST
 					return LoadType(typeof(bool));
 
 				var lefttype = ResolveExpressionType(network, proc, method, statement, e.Left);
-				var righttype = ResolveExpressionType(network, proc, method, statement, e.Right);
+				//var righttype = ResolveExpressionType(network, proc, method, statement, e.Right);
 
 				if (op == ICSharpCode.NRefactory.CSharp.BinaryOperatorType.Multiply)
 				{

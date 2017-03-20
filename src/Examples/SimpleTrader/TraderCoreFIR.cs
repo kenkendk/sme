@@ -47,8 +47,6 @@ namespace SimpleTrader
 		// Storage for long sample list
 		private uint[] SamplesLong = new uint[8];
 
-		private readonly uint TESTVAL = 4;
-
 		/// <summary>
 		/// The number of values to read before setting outputs
 		/// </summary>

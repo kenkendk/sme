@@ -10,20 +10,14 @@ namespace SME.VHDL.Transformations
 		/// The render state
 		/// </summary>
 		private readonly RenderState State;
-		/// <summary>
-		/// The method being compiled
-		/// </summary>
-		private readonly Method Method;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="T:SME.VHDL.Transformations.InjectTypeConversions"/> class.
 		/// </summary>
 		/// <param name="state">The render state.</param>
-		/// <param name="method">The method being rendered.</param>
-		public RewireUnaryOperators(RenderState state, Method method)
+		public RewireUnaryOperators(RenderState state)
 		{
 			State = state;
-			Method = method;
 		}
 
 		/// <summary>

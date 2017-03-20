@@ -52,9 +52,9 @@ namespace SME.VHDL.Transformations
 					new AssignVhdlType(state),
 					new RemoveConditionals(state, m),
 					new InjectTypeConversions(state, m),
-					new RewireCompositeAssignment(state, m),
+					new RewireCompositeAssignment(),
 					new FixForLoopIncrements(state, m),
-					new RewireUnaryOperators(state, m),
+					new RewireUnaryOperators(state),
 				}, () => m.DepthFirstPostOrder());
 
 

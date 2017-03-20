@@ -561,11 +561,11 @@ namespace SME.AST
 		public static ArgumentInOut GetArgumentInOut(this ParameterDefinition n)
 		{
 			var inarg = (n.Attributes & ParameterAttributes.Out) != ParameterAttributes.Out;
-			var outarg = (n.Attributes & ParameterAttributes.Out) == ParameterAttributes.Out && (n.Attributes & ParameterAttributes.In) != ParameterAttributes.In;
+			//var outarg = (n.Attributes & ParameterAttributes.Out) == ParameterAttributes.Out && (n.Attributes & ParameterAttributes.In) != ParameterAttributes.In;
 			var inoutarg = (n.Attributes & ParameterAttributes.In) == ParameterAttributes.In && (n.Attributes & ParameterAttributes.Out) == ParameterAttributes.Out;
 			var inoutoverride = (n.Attributes & ParameterAttributes.Out) == ParameterAttributes.Out || (n.Attributes & ParameterAttributes.In) == ParameterAttributes.In;
 			var isarray = n.ParameterType.IsArray;
-			var argrange = n.GetAttribute<RangeAttribute>();
+			//var argrange = n.GetAttribute<RangeAttribute>();
 			return inoutarg || (isarray && !inoutoverride) ? ArgumentInOut.InOut : (inarg ? ArgumentInOut.In : ArgumentInOut.Out);
 		}
 

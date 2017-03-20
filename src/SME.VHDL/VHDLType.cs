@@ -282,14 +282,6 @@ namespace SME.VHDL
 		/// The resolved numeric types in Mono.Cecil.
 		/// </summary>
 		private readonly TypeDefinition[] m_resolvedNumericTypes;
-		/// <summary>
-		/// The resolved signed numeric types in Mono.Cecil.
-		/// </summary>
-		private readonly TypeDefinition[] m_resolvedSignedNumericTypes;
-		/// <summary>
-		/// The resolved unsigned numeric types in Mono.Cecil.
-		/// </summary>
-		private readonly TypeDefinition[] m_resolvedUnsignedNumericTypes;
 
 		/// <summary>
 		/// Regulaer expression used to parse a STD_LOGIC_VECTOR definition
@@ -350,8 +342,6 @@ namespace SME.VHDL
 			m_unsignedNumericTypes = UNSIGNED_NUMERIC_TYPES.Select(x => resolveModule.Import(x)).ToArray();
 
 			m_resolvedNumericTypes = m_numericTypes.Select(x => x.Resolve()).ToArray();
-			m_resolvedSignedNumericTypes = m_signedNumericTypes.Select(x => x.Resolve()).ToArray();
-			m_resolvedUnsignedNumericTypes = m_unsignedNumericTypes.Select(x => x.Resolve()).ToArray();
 		}
 
 		/// <summary>

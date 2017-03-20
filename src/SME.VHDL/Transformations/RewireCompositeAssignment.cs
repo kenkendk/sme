@@ -11,26 +11,6 @@ namespace SME.VHDL.Transformations
 	public class RewireCompositeAssignment : IASTTransform
 	{
 		/// <summary>
-		/// The render state
-		/// </summary>
-		private readonly RenderState State;
-		/// <summary>
-		/// The method being compiled
-		/// </summary>
-		private readonly Method Method;
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="T:SME.VHDL.Transformations.InjectTypeConversions"/> class.
-		/// </summary>
-		/// <param name="state">The render state.</param>
-		/// <param name="method">The method being rendered.</param>
-		public RewireCompositeAssignment(RenderState state, Method method)
-		{
-			State = state;
-			Method = method;
-		}
-
-		/// <summary>
 		/// Applies the transformation
 		/// </summary>
 		/// <returns>The transformed item.</returns>
