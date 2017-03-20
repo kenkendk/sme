@@ -229,7 +229,7 @@ namespace SME.VHDL
 			{
 				var margs = string.Join("; ",
 						from n in method.Parameters
-						let inoutargstr = ((ParameterDefinition)n.Source).GetVHDLInOut()
+                        let inoutargstr = ((ParameterDefinition)n.Source).GetArgumentInOut().ToString().ToLowerInvariant()
 
 						select string.Format(
 							"{0}{1}: {2} {3}",
