@@ -1,6 +1,7 @@
 language: csharp
 solution: src/SME.sln
 before_install:
+  - sudo add-apt-repository ppa:pgavin/ghdl -y
   - sudo apt-get -qq update
   - sudo apt-get install -y ghdl
 install:
