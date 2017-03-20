@@ -170,7 +170,7 @@ namespace SME.VHDL.Transformations
 				var uoe = el as AST.UnaryOperatorExpression;
 				if (uoe.Operator == UnaryOperatorType.Not)
 				{
-					var tvhdl = VHDLTypes.BOOL;					
+					var tvhdl = VHDLTypes.BOOL;
 					var n = VHDLTypeConversion.ConvertExpression(State, Method, uoe.Operand, tvhdl, false);
 					State.TypeLookup[n] = tvhdl;
 					if (n != uoe.Operand)
