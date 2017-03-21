@@ -54,7 +54,8 @@ namespace SME.Tracer
 					if (ex is System.Reflection.TargetInvocationException)
 						ex = ((System.Reflection.TargetInvocationException)ex).InnerException;
 
-					Console.WriteLine(string.Format("Failed to read item {0}.{1}, message: {2}", p.Property.DeclaringType.FullName, p.Property.Name, ex));
+					if (!(ex is SME.ReadViolationException))
+						Console.WriteLine(string.Format("Failed to read item {0}.{1}, message: {2}", p.Property.DeclaringType.FullName, p.Property.Name, ex));
 					value = ex;
 				}
 
