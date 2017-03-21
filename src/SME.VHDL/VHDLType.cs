@@ -975,7 +975,7 @@ namespace SME.VHDL
 			IsArray = true,
 			ElementName = "STD_LOGIC",
 			LowerBound = 0,
-			UpperBound = 53
+			UpperBound = 63
 		};
 
 		/// <summary>
