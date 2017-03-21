@@ -376,6 +376,14 @@ namespace SME.VHDL
 
 				return TypeLookup[element] = TypeScope.GetVHDLType(element.SourceResultType);
 			}
+			else if (element is UnaryOperatorExpression)
+			{
+				var uoe = element as UnaryOperatorExpression;
+				if (uoe.Operator == ICSharpCode.NRefactory.CSharp.UnaryOperatorType.Not)
+					return TypeLookup[element] = VHDLTypes.BOOL;
+				else
+					return TypeLookup[element] = VHDLType(uoe.Operand);
+			}
 			else if (element is WrappingExpression)
 				return TypeLookup[element] = VHDLType(((WrappingExpression)element).Expression);
 			else
