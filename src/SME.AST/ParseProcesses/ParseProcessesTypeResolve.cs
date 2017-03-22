@@ -207,6 +207,9 @@ namespace SME.AST
                     }
                     else
                     {
+						if (c == null && lastns == string.Join(".", parts.Skip(i).Reverse()))
+							return e;
+						
                         failed = true;
                         break;
                     }
@@ -214,6 +217,7 @@ namespace SME.AST
 
 				if (!failed && c == null && lastns == parts[parts.Length - 1])
 					return e;
+
 			}
 
 			return null;
