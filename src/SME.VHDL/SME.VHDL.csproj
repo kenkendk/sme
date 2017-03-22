@@ -8,6 +8,8 @@
     <RootNamespace>SME.VHDL</RootNamespace>
     <AssemblyName>SME.VHDL</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -109,6 +111,10 @@
       <DependentUpon>ExportTopLevel.tt</DependentUpon>
     </Compile>
     <Compile Include="Transformations\RewireUnaryOperators.cs" />
+    <Compile Include="Components\DSP48E1.cs" />
+    <Compile Include="Components\SimpleDualPortMemory.cs" />
+    <Compile Include="Components\TrueDualPortMemory.cs" />
+    <Compile Include="Renderer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -133,7 +139,7 @@
       <LastGenOutput>Entity.cs</LastGenOutput>
     </None>
     <None Include="BitTypes.tt">
-      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>BitTypes.cs</LastGenOutput>
     </None>
     <None Include="Templates\GHDL_Makefile.tt">
@@ -154,6 +160,10 @@
       <Project>{B1C84452-3FA5-4176-BAB6-EF27DE76D452}</Project>
       <Name>SME.AST</Name>
     </ProjectReference>
+    <ProjectReference Include="..\SME.Tracer\SME.Tracer.csproj">
+      <Project>{325E539D-9BA8-4EAE-BE6E-D7226A8E8B45}</Project>
+      <Name>SME.Tracer</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Templates\system_types.vhdl">
@@ -165,6 +175,7 @@
     <Folder Include="Templates\" />
     <Folder Include="Transformations\" />
     <Folder Include="CustomNodes\" />
+    <Folder Include="Components\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
