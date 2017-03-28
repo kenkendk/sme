@@ -145,9 +145,21 @@ namespace SME.AST
 				Decompile(network, pr, method);
 			}
 
+			network.Constants = network.ConstantLookup.Values.ToArray();
+
 			// Patch up all types if they are missing
 			foreach (var el in network.All().OfType<DataElement>().Where(x => x.CecilType == null))
 				el.CecilType = LoadType(el.Type);
+
+			foreach (var el in network.Constants.Where(x => x.DefaultValue == null))
+			{
+				if (el.Source is Mono.Cecil.FieldDefinition)
+				{
+					var ft = el.Source as Mono.Cecil.FieldDefinition;
+					if (ft.IsStatic && ft.IsInitOnly)
+						DecompileStaticInitializer(network, ft.DeclaringType);
+				}
+			}
 
 			return network;
 		}

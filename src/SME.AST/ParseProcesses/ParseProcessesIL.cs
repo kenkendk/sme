@@ -57,6 +57,27 @@ namespace SME.AST
 		}
 
 		/// <summary>
+		/// Decompiles the static initializer for a non-process type
+		/// </summary>
+		/// <param name="network">The top-level network.</param>
+		/// <param name="tr">The type to decompile the initializer for.</param>
+		protected void DecompileStaticInitializer(NetworkState network, Mono.Cecil.TypeReference tr)
+		{
+			var proctype = tr.Resolve();
+			var pcs = new ProcessState()
+			{
+				DecompilerContext = new DecompilerContext(proctype.Module) { CurrentType = proctype },
+				CecilType = tr,
+				Parent = network
+			};
+
+			var static_constructor = proctype.Methods.Where(x => x.IsConstructor && !x.HasParameters && x.IsStatic).FirstOrDefault();
+
+			if (static_constructor != null)
+				DecompileConstructor(network, pcs, static_constructor, true);
+		}
+
+		/// <summary>
 		/// Decompile the specified process, using the specified entry method
 		/// </summary>
 		/// <param name="network">The top-level network.</param>
