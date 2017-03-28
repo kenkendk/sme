@@ -46,7 +46,7 @@ namespace SME.VHDL.Transformations
 		{
 			if (m_done.ContainsKey(el))
 				return el;
-			
+
 			var res = el;
 			if (el is AST.BinaryOperatorExpression)
 			{
@@ -59,7 +59,7 @@ namespace SME.VHDL.Transformations
 				var le_type = State.VHDLType(le);
 				var re_type = State.VHDLType(re);
 
-				if (le is AST.PrimitiveExpression && !(re is AST.PrimitiveExpression) && boe.Operator != BinaryOperatorType.ShiftLeft && boe.Operator != BinaryOperatorType.ShiftRight)
+				if (le is AST.PrimitiveExpression && !(re is AST.PrimitiveExpression))
 					tvhdl = re_type;
 				else
 					tvhdl = le_type;
@@ -85,13 +85,24 @@ namespace SME.VHDL.Transformations
 						tvhdl = State.TypeScope.NumericEquivalent(tvhdl, false) ?? tvhdl;
 				}
 				else if (boe.Operator == BinaryOperatorType.ShiftLeft || boe.Operator == BinaryOperatorType.ShiftRight)
-					tvhdl = State.TypeScope.NumericEquivalent(tvhdl);
+				{
+					// Handle later
+				}
 				else if (boe.Operator.IsBitwiseOperator())
 					tvhdl = State.TypeScope.SystemEquivalent(tvhdl);
 
 
 				var lhstype = boe.Operator.IsLogicalOperator() ? VHDLTypes.BOOL : tvhdl;
 				var rhstype = boe.Operator.IsLogicalOperator() ? VHDLTypes.BOOL : tvhdl;
+
+				if (boe.Operator == BinaryOperatorType.ShiftLeft || boe.Operator == BinaryOperatorType.ShiftRight)
+				{
+					rhstype = VHDLTypes.INTEGER;
+					if (lhstype == VHDLTypes.INTEGER)
+						lhstype = State.VHDLType(boe.Parent as AST.Expression);
+					else
+						lhstype = State.TypeScope.NumericEquivalent(lhstype);
+				}
 
 				// Overrides for special types
 				switch (boe.Operator)
@@ -109,9 +120,6 @@ namespace SME.VHDL.Transformations
 					State.TypeLookup[boe] = VHDLTypes.BOOL;
 				else
 					State.TypeLookup[boe] = tvhdl;
-
-				newleft.Parent = boe;
-				newright.Parent = boe;
 
 				if (boe.Operator == BinaryOperatorType.Multiply && tvhdl != VHDLTypes.INTEGER)
 				{
