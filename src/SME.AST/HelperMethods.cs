@@ -535,6 +535,30 @@ namespace SME.AST
 		}
 
 		/// <summary>
+		/// Returns all properties found in the type and its base types
+		/// </summary>
+		/// <returns>The properties found.</returns>
+		/// <param name="self">The type to get the fields from.</param>
+		public static IEnumerable<System.Reflection.PropertyInfo> GetPropertiesRecursive(this Type self, System.Reflection.BindingFlags flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Public)
+		{
+			var x = self;
+			while (x != null)
+			{
+				foreach (var f in x.GetProperties(flags))
+					yield return f;
+
+				var interfaces = x.GetInterfaces();
+
+				if (interfaces != null)
+					foreach (var n in interfaces)
+						foreach (var f in n.GetProperties(flags))
+							yield return f;
+
+				x = x.BaseType;
+			}
+		}
+
+		/// <summary>
 		/// Argument input/output types
 		/// </summary>
 		public enum ArgumentInOut
