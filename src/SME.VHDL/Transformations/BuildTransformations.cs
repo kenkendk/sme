@@ -22,7 +22,8 @@ namespace SME.VHDL.Transformations
 
 			var methods = new List<Method>();
 
-			foreach (var n in network.All((el, direction) => {
+			foreach (var n in network.All((el, direction) =>
+			{
 				if (direction == VisitorState.Enter && el is Method)
 				{
 					methods.Add(el as Method);
@@ -30,7 +31,7 @@ namespace SME.VHDL.Transformations
 				}
 
 				return true;
-			} ))
+			}))
 			{
 				foreach (var f in funcs)
 					f.Transform(n);
@@ -43,7 +44,7 @@ namespace SME.VHDL.Transformations
 				}, () => m.All());
 
 			// Main transforms are  in Post-Order
-			foreach(var m in methods)
+			foreach (var m in methods)
 				RepeatedApply(new IASTTransform[] {
 					new RemoveUIntPtrCast(),
 					new RemoveDoubleCast(),
@@ -68,14 +69,35 @@ namespace SME.VHDL.Transformations
 		private static void RepeatedApply(IASTTransform[] transforms, Func<IEnumerable<ASTItem>> it)
 		{
 			var repeat = true;
+			object lastchanger = null;
+			ASTItem lastchange = null;
 			while (repeat)
 			{
 				repeat = false;
+#if DEBUG_TRANSFORMS
+				Console.WriteLine("**** Restart ****");
+#endif
+
 				foreach (var x in it())
 				{
+					if (x.Parent == x)
+						throw new Exception("Self-parenting is a bad idea");
+
 					foreach (var f in transforms)
 						if (f.Transform(x) != x)
 						{
+							lastchanger = f;
+							lastchange = x;
+
+#if DEBUG_TRANSFORMS
+							if (x is AST.Expression)	
+								Console.WriteLine(x.GetType().FullName + ": " + (x as AST.Expression).SourceExpression.ToString());
+							if (x is AST.Statement)
+								Console.WriteLine(x.GetType().FullName + ": " + (x as AST.Statement).SourceStatement.ToString());
+						
+							Console.WriteLine("........... restarting after change by {0}", f.GetType().FullName);
+#endif
+
 							repeat = true;
 							break;
 						}
