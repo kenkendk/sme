@@ -785,13 +785,17 @@ namespace SME.VHDL
 			if (!TemporaryVariables.TryGetValue(method, out table))
 				TemporaryVariables[method] = table = new Dictionary<string, Variable>();
 
+			object def = null;
+			if (variabletype.IsValueType && Type.GetType(variabletype.FullName) != null)
+				def = Activator.CreateInstance(Type.GetType(variabletype.FullName));
+
 			var name = "local_var_" + table.Count.ToString();
 			return table[name] = new Variable()
 			{
 				Name = name,
 				CecilType = variabletype,
 				Parent = method,
-				DefaultValue = variabletype.IsValueType ? Activator.CreateInstance(Type.GetType(variabletype.FullName)) : null
+				DefaultValue = def
 			};
 		}
 
