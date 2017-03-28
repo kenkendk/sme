@@ -81,6 +81,8 @@ namespace SME.AST
 			{
 				var e = expression as ICSharpCode.NRefactory.CSharp.MemberReferenceExpression;
 
+				ASTItem current = null;
+
 				var parts = new List<string>();
 				ICSharpCode.NRefactory.CSharp.Expression ec = e;
 				while (ec != null)
@@ -92,7 +94,7 @@ namespace SME.AST
 					}
 					else if (ec is ICSharpCode.NRefactory.CSharp.ThisReferenceExpression)
 					{
-						parts.Add("this");
+						//parts.Add("this");
 						ec = null;
 						break;
 					}
@@ -104,9 +106,80 @@ namespace SME.AST
 					}
 					else if (ec is ICSharpCode.NRefactory.CSharp.TypeReferenceExpression)
 					{
-						// Static reference, we store it as global
+						TypeDefinition dc = null;
+						if (method != null)
+							dc = method.SourceMethod.DeclaringType;
+						else if (proc != null)
+							dc = proc.CecilType.Resolve();
+
+						var ecs = ec.ToString();
+
+						if (dc != null)
+						{
+							if (ecs == dc.FullName || ecs == dc.Name)
+							{
+								ec = null;
+								//parts.Add("this");
+								break;
+							}
+
+							var targetproc = network.Processes.FirstOrDefault(x => x.CecilType.Name == ecs || x.CecilType.FullName == ecs);
+							if (targetproc != null)
+							{
+								// This is a static reference
+								current = null; //targetproc;
+								break;
+							}
+
+							var bt = LoadTypeByName(ecs, dc.Module);
+							if (bt == null)
+								bt = LoadTypeByName(dc.FullName + "." + ecs, method.SourceMethod.Module);
+							if (bt == null)
+								bt = LoadTypeByName(dc.Namespace + "." + ecs, method.SourceMethod.Module);
+
+							if (bt != null && parts.Count == 1)
+							{
+								var br = bt.Resolve();
+								var px = br.Fields.FirstOrDefault(x => x.Name == parts[0]);
+
+								// Enum flags are encoded as constants
+								if (br.IsEnum)
+								{
+									if (px == null)
+										throw new Exception($"Unable to find enum value {parts[0]} in {br.FullName}");
+
+									return new Constant()
+									{
+										CecilType = bt,
+										DefaultValue = px,
+										Source = expression
+									};
+								}
+								else
+								{
+									// This is a constant of sorts
+									var pe = network.ConstantLookup.Keys.FirstOrDefault(x => x.Name == parts[0]);
+									if (pe != null)
+										return network.ConstantLookup[pe];
+
+									return network.ConstantLookup[px] = new Constant()
+									{
+										CecilType = px.FieldType,
+										Name = parts[0],
+										Source = px,
+										Parent = network
+									};
+								}
+
+								//parts.AddRange(bt.FullName.Split('.').Reverse());
+							}
+
+
+							break;
+						}
+
+						// Likely a static reference, which is stored as a global constant
 						ec = null;
-						break;
 					}
 					else
 					{
@@ -118,7 +191,6 @@ namespace SME.AST
 				var fullname = string.Join(".", parts);
 
 
-				ASTItem current = null;
 				if (parts.First() == "this")
 				{
 					parts.RemoveAt(0);
@@ -143,54 +215,58 @@ namespace SME.AST
 						}
 					}
 
-					if (current == method || (isIsFirst && current == null))
+					if (current is MethodState || (isIsFirst && current == null))
 					{
 						//if (method.LocalRenames.ContainsKey(el))
 						//	el = method.LocalRenames[el];
 
-						if (method.LocalVariables.ContainsKey(el))
+						var mt = current as MethodState ?? method;
+
+						if (mt.LocalVariables.ContainsKey(el))
 						{
-							current = method.LocalVariables[el];
+							current = mt.LocalVariables[el];
 							continue;
 						}
 
-						var p = method.Parameters.FirstOrDefault(x => x.Name == el);
+						var p = mt.Parameters.FirstOrDefault(x => x.Name == el);
 						if (p != null)
 						{
 							current = p;
 							continue;
 						}
 
-						if (method.ReturnVariable != null && !string.IsNullOrWhiteSpace(method.ReturnVariable.Name) && el == method.ReturnVariable.Name)
+						if (mt.ReturnVariable != null && !string.IsNullOrWhiteSpace(mt.ReturnVariable.Name) && el == mt.ReturnVariable.Name)
 						{
-							current = method.ReturnVariable;
+							current = mt.ReturnVariable;
 							continue;
 						}
 					}
 
-					if (current == proc || (isIsFirst && current == null))
+					if (current is ProcessState || (isIsFirst && current == null))
 					{
-						if (proc.BusInstances.ContainsKey(el))
+						var pr = current as ProcessState ?? proc;
+
+						if (pr.BusInstances.ContainsKey(el))
 						{
-							current = proc.BusInstances[el];
+							current = pr.BusInstances[el];
 							continue;
 						}
 
-						if (proc.Signals.ContainsKey(el))
+						if (pr.Signals.ContainsKey(el))
 						{
-							current = proc.Signals[el];
+							current = pr.Signals[el];
 							continue;
 						}
 
-						if (proc.Variables.ContainsKey(el))
+						if (pr.Variables.ContainsKey(el))
 						{
-							current = proc.Variables[el];
+							current = pr.Variables[el];
 							continue;
 						}
 
-						if (proc.Methods != null)
+						if (pr.Methods != null)
 						{
-							var p = proc.Methods.FirstOrDefault(x => x.Name == el);
+							var p = pr.Methods.FirstOrDefault(x => x.Name == el);
 							if (p != null)
 							{
 								current = p;
@@ -206,6 +282,38 @@ namespace SME.AST
 							continue;
 					}
 
+					if (current is Variable)
+					{
+						var fi = ((Variable)current).CecilType.Resolve().Fields.FirstOrDefault(x => x.Name == el);
+						if (fi != null)
+						{
+							current = new Variable()
+							{
+								Name = el,
+								Parent = current,
+								Source = fi,
+								CecilType = fi.FieldType,
+								DefaultValue = null
+							};
+
+							continue;
+						}
+
+						var pi = ((Variable)current).CecilType.Resolve().Properties.FirstOrDefault(x => x.Name == el);
+						if (pi != null)
+						{
+							current = new Variable()
+							{
+								Name = el,
+								Parent = current,
+								Source = fi,
+								CecilType = fi.FieldType,
+								DefaultValue = null
+							};
+
+							continue;
+						}
+					}
 
 					if (el == "Length" && (current is DataElement) && ((DataElement)current).CecilType.IsArrayType())
 					{
