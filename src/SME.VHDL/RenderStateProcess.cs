@@ -689,8 +689,6 @@ namespace SME.VHDL
 					if (ce.DefaultValue is FieldDefinition)
 						return Naming.ToValidName(ce.CecilType.FullName + "_" + ((FieldDefinition)ce.DefaultValue).Name);
 				}
-
-				throw new Exception($"Failed to find value for constant expression: {e.Target.Source}");
 			}
 
 			if (string.IsNullOrEmpty(e.Target.Name))
