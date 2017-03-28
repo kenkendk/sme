@@ -65,19 +65,10 @@ namespace SME.AST
 		protected virtual void Decompile(NetworkState network, ProcessState proc, System.Reflection.MethodInfo method)
 		{
 			var statements = new List<Statement>();
-
 			if (proc.CecilType == null)
 				proc.CecilType = LoadType(proc.SourceType);
 
 			var proctype = proc.CecilType.Resolve();
-
-			// Register all variables
-			foreach (var f in proctype.Fields)
-				if (f.FieldType.IsBusType())
-					RegisterBusReference(network, proc, f);
-				else
-					RegisterVariable(network, proc, f);
-
 			proc.DecompilerContext = new DecompilerContext(proc.CecilType.Module) { CurrentType = proctype };
 
 			var static_constructor = proctype.Methods.Where(x => x.IsConstructor && !x.HasParameters && x.IsStatic).FirstOrDefault();

@@ -61,6 +61,10 @@ namespace SME.AST
 			/// The import statements
 			/// </summary>
 			public readonly List<string> Imports = new List<string>();
+			/// <summary>
+			/// A flag indicating if the method should be decompiled
+			/// </summary>
+			public bool Decompile;
 		}
 
 		/// <summary>
@@ -131,6 +135,16 @@ namespace SME.AST
 			network.Busses = network.Processes.SelectMany(x => x.InternalBusses.Union(x.InputBusses).Union(x.OutputBusses)).Distinct().ToArray();
 			network.Constants = network.ConstantLookup.Values.ToArray();
 
+			foreach (var pr in network.Processes.Cast<ProcessState>().Where(x => x.Decompile))
+			{
+				var st = pr.SourceType;
+				var method = st.GetMethod("OnTick", BindingFlags.Instance | BindingFlags.NonPublic, null, CallingConventions.Any, new Type[] { }, null);
+				if (method == null)
+					throw new Exception($"Could not find the \"OnTick\" method in class: {st.FullName}");
+
+				Decompile(network, pr, method);
+			}
+
 			// Patch up all types if they are missing
 			foreach (var el in network.All().OfType<DataElement>().Where(x => x.CecilType == null))
 				el.CecilType = LoadType(el.Type);
@@ -168,10 +182,16 @@ namespace SME.AST
 			{
 				Name = NameWithoutPrefix(network, st.FullName),
 				SourceType = st,
+				CecilType = LoadType(st),
 				SourceInstance = process,
 				Parent = network,
 				IsSimulation = process is SimulationProcess,
-				IsClocked = st.GetCustomAttribute<ClockedProcessAttribute>() != null
+				IsClocked = st.GetCustomAttribute<ClockedProcessAttribute>() != null,
+				Decompile = typeof(SimpleProcess).IsAssignableFrom(st)
+					&&
+					!st.HasAttribute<SuppressOutputAttribute>()
+					&&
+					!st.HasAttribute<SuppressBodyAttribute>()
 			};
 
 			res.InputBusses = inputbusses.Select(x => Parse(network, res, x)).ToArray();
@@ -180,24 +200,21 @@ namespace SME.AST
 			foreach (var ib in res.InternalBusses)
 				ib.IsInternal = true;
 
-			var decompile =
-				typeof(SimpleProcess).IsAssignableFrom(st)
-					&&
-					!st.HasAttribute<SuppressOutputAttribute>()
-					&&
-				    !st.HasAttribute<SuppressBodyAttribute>();
 
-			if (decompile)
+			if (res.Decompile)
 			{
-				var method = st.GetMethod("OnTick", BindingFlags.Instance | BindingFlags.NonPublic, null, CallingConventions.Any, new Type[] { }, null);
-				if (method == null)
-					throw new Exception($"Could not find the \"OnTick\" method in class: {st.FullName}");
-				Decompile(network, res, method);
+				var proctype = res.CecilType.Resolve();
+
+				// Register all variables
+				foreach (var f in proctype.Fields)
+					if (f.FieldType.IsBusType())
+						RegisterBusReference(network, res, f);
+					else
+						RegisterVariable(network, res, f);
 			}
 
 			res.SharedSignals = res.Signals.Values.ToArray();
 			res.SharedVariables = res.Variables.Values.ToArray();
-
 			return res;
 		}
 
@@ -226,8 +243,7 @@ namespace SME.AST
 			};
 
 			network.BusInstanceLookup[st] = res;
-			res.Signals = st.GetProperties().Select(x => Parse(network, proc, res, x)).ToArray();
-
+			res.Signals = st.GetPropertiesRecursive().Where(x => x.DeclaringType != typeof(IBus)).Select(x => Parse(network, proc, res, x)).ToArray();
 			return res;
 		}
 
