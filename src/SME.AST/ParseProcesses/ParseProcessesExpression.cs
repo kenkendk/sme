@@ -105,13 +105,16 @@ namespace SME.AST
 					SourceExpression = expression,
 				};
 
+			var lhs = Decompile(network, proc, method, statement, expression.Left);
+			var rhs = Decompile(network, proc, method, statement, expression.Right);
+
 			var res = new AssignmentExpression()
 			{
 				Operator = expression.Operator,
 				SourceResultType = ResolveExpressionType(network, proc, method, statement, expression),
 				SourceExpression = expression,
-				Left = Decompile(network, proc, method, statement, expression.Left),
-				Right = Decompile(network, proc, method, statement, expression.Right),
+				Left = lhs,
+				Right = rhs,
 				Parent = statement
 			};
 
