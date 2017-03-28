@@ -27,7 +27,12 @@ namespace SME.VHDL.Transformations
 			}
 
 			if (el is AST.Constant)
-				el.Name = Naming.ToValidName(el.Parent.Name + "." + el.Name);
+			{
+				if (((Constant)el).Source is Mono.Cecil.FieldDefinition)
+					el.Name = Naming.ToValidName((((Constant)el).Source as Mono.Cecil.FieldDefinition).DeclaringType.FullName + "." + el.Name);
+				else
+					el.Name = Naming.ToValidName(el.Parent.Name + "." + el.Name);
+			}
 
 			return el;
 		}
