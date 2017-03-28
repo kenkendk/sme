@@ -265,6 +265,18 @@ namespace SME.AST
 				var t0 = typeof(int).Assembly.GetType("System." + typename);
 				if (t0 != null)
 					return LoadType(t0);
+				if (sourcemethod != null)
+				{
+					var t1 = LoadTypeByName(typename, sourcemethod.SourceMethod.Module);
+					if (t1 != null)
+						return t1;
+					t1 = LoadTypeByName(sourcemethod.SourceMethod.DeclaringType.FullName + "." + typename, sourcemethod.SourceMethod.Module);
+					if (t1 != null)
+						return t1;
+					t1 = LoadTypeByName(sourcemethod.SourceMethod.DeclaringType.Namespace + "." + typename, sourcemethod.SourceMethod.Module);
+					if (t1 != null)
+						return t1;
+				}
 			}
 
 			if (t is ICSharpCode.NRefactory.CSharp.MemberType)
