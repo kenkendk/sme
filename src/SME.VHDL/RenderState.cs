@@ -333,6 +333,22 @@ namespace SME.VHDL
 		}
 
 		/// <summary>
+		/// Wraps the VHDL typename if the type is an array type
+		/// </summary>
+		/// <returns>The wrapped type name.</returns>
+		/// <param name="fd">The Field to wrap.</param>
+		public string VHDLWrappedTypeName(Mono.Cecil.FieldDefinition fd)
+		{
+			var vt = TypeScope.GetVHDLType(fd);
+			if (fd.FieldType.IsArrayType())
+			{
+				return fd.Name + "_type";
+			}
+
+			return vt.ToString();
+		}
+
+		/// <summary>
 		/// Returns the VHDL type for an expression
 		/// </summary>
 		/// <returns>The VHDL type.</returns>
@@ -440,12 +456,15 @@ namespace SME.VHDL
 					.Where(x =>
 					{
 						var rd = x.CecilType.Resolve();
-						return 
-							(rd.DeclaringType == null || !rd.HasAttribute<VHDLTypeAttribute>())
-							   && 
-					   		(rd.IsEnum || (rd.IsValueType && !rd.IsPrimitive));
+						var custom = rd.CustomAttributes.Any(y => y.AttributeType.IsSameTypeReference(typeof(VHDLTypeAttribute)));
+
+						return
+							(!custom)
+							   &&
+							   (rd.IsEnum || (rd.IsValueType && !rd.IsPrimitive));
 					})
 					.Select(x => VHDLType(x))
+					.Select(x => x.IsArray && !x.IsStdLogicVector ? TypeScope.GetByName(x.ElementName) : x)
 					.Where(x => !ignores.ContainsKey(x.ToString()))
 					.Distinct();
 			}
@@ -509,7 +528,7 @@ namespace SME.VHDL
 
 				foreach (var m in td.Fields)
 					if (!m.IsStatic)
-						yield return string.Format("    {0}: {1};", Naming.ToValidName(m.Name), TypeScope.GetVHDLType(m).Name);
+						yield return string.Format("    {0}: {1};", Naming.ToValidName(m.Name), VHDLWrappedTypeName(m));
 
 
 				yield return "end record;";
