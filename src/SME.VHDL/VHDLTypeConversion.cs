@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Linq;
 using SME.AST;
 
 namespace SME.VHDL
 {
 	public static class VHDLTypeConversion
 	{
-		public static Expression ConvertExpression(RenderState render, Method method, Expression s, VHDLType target, bool fromCast)
+		public static Expression ConvertExpression(RenderState render, Method method, Expression s, VHDLType target, Mono.Cecil.TypeReference targetsource, bool fromCast)
 		{
 			var svhdl = render.VHDLType(s);
 
@@ -139,7 +140,7 @@ namespace SME.VHDL
 							// This must be a variable as bit concatenation is only allowed in assignment statements:
 							// http://stackoverflow.com/questions/209458/concatenating-bits-in-vhdl
 
-							tmpvar = render.RegisterTemporaryVariable(method, s.SourceResultType);
+							tmpvar = render.RegisterTemporaryVariable(method, targetsource);
 							render.TypeLookup[tmpvar] = target;
 
 							var iexp = new IdentifierExpression()
@@ -147,7 +148,7 @@ namespace SME.VHDL
 								Name = tmpvar.Name,
 								Target = tmpvar,
 								SourceExpression = s.SourceExpression,
-								SourceResultType = s.SourceResultType
+								SourceResultType = targetsource
 							};
 
 							if (render.USE_EXPLICIT_CONCATENATION_OPERATOR)
@@ -165,7 +166,7 @@ namespace SME.VHDL
 									Right = s,
 									Operator = ICSharpCode.NRefactory.CSharp.AssignmentOperatorType.Assign,
 									SourceExpression = s.SourceExpression,
-									SourceResultType = s.SourceResultType
+									SourceResultType = targetsource
 								},
 								SourceStatement = s.SourceExpression.Clone()
 							};
@@ -285,8 +286,7 @@ namespace SME.VHDL
 					}
 					else
 					{
-						// TODO: Not correct ResolvedSourceType, should be target
-						var tmp = render.RegisterTemporaryVariable(method, s.SourceResultType);
+						var tmp = render.RegisterTemporaryVariable(method, targetsource);
 						render.TypeLookup[tmp] = target;
 
 						var iexp = new IdentifierExpression()
@@ -294,7 +294,7 @@ namespace SME.VHDL
 							Name = tmp.Name,
 							Target = tmp,
 							SourceExpression = s.SourceExpression,
-							SourceResultType = s.SourceResultType
+							SourceResultType = targetsource
 						};
 
 						render.TypeLookup[iexp] = target;

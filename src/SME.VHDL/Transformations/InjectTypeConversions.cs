@@ -59,10 +59,18 @@ namespace SME.VHDL.Transformations
 				var le_type = State.VHDLType(le);
 				var re_type = State.VHDLType(re);
 
+				Mono.Cecil.TypeReference tvhdlsource;
+
 				if (le is AST.PrimitiveExpression && !(re is AST.PrimitiveExpression))
+				{
 					tvhdl = re_type;
+					tvhdlsource = re.SourceResultType;
+				}
 				else
+				{
 					tvhdl = le_type;
+					tvhdlsource = le.SourceResultType;
+				}
 
 				// As we are in depth-first post-order, we may not have acted on the type-cast yet
 				// so we peek up the tree to see if the result is forced to a particular type
@@ -76,7 +84,10 @@ namespace SME.VHDL.Transformations
 					// The cast expression will cut the precision for us later, if needed
 					var xt = State.TypeScope.GetVHDLType(((AST.CastExpression)tp).SourceResultType);
 					if ((xt.IsNumeric || xt.IsStdLogicVector) && (tvhdl.IsNumeric || tvhdl.IsStdLogicVector) && xt.Length > tvhdl.Length)
+					{
 						tvhdl = xt;
+						tvhdlsource = ((AST.CastExpression)tp).SourceResultType;
+					}
 				}
 
 				if ((boe.Operator.IsArithmeticOperator() || boe.Operator.IsCompareOperator()))
@@ -92,14 +103,30 @@ namespace SME.VHDL.Transformations
 					tvhdl = State.TypeScope.SystemEquivalent(tvhdl);
 
 
-				var lhstype = boe.Operator.IsLogicalOperator() ? VHDLTypes.BOOL : tvhdl;
-				var rhstype = boe.Operator.IsLogicalOperator() ? VHDLTypes.BOOL : tvhdl;
+				VHDLType lhstype, rhstype;
+				Mono.Cecil.TypeReference lhssource, rhssource;
+
+				if (boe.Operator.IsLogicalOperator())
+				{
+					lhstype = VHDLTypes.BOOL;
+					rhstype = VHDLTypes.BOOL;
+					lhssource = rhssource = boe.SourceResultType.LoadType(typeof(bool));
+				}
+				else
+				{
+					lhstype = tvhdl;
+					rhstype = tvhdl;
+					lhssource = rhssource = tvhdlsource;
+				}
 
 				if (boe.Operator == BinaryOperatorType.ShiftLeft || boe.Operator == BinaryOperatorType.ShiftRight)
 				{
 					rhstype = VHDLTypes.INTEGER;
 					if (lhstype == VHDLTypes.INTEGER)
+					{
 						lhstype = State.VHDLType(boe.Parent as AST.Expression);
+						lhssource = (boe.Parent as AST.Expression).SourceResultType;
+					}
 					else
 						lhstype = State.TypeScope.NumericEquivalent(lhstype);
 				}
@@ -109,12 +136,13 @@ namespace SME.VHDL.Transformations
 				{
 				case BinaryOperatorType.ShiftLeft:
 				case BinaryOperatorType.ShiftRight:
+					rhssource = boe.SourceResultType.LoadType(typeof(int));
 					rhstype = VHDLTypes.INTEGER;
 					break;
 				}
 
-				var newleft = VHDLTypeConversion.ConvertExpression(State, Method, boe.Left, lhstype, false);
-				var newright = VHDLTypeConversion.ConvertExpression(State, Method, boe.Right, rhstype, false);
+				var newleft = VHDLTypeConversion.ConvertExpression(State, Method, boe.Left, lhstype, lhssource, false);
+				var newright = VHDLTypeConversion.ConvertExpression(State, Method, boe.Right, rhstype, rhssource, false);
 
 				if (boe.Operator.IsLogicalOperator() || boe.Operator.IsCompareOperator())
 					State.TypeLookup[boe] = VHDLTypes.BOOL;
@@ -138,7 +166,7 @@ namespace SME.VHDL.Transformations
 
 				var r = ase.Right;
 				ase.SourceResultType = ase.Left.SourceResultType;
-				var n = VHDLTypeConversion.ConvertExpression(State, Method, ase.Right, tvhdl, false);
+				var n = VHDLTypeConversion.ConvertExpression(State, Method, ase.Right, tvhdl, ase.Left.SourceResultType, false);
 				State.TypeLookup[ase] = State.TypeLookup[n] = tvhdl;
 				if (n != r)
 					return null;
@@ -148,7 +176,7 @@ namespace SME.VHDL.Transformations
 				var cse = ((AST.CastExpression)el);
 				var tvhdl = State.VHDLType(cse);
 				res = cse.ReplaceWith(
-					VHDLTypeConversion.ConvertExpression(State, Method, cse.Expression, tvhdl, true)
+					VHDLTypeConversion.ConvertExpression(State, Method, cse.Expression, tvhdl, cse.SourceResultType, true)
 				);
 				State.TypeLookup[cse] = State.TypeLookup[res] = tvhdl;
 				return res;
@@ -158,7 +186,7 @@ namespace SME.VHDL.Transformations
 				var ie = ((AST.IndexerExpression)el);
 				var tvhdl = VHDLTypes.INTEGER;
 				var r = ie.IndexExpression;
-				var n = VHDLTypeConversion.ConvertExpression(State, Method, ie.IndexExpression, tvhdl, false);
+				var n = VHDLTypeConversion.ConvertExpression(State, Method, ie.IndexExpression, tvhdl, ie.SourceResultType.LoadType(typeof(int)), false);
 				State.TypeLookup[n] = tvhdl;
 				State.TypeLookup[ie] = State.TypeScope.GetByName(State.VHDLType(ie.Target).ElementName);
 				if (n != r)
@@ -169,7 +197,7 @@ namespace SME.VHDL.Transformations
 				var ies = el as AST.IfElseStatement;
 				var tvhdl = VHDLTypes.BOOL;
 				var r = ies.Condition;
-				var n = VHDLTypeConversion.ConvertExpression(State, Method, ies.Condition, tvhdl, false);
+				var n = VHDLTypeConversion.ConvertExpression(State, Method, ies.Condition, tvhdl, r.SourceResultType.LoadType(typeof(bool)), false);
 				State.TypeLookup[n] = tvhdl;
 				if (n != r)
 					return null;
@@ -180,7 +208,7 @@ namespace SME.VHDL.Transformations
 				if (uoe.Operator == UnaryOperatorType.Not)
 				{
 					var tvhdl = VHDLTypes.BOOL;
-					var n = VHDLTypeConversion.ConvertExpression(State, Method, uoe.Operand, tvhdl, false);
+					var n = VHDLTypeConversion.ConvertExpression(State, Method, uoe.Operand, tvhdl, uoe.SourceResultType.LoadType(typeof(bool)), false);
 					State.TypeLookup[n] = tvhdl;
 					if (n != uoe.Operand)
 						return null;
@@ -195,7 +223,7 @@ namespace SME.VHDL.Transformations
 					if (a is AST.PrimitiveExpression)
 					{
 						var tvhdl = State.TypeScope.GetVHDLType(a.SourceResultType);
-						changed |= VHDLTypeConversion.ConvertExpression(State, Method, a, tvhdl, false) != a;
+						changed |= VHDLTypeConversion.ConvertExpression(State, Method, a, tvhdl, a.SourceResultType, false) != a;
 					}
 				}
 			}

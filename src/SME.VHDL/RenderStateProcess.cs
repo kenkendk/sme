@@ -874,7 +874,7 @@ namespace SME.VHDL
 				var elvhdl = Parent.TypeScope.GetByName(tvhdl.ElementName);
 
 				for (var i = 0; i < nae.ElementExpressions.Length; i++)
-					VHDLTypeConversion.ConvertExpression(Parent, null, nae.ElementExpressions[i], elvhdl, false);
+					VHDLTypeConversion.ConvertExpression(Parent, null, nae.ElementExpressions[i], elvhdl, nae.ElementExpressions[i].SourceResultType, false);
 
 				exp.Right = nae;
 				Parent.TypeLookup[nae] = tvhdl;
@@ -947,7 +947,7 @@ namespace SME.VHDL
 			}
 			else
 			{
-				VHDLTypeConversion.ConvertExpression(Parent, null, exp.Right, tvhdl, false);
+				VHDLTypeConversion.ConvertExpression(Parent, null, exp.Right, tvhdl, element.CecilType, false);
 			}
 				
 			return res;
