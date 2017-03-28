@@ -378,22 +378,17 @@ namespace SME.VHDL
 			return self;
 		}
 
-		public static CustomNodes.ConversionExpression WrapExpression(RenderState render, Expression expression, string template, VHDLType vhdltarget)
+		public static Expression WrapExpression(RenderState render, Expression expression, string template, VHDLType vhdltarget)
 		{
-			if (expression is CastExpression)
-				expression = ((CastExpression)expression).Expression;
-
-			var self = new CustomNodes.ConversionExpression() {
+			var self = expression.ReplaceWith(new CustomNodes.ConversionExpression()
+			{
 				Expression = expression,
-				Parent = expression.Parent,
 				WrappingTemplate = template,
 				SourceExpression = expression.SourceExpression,
 				SourceResultType = expression.SourceResultType
-			};
+			});
 
-			expression.ReplaceWith(self);
 			expression.Parent = self;
-
 			render.TypeLookup[self] = vhdltarget;
 
 			return self;
