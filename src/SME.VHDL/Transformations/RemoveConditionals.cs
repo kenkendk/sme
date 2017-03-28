@@ -126,7 +126,7 @@ namespace SME.VHDL.Transformations
 
 			var ies = new IfElseStatement()
 			{
-				Condition = sourceExp.ConditionExpression,
+				Condition = sourceExp.ConditionExpression.Clone(),
 				TrueStatement = new ExpressionStatement()
 				{
 					SourceStatement = sourceExp.SourceExpression.Clone(),
