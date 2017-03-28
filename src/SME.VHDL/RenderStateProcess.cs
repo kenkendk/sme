@@ -171,7 +171,10 @@ namespace SME.VHDL
 						else if (v.DefaultValue is ArrayCreateExpression)
 							arraylen = ((ArrayCreateExpression)v.DefaultValue).ElementExpressions.Length;
 						else
-							throw new Exception($"Unable to find the length for {v.Name}");
+						{
+							Console.WriteLine($"Unable to find variable for {v.Name}, ignoring");
+							continue;
+						}
 
 						yield return $"subtype {v.Name}_type is {VHDLType(v)}(0 to {arraylen} - 1)";
 					}
@@ -574,8 +577,10 @@ namespace SME.VHDL
 					prefix = "out_";
 				else if (!Process.IsClocked && (pbus.IsClocked || pbus.IsInternal))
 					prefix = "next_";
-				
 			}
+
+			if (e.Right is PrimitiveExpression && ((PrimitiveExpression)e.Right).Value == null)
+				return string.Format("--{0}{1} {2} ???", prefix, RenderExpression(e.Left), target is Signal ? "<=" : ":=");
 			
 			return string.Format("{0}{1} {2} {3}", prefix, RenderExpression(e.Left), target is Signal ? "<=" : ":=" , RenderExpression(e.Right));
 		}
@@ -672,8 +677,21 @@ namespace SME.VHDL
 		{
 			if (e.Target.Parent is AST.Bus)
 				return e.Target.Parent.Name + "_" + e.Target.Name;
-			else if (e.Target is AST.Constant && ((Constant)e.Target).ArrayLengthSource != null)
-				return  ((Constant)e.Target).ArrayLengthSource.Name + "_type'LENGTH";
+			else if (e.Target is AST.Constant)
+			{
+				var ce = e.Target as AST.Constant;
+
+				if (ce.ArrayLengthSource != null)
+					return ((Constant)e.Target).ArrayLengthSource.Name + "_type'LENGTH";
+
+				if (ce.CecilType != null && ce.CecilType.Resolve().IsEnum)
+				{
+					if (ce.DefaultValue is FieldDefinition)
+						return Naming.ToValidName(ce.CecilType.FullName + "_" + ((FieldDefinition)ce.DefaultValue).Name);
+				}
+
+				throw new Exception($"Failed to find value for constant expression: {e.Target.Source}");
+			}
 
 			if (string.IsNullOrEmpty(e.Target.Name))
 				throw new Exception($"Cannot emit empty expression: {e.SourceExpression}");
@@ -865,7 +883,8 @@ namespace SME.VHDL
 			}
 			else if (element.DefaultValue is ICSharpCode.NRefactory.CSharp.AstNode)
 			{
-				var defaultvalue = element.CecilType.IsValueType ? Activator.CreateInstance(Type.GetType(element.CecilType.FullName)) : null;
+				var eltype = Type.GetType(element.CecilType.FullName);
+				var defaultvalue = eltype != null && element.CecilType.IsValueType ? Activator.CreateInstance(eltype) : null;
 
 				exp.Right = new AST.PrimitiveExpression()
 				{
