@@ -124,7 +124,19 @@ namespace SME.AST
 		/// <param name="statement">The decompiler statement to process.</param>
 		protected virtual Statement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.NRefactory.CSharp.VariableDeclarationStatement statement)
 		{
-			var vartype = LoadType(statement.Type, method);
+			TypeReference vartype = null;
+
+			var init = statement.Variables.FirstOrDefault(x => x.Initializer is ICSharpCode.NRefactory.CSharp.MemberReferenceExpression);
+			if (init != null)
+			{
+				var mt = TryLocateElement(network, proc, method, null, init.Initializer);
+				if (mt != null && mt is AST.Bus)
+					vartype = LoadType(((AST.Bus)mt).SourceType);
+			}
+
+			if (vartype == null)
+				vartype = LoadType(statement.Type, method);
+			
 			if (vartype.IsBusType())
 			{
 				foreach (var n in statement.Variables)
