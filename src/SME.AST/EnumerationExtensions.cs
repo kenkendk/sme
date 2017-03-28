@@ -424,129 +424,137 @@ namespace SME.AST
 		public static IEnumerable<ASTItem> All(this Expression expression, Func<ASTItem, VisitorState, bool> visitor = null)
 		{
 			visitor = visitor ?? ((a, b) => true);
-			if (!visitor(expression, VisitorState.Enter))
-				yield break;
-
-			var isSplitOp =
-				expression is AssignmentExpression
-				||
-				expression is BinaryOperatorExpression;
-
-			if (!isSplitOp)
+			if (expression is CustomExpression)
 			{
-				if (!visitor(expression, VisitorState.Visit))
-					yield break;
-				yield return expression;
-				if (!visitor(expression, VisitorState.Visited))
-					yield break;
-			}
-
-			if (expression is ArrayCreateExpression)
-			{
-				foreach (var p in ((ArrayCreateExpression)expression).ElementExpressions)
-					foreach (var x in p.All(visitor))
-						yield return x;
-			}
-			else if (expression is EmptyArrayCreateExpression)
-			{
-				foreach (var x in ((EmptyArrayCreateExpression)expression).SizeExpression.All(visitor))
-					yield return x;				
-			}
-			else if (expression is AssignmentExpression)
-			{
-				foreach (var x in ((AssignmentExpression)expression).Left.All(visitor))
-					yield return x;
-
-				if (!visitor(expression, VisitorState.Visit))
-					yield break;
-				yield return expression;
-				if (!visitor(expression, VisitorState.Visited))
-					yield break;
-
-				foreach (var x in ((AssignmentExpression)expression).Right.All(visitor))
-					yield return x;
-			}
-			else if (expression is BinaryOperatorExpression)
-			{
-				foreach (var x in ((BinaryOperatorExpression)expression).Left.All(visitor))
-					yield return x;
-
-				if (!visitor(expression, VisitorState.Visit))
-					yield break;
-				yield return expression;
-				if (!visitor(expression, VisitorState.Visited))
-					yield break;
-
-				foreach (var x in ((BinaryOperatorExpression)expression).Right.All(visitor))
-					yield return x;
-			}
-			else if (expression is ConditionalExpression)
-			{
-				foreach (var x in ((ConditionalExpression)expression).ConditionExpression.All(visitor))
-					yield return x;
-				foreach (var x in ((ConditionalExpression)expression).TrueExpression.All(visitor))
-					yield return x;
-				foreach (var x in ((ConditionalExpression)expression).FalseExpression.All(visitor))
-					yield return x;
-			}
-			else if (expression is EmptyExpression || expression is NullReferenceExpression)
-			{
-			}
-			else if (expression is IdentifierExpression)
-			{
-			}
-			else if (expression is IndexerExpression)
-			{
-				foreach (var x in ((IndexerExpression)expression).TargetExpression.All(visitor))
-					yield return x;
-				foreach (var x in ((IndexerExpression)expression).IndexExpression.All(visitor))
-					yield return x;
-			}
-			else if (expression is InvocationExpression)
-			{
-				foreach (var x in ((InvocationExpression)expression).TargetExpression.All(visitor))
-					yield return x;
-				foreach (var p in ((InvocationExpression)expression).ArgumentExpressions)
-					foreach (var x in p.All(visitor))
-						yield return x;
-			}
-			else if (expression is MemberReferenceExpression || expression is MethodReferenceExpression)
-			{
-			}
-			else if (expression is ParenthesizedExpression)
-			{
-				foreach (var x in ((ParenthesizedExpression)expression).Expression.All(visitor))
-					yield return x;
-			}
-			else if (expression is PrimitiveExpression)
-			{
-			}
-			else if (expression is UnaryOperatorExpression)
-			{
-				foreach (var x in ((UnaryOperatorExpression)expression).Operand.All(visitor))
-					yield return x;
-			}
-			else if (
-				expression.GetType() == typeof(WrappingExpression)
-				|| expression is UncheckedExpression
-				|| expression is ParenthesizedExpression
-				|| expression is CheckedExpression
-				|| expression is CastExpression)
-			{
-				foreach (var x in ((WrappingExpression)expression).Expression.All(visitor))
-					yield return x;
-			}
-			else if (expression is CustomExpression)
-			{
-				foreach (var x in ((CustomExpression)expression).Visit(visitor))
-					yield return x;
+				foreach (var e in ((CustomExpression)expression).Visit(visitor))
+					yield return e;
 			}
 			else
 			{
-				throw new Exception($"No handler for expression of type {expression.GetType().FullName}");
-			}
+				if (!visitor(expression, VisitorState.Enter))
+					yield break;
 
-			visitor(expression, VisitorState.Leave);
+				var isSplitOp =
+					expression is AssignmentExpression
+					||
+					expression is BinaryOperatorExpression;
+
+				if (!isSplitOp)
+				{
+					if (!visitor(expression, VisitorState.Visit))
+						yield break;
+					yield return expression;
+					if (!visitor(expression, VisitorState.Visited))
+						yield break;
+				}
+
+				if (expression is ArrayCreateExpression)
+				{
+					foreach (var p in ((ArrayCreateExpression)expression).ElementExpressions)
+						foreach (var x in p.All(visitor))
+							yield return x;
+				}
+				else if (expression is EmptyArrayCreateExpression)
+				{
+					foreach (var x in ((EmptyArrayCreateExpression)expression).SizeExpression.All(visitor))
+						yield return x;
+				}
+				else if (expression is AssignmentExpression)
+				{
+					foreach (var x in ((AssignmentExpression)expression).Left.All(visitor))
+						yield return x;
+
+					if (!visitor(expression, VisitorState.Visit))
+						yield break;
+					yield return expression;
+					if (!visitor(expression, VisitorState.Visited))
+						yield break;
+
+					foreach (var x in ((AssignmentExpression)expression).Right.All(visitor))
+						yield return x;
+				}
+				else if (expression is BinaryOperatorExpression)
+				{
+					foreach (var x in ((BinaryOperatorExpression)expression).Left.All(visitor))
+						yield return x;
+
+					if (!visitor(expression, VisitorState.Visit))
+						yield break;
+					yield return expression;
+					if (!visitor(expression, VisitorState.Visited))
+						yield break;
+
+					foreach (var x in ((BinaryOperatorExpression)expression).Right.All(visitor))
+						yield return x;
+				}
+				else if (expression is ConditionalExpression)
+				{
+					foreach (var x in ((ConditionalExpression)expression).ConditionExpression.All(visitor))
+						yield return x;
+					foreach (var x in ((ConditionalExpression)expression).TrueExpression.All(visitor))
+						yield return x;
+					foreach (var x in ((ConditionalExpression)expression).FalseExpression.All(visitor))
+						yield return x;
+				}
+				else if (expression is EmptyExpression || expression is NullReferenceExpression)
+				{
+				}
+				else if (expression is IdentifierExpression)
+				{
+				}
+				else if (expression is IndexerExpression)
+				{
+					foreach (var x in ((IndexerExpression)expression).TargetExpression.All(visitor))
+						yield return x;
+					foreach (var x in ((IndexerExpression)expression).IndexExpression.All(visitor))
+						yield return x;
+				}
+				else if (expression is InvocationExpression)
+				{
+					foreach (var x in ((InvocationExpression)expression).TargetExpression.All(visitor))
+						yield return x;
+					foreach (var p in ((InvocationExpression)expression).ArgumentExpressions)
+						foreach (var x in p.All(visitor))
+							yield return x;
+				}
+				else if (expression is MemberReferenceExpression || expression is MethodReferenceExpression)
+				{
+				}
+				else if (expression is ParenthesizedExpression)
+				{
+					foreach (var x in ((ParenthesizedExpression)expression).Expression.All(visitor))
+						yield return x;
+				}
+				else if (expression is PrimitiveExpression)
+				{
+				}
+				else if (expression is UnaryOperatorExpression)
+				{
+					foreach (var x in ((UnaryOperatorExpression)expression).Operand.All(visitor))
+						yield return x;
+				}
+				else if (
+					expression.GetType() == typeof(WrappingExpression)
+					|| expression is UncheckedExpression
+					|| expression is ParenthesizedExpression
+					|| expression is CheckedExpression
+					|| expression is CastExpression)
+				{
+					foreach (var x in ((WrappingExpression)expression).Expression.All(visitor))
+						yield return x;
+				}
+				else if (expression is CustomExpression)
+				{
+					foreach (var x in ((CustomExpression)expression).Visit(visitor))
+						yield return x;
+				}
+				else
+				{
+					throw new Exception($"No handler for expression of type {expression.GetType().FullName}");
+				}
+
+				visitor(expression, VisitorState.Leave);
+			}
 		}
 
 		/// <summary>
@@ -570,6 +578,8 @@ namespace SME.AST
 			else
 			{
 				var parent = self.Parent as Statement;
+				if (parent == null)
+					throw new Exception($"The parent was expected to be a {nameof(Statement)} or a {nameof(Method)}, but was {self.Parent.GetType().FullName}");
 
 				if (parent is IfElseStatement)
 				{
@@ -866,6 +876,9 @@ namespace SME.AST
 
 				return true;
 			})) { }
+
+			if (parents.Count != 0)
+				throw new Exception($"{nameof(UpdateParents)} is broken ...");
 		}
 
 		/// <summary>

@@ -36,11 +36,20 @@ namespace SME.AST
 			if (!visitor(this, VisitorState.Enter))
 				yield break;
 
+			if (!visitor(this, VisitorState.Visit))
+				yield break;
 			yield return this;
+			if (!visitor(this, VisitorState.Visited))
+				yield break;
 
-			foreach (var p in this.Children)
-				foreach (var x in p.All(visitor))
-					yield return x;
+			if (this.Children != null)
+				foreach (var p in this.Children)
+					foreach (var x in p.All(visitor))
+						yield return x;
+
+			if (!visitor(this, VisitorState.Leave))
+				yield break;
+
 		}
 
 		/// <summary>
