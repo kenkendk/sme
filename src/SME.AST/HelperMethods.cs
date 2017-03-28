@@ -258,8 +258,8 @@ namespace SME.AST
 		/// <param name="t">The type of attribute to find.</param>
 		public static CustomAttribute GetAttribute(this TypeDefinition td, Type t)
 		{
-			var n = td.Module.Import(t).Resolve();
-			return SelfAndBases(td).SelectMany(x => x.CustomAttributes).FirstOrDefault(x => x.AttributeType.Resolve() == n);
+			var n = td.Module.Import(t);
+			return SelfAndBases(td).SelectMany(x => x.CustomAttributes).FirstOrDefault(x => x.AttributeType.IsSameTypeReference(n));
 		}
 
 		/// <summary>
