@@ -123,7 +123,7 @@ namespace SME.VHDL
 		{
 			get
 			{
-				var methods = new[] { Process.MainMethod }.Union(Process.Methods ?? new Method[0]);
+				var methods = new[] { Process.MainMethod }.Union(Process.Methods ?? new Method[0]).Where(x => x != null);
 
 				var allitems = Process
 					.SharedSignals

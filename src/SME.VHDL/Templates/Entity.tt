@@ -89,16 +89,15 @@ architecture RTL of <#= Process.Name #> is
 <#= RSP.ComponentSignals #>
 <# } #>
 
-<# if (Process.Methods.Any()) { #>
+<# if (Process.Methods != null && Process.Methods.Any()) { #>
   -- Internal methods
-<# } #>
-<# foreach (var s in Process.Methods) { #>
-<#     foreach(var line in RSP.RenderMethod(s)) { #>
+<#     foreach (var s in Process.Methods) { #>
+<#         foreach(var line in RSP.RenderMethod(s)) { #>
   <#= line #>
+<#         } #>
+
 <#     } #>
-
 <# } #>
-
 
 
   -- User defined signals, procedures and components here
