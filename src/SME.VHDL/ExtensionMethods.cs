@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace SME
 {
@@ -14,11 +15,12 @@ namespace SME
 		/// <param name="self">The runner.</param>
 		/// <param name="backupfolder">The backup folder name.</param>
 		/// <param name="csvfile">The CSV file with simulation results</param>
-		public static Simulation BuildVHDL(this Simulation self, string backupfolder = null, string csvfile = "trace.csv")
+		/// <param name="customfiles">A list of VHDL files to include in the Makefile, without the VHDL extension</param>
+		public static Simulation BuildVHDL(this Simulation self, string backupfolder = null, string csvfile = "trace.csv", IEnumerable<string> customfiles = null)
 		{
 			self.AddPostloader((processes, target) =>
 			{
-				new SME.VHDL.RenderState(processes, target, backupfolder, csvfile).Render();
+				new SME.VHDL.RenderState(processes, target, backupfolder, csvfile, customfiles).Render();
 			});
 			return self;
 		}

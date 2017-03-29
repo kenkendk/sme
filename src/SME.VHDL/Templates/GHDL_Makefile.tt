@@ -24,6 +24,14 @@ IEEE=synopsys
 # VCD trace file for GTKWave
 VCDFILE=trace.vcd
 
+<#
+var cust_tag = CustomFiles == null || CustomFiles.Count() == 0 ? "" : " custom_files";
+#>
+
+<# if (!string.IsNullOrEmpty(cust_tag)) { #>
+custom_files: $(WORKDIR) <# foreach(var file in CustomFiles) { #>$(WORKDIR)/<#= file #>.o <# } #>
+
+<# } #>
 
 $(WORKDIR):
 	mkdir $(WORKDIR)
@@ -35,11 +43,17 @@ $(WORKDIR)/Types_<#= RS.Network.Name #>.o: Types_<#= RS.Network.Name #>.vhdl $(W
 	ghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) Types_<#= RS.Network.Name #>.vhdl
 
 <# foreach (var file in Filenames) { #>
+$(WORKDIR)/<#= file #>.o: <#= file #>.vhdl $(WORKDIR)/system_types.o $(WORKDIR)/Types_<#= RS.Network.Name #>.o $(WORKDIR)<#= cust_tag #>
+	ghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) <#= file #>.vhdl
+<# } #>
+
+<# foreach (var file in CustomFiles) { #>
 $(WORKDIR)/<#= file #>.o: <#= file #>.vhdl $(WORKDIR)/system_types.o $(WORKDIR)/Types_<#= RS.Network.Name #>.o $(WORKDIR)
 	ghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) <#= file #>.vhdl
 <# } #>
 
-$(WORKDIR)/<#= RS.Network.Name #>.o: <#= RS.Network.Name #>.vhdl $(WORKDIR)/system_types.o $(WORKDIR)/Types_<#= RS.Network.Name #>.o <# foreach(var file in Filenames) { #>$(WORKDIR)/<#= file #>.o <# } #>
+
+$(WORKDIR)/<#= RS.Network.Name #>.o: <#= RS.Network.Name #>.vhdl $(WORKDIR)/system_types.o $(WORKDIR)/Types_<#= RS.Network.Name #>.o <# foreach(var file in Filenames) { #>$(WORKDIR)/<#= file #>.o <# } #><#= cust_tag #>
 
 	ghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) <#= RS.Network.Name #>.vhdl
 
@@ -59,4 +73,4 @@ clean:
 	rm -rf $(WORKDIR) *.o <#= RS.Network.Name.ToLower() #>_tb
 
 
-.PHONY: all clean test export build
+.PHONY: all clean test export build<#= cust_tag #>

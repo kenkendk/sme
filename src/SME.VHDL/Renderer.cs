@@ -15,9 +15,10 @@ namespace SME.VHDL
 		/// <param name="targetfolder">The folder where the output is stored.</param>
 		/// <param name="backupfolder">The folder where backups are stored.</param>
 		/// <param name="csvtracename">The name of the CSV trace file.</param>
-		public static void Render(IEnumerable<IProcess> processes, string targetfolder, string backupfolder = null, string csvtracename = null)
+		/// <param name="customfiles">A list of VHDL files to include in the Makefile, without the VHDL extension</param>
+		public static void Render(IEnumerable<IProcess> processes, string targetfolder, string backupfolder = null, string csvtracename = null, IEnumerable<string> customfiles = null)
 		{
-			new RenderState(processes, targetfolder, backupfolder, csvtracename).Render();
+			new RenderState(processes, targetfolder, backupfolder, csvtracename, customfiles).Render();
 		}
 	}
 }

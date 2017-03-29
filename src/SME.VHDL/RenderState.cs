@@ -76,6 +76,11 @@ namespace SME.VHDL
 		public readonly string CSVTracename;
 
 		/// <summary>
+		/// Sequence of custom VHDL files to include in the compilation
+		/// </summary>
+		public readonly IEnumerable<string> CustomFiles;
+
+		/// <summary>
 		/// The unique types found in the network
 		/// </summary>
 		public readonly Mono.Cecil.TypeReference[] Types;
@@ -112,12 +117,14 @@ namespace SME.VHDL
 		/// <param name="targetfolder">The folder where the output is stored.</param>
 		/// <param name="backupfolder">The folder where backups are stored.</param>
 		/// <param name="csvtracename">The name of the CSV trace file.</param>
-		public RenderState(IEnumerable<IProcess> processes, string targetfolder, string backupfolder = null, string csvtracename = null)
+		/// <param name="customfiles">A list of VHDL files to include in the Makefile, without the VHDL extension</param>
+		public RenderState(IEnumerable<IProcess> processes, string targetfolder, string backupfolder = null, string csvtracename = null, IEnumerable<string> customfiles = null)
 		{
 			Processes = processes;
 			TargetFolder = targetfolder;
 			BackupFolder = backupfolder;
 			CSVTracename = csvtracename;
+			CustomFiles = customfiles;
 
 			Network = ParseProcesses.BuildNetwork(processes);
 

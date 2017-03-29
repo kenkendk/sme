@@ -73,10 +73,17 @@ namespace SME.VHDL.Templates
 	public partial class GHDL_Makefile
 	{
 		public readonly RenderState RS;
-
 		public GHDL_Makefile(RenderState renderer)
 		{
 			RS = renderer;
+		}
+
+		public IEnumerable<string> CustomFiles
+		{
+			get
+			{
+				return RS.CustomFiles;
+			}
 		}
 
 		public IEnumerable<string> Filenames

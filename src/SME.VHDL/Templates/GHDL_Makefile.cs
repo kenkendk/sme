@@ -51,355 +51,531 @@ namespace SME.VHDL.Templates {
             #line hidden
             
             #line 9 ""
-            this.Write("_export\nbuild: export testbench\n\n# Use a temporary folder for compiled stuff\nWORKDIR=work\n\n# All code should be VHDL93 compliant, \n# but 93c is a bit easier to work with\nSTD=93c\n\n# Eveything should compile with clean IEEE,\n# but the test-bench and CSV util's require\n# std_logic_textio from Synopsys\nIEEE=synopsys\n\n# VCD trace file for GTKWave\nVCDFILE=trace.vcd\n\n\n$(WORKDIR):\n\tmkdir $(WORKDIR)\n\n$(WORKDIR)/system_types.o: system_types.vhdl $(WORKDIR)\n\tghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) system_types.vhdl\n\n$(WORKDIR)/Types_");
+            this.Write("_export\nbuild: export testbench\n\n# Use a temporary folder for compiled stuff\nWORKDIR=work\n\n# All code should be VHDL93 compliant, \n# but 93c is a bit easier to work with\nSTD=93c\n\n# Eveything should compile with clean IEEE,\n# but the test-bench and CSV util's require\n# std_logic_textio from Synopsys\nIEEE=synopsys\n\n# VCD trace file for GTKWave\nVCDFILE=trace.vcd\n\n");
+            
+            #line default
+            #line hidden
+            
+            #line 27 ""
+
+var cust_tag = CustomFiles == null || CustomFiles.Count() == 0 ? "" : " custom_files";
+
+            
+            #line default
+            #line hidden
+            
+            #line 30 ""
+            this.Write("\n");
+            
+            #line default
+            #line hidden
+            
+            #line 31 ""
+ if (!string.IsNullOrEmpty(cust_tag)) { 
+            
+            #line default
+            #line hidden
+            
+            #line 32 ""
+            this.Write("custom_files: $(WORKDIR) ");
+            
+            #line default
+            #line hidden
+            
+            #line 32 ""
+ foreach(var file in CustomFiles) { 
+            
+            #line default
+            #line hidden
+            
+            #line 33 ""
+            this.Write("$(WORKDIR)/");
+            
+            #line default
+            #line hidden
+            
+            #line 33 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( file ));
+            
+            #line default
+            #line hidden
+            
+            #line 33 ""
+            this.Write(".o ");
+            
+            #line default
+            #line hidden
+            
+            #line 33 ""
+ } 
             
             #line default
             #line hidden
             
             #line 34 ""
+            this.Write("\n");
+            
+            #line default
+            #line hidden
+            
+            #line 35 ""
+ } 
+            
+            #line default
+            #line hidden
+            
+            #line 36 ""
+            this.Write("\n$(WORKDIR):\n\tmkdir $(WORKDIR)\n\n$(WORKDIR)/system_types.o: system_types.vhdl $(WORKDIR)\n\tghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) system_types.vhdl\n\n$(WORKDIR)/Types_");
+            
+            #line default
+            #line hidden
+            
+            #line 43 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( RS.Network.Name ));
             
             #line default
             #line hidden
             
-            #line 34 ""
+            #line 43 ""
             this.Write(".o: Types_");
             
             #line default
             #line hidden
             
-            #line 34 ""
+            #line 43 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( RS.Network.Name ));
             
             #line default
             #line hidden
             
-            #line 34 ""
+            #line 43 ""
             this.Write(".vhdl $(WORKDIR)\n\tghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) Types_");
             
             #line default
             #line hidden
             
-            #line 35 ""
+            #line 44 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( RS.Network.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 35 ""
-            this.Write(".vhdl\n\n");
-            
-            #line default
-            #line hidden
-            
-            #line 37 ""
- foreach (var file in Filenames) { 
-            
-            #line default
-            #line hidden
-            
-            #line 38 ""
-            this.Write("$(WORKDIR)/");
-            
-            #line default
-            #line hidden
-            
-            #line 38 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( file ));
-            
-            #line default
-            #line hidden
-            
-            #line 38 ""
-            this.Write(".o: ");
-            
-            #line default
-            #line hidden
-            
-            #line 38 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( file ));
-            
-            #line default
-            #line hidden
-            
-            #line 38 ""
-            this.Write(".vhdl $(WORKDIR)/system_types.o $(WORKDIR)/Types_");
-            
-            #line default
-            #line hidden
-            
-            #line 38 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( RS.Network.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 38 ""
-            this.Write(".o $(WORKDIR)\n\tghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) ");
-            
-            #line default
-            #line hidden
-            
-            #line 39 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( file ));
-            
-            #line default
-            #line hidden
-            
-            #line 39 ""
-            this.Write(".vhdl\n");
-            
-            #line default
-            #line hidden
-            
-            #line 40 ""
- } 
-            
-            #line default
-            #line hidden
-            
-            #line 41 ""
-            this.Write("\n$(WORKDIR)/");
-            
-            #line default
-            #line hidden
-            
-            #line 42 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( RS.Network.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 42 ""
-            this.Write(".o: ");
-            
-            #line default
-            #line hidden
-            
-            #line 42 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( RS.Network.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 42 ""
-            this.Write(".vhdl $(WORKDIR)/system_types.o $(WORKDIR)/Types_");
-            
-            #line default
-            #line hidden
-            
-            #line 42 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( RS.Network.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 42 ""
-            this.Write(".o ");
-            
-            #line default
-            #line hidden
-            
-            #line 42 ""
- foreach(var file in Filenames) { 
-            
-            #line default
-            #line hidden
-            
-            #line 43 ""
-            this.Write("$(WORKDIR)/");
-            
-            #line default
-            #line hidden
-            
-            #line 43 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( file ));
-            
-            #line default
-            #line hidden
-            
-            #line 43 ""
-            this.Write(".o ");
-            
-            #line default
-            #line hidden
-            
-            #line 43 ""
- } 
             
             #line default
             #line hidden
             
             #line 44 ""
-            this.Write("\n\tghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) ");
-            
-            #line default
-            #line hidden
-            
-            #line 45 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( RS.Network.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 45 ""
-            this.Write(".vhdl\n\n$(WORKDIR)/TestBench_");
-            
-            #line default
-            #line hidden
-            
-            #line 47 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( RS.Network.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 47 ""
-            this.Write(".o: TestBench_");
-            
-            #line default
-            #line hidden
-            
-            #line 47 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( RS.Network.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 47 ""
-            this.Write(".vhdl $(WORKDIR)/");
-            
-            #line default
-            #line hidden
-            
-            #line 47 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( RS.Network.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 47 ""
-            this.Write(".o\n\tghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) TestBench_");
-            
-            #line default
-            #line hidden
-            
-            #line 48 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( RS.Network.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 48 ""
             this.Write(".vhdl\n\n");
             
             #line default
             #line hidden
             
-            #line 50 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( RS.Network.Name.ToLower() ));
+            #line 46 ""
+ foreach (var file in Filenames) { 
+            
+            #line default
+            #line hidden
+            
+            #line 47 ""
+            this.Write("$(WORKDIR)/");
+            
+            #line default
+            #line hidden
+            
+            #line 47 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( file ));
+            
+            #line default
+            #line hidden
+            
+            #line 47 ""
+            this.Write(".o: ");
+            
+            #line default
+            #line hidden
+            
+            #line 47 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( file ));
+            
+            #line default
+            #line hidden
+            
+            #line 47 ""
+            this.Write(".vhdl $(WORKDIR)/system_types.o $(WORKDIR)/Types_");
+            
+            #line default
+            #line hidden
+            
+            #line 47 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( RS.Network.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 47 ""
+            this.Write(".o $(WORKDIR)");
+            
+            #line default
+            #line hidden
+            
+            #line 47 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( cust_tag ));
+            
+            #line default
+            #line hidden
+            
+            #line 47 ""
+            this.Write("\n\tghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) ");
+            
+            #line default
+            #line hidden
+            
+            #line 48 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( file ));
+            
+            #line default
+            #line hidden
+            
+            #line 48 ""
+            this.Write(".vhdl\n");
+            
+            #line default
+            #line hidden
+            
+            #line 49 ""
+ } 
             
             #line default
             #line hidden
             
             #line 50 ""
+            this.Write("\n");
+            
+            #line default
+            #line hidden
+            
+            #line 51 ""
+ foreach (var file in CustomFiles) { 
+            
+            #line default
+            #line hidden
+            
+            #line 52 ""
+            this.Write("$(WORKDIR)/");
+            
+            #line default
+            #line hidden
+            
+            #line 52 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( file ));
+            
+            #line default
+            #line hidden
+            
+            #line 52 ""
+            this.Write(".o: ");
+            
+            #line default
+            #line hidden
+            
+            #line 52 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( file ));
+            
+            #line default
+            #line hidden
+            
+            #line 52 ""
+            this.Write(".vhdl $(WORKDIR)/system_types.o $(WORKDIR)/Types_");
+            
+            #line default
+            #line hidden
+            
+            #line 52 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( RS.Network.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 52 ""
+            this.Write(".o $(WORKDIR)\n\tghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) ");
+            
+            #line default
+            #line hidden
+            
+            #line 53 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( file ));
+            
+            #line default
+            #line hidden
+            
+            #line 53 ""
+            this.Write(".vhdl\n");
+            
+            #line default
+            #line hidden
+            
+            #line 54 ""
+ } 
+            
+            #line default
+            #line hidden
+            
+            #line 55 ""
+            this.Write("\n\n$(WORKDIR)/");
+            
+            #line default
+            #line hidden
+            
+            #line 57 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( RS.Network.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 57 ""
+            this.Write(".o: ");
+            
+            #line default
+            #line hidden
+            
+            #line 57 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( RS.Network.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 57 ""
+            this.Write(".vhdl $(WORKDIR)/system_types.o $(WORKDIR)/Types_");
+            
+            #line default
+            #line hidden
+            
+            #line 57 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( RS.Network.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 57 ""
+            this.Write(".o ");
+            
+            #line default
+            #line hidden
+            
+            #line 57 ""
+ foreach(var file in Filenames) { 
+            
+            #line default
+            #line hidden
+            
+            #line 58 ""
+            this.Write("$(WORKDIR)/");
+            
+            #line default
+            #line hidden
+            
+            #line 58 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( file ));
+            
+            #line default
+            #line hidden
+            
+            #line 58 ""
+            this.Write(".o ");
+            
+            #line default
+            #line hidden
+            
+            #line 58 ""
+ } 
+            
+            #line default
+            #line hidden
+            
+            #line 59 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( cust_tag ));
+            
+            #line default
+            #line hidden
+            
+            #line 59 ""
+            this.Write("\n\n\tghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) ");
+            
+            #line default
+            #line hidden
+            
+            #line 61 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( RS.Network.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 61 ""
+            this.Write(".vhdl\n\n$(WORKDIR)/TestBench_");
+            
+            #line default
+            #line hidden
+            
+            #line 63 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( RS.Network.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 63 ""
+            this.Write(".o: TestBench_");
+            
+            #line default
+            #line hidden
+            
+            #line 63 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( RS.Network.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 63 ""
+            this.Write(".vhdl $(WORKDIR)/");
+            
+            #line default
+            #line hidden
+            
+            #line 63 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( RS.Network.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 63 ""
+            this.Write(".o\n\tghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) TestBench_");
+            
+            #line default
+            #line hidden
+            
+            #line 64 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( RS.Network.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 64 ""
+            this.Write(".vhdl\n\n");
+            
+            #line default
+            #line hidden
+            
+            #line 66 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( RS.Network.Name.ToLower() ));
+            
+            #line default
+            #line hidden
+            
+            #line 66 ""
             this.Write("_tb: $(WORKDIR)/TestBench_");
             
             #line default
             #line hidden
             
-            #line 50 ""
+            #line 66 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( RS.Network.Name ));
             
             #line default
             #line hidden
             
-            #line 50 ""
+            #line 66 ""
             this.Write(".o\n\tghdl -e --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) ");
             
             #line default
             #line hidden
             
-            #line 51 ""
+            #line 67 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( RS.Network.Name ));
             
             #line default
             #line hidden
             
-            #line 51 ""
+            #line 67 ""
             this.Write("_tb\n\n");
             
             #line default
             #line hidden
             
-            #line 53 ""
+            #line 69 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( RS.Network.Name ));
             
             #line default
             #line hidden
             
-            #line 53 ""
+            #line 69 ""
             this.Write("_export: $(WORKDIR)/");
             
             #line default
             #line hidden
             
-            #line 53 ""
+            #line 69 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( RS.Network.Name ));
             
             #line default
             #line hidden
             
-            #line 53 ""
+            #line 69 ""
             this.Write(".o\n\tghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) Export_");
             
             #line default
             #line hidden
             
-            #line 54 ""
+            #line 70 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( RS.Network.Name ));
             
             #line default
             #line hidden
             
-            #line 54 ""
+            #line 70 ""
             this.Write(".vhdl\n\ntest: ");
             
             #line default
             #line hidden
             
-            #line 56 ""
+            #line 72 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( RS.Network.Name.ToLower() ));
             
             #line default
             #line hidden
             
-            #line 56 ""
+            #line 72 ""
             this.Write("_tb\n\tghdl -r --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) ");
             
             #line default
             #line hidden
             
-            #line 57 ""
+            #line 73 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( RS.Network.Name ));
             
             #line default
             #line hidden
             
-            #line 57 ""
+            #line 73 ""
             this.Write("_tb --vcd=$(VCDFILE)\n\nclean:\n\trm -rf $(WORKDIR) *.o ");
             
             #line default
             #line hidden
             
-            #line 60 ""
+            #line 76 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( RS.Network.Name.ToLower() ));
             
             #line default
             #line hidden
             
-            #line 60 ""
-            this.Write("_tb\n\n\n.PHONY: all clean test export build\n");
+            #line 76 ""
+            this.Write("_tb\n\n\n.PHONY: all clean test export build");
+            
+            #line default
+            #line hidden
+            
+            #line 79 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( cust_tag ));
+            
+            #line default
+            #line hidden
+            
+            #line 79 ""
+            this.Write("\n");
             
             #line default
             #line hidden
