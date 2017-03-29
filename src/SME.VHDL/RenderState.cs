@@ -329,7 +329,7 @@ namespace SME.VHDL
 				return element.Name + "_type";
 			}
 
-			return vt.ToString();
+			return vt.ToSafeVHDLName();
 		}
 
 		/// <summary>
@@ -345,7 +345,7 @@ namespace SME.VHDL
 				return fd.Name + "_type";
 			}
 
-			return vt.ToString();
+			return vt.ToSafeVHDLName();
 		}
 
 		/// <summary>
