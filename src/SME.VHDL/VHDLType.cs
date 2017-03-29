@@ -239,7 +239,7 @@ namespace SME.VHDL
 		public string ToSafeVHDLName()
 		{
 			var str = this.ToString();
-			if (IsUnsigned || IsStdLogicVector)
+			if (IsUnsigned || IsSigned || IsStdLogicVector || IsSystemType)
 				return str;
 			else
 				return Naming.ToValidName(str);
