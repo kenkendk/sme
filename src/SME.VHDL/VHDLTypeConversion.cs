@@ -151,10 +151,11 @@ namespace SME.VHDL
 								SourceResultType = targetsource
 							};
 
+							string wstr;
 							if (render.USE_EXPLICIT_CONCATENATION_OPERATOR)
-								str = string.Format("IEEE.STD_LOGIC_1164.\"&\"(\"{0}\", {1})", new string('0', target.Length - svhdl.Length), "{0}");
+								wstr = string.Format("IEEE.STD_LOGIC_1164.\"&\"(\"{0}\", {1})", new string('0', target.Length - svhdl.Length), "{0}");
 							else
-								str = string.Format("\"{0}\" & {1}", new string('0', target.Length - svhdl.Length), "{0}");
+								wstr = string.Format("\"{0}\" & {1}", new string('0', target.Length - svhdl.Length), "{0}");
 
 							s.ReplaceWith(iexp);
 
@@ -163,7 +164,12 @@ namespace SME.VHDL
 								Expression = new AssignmentExpression()
 								{
 									Left = iexp.Clone(),
-									Right = s,
+									Right = new CustomNodes.ConversionExpression() {
+										Expression = s,
+										SourceExpression = s.SourceExpression,
+										SourceResultType = targetsource,
+										WrappingTemplate = wstr,
+									},
 									Operator = ICSharpCode.NRefactory.CSharp.AssignmentOperatorType.Assign,
 									SourceExpression = s.SourceExpression,
 									SourceResultType = targetsource
@@ -175,6 +181,8 @@ namespace SME.VHDL
 							asstm.UpdateParents();
 
 							resized = true;
+
+							s = iexp;
 						}
 					}
 
@@ -305,8 +313,6 @@ namespace SME.VHDL
 						else
 							wexpr = string.Format("\"{0}\" & {1}", new string('0', target.Length - svhdl.Length), "{0}");
 
-						var wrapped = WrapExpression(render, s, wexpr, target);
-
 						s.ReplaceWith(iexp);
 												      
 						var asstm = new ExpressionStatement()
@@ -321,7 +327,13 @@ namespace SME.VHDL
 						{
 							Left = iexp.Clone(),
 							Operator = ICSharpCode.NRefactory.CSharp.AssignmentOperatorType.Assign,
-							Right = wrapped,
+							Right = new CustomNodes.ConversionExpression()
+							{
+								Expression = s,
+								SourceExpression = s.SourceExpression,
+								SourceResultType = targetsource,
+								WrappingTemplate = wexpr
+							},
 							SourceExpression = s.SourceExpression,
 							SourceResultType = targetsource
 						};
