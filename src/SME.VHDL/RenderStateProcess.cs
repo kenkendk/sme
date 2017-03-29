@@ -694,6 +694,8 @@ namespace SME.VHDL
 			if (string.IsNullOrEmpty(e.Target.Name))
 				throw new Exception($"Cannot emit empty expression: {e.SourceExpression}");
 
+			if (e.Target.Parent is Variable && !string.IsNullOrEmpty(e.Target.Parent.Name))
+				return e.Target.Parent.Name + "." + e.Target.Name;
 
 			return e.Target.Name;
 		}
