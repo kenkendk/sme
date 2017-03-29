@@ -47,9 +47,11 @@ $(WORKDIR)/<#= file #>.o: <#= file #>.vhdl $(WORKDIR)/system_types.o $(WORKDIR)/
 	ghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) <#= file #>.vhdl
 <# } #>
 
-<# foreach (var file in CustomFiles) { #>
+<# if (!string.IsNullOrEmpty(cust_tag)) { #>
+<#     foreach (var file in CustomFiles) { #>
 $(WORKDIR)/<#= file #>.o: <#= file #>.vhdl $(WORKDIR)/system_types.o $(WORKDIR)/Types_<#= RS.Network.Name #>.o $(WORKDIR)
 	ghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) <#= file #>.vhdl
+<#     } #>
 <# } #>
 
 
