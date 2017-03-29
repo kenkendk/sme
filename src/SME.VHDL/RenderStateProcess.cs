@@ -972,12 +972,14 @@ namespace SME.VHDL
 							yield return s;
 
 				foreach (var signal in Process.SharedSignals)
-					foreach (var s in RenderStatement(null, GetResetStatement(signal), 0))
-						yield return s;
+					if (!(signal.Source is Mono.Cecil.IMemberDefinition) || ((Mono.Cecil.IMemberDefinition)signal.Source).GetAttribute<IgnoreAttribute>() == null)
+						foreach (var s in RenderStatement(null, GetResetStatement(signal), 0))
+							yield return s;
 
 				foreach (var v in Process.SharedVariables)
-					foreach (var s in RenderStatement(null, GetResetStatement(v), 0))
-						yield return s;
+					if (!(v.Source is Mono.Cecil.IMemberDefinition) || ((Mono.Cecil.IMemberDefinition)v.Source).GetAttribute<IgnoreAttribute>() == null)
+						foreach (var s in RenderStatement(null, GetResetStatement(v), 0))
+							yield return s;
 
 				if (Process.MainMethod != null)
 				{
@@ -990,7 +992,6 @@ namespace SME.VHDL
 							foreach (var s in RenderStatement(null, GetResetStatement(variable), 0))
 								yield return s;
 				}
-
 			}
 		}
 
@@ -1017,7 +1018,8 @@ namespace SME.VHDL
 			get
 			{
 				foreach (var v in Process.SharedVariables)
-					yield return v;
+					if (!(v.Source is Mono.Cecil.IMemberDefinition) || ((Mono.Cecil.IMemberDefinition)v.Source).GetAttribute<IgnoreAttribute>() == null)
+						yield return v;
 
 				if (Process.MainMethod != null)
 					foreach (var v in Process.MainMethod.Variables)
