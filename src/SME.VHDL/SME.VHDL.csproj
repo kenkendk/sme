@@ -115,6 +115,7 @@
     <Compile Include="Components\SimpleDualPortMemory.cs" />
     <Compile Include="Components\TrueDualPortMemory.cs" />
     <Compile Include="Renderer.cs" />
+    <Compile Include="Transformations\InsertReturnAssignments.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
