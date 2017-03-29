@@ -49,6 +49,7 @@ namespace SME.VHDL.Transformations
 					new RemoveUIntPtrCast(),
 					new RemoveDoubleCast(),
 					new WrapIfComposite(),
+					new AssignNames(),
 					new RemoveSelfAssignments(),
 					new AssignVhdlType(state),
 					new RemoveConditionals(state, m),
