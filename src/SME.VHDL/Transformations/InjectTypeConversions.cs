@@ -179,6 +179,14 @@ namespace SME.VHDL.Transformations
 			{
 				var cse = ((AST.CastExpression)el);
 				var tvhdl = State.VHDLType(cse);
+
+				if (cse.Parent is AST.BinaryOperatorExpression)
+				{
+					var pboe = cse.Parent as AST.BinaryOperatorExpression;
+					if (pboe.Right == cse && (pboe.Operator == BinaryOperatorType.ShiftLeft || pboe.Operator == BinaryOperatorType.ShiftRight))
+						tvhdl = VHDLTypes.INTEGER;
+				}
+
 				res = cse.ReplaceWith(
 					VHDLTypeConversion.ConvertExpression(State, Method, cse.Expression, tvhdl, cse.SourceResultType, true)
 				);
