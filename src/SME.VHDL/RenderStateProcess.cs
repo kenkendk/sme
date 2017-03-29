@@ -397,7 +397,7 @@ namespace SME.VHDL
 				}
 				else
 				{
-					yield return indent2 + string.Join(" | ", c.Item1.Select(x => RenderExpression(x)));
+					yield return indent2 + "when " + string.Join(" | ", c.Item1.Select(x => RenderExpression(x))) + " =>";
 				}
 
 				foreach (var ss in c.Item2.SelectMany(x => RenderStatement(method, x, indentation)))
