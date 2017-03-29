@@ -229,5 +229,9 @@ namespace SME.AST
 		/// The return variable, if any
 		/// </summary>
 		public Variable ReturnVariable;
+		/// <summary>
+		/// A flag indicating if this method should be ignored
+		/// </summary>
+		public bool Ignore;
 	}
 }

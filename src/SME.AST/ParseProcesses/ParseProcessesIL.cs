@@ -165,12 +165,22 @@ namespace SME.AST
 			{
 				Name = method.Name,
 				SourceMethod = method,
-				Parent = proc
+				Parent = proc,
+				Ignore = method.GetAttribute<IgnoreAttribute>() != null
 			};
 
 			res.Parameters = method.Parameters.Select(x => ParseParameter(network, proc, res, x)).ToArray();
-			res.Statements = Decompile(network, proc, res);
-			res.Variables = res.LocalVariables.Values.ToArray();
+
+			if (res.Ignore)
+			{
+				res.Statements = new Statement[0];
+				res.Variables = new Variable[0];
+			}
+			else
+			{
+				res.Statements = Decompile(network, proc, res);
+				res.Variables = res.LocalVariables.Values.ToArray();
+			}
 
 			if (res.ReturnVariable == null)
 			{

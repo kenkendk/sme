@@ -123,7 +123,7 @@ namespace SME.VHDL
 		{
 			get
 			{
-				var methods = new[] { Process.MainMethod }.Union(Process.Methods ?? new Method[0]).Where(x => x != null);
+				var methods = new[] { Process.MainMethod }.Union(Process.Methods ?? new Method[0]).Where(x => x != null && !x.Ignore);
 
 				var allitems = Process
 					.SharedSignals
@@ -225,7 +225,7 @@ namespace SME.VHDL
 		/// <param name="method">The method to render.</param>
 		public IEnumerable<string> RenderMethod(AST.Method method)
 		{
-			if (method == null)
+			if (method == null || method.Ignore)
 				yield break;
 
 			if (method != Process.MainMethod)
