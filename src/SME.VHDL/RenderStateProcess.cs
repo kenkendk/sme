@@ -586,7 +586,15 @@ namespace SME.VHDL
 		/// <param name="e">The expression to render</param>
 		private string RenderExpression(AST.BinaryOperatorExpression e)
 		{
-			return string.Format("{0} {1} {2}", RenderExpression(e.Left),  e.Operator.ToVHDL(), RenderExpression(e.Right));
+			if (Parent.AVOID_SLL_AND_SRL)
+			{
+				if (e.Operator == ICSharpCode.NRefactory.CSharp.BinaryOperatorType.ShiftLeft)
+					return string.Format("shift_left({0}, {1})", RenderExpression(e.Left), RenderExpression(e.Right));
+				else if (e.Operator == ICSharpCode.NRefactory.CSharp.BinaryOperatorType.ShiftRight)
+					return string.Format("shift_right({0}, {1})", RenderExpression(e.Left), RenderExpression(e.Right));
+			}
+
+			return string.Format("{0} {1} {2}", RenderExpression(e.Left), e.Operator.ToVHDL(), RenderExpression(e.Right));
 		}
 
 		/// <summary>

@@ -124,8 +124,12 @@ namespace SME.VHDL.Transformations
 					rhstype = VHDLTypes.INTEGER;
 					if (lhstype == VHDLTypes.INTEGER)
 					{
-						lhstype = State.VHDLType(boe.Parent as AST.Expression);
-						lhssource = (boe.Parent as AST.Expression).SourceResultType;
+						var p = boe.Parent;
+						while (p is AST.ParenthesizedExpression)
+							p = p.Parent;
+						
+						lhstype = State.VHDLType(p as AST.Expression);
+						lhssource = ((AST.Expression)p).SourceResultType;
 					}
 					else
 						lhstype = State.TypeScope.NumericEquivalent(lhstype);

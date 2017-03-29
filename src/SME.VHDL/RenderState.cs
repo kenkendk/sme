@@ -58,6 +58,11 @@ namespace SME.VHDL
 		public readonly bool USE_EXPLICIT_LITERAL_ARRAY_LENGTH = true;
 
 		/// <summary>
+		/// This avoids emitting code with SLL and SRL, and uses shift_left() and shift_right() instead
+		/// </summary>
+		public readonly bool AVOID_SLL_AND_SRL = true;
+
+		/// <summary>
 		/// The processes forming the basis of the network
 		/// </summary>
 		public readonly IEnumerable<IProcess> Processes;
