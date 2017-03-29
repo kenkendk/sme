@@ -737,6 +737,10 @@ namespace SME.VHDL
 			{
 				return ((bool)e.Value) ? "'1'" : "'0'";
 			}
+			else if (e.SourceResultType.Resolve().IsEnum)
+			{
+				return Naming.ToValidName(e.SourceResultType.FullName + "_" + e.Value.ToString());
+			}
 			else
 			{
 				return e.Value.ToString();
@@ -937,6 +941,8 @@ namespace SME.VHDL
 				var n = new[] { typeof(byte), typeof(sbyte), typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong) };
 
 				if (n.Any(x => exp.Right.SourceResultType.IsSameTypeReference(x)))
+					Parent.TypeLookup[exp.Right] = VHDLTypes.INTEGER;
+				else if (element.DefaultValue != null && !element.DefaultValue.GetType().IsEnum && element.DefaultValue.GetType() != typeof(bool))
 					Parent.TypeLookup[exp.Right] = VHDLTypes.INTEGER;
 			}
 
