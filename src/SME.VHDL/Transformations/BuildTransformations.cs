@@ -52,6 +52,7 @@ namespace SME.VHDL.Transformations
 					new RemoveSelfAssignments(),
 					new AssignVhdlType(state),
 					new RemoveConditionals(state, m),
+					new InsertReturnAssignments(state, m),
 					new InjectTypeConversions(state, m),
 					new RewireCompositeAssignment(),
 					new FixForLoopIncrements(state, m),

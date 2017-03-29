@@ -342,16 +342,10 @@ namespace SME.VHDL
 		/// <param name="indentation">The indentation to use.</param>
 		private IEnumerable<string> RenderStatement(AST.Method method, AST.ReturnStatement s, int indentation)
 		{
+			if (!(s.ReturnExpression is EmptyExpression))
+				throw new Exception("Expected return expression to be empty");
+			
 			var indent = new string(' ', indentation);
-			var exp = 
-				new AST.AssignmentExpression() { 
-					Left = new AST.MemberReferenceExpression() { 
-						Target = method.ReturnVariable, 
-						Name = method.ReturnVariable.Name }, 
-					Right = s.ReturnExpression };
-
-			yield return $"{indent}{RenderExpression(exp)};";
-
 			yield return $"{indent}return {method.ReturnVariable.Name};";
 		}
 
