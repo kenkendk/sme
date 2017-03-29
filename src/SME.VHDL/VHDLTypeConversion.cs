@@ -299,19 +299,40 @@ namespace SME.VHDL
 
 						render.TypeLookup[iexp] = target;
 
-						var wrapped = WrapExpression(render, s, string.Format("{0} := \"{1}\" & {2};", tmp, new string('0', target.Length - svhdl.Length), "{0}"), target);
+						string wexpr;
+						if (render.USE_EXPLICIT_CONCATENATION_OPERATOR)
+							wexpr = string.Format("IEEE.STD_LOGIC_1164.\"&\"(\"{0}\", {1})", new string('0', target.Length - svhdl.Length), "{0}");
+						else
+							wexpr = string.Format("\"{0}\" & {1}", new string('0', target.Length - svhdl.Length), "{0}");
+
+						var wrapped = WrapExpression(render, s, wexpr, target);
 
 						s.ReplaceWith(iexp);
-
+												      
 						var asstm = new ExpressionStatement()
 						{
-							Expression = wrapped,
 							SourceStatement = s.SourceExpression.Clone()
 						};
 
 						s.PrependStatement(asstm);
-						s.Parent = wrapped;
-						wrapped.Parent = asstm;
+
+
+						var asexp = new AssignmentExpression()
+						{
+							Left = iexp.Clone(),
+							Operator = ICSharpCode.NRefactory.CSharp.AssignmentOperatorType.Assign,
+							Right = wrapped,
+							SourceExpression = s.SourceExpression,
+							SourceResultType = targetsource
+						};
+
+						render.TypeLookup[asexp.Left] = target;
+						render.TypeLookup[asexp.Right] = target;
+						asexp.Left.SourceResultType = targetsource;
+						asexp.Right.SourceResultType = targetsource;
+						asstm.Expression = asexp;
+
+						asstm.UpdateParents();
 
 						return iexp;
 					}
