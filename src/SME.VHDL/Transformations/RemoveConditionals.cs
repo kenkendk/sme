@@ -126,7 +126,7 @@ namespace SME.VHDL.Transformations
 
 			var ies = new IfElseStatement()
 			{
-				Condition = sourceExp.ConditionExpression.Clone(),
+				Condition = sourceExp.ConditionExpression,
 				TrueStatement = new ExpressionStatement()
 				{
 					SourceStatement = sourceExp.SourceExpression.Clone(),
@@ -151,7 +151,7 @@ namespace SME.VHDL.Transformations
 				},
 				SourceStatement = sourceExp.SourceExpression.Clone()
 			};
-
+						   
 			sourceExp.PrependStatement(ies);
 			ies.UpdateParents();
 
