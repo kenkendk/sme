@@ -221,24 +221,26 @@ namespace SME.AST
 						//	el = method.LocalRenames[el];
 
 						var mt = current as MethodState ?? method;
-
-						if (mt.LocalVariables.ContainsKey(el))
+						if (mt != null)
 						{
-							current = mt.LocalVariables[el];
-							continue;
-						}
+							if (mt.LocalVariables.ContainsKey(el))
+							{
+								current = mt.LocalVariables[el];
+								continue;
+							}
 
-						var p = mt.Parameters.FirstOrDefault(x => x.Name == el);
-						if (p != null)
-						{
-							current = p;
-							continue;
-						}
+							var p = mt.Parameters.FirstOrDefault(x => x.Name == el);
+							if (p != null)
+							{
+								current = p;
+								continue;
+							}
 
-						if (mt.ReturnVariable != null && !string.IsNullOrWhiteSpace(mt.ReturnVariable.Name) && el == mt.ReturnVariable.Name)
-						{
-							current = mt.ReturnVariable;
-							continue;
+							if (mt.ReturnVariable != null && !string.IsNullOrWhiteSpace(mt.ReturnVariable.Name) && el == mt.ReturnVariable.Name)
+							{
+								current = mt.ReturnVariable;
+								continue;
+							}
 						}
 					}
 
@@ -246,31 +248,34 @@ namespace SME.AST
 					{
 						var pr = current as ProcessState ?? proc;
 
-						if (pr.BusInstances.ContainsKey(el))
+						if (pr != null)
 						{
-							current = pr.BusInstances[el];
-							continue;
-						}
-
-						if (pr.Signals.ContainsKey(el))
-						{
-							current = pr.Signals[el];
-							continue;
-						}
-
-						if (pr.Variables.ContainsKey(el))
-						{
-							current = pr.Variables[el];
-							continue;
-						}
-
-						if (pr.Methods != null)
-						{
-							var p = pr.Methods.FirstOrDefault(x => x.Name == el);
-							if (p != null)
+							if (pr.BusInstances.ContainsKey(el))
 							{
-								current = p;
+								current = pr.BusInstances[el];
 								continue;
+							}
+
+							if (pr.Signals.ContainsKey(el))
+							{
+								current = pr.Signals[el];
+								continue;
+							}
+
+							if (pr.Variables.ContainsKey(el))
+							{
+								current = pr.Variables[el];
+								continue;
+							}
+
+							if (pr.Methods != null)
+							{
+								var p = pr.Methods.FirstOrDefault(x => x.Name == el);
+								if (p != null)
+								{
+									current = p;
+									continue;
+								}
 							}
 						}
 					}
