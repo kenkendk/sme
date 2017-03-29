@@ -822,5 +822,46 @@ namespace SME.VHDL
 				return Network.Processes.SelectMany(x => x.InputBusses.Where(y => x.OutputBusses.Contains(y) && y.IsTopLevelOutput));
 			}
 		}
+
+		/// <summary>
+		/// Returns all signals written to a bus from within the process
+		/// </summary>
+		/// <returns>The written signals.</returns>
+		/// <param name="proc">The process to see if the signals are written</param>
+		/// <param name="bus">The bus to get the signals for.</param>
+		public IEnumerable<BusSignal> WrittenSignals(AST.Process proc, AST.Bus bus)
+		{
+			// Components are assumed to use their outputs
+			if (proc.SourceInstance is IVHDLComponent)
+				return bus.Signals;
+
+			return proc
+				.All()
+				.Select(x =>
+				{
+					if (x is AST.AssignmentExpression)
+					{
+						var ax = x as AST.AssignmentExpression;
+						if (ax.Left is AST.MemberReferenceExpression)
+							return ((AST.MemberReferenceExpression)ax.Left).Target;
+						else if (ax.Left is AST.IndexerExpression)
+							return ((AST.IndexerExpression)ax.Left).Target;
+					}
+					else if (x is AST.UnaryOperatorExpression)
+					{
+						var ux = x as AST.UnaryOperatorExpression;
+						if (ux.Operand is AST.MemberReferenceExpression)
+							return ((AST.MemberReferenceExpression)ux.Operand).Target;
+						else if (ux.Operand is AST.IndexerExpression)
+							return ((AST.IndexerExpression)ux.Operand).Target;
+					}
+
+					return null;
+				})
+				.Where(x => x != null)
+				.OfType<AST.BusSignal>()
+				.Where(x => x.Parent == bus)
+				.Distinct();
+		}
 	}
 }

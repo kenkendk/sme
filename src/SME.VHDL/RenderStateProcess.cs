@@ -87,37 +87,7 @@ namespace SME.VHDL
 		/// <param name="bus">The bus to get the signals for.</param>
 		public IEnumerable<BusSignal> WrittenSignals(AST.Bus bus)
 		{
-			// Components are assumed to use their outputs
-			if (IsComponent)
-				return bus.Signals;
-
-			return Process
-				.All()
-				.Select(x =>
-				{
-					if (x is AST.AssignmentExpression)
-					{
-						var ax = x as AST.AssignmentExpression;
-						if (ax.Left is AST.MemberReferenceExpression)
-							return ((AST.MemberReferenceExpression)ax.Left).Target;
-						else if (ax.Left is AST.IndexerExpression)
-							return ((AST.IndexerExpression)ax.Left).Target;
-					}
-					else if (x is AST.UnaryOperatorExpression)
-					{
-						var ux = x as AST.UnaryOperatorExpression;
-						if (ux.Operand is AST.MemberReferenceExpression)
-							return ((AST.MemberReferenceExpression)ux.Operand).Target;
-						else if (ux.Operand is AST.IndexerExpression)
-							return ((AST.IndexerExpression)ux.Operand).Target;
-					}
-
-					return null;
-				})
-				.Where(x => x != null)
-				.OfType<AST.BusSignal>()
-				.Where(x => x.Parent == bus)
-				.Distinct();
+			return Parent.WrittenSignals(Process, bus);
 		}
 
 		/// <summary>

@@ -98,9 +98,14 @@ begin
 	          output_suffix = "_next";
 	      if (feedbacks.Contains(bus))
 	          input_suffix = "_current";
+
+          var signals = bus.Signals.AsEnumerable();
+
+	      if (isOutput && !isBoth)
+	      	signals = RS.WrittenSignals(p, bus);
 #>
         -- <#= type #> bus <#= bus.Name #>
-<#		  foreach(var signal in bus.Signals) { #>
+<#		  foreach(var signal in signals) { #>
 <#              if (isInput || isBoth) { #>
         <#= bus.Name #>_<#= signal.Name #> => <#= bus.Name #>_<#= signal.Name #><#= input_suffix #>,
 <#              } else { #>
