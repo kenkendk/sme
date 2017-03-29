@@ -732,7 +732,7 @@ namespace SME.VHDL.Templates {
             #line hidden
             
             #line 92 ""
- if (Process.Methods != null && Process.Methods.Any()) { 
+ if (Process.Methods != null && Process.Methods.Any(x => !x.Ignore)) { 
             
             #line default
             #line hidden
@@ -744,7 +744,7 @@ namespace SME.VHDL.Templates {
             #line hidden
             
             #line 94 ""
-     foreach (var s in Process.Methods) { 
+     foreach (var s in Process.Methods.Where(x => !x.Ignore)) { 
             
             #line default
             #line hidden

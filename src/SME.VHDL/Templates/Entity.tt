@@ -89,9 +89,9 @@ architecture RTL of <#= Process.Name #> is
 <#= RSP.ComponentSignals #>
 <# } #>
 
-<# if (Process.Methods != null && Process.Methods.Any()) { #>
+<# if (Process.Methods != null && Process.Methods.Any(x => !x.Ignore)) { #>
   -- Internal methods
-<#     foreach (var s in Process.Methods) { #>
+<#     foreach (var s in Process.Methods.Where(x => !x.Ignore)) { #>
 <#         foreach(var line in RSP.RenderMethod(s)) { #>
   <#= line #>
 <#         } #>
