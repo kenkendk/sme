@@ -239,6 +239,7 @@ namespace SME.VHDL.Transformations
 					}
 				}
 			}
+
 			return res;
 		}
 	}
