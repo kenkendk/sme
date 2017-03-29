@@ -19,8 +19,20 @@ namespace SME.VHDL.CustomNodes
 		public string WrappingTemplate;
 
 		/// <summary>
-		/// Gets the child expression.
+		/// Gets or sets the child expression.
 		/// </summary>
-		public override Expression[] Children { get { return new[] { Expression }; } }
+		public override Expression[] Children 
+		{ 
+			get { return new[] { Expression }; }
+			set
+			{
+				if (value == null)
+					Expression = null;
+				else if (value.Length == 1)
+					Expression = value[0];
+				else
+					throw new Exception("Conversion can only have a single child");
+			}
+		}
 	}
 }

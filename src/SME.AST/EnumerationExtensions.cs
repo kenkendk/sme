@@ -843,7 +843,12 @@ namespace SME.AST
 							{
 								children[i] = replacement;
 								replacement.Parent = parent;
-								return replacement;
+								((CustomExpression)parent).Children = children;
+
+								if (((CustomExpression)parent).Children[i] != replacement)
+									throw new Exception($"Cannot update the children of an element of type {parent.GetType().FullName}, make sure it returns a real array reference");
+							
+ 								return replacement;
 							}
 				}
 			}

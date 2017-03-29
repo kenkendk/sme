@@ -55,7 +55,7 @@ namespace SME.AST
 		/// <summary>
 		/// List the children of this element
 		/// </summary>
-		public abstract Expression[] Children { get; }
+		public abstract Expression[] Children { get; set; }
 	}
 
 	/// <summary>
