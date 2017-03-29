@@ -87,6 +87,10 @@ namespace SME.VHDL
 		/// <param name="bus">The bus to get the signals for.</param>
 		public IEnumerable<BusSignal> WrittenSignals(AST.Bus bus)
 		{
+			// Components are assumed to use their outputs
+			if (IsComponent)
+				return bus.Signals;
+
 			return Process
 				.All()
 				.Select(x =>
