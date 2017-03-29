@@ -62,7 +62,7 @@ namespace SME.VHDL.Transformations
 			// Post transforms are in Pre-order
 			foreach (var m in methods)
 				RepeatedApply(new IASTTransform[] {
-					//new RemoveExtraParenthesis(),
+					new RemoveExtraParenthesis(),
 				}, () => m.All());
 		}
 
