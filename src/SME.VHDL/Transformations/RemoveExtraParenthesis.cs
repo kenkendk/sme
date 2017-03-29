@@ -26,12 +26,6 @@ namespace SME.VHDL.Transformations
 						return aes.Right.ReplaceWith(((ParenthesizedExpression)aes.Right).Expression);
 				}
 			}
-			else if (item is CustomNodes.ConversionExpression)
-			{
-				var cve = item as CustomNodes.ConversionExpression;
-				if (cve.Expression is ParenthesizedExpression)
-					return cve.Expression.ReplaceWith(((ParenthesizedExpression)cve.Expression).Expression);
-			}
 			else if (item is IfElseStatement)
 			{
 				var ies = item as IfElseStatement;
