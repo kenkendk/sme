@@ -69,8 +69,10 @@ namespace SME.VHDL.Transformations
 		private static void RepeatedApply(IASTTransform[] transforms, Func<IEnumerable<ASTItem>> it)
 		{
 			var repeat = true;
+#if DEBUG_TRANSFORMS
 			object lastchanger = null;
 			ASTItem lastchange = null;
+#endif
 			while (repeat)
 			{
 				repeat = false;
@@ -86,10 +88,10 @@ namespace SME.VHDL.Transformations
 					foreach (var f in transforms)
 						if (f.Transform(x) != x)
 						{
+#if DEBUG_TRANSFORMS
 							lastchanger = f;
 							lastchange = x;
 
-#if DEBUG_TRANSFORMS
 							if (x is AST.Expression)	
 								Console.WriteLine(x.GetType().FullName + ": " + (x as AST.Expression).SourceExpression.ToString());
 							if (x is AST.Statement)
