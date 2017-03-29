@@ -19,13 +19,6 @@ namespace SME.VHDL.Transformations
 			if (el.Name != null && (el is AST.Bus || el is AST.Process || el is AST.DataElement))
 				el.Name = Naming.ToValidName(el.Name);
 
-			if (el is AST.Process)
-			{
-				var customname = ((AST.Process)el).SourceType.GetCustomAttributes(typeof(VHDLComponentAttribute), false).FirstOrDefault() as VHDLComponentAttribute;
-				if (customname != null)
-					el.Name = customname.Name;
-			}
-
 			if (el is AST.Constant)
 			{
 				if (((Constant)el).Source is Mono.Cecil.FieldDefinition)
