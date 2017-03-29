@@ -22,6 +22,8 @@ package SYSTEM_TYPES is
     subtype T_SYSTEM_INT32 is std_logic_vector(31 downto 0);
     subtype T_SYSTEM_INT64 is std_logic_vector(63 downto 0);
 
+    type T_SYSTEM_BOOL_ARRAY  is array(natural range <>) of T_SYSTEM_BOOL;
+
     type T_SYSTEM_UINT8_ARRAY  is array(natural range <>) of T_SYSTEM_UINT8;
     type T_SYSTEM_UINT16_ARRAY is array(natural range <>) of T_SYSTEM_UINT16;
     type T_SYSTEM_UINT32_ARRAY is array(natural range <>) of T_SYSTEM_UINT32;
