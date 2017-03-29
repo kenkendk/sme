@@ -114,14 +114,14 @@ END COMPONENT;
 {0}_implementation: {1}
 PORT MAP (
     clka => CLK,
-    ena => IWriteIn_Enabled,
+    ena => {0}_IWriteIn_Enabled,
     wea => (others => '1'),
-    addra => IWriteIn_Address({3} DOWNTO 0),
-    dina => IWriteIn_Data({2} DOWNTO 0),
+    addra => {0}_IWriteIn_Address({3} DOWNTO 0),
+    dina => {0}_IWriteIn_Data({2} DOWNTO 0),
     clkb => CLK,
     enb => '1',
-    addrb => IReadIn_Address({3} DOWNTO 0),
-    doutb => IReadOut_Data({2} DOWNTO 0)
+    addrb => {0}_IReadIn_Address({3} DOWNTO 0),
+    doutb => {0}_IReadOut_Data({2} DOWNTO 0)
 );
 
 "
