@@ -425,16 +425,73 @@ namespace SME.VHDL
 		/// <param name="element">The element to get the default value for.</param>
 		public string DefaultValue(AST.DataElement element)
 		{
-			var tvhdl = VHDLType(element);
-			var def = "'0'";
-			while (tvhdl.IsArray)
+			object pval = element.DefaultValue;
+
+			if (pval == null && element.Type != null && element.Type.IsPrimitive)
+				pval = Activator.CreateInstance(element.Type);
+
+			if (element.Source is System.Reflection.PropertyInfo)
 			{
-				def = string.Format("(others => {0})", def);
+				var pd = element.Source as System.Reflection.PropertyInfo;
+				var init = pd.GetCustomAttributes(typeof(InitialValueAttribute), true).FirstOrDefault() as InitialValueAttribute;
+
+				if (init != null && init.Value != null)
+					pval = init.Value;
+
+				if (pd.PropertyType == typeof(bool))
+					return ((object)true).Equals(pval) ? "'1'" : "'0'";
+				else if (pd.PropertyType.IsEnum)
+				{
+					if (pval == null)
+						return Naming.ToValidName(pd.PropertyType.FullName + "." + pd.PropertyType.GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.DeclaredOnly).Skip(1).First().Name);
+					else
+						return Naming.ToValidName(pd.PropertyType.FullName + "." + pval.ToString());
+				}
+			}
+
+			if (element.Source is Mono.Cecil.PropertyDefinition)
+			{
+				var pd = element.Source as Mono.Cecil.PropertyDefinition;
+				var init = pd.GetAttribute<InitialValueAttribute>();
+
+				if (init != null && init.HasConstructorArguments)
+				{
+					pval = init.ConstructorArguments.First().Value;
+					if (pval is CustomAttributeArgument)
+						pval = ((CustomAttributeArgument)pval).Value;
+				}
+
+				if (pd.PropertyType.IsType<bool>())
+					return ((object)true).Equals(pval) ? "'1'" : "'0'";
+				else if (pd.PropertyType.Resolve().IsEnum)
+				{
+					if (pval == null)
+						return Naming.ToValidName(pd.PropertyType.FullName + "." + pd.PropertyType.Resolve().Fields.Skip(1).First().Name);
+					else
+						return Naming.ToValidName(pd.PropertyType.FullName + "." + pd.PropertyType.Resolve().Fields.Where(x => pval.Equals(x.Constant)).First().Name);
+				}
+			}
+
+			var tvhdl = VHDLType(element);
+			var elvhdl = tvhdl;
+			while (elvhdl.IsArray && !elvhdl.IsStdLogicVector)
+				elvhdl = TypeScope.GetByName(elvhdl.ElementName);
+
+			if (pval != null)
+			{
+				var pstr = tvhdl.ToString();
+				if (pstr.StartsWith("T_", StringComparison.InvariantCultureIgnoreCase))
+					pstr = pstr.Substring(2);
+				pval = string.Format("{0}({1})", pstr, pval);
+			}
+
+			while (tvhdl.IsArray && tvhdl != elvhdl)
+			{
+				pval = string.Format("(others => {0})", pval);
 				tvhdl = TypeScope.GetByName(tvhdl.ElementName);
 			}
 
-			//TODO: Handle initializers
-			return def;
+			return pval.ToString();
 		}
 
 		/// <summary>
