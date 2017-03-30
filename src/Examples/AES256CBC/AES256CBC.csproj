@@ -42,10 +42,6 @@
       <Project>{CDC88908-F9B8-40CB-B746-86C8A4C1871B}</Project>
       <Name>SME</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Render\GraphViz\SME.Render.GraphViz.csproj">
-      <Project>{268A0B13-B84C-42F1-96D9-96550ED2F71F}</Project>
-      <Name>SME.Render.GraphViz</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\SME.Tracer\SME.Tracer.csproj">
       <Project>{325E539D-9BA8-4EAE-BE6E-D7226A8E8B45}</Project>
       <Name>SME.Tracer</Name>
@@ -53,6 +49,10 @@
     <ProjectReference Include="..\..\SME.VHDL\SME.VHDL.csproj">
       <Project>{E796351B-EB59-4686-9B54-DE4A284E0433}</Project>
       <Name>SME.VHDL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\SME.GraphViz\SME.GraphViz.csproj">
+      <Project>{268A0B13-B84C-42F1-96D9-96550ED2F71F}</Project>
+      <Name>SME.GraphViz</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

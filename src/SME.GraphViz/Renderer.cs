@@ -21,14 +21,14 @@ namespace SME
 		{
 			self.AddPostloader((processes, target) =>
 			{
-				SME.Render.GraphViz.Renderer.Render(processes, Path.Combine(target, filename));
+				SME.GraphViz.Renderer.Render(processes, Path.Combine(target, filename));
 			});
 			return self;
 		}
 	}
 }
 
-namespace SME.Render.GraphViz
+namespace SME.GraphViz
 {
 	/// <summary>
 	/// Class for generating a GraphViz display of the current network

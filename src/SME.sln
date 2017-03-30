@@ -5,7 +5,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SME", "SME\SME.csproj", "{C
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{0F94E837-9D61-47FE-98A0-EDFA671A44FA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SME.Render.GraphViz", "Render\GraphViz\SME.Render.GraphViz.csproj", "{268A0B13-B84C-42F1-96D9-96550ED2F71F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SME.GraphViz", "SME.GraphViz\SME.GraphViz.csproj", "{268A0B13-B84C-42F1-96D9-96550ED2F71F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ColorBin", "Examples\ColorBin\ColorBin.csproj", "{6BB5AFD0-8B33-42C0-960C-235C7350E52B}"
 EndProject
