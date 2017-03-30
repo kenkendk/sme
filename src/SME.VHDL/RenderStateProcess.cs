@@ -151,7 +151,7 @@ namespace SME.VHDL
 						}
 
 						var tvhdl = VHDLType(v);
-						if (tvhdl.IsSystemType)
+						if (tvhdl.IsSystemType || (tvhdl.IsArray && TypeScope.GetByName(tvhdl.ElementName).IsSystemType))
 							yield return $"subtype {v.Name}_type is {VHDLType(v)}(0 to {arraylen - 1})";
 						else
 							yield return $"type {v.Name}_type is array(0 to {arraylen - 1}) of {VHDLType(v).ElementName}";
