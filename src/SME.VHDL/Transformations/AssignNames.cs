@@ -23,7 +23,7 @@ namespace SME.VHDL.Transformations
 			{
 				if (((Constant)el).Source is Mono.Cecil.FieldDefinition)
 					el.Name = Naming.ToValidName((((Constant)el).Source as Mono.Cecil.FieldDefinition).DeclaringType.FullName + "." + el.Name);
-				else
+				else if (el.Parent != null && !string.IsNullOrWhiteSpace(el.Parent.Name))
 					el.Name = Naming.ToValidName(el.Parent.Name + "." + el.Name);
 			}
 
