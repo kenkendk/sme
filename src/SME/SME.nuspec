@@ -2,21 +2,21 @@
 <package >
   <metadata>
     <id>SME</id>
-    <version>0.1</version>
+    <version>0.2</version>
     <authors>Kenneth Skovhede</authors>
     <owners>Kenneth Skovhede</owners>
     <licenseUrl>https://raw.githubusercontent.com/kenkendk/sme/master/LICENSE</licenseUrl>
     <projectUrl>https://github.com/kenkendk/sme</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Synchronous Message Exchange</description>
-    <releaseNotes>This is the initial relase of the SME library</releaseNotes>
-    <copyright>Copyright Kenneth Skovhede 2016</copyright>
+    <description>Synchronous Message Exchange simulation and component library</description>
+    <releaseNotes>Updated versions with some minor bugfixes</releaseNotes>
+    <copyright>Copyright Kenneth Skovhede 2017</copyright>
     <tags>SME hardware simulation</tags>
     <dependencies>
       <dependency id="Castle.Core" version="3.3.3" />
     </dependencies>
   </metadata>
   <files>
-    <file src="bin/Release/SME.dll" target="lib/net45" />
+    <file src="bin/Release/SME.exe" target="lib/net45" />
   </files>
 </package>

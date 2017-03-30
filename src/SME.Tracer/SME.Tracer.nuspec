@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <package >
   <metadata>
-    <id>SME.GraphViz</id>
+    <id>SME</id>
     <version>0.2</version>
     <authors>Kenneth Skovhede</authors>
     <owners>Kenneth Skovhede</owners>
     <licenseUrl>https://raw.githubusercontent.com/kenkendk/sme/master/LICENSE</licenseUrl>
     <projectUrl>https://github.com/kenkendk/sme</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>GraphViz renderer for Synchronous Message Exchange</description>
-    <releaseNotes>Updated the render to fit into the updated SME library namespaces</releaseNotes>
-    <copyright>Copyright Kenneth Skovhede 2017</copyright>
-    <tags>SME hardware simulation GraphViz</tags>
+    <description>Tracing module for SME networks</description>
+    <releaseNotes>Updated versions with some minor bugfixes</releaseNotes>
+    <copyright>Copyright Kenneth Skovhede 2016</copyright>
+    <tags>SME hardware simulation</tags>
     <dependencies>
-      <dependency id="SME" version="0.1" />
+      <dependency id="Newtonsoft.Json" version="10.0.1" />
     </dependencies>
   </metadata>
   <files>
-    <file src="bin/Release/SME.GraphViz.dll" target="lib/net45" />
+    <file src="bin/Release/SME.Tracer.dll" target="lib/net45" />
   </files>
 </package>
