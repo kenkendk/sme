@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/kenkendk/sme.svg?branch=master)](https://travis-ci.org/kenkendk/sme)
+
 # Synchronous Message Exchange - SME
 
 Synchronous Message Exchange is a programming model for developing highly concurrent systems. Development is targeted at rapid FPGA development and testing, but the simulation part can be used to describe other kinds of systems, in particular concurrent control logic.
