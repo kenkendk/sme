@@ -225,7 +225,7 @@ namespace SME.AST
 				.SwitchSections
 				.Select(x => new Tuple<Expression[], Statement[]>(
 					x.CaseLabels.Select(y => Decompile(network, proc, method, s, y.Expression)).ToArray(),
-					x.Statements.Where(y => !(y is BreakStatement)).Select(y => Decompile(network, proc, method, y)).ToArray()
+					x.Statements.Select(y => Decompile(network, proc, method, y)).ToArray()
 				)).ToArray();
 
 			foreach (var c in s.Cases)

@@ -405,7 +405,7 @@ namespace SME.AST
 				foreach (var p in e.LoopBody.All(visitor))
 					yield return p;
 			}
-			else if (statement is CommentStatement)
+			else if (statement is CommentStatement || statement is BreakStatement)
 			{
 			}
 			else
