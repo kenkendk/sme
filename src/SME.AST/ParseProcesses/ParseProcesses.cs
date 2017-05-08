@@ -88,9 +88,10 @@ namespace SME.AST
 		/// </summary>
 		/// <returns>The network.</returns>
 		/// <param name="processes">The processes to build the AST for.</param>
-		public static Network BuildNetwork(IEnumerable<IProcess> processes)
+		/// <param name="decompile">Set to <c>true</c> to enable decompilation of the IL code.</param>
+		public static Network BuildNetwork(IEnumerable<IProcess> processes, bool decompile = false)
 		{
-			return new ParseProcesses().Parse(processes);
+			return new ParseProcesses().Parse(processes, decompile);
 		}
 
 		/// <summary>
@@ -98,10 +99,11 @@ namespace SME.AST
 		/// </summary>
 		/// <returns>The network.</returns>
 		/// <param name="processes">The processes to build the AST for.</param>
-		public static Network BuildNetwork<T>(IEnumerable<IProcess> processes)
+		/// <param name="decompile">Set to <c>true</c> to enable decompilation of the IL code.</param>
+		public static Network BuildNetwork<T>(IEnumerable<IProcess> processes, bool decompile = false)
 			where T : ParseProcesses, new()
 		{
-			return new T().Parse(processes);
+			return new T().Parse(processes, decompile);
 		}
 
 
@@ -109,7 +111,8 @@ namespace SME.AST
 		/// Builds an AST by inspecting the processes
 		/// </summary>
 		/// <param name="processes">The processes to build the AST for.</param>
-		public virtual Network Parse(IEnumerable<IProcess> processes)
+		/// <param name="decompile">Set to <c>true</c> to enable decompilation of the IL code.</param>
+		public virtual Network Parse(IEnumerable<IProcess> processes, bool decompile = false)
 		{
 			var sourceasm = processes.First().GetType().Assembly;
 			var network = new NetworkState()
@@ -135,14 +138,17 @@ namespace SME.AST
 			network.Busses = network.Processes.SelectMany(x => x.InternalBusses.Union(x.InputBusses).Union(x.OutputBusses)).Distinct().ToArray();
 			network.Constants = network.ConstantLookup.Values.ToArray();
 
-			foreach (var pr in network.Processes.Cast<ProcessState>().Where(x => x.Decompile))
+			if (decompile)
 			{
-				var st = pr.SourceType;
-				var method = st.GetMethod("OnTick", BindingFlags.Instance | BindingFlags.NonPublic, null, CallingConventions.Any, new Type[] { }, null);
-				if (method == null)
-					throw new Exception($"Could not find the \"OnTick\" method in class: {st.FullName}");
+				foreach (var pr in network.Processes.Cast<ProcessState>().Where(x => x.Decompile))
+				{
+					var st = pr.SourceType;
+					var method = st.GetMethod("OnTick", BindingFlags.Instance | BindingFlags.NonPublic, null, CallingConventions.Any, new Type[] { }, null);
+					if (method == null)
+						throw new Exception($"Could not find the \"OnTick\" method in class: {st.FullName}");
 
-				Decompile(network, pr, method);
+					Decompile(network, pr, method);
+				}
 			}
 
 			network.Constants = network.ConstantLookup.Values.ToArray();

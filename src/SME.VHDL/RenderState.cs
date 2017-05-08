@@ -131,7 +131,7 @@ namespace SME.VHDL
 			CSVTracename = csvtracename;
 			CustomFiles = customfiles;
 
-			Network = ParseProcesses.BuildNetwork(processes);
+			Network = ParseProcesses.BuildNetwork(processes, true);
 
 			ValidateNetwork(Network);
 
