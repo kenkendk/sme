@@ -51,6 +51,7 @@ namespace SME.VHDL.Transformations
 					new WrapIfComposite(),
 					new AssignNames(),
 					new RemoveSelfAssignments(),
+					new RemoveTrailingBreakStatement(),
 					new AssignVhdlType(state),
 					new RemoveConditionals(state, m),
 					new InsertReturnAssignments(state, m),
