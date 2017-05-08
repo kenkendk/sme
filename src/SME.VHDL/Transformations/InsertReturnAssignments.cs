@@ -33,7 +33,7 @@ namespace SME.VHDL.Transformations
 		/// Applies the transformation
 		/// </summary>
 		/// <returns>The transformed item.</returns>
-		/// <param name="el">The item to visit.</param>
+		/// <param name="item">The item to visit.</param>
 		public ASTItem Transform(ASTItem item)
 		{
 			var rs = item as AST.ReturnStatement;
