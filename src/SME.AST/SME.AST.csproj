@@ -76,7 +76,6 @@
     <Compile Include="ParseProcesses\ParseProcessesStatement.cs" />
     <Compile Include="ParseProcesses\ParseProcessesTypeResolve.cs" />
     <Compile Include="ParseProcesses\ParseProcessesVariableLookup.cs" />
-    <Compile Include="VisitorExtensions.cs" />
     <Compile Include="JsonHelpers.cs" />
     <Compile Include="CloneHelper.cs" />
   </ItemGroup>
