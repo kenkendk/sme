@@ -34,6 +34,8 @@ namespace SME.AST
 				return Decompile(network, proc, method, statement as ICSharpCode.NRefactory.CSharp.ReturnStatement);
 			else if (statement is ICSharpCode.NRefactory.CSharp.ForStatement)
 				return Decompile(network, proc, method, statement as ICSharpCode.NRefactory.CSharp.ForStatement);
+			else if (statement is ICSharpCode.NRefactory.CSharp.BreakStatement)
+				return Decompile(network, proc, method, statement as ICSharpCode.NRefactory.CSharp.BreakStatement);
 			else if (statement is ICSharpCode.NRefactory.CSharp.CheckedStatement)
 			{
 				Console.WriteLine("Warning: \"checked\" is not supported and will be ignored for statement: {0}", statement);
@@ -385,6 +387,21 @@ namespace SME.AST
 			{
 				throw new Exception(string.Format("Unable to resolve as a constant value: {0}", src), ex);
 			}
+		}
+		/// <summary>
+		/// Processes a single statement from the decompiler and returns an AST entry for it
+		/// </summary>
+		/// <param name="network">The top-level network.</param>
+		/// <param name="proc">The process where the method is located.</param>
+		/// <param name="method">The method where the statement is found.</param>
+		/// <param name="statement">The decompiler statement to process.</param>
+		protected virtual BreakStatement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.NRefactory.CSharp.BreakStatement statement)
+		{
+			return new BreakStatement()
+			{
+				Parent = method,
+				SourceStatement =statement
+			};
 		}
 
 		/// <summary>

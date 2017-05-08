@@ -118,6 +118,13 @@ namespace SME.AST
 	}
 
 	/// <summary>
+	/// A break statement
+	/// </summary>
+	public class BreakStatement : Statement
+	{
+	}
+
+	/// <summary>
 	/// A statement used to output a comment
 	/// </summary>
 	public class CommentStatement : Statement
