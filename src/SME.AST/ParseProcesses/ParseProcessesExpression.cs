@@ -47,6 +47,14 @@ namespace SME.AST
 						Parent = statement
 					};
 
+				if (mt.ToString() == "Console.WriteLine" || mt.ToString() == "Console.Write")
+					return new EmptyExpression()
+					{
+						SourceExpression = si,
+						Parent = statement
+					};
+
+
 				// Catch common translations
 				if (mt != null && (expression as ICSharpCode.NRefactory.CSharp.InvocationExpression).Arguments.Count == 1)
 				{
