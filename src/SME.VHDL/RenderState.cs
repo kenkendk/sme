@@ -234,6 +234,10 @@ namespace SME.VHDL
 						File.Copy(source, Path.Combine(backupname, Naming.ProcessNameToFileName(p)));
 				}
 			}
+			else
+			{
+				Directory.CreateDirectory(targetfolder);
+			}
 		}
 
 		/// <summary>
