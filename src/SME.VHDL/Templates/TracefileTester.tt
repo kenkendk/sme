@@ -119,7 +119,7 @@ begin
                 <#= signal.Parent.Name#>_<#=signal.Name#> <= to_std_logic_vector(truncate(tmp));
             end if;
 <#    } else { #>
-            <#= signal.Parent.Name#>_<#=signal.Name#> <= <#= vhdltype.ToSafeVHDLName()#>'value(truncate(tmp));
+            <#= signal.Parent.Name#>_<#=signal.Name#> <= <#= vhdltype.ToSafeVHDLName()#>'value(to_safe_name(truncate(tmp)));
 <#    } #>
             fieldno := fieldno + 1;
 <# } #>
@@ -135,7 +135,7 @@ begin
 <#    if (vhdltype.IsStdLogicVector || vhdltype.IsSystemType) { #>
             	assert are_strings_equal(str(<#= signal.Parent.Name#>_<#=signal.Name#>), tmp) report "Value for <#= signal.Parent.Name#>_<#=signal.Name#> in cycle " & integer'image(clockcycle) & " was: " & str(<#= signal.Parent.Name#>_<#=signal.Name#>) & " but should have been: " & truncate(tmp) severity Error;
 <#    } else { #>
-            	assert are_strings_equal(<#= vhdltype.ToSafeVHDLName()#>'image(<#= signal.Parent.Name#>_<#=signal.Name#>), tmp) report "Value for <#= signal.Parent.Name#>_<#=signal.Name#> in cycle " & integer'image(clockcycle) & " was: " & <#= vhdltype.ToSafeVHDLName()#>'image(<#= signal.Parent.Name#>_<#=signal.Name#>) & " but should have been: " & truncate(tmp) severity Error;
+            	assert are_strings_equal(<#= vhdltype.ToSafeVHDLName()#>'image(<#= signal.Parent.Name#>_<#=signal.Name#>), to_safe_name(tmp)) report "Value for <#= signal.Parent.Name#>_<#=signal.Name#> in cycle " & integer'image(clockcycle) & " was: " & <#= vhdltype.ToSafeVHDLName()#>'image(<#= signal.Parent.Name#>_<#=signal.Name#>) & " but should have been: " & to_safe_name(truncate(tmp)) severity Error;
 <#    } #>
             end if;
             fieldno := fieldno + 1;

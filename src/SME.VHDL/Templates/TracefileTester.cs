@@ -469,7 +469,7 @@ foreach (var signal in RS.AllSignals) {
             #line hidden
             
             #line 122 ""
-            this.Write("'value(truncate(tmp));\n");
+            this.Write("'value(to_safe_name(truncate(tmp)));\n");
             
             #line default
             #line hidden
@@ -639,7 +639,7 @@ foreach (var signal in RS.AllSignals) {
             #line hidden
             
             #line 138 ""
-            this.Write("), tmp) report \"Value for ");
+            this.Write("), to_safe_name(tmp)) report \"Value for ");
             
             #line default
             #line hidden
@@ -699,7 +699,7 @@ foreach (var signal in RS.AllSignals) {
             #line hidden
             
             #line 138 ""
-            this.Write(") & \" but should have been: \" & truncate(tmp) severity Error;\n");
+            this.Write(") & \" but should have been: \" & to_safe_name(truncate(tmp)) severity Error;\n");
             
             #line default
             #line hidden
