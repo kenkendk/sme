@@ -20,7 +20,7 @@ namespace SME.AST.Transform
                 return item;
 
             var usednames = new Dictionary<string, string>();
-            foreach (var v in mt.Variables)
+            foreach (var v in mt.AllVariables)
             {
                 var basename = v.Name;
                 var i = 2;

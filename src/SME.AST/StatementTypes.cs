@@ -59,7 +59,12 @@ namespace SME.AST
 		/// <summary>
 		/// The statements in the block
 		/// </summary>
-		public Statement[] Statements;	
+		public Statement[] Statements;
+
+        /// <summary>
+        /// The variables defined in the block scope
+        /// </summary>
+        public Variable[] Variables;
 	}
 
 	/// <summary>

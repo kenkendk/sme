@@ -108,7 +108,7 @@ namespace SME.VHDL
 									.OfType<DataElement>()
 									.Union(
 										x
-										.Variables
+										.AllVariables
 										.OfType<DataElement>()
 									   )
 						            .Union(
@@ -221,7 +221,7 @@ namespace SME.VHDL
 				else
 					yield return $"pure function {method.Name}({margs}) return {Parent.VHDLWrappedTypeName(method.ReturnVariable)} is";
 
-				foreach (var n in method.Variables)
+				foreach (var n in method.AllVariables)
 					yield return $"    variable {n.Name}: {Parent.VHDLWrappedTypeName(n)};";
 
 				foreach (var m in Parent.TemporaryVariables)
@@ -959,7 +959,7 @@ namespace SME.VHDL
 
 				if (Process.MainMethod != null)
 				{
-					foreach(var variable in Process.MainMethod.Variables)
+					foreach(var variable in Process.MainMethod.AllVariables)
 						foreach (var s in RenderStatement(null, GetResetStatement(variable), 0))
 							yield return s;
 						
@@ -998,7 +998,7 @@ namespace SME.VHDL
 						yield return v;
 
 				if (Process.MainMethod != null)
-					foreach (var v in Process.MainMethod.Variables)
+					foreach (var v in Process.MainMethod.AllVariables)
 						yield return v;
 
 				foreach (var m in Parent.TemporaryVariables)

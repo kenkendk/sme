@@ -111,7 +111,7 @@ namespace SME.AST
 				Parent = method
 			};
 
-            method.PushScope(s);
+            method.StartScope(s);
 
             s.Statements = statement.Statements.Select(x =>
             {
@@ -120,7 +120,7 @@ namespace SME.AST
                 return n;
             }).ToArray();
 
-			method.PopScope(s);
+			method.FinishScope(s);
 
 
 			return s;
@@ -554,14 +554,14 @@ namespace SME.AST
 				Parent = method
 			};
 
-            method.PushScope(res);
+            method.StartScope(res);
             method.AddVariable(loopvar);
 
 			loopvar.Parent = res;
             res.LoopBody = Decompile(network, proc, method, statement.EmbeddedStatement);
 
 			res.LoopBody.Parent = res;
-            method.PopScope(res);
+            method.FinishScope(res);
 
 			return res;
 		}

@@ -261,7 +261,7 @@ namespace SME.AST
 					visitor(p, VisitorState.Leave);
 				}
 			
-			foreach (var p in method.Variables)
+			foreach (var p in method.AllVariables)
 				if (visitor(p, VisitorState.Enter))
 				{
 					if (!visitor(p, VisitorState.Visit))

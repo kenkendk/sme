@@ -72,20 +72,10 @@ namespace SME.AST
 		/// </summary>
 		protected class MethodState : Method
 		{
-			/// <summary>
-			/// The local variables
-			/// </summary>
-			public readonly Dictionary<string, Variable> xLocalVariables = new Dictionary<string, Variable>();
-		
-			/// <summary>
-			/// The local variables
-			/// </summary>
-			public readonly Dictionary<string, string> xLocalRenames = new Dictionary<string, string>();
-
             /// <summary>
             /// List of all variables found in the method
             /// </summary>
-            public readonly List<Variable> AllVariables = new List<Variable>();
+            public readonly List<Variable> CollectedVariables = new List<Variable>();
 
             /// <summary>
             /// The stack of scopes
@@ -107,7 +97,7 @@ namespace SME.AST
             public Variable AddVariable(AST.Variable variable)
             {
                 Scopes.Last().Value.Add(variable.Name, variable);
-                AllVariables.Add(variable);
+                CollectedVariables.Add(variable);
                 return variable;
             }
 
@@ -115,7 +105,7 @@ namespace SME.AST
 			/// Starts a new local scope
 			/// </summary>
 			/// <param name="scope">The item starting the scope.</param>
-			public void PushScope(ASTItem scope)
+			public void StartScope(ASTItem scope)
             {
                 if (scope == null)
                     throw new ArgumentNullException(nameof(scope));
@@ -127,13 +117,16 @@ namespace SME.AST
             /// Closes the current local scope
             /// </summary>
             /// <param name="scope">The scope to close.</param>
-            public void PopScope(ASTItem scope)
+            public void FinishScope(ASTItem scope)
             {
 				if (scope == null)
 					throw new ArgumentNullException(nameof(scope));
                 
                 if (Scopes.Last().Key != scope)
                     throw new Exception("PopScope had incorrect scope");
+
+                if (scope is BlockStatement)
+                    ((BlockStatement)scope).Variables = Scopes.Last().Value.Values.ToArray();
                 
                 Scopes.RemoveAt(Scopes.Count - 1);
             }

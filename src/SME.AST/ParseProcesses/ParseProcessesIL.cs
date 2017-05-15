@@ -174,12 +174,14 @@ namespace SME.AST
 			if (res.Ignore)
 			{
 				res.Statements = new Statement[0];
-				res.Variables = new Variable[0];
+				res.AllVariables = new Variable[0];
+                res.Variables = new Variable[0];
 			}
 			else
 			{
 				res.Statements = Decompile(network, proc, res);
-                res.Variables = res.AllVariables.ToArray();
+                res.AllVariables = res.CollectedVariables.ToArray();
+                res.Variables = res.Scopes.First().Value.Values.ToArray();
 			}
 
 			if (res.ReturnVariable == null)

@@ -214,13 +214,17 @@ namespace SME.AST
 		/// </summary>
 		public Mono.Cecil.MethodDefinition SourceMethod;
 		/// <summary>
-		/// The input parameters used by the function
+		/// The input parameters used by the method
 		/// </summary>
 		public Parameter[] Parameters;
 		/// <summary>
-		/// The variables used in the function
+		/// All variables used in all scopes in the method
 		/// </summary>
-		public Variable[] Variables;
+		public Variable[] AllVariables;
+        /// <summary>
+        /// Variables used in the top scope in the method
+        /// </summary>
+        public Variable[] Variables;
 		/// <summary>
 		/// The statements inside the method body.
 		/// </summary>
