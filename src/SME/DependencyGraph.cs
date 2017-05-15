@@ -17,6 +17,7 @@ namespace SME
 			INode[] Parents { get; }
 			INode[] Children { get; }
 			IProcess Item { get; }
+            IBus[] PropagateAfter { get; }
 		}
 
 		/// <summary>
@@ -92,6 +93,7 @@ namespace SME
 			INode[] INode.Parents { get { return Parents.Cast<INode>().ToArray(); } }
 			INode[] INode.Children { get { return Children.Cast<INode>().ToArray(); } }
 			IProcess INode.Item { get { return Item; } }
+            IBus[] INode.PropagateAfter { get { return PropagateAfter; } }
 
 			#endregion
 		}
@@ -101,16 +103,16 @@ namespace SME
 		/// </summary>
 		private readonly Node[] m_executionPlan;
 
-		/// <summary>
-		/// A callback method to invoke before each tick
-		/// </summary>
-		private Action m_tickcallback;
+        /// <summary>
+        /// A callback method to invoke before each tick
+        /// </summary>
+        private readonly Action m_tickcallback;
 
-		/// <summary>
-		/// Readonly access to the execution plan, i.e. the root nodes
-		/// </summary>
-		/// <value>The execution plan.</value>
-		public INode[] ExecutionPlan { get { return m_executionPlan.Cast<INode>().ToArray(); } }
+        /// <summary>
+        /// Readonly access to the execution plan, i.e. the root nodes
+        /// </summary>
+        /// <value>The execution plan.</value>
+        public INode[] ExecutionPlan { get { return m_executionPlan.Cast<INode>().ToArray(); } }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="SME.DependencyGraph"/> class.

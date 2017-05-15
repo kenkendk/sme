@@ -1,0 +1,57 @@
+﻿﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="SME.AST" #>
+<#
+
+var busses = RSP.Process.InputBusses.Union(RSP.Process.OutputBusses).Union(RSP.Process.InternalBusses).Distinct().OrderBy(x => x.Name).ToArray();
+#>
+
+class <#= RSP.Process.Name #> : public IProcess {
+    // Insert additional private variables and methods here
+    // #### USER-DATA-PRIVATE-START
+    // #### USER-DATA-PRIVATE-END
+
+<# if (RSP.Process.SharedVariables.Any()) { #>
+    // Shared variables
+<#     foreach(var v in RSP.Process.SharedVariables) { #>
+    <#= Type(v) #> <#= v.Name #>;
+<#     } #>
+
+<# } #>
+<# if (RSP.Process.SharedSignals.Any()) { #>
+    // Shared signals
+<#     foreach(var v in RSP.Process.SharedSignals) { #>
+    <#= Type(v) #> <#= v.Name #>;
+<#     } #>
+
+<# } #>
+    // Bus pointers
+<# foreach(var bus in busses) { #>
+    <#= bus.Name #>* bus_<#= bus.Name #>;
+<# } #>
+
+<# if (RSP.Process.Methods != null && RSP.Process.Methods.Any(x => !x.Ignore)) { #>
+    // Internal methods
+<#     foreach (var s in RSP.Process.Methods.Where(x => !x.Ignore)) { #>
+<#
+           var rettype = (s.ReturnVariable == null || s.ReturnVariable.CecilType.IsSameTypeReference(typeof(void))) ? "void" : Type(s.ReturnVariable);
+#>
+    <#= rettype #> <#= s.Name #>(<#= string.Join(", ", s.Parameters.Select(x => $"{Type(x)} {x.Name}")) #>) {
+<#         foreach(var line in RSP.RenderMethod(s)) { #>
+        <#= line #>
+<#         } #>
+    }
+<#     } #>
+<# } #>
+
+public:
+    <#= RSP.Process.Name #>(
+<#     foreach(var bus in busses) { #>
+        <#= bus.Name #>* p<#= bus.Name #><#= bus == busses.Last() ? "" : "," #>
+<#      } #>    );
+
+    void onTick();
+};

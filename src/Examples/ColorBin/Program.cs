@@ -15,6 +15,7 @@ namespace ColorBin
 				.BuildCSVFile()
 				.BuildGraph()
 				.BuildVHDL()
+				.BuildCPP()
 				;
 
 			sim.Run(typeof(MainClass).Assembly);

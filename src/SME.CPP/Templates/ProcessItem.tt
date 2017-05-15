@@ -1,0 +1,48 @@
+﻿﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="SME.AST" #>
+
+#include <iostream>
+#include "SystemTypes.hpp"
+#include "<#= Naming.DefinitionsFileName(Network) #>"
+#include "<#= RSP.Process.Name #>.hpp"
+
+// Insert additional includes and methods here
+// #### USER-DATA-EXTRA-START
+// #### USER-DATA-EXTRA-END
+
+
+<#
+var busses = RSP.Process.InputBusses.Union(RSP.Process.OutputBusses).Union(RSP.Process.InternalBusses).Distinct().OrderBy(x => x.Name).ToArray();
+#>
+
+<#= RSP.Process.Name #>::<#= RSP.Process.Name #>(
+<# foreach(var bus in busses) { #>
+    <#= bus.Name #>* p<#= bus.Name #><#= bus == busses.Last() ? "" : "," #>
+<#  } #>
+) {
+<# foreach(var bus in busses) { #>
+    bus_<#= bus.Name #> = p<#= bus.Name #>;
+<#  } #>
+
+    // Insert additional initialization here
+    // #### USER-DATA-INIT-START
+    // #### USER-DATA-INIT-END
+}
+
+void <#= RSP.Process.Name #>::onTick() {
+    // Insert additional pre- clock-tick code here
+    // #### USER-DATA-PRE-START
+    // #### USER-DATA-PRE-END
+
+<#     foreach(var line in RSP.RenderMethod(RSP.Process.MainMethod)) { #>
+    <#= line #>
+<#     } #>
+
+    // Insert additional post- clock-tick code here
+    // #### USER-DATA-POST-START
+    // #### USER-DATA-POST-END
+}

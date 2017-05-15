@@ -1,0 +1,172 @@
+﻿﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include "SystemTypes.hpp"
+#include "<#= Naming.DefinitionsFileName(Network) #>"
+
+<# foreach(var process in Network.Processes) { #>
+#include "<#= process.Name #>.hpp"
+<# } #>
+
+// Insert additional includes and methods here
+// #### USER-DATA-INCLUDE-START
+// #### USER-DATA-INCLUDE-END
+
+system_uint8 parse_system_uint8(std::string value) {
+    return (system_uint8)std::stoi(value, 0, 2);
+}
+
+system_int8 parse_system_int8(std::string value) {
+    return (system_int8)std::stoi(value, 0, 2);
+}
+
+system_bool parse_system_bool(std::string value) {
+    return parse_system_uint8(value) == 1;
+}
+
+system_uint16 parse_system_uint16(std::string value) {
+    return (system_uint16)std::stoi(value, 0, 2);
+}
+
+system_int16 parse_system_int16(std::string value) {
+    return (system_int16)std::stoi(value, 0, 2);
+}
+
+system_uint32 parse_system_uint32(std::string value) {
+    return (system_uint32)std::stoi(value, 0, 2);
+}
+
+system_int32 parse_system_int32(std::string value) {
+    return (system_int32)std::stoi(value, 0, 2);
+}
+
+system_uint64 parse_system_uint64(std::string value) {
+    return (system_uint64)std::stoll(value, 0, 2);
+}
+
+system_int64 parse_system_int64(std::string value) {
+    return (system_int64)std::stoll(value, 0, 2);
+}
+
+// The names of all signals
+std::string SIGNAL_NAMES[] = {
+<# foreach (var signal in RS.DriverSignals.Union(RS.VerifySignals)) { #>
+    "<#= RS.TestBenchSignalName(signal) #>",
+<# } #>
+};
+
+void RunSimulation(const char* tracefile)
+{
+<# foreach(var bus in Network.Busses) { #>
+    <#= bus.Name #> bus_<#= bus.Name #>;
+<# } #>
+
+<# foreach(var process in Network.Processes) {
+
+       var busses = process.InputBusses.Union(process.OutputBusses).Union(process.InternalBusses).Distinct().OrderBy(x => x.Name).ToArray();
+#>
+    <#= process.Name #> proc_<#= process.Name #>(<# foreach(var bus in busses) { #>&bus_<#= bus.Name #><#= bus == busses.Last() ? "" : ", " #><# } #>);
+<# } #>
+
+    // Open the trace file and validate the headers
+    std::string line;
+    std::string token;
+    std::ifstream trace(tracefile);
+    if (trace.bad()) {
+        std::cout << "File not found: " << tracefile << std::endl;
+        return;
+    }
+
+    if (!std::getline(trace, line)) {
+        std::cout << "File was empty: " << tracefile << std::endl;
+        return;
+    }
+
+    std::istringstream headerlinestream(line);
+    size_t field = 0;
+    while(std::getline(headerlinestream, token, ',')) {
+        if (token.compare(SIGNAL_NAMES[field]) != 0) {
+            std::cout << "Field #" << field << " should be named " << SIGNAL_NAMES[field] << " but is named " << token << ", the trace file cannot be used" << std::endl;
+            return;
+        }
+        field++;
+    }
+
+    size_t cycle = 0;
+
+    // Run all clock ticks
+    while(std::getline(trace, line)) {
+<# if (Network.Busses.Any(x => x.IsClocked)) { #>
+        // Propagate clocked busses
+<#     foreach(var bus in Network.Busses.Where(x => x.IsClocked)) { #>
+        bus_<#= bus.Name #>.Propagate();
+<#     } #>
+<# } #>
+        // Apply the source signals
+        std::istringstream valuestream(line);
+        field = 0;
+
+<# foreach (var signal in RS.DriverSignals) { #>
+        if (!std::getline(valuestream, token, ',')) {
+            std::cout << "Unexpected end-of-line in cycle " << cycle << ", field " << field << std::endl;
+            return;
+        }
+        bus_<#= signal.Parent.Name #>.<#= signal.Name #>(parse_<#= Type(signal) #>(token));
+        field++;
+<# } #>
+
+        // Follow the query plan
+<# foreach(var n in Graph.ExecutionPlan) { 
+       var pn = GetProcess(n.Item);
+       if (pn != null) {
+#>
+        proc_<#= pn.Name #>.onTick();
+<#     } #>
+<#     foreach(var b in n.Item.OutputBusses) { #>
+        bus_<#= GetBus(b).Name #>.forward_signals();
+<#     } #>
+<#     foreach(var b in n.PropagateAfter) { #>
+        bus_<#= GetBus(b).Name #>.propagate_signals();
+<#     } #>
+<#     foreach(var b in n.Item.InternalBusses) { #>
+        bus_<#= GetBus(b).Name #>.propagate_signals();
+<#     } #>
+<# } #>
+
+        // Verify the cycles
+<# foreach (var signal in RS.VerifySignals) { #>
+        if (!std::getline(valuestream, token, ',')) {
+            std::cout << "Unexpected end-of-line in cycle " << cycle << ", field " << field << std::endl;
+            return;
+        }
+
+        if (bus_<#= signal.Parent.Name #>.<#= signal.Name #>() != parse_<#= Type(signal) #>(token)) {
+            std::cout << "Error in cycle " << cycle << std::endl;
+            std::cout << "Expected value " << parse_<#= Type(signal) #>(token) << ", but got " << bus_<#= signal.Parent.Name #>.<#= signal.Name #>() << " for field " << SIGNAL_NAMES[field] << " (raw: " << token << ")" << std::endl;
+            return;
+        }
+        field++;
+<# } #>
+
+        cycle++;
+    }
+
+    std::cout << "Completed " << cycle << " simulation cycles" << std::endl;
+}
+
+
+int main()
+{
+
+// Insert additional startup code here
+// #### USER-DATA-STARTUP-CODE-START
+// #### USER-DATA-STARTUP-CODE-END
+
+    RunSimulation("<#= RS.CSVTracename #>");
+    return 0;
+}

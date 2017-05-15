@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AES256CBC", "Examples\AES25
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleTrader", "Examples\SimpleTrader\SimpleTrader.csproj", "{83BF7F48-BB3D-40C0-931D-B5BBCA93C92F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SME.CPP", "SME.CPP\SME.CPP.csproj", "{9F28DC04-2A0C-4F87-9E82-D6679DE94017}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -77,6 +79,10 @@ Global
 		{83BF7F48-BB3D-40C0-931D-B5BBCA93C92F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{83BF7F48-BB3D-40C0-931D-B5BBCA93C92F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{83BF7F48-BB3D-40C0-931D-B5BBCA93C92F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9F28DC04-2A0C-4F87-9E82-D6679DE94017}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F28DC04-2A0C-4F87-9E82-D6679DE94017}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F28DC04-2A0C-4F87-9E82-D6679DE94017}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F28DC04-2A0C-4F87-9E82-D6679DE94017}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{6BB5AFD0-8B33-42C0-960C-235C7350E52B} = {0F94E837-9D61-47FE-98A0-EDFA671A44FA}

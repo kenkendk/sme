@@ -1,0 +1,42 @@
+﻿﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+all: build
+
+GPP = g++
+CPPFLAGS = 
+
+build: <#= Naming.AssemblyNameToFileName(Network) #>
+
+<#
+var cust_tag = CustomFiles == null || CustomFiles.Count() == 0 ? "" : " custom_files";
+#>
+
+<# if (!string.IsNullOrEmpty(cust_tag)) { #>
+custom_files: <# foreach(var file in CustomFiles) { #><#= file #>.o <# } #>
+
+<# } #>
+    
+<# foreach (var file in Filenames) { #>
+<#= file #>.o: <#= file #>.cpp SystemTypes.hpp <#= Naming.DefinitionsFileName(Network) #> <#= file #>.hpp<#= cust_tag #>
+	${GPP} ${CPPFLAGS} -c <#= file #>.cpp
+<# } #>
+
+<# if (!string.IsNullOrEmpty(cust_tag)) { #>
+<#     foreach (var file in CustomFiles) { #>
+<#= file #>.o: <#= file #>.vhdl SystemTypes.hpp <#= Naming.DefinitionsFileName(Network) #>
+	${GPP} ${CPPFLAGS} -c <#= file #>.cpp
+<#     } #>
+<# } #>
+
+
+<#= Naming.AssemblyNameToFileName(Network) #>: SystemTypes.hpp <#= Naming.DefinitionsFileName(Network) #> <# foreach(var file in Filenames) { #><#= file #>.o <#= file #>.hpp <# } #><#= cust_tag #>
+	${GPP} <#= Naming.AssemblyNameToFileName(Network) #> <# foreach(var file in Filenames) { #><#= file #>.o <# } #> -o <#= Network.Name #>
+
+clean:
+	rm -rf *.o <#= Network.Name #>
+
+
+.PHONY: all clean <#= cust_tag #>
