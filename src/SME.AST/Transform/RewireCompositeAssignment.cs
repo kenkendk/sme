@@ -2,7 +2,7 @@
 using ICSharpCode.NRefactory.CSharp;
 using SME.AST;
 
-namespace SME.VHDL.Transformations
+namespace SME.AST.Transform
 {
 	/// <summary>
 	/// This transformation fixes assignments using a composite assignment,
@@ -15,7 +15,7 @@ namespace SME.VHDL.Transformations
 		/// </summary>
 		/// <returns>The transformed item.</returns>
 		/// <param name="el">The item to visit.</param>
-		public ASTItem Transform(ASTItem el)
+		public virtual ASTItem Transform(ASTItem el)
 		{
 			if (el is AST.AssignmentExpression)
 			{

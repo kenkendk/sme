@@ -87,11 +87,6 @@
     <Compile Include="BitTypes.cs">
       <DependentUpon>BitTypes.tt</DependentUpon>
     </Compile>
-    <Compile Include="Transformations\WrapIfComposite.cs" />
-    <Compile Include="Transformations\IASTTransform.cs" />
-    <Compile Include="Transformations\RemoveUIntPtrCast.cs" />
-    <Compile Include="Transformations\RemoveDoubleCast.cs" />
-    <Compile Include="Transformations\BuildTransformations.cs" />
     <Compile Include="Transformations\AssignVhdlType.cs" />
     <Compile Include="Transformations\AssignNames.cs" />
     <Compile Include="Transformations\CheckCommonIssues.cs" />
@@ -99,10 +94,7 @@
     <Compile Include="CustomNodes\ConversionExpression.cs" />
     <Compile Include="Transformations\InjectTypeConversions.cs" />
     <Compile Include="Transformations\RemoveConditionals.cs" />
-    <Compile Include="Transformations\RemoveExtraParenthesis.cs" />
     <Compile Include="Transformations\RewriteChainedAssignments.cs" />
-    <Compile Include="Transformations\RemoveSelfAssignments.cs" />
-    <Compile Include="Transformations\RewireCompositeAssignment.cs" />
     <Compile Include="Transformations\FixForLoopIncrements.cs" />
     <Compile Include="Templates\GHDL_Makefile.cs">
       <DependentUpon>GHDL_Makefile.tt</DependentUpon>
@@ -116,7 +108,7 @@
     <Compile Include="Components\TrueDualPortMemory.cs" />
     <Compile Include="Renderer.cs" />
     <Compile Include="Transformations\InsertReturnAssignments.cs" />
-    <Compile Include="Transformations\RemoveTrailingBreakStatement.cs" />
+    <Compile Include="Transformations\WrapIfComposite.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

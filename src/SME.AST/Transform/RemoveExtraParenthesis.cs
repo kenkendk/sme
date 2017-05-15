@@ -1,7 +1,7 @@
 ﻿using System;
 using SME.AST;
 
-namespace SME.VHDL.Transformations
+namespace SME.AST.Transform
 {
 	/// <summary>
 	/// Removes parenthesis wrappings that are not required.
@@ -15,7 +15,7 @@ namespace SME.VHDL.Transformations
 		/// </summary>
 		/// <returns>The transformed item.</returns>
 		/// <param name="item">The item to visit.</param>
-		public ASTItem Transform(ASTItem item)
+		public virtual ASTItem Transform(ASTItem item)
 		{
 			if (item is AssignmentExpression)
 			{

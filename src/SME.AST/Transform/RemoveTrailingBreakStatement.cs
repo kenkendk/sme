@@ -3,7 +3,7 @@ using System.Linq;
 using SME;
 using SME.AST;
 
-namespace SME.VHDL.Transformations
+namespace SME.AST.Transform
 {
 	public class RemoveTrailingBreakStatement : IASTTransform
 	{
@@ -12,7 +12,7 @@ namespace SME.VHDL.Transformations
 		/// </summary>
 		/// <returns>The transformed item.</returns>
 		/// <param name="item">The item to visit.</param>
-		public ASTItem Transform(ASTItem item)
+		public virtual ASTItem Transform(ASTItem item)
 		{
 			var bs = item as AST.BreakStatement;
 			if (bs == null)

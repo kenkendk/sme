@@ -115,38 +115,64 @@ namespace SME.VHDL
 		/// <value>The length of the clock.</value>
 		public int ClockLength { get; set; } = 10;
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="T:SME.VHDL.RenderState"/> class.
-		/// </summary>
-		/// <param name="processes">The processes to parse.</param>
-		/// <param name="targetfolder">The folder where the output is stored.</param>
-		/// <param name="backupfolder">The folder where backups are stored.</param>
-		/// <param name="csvtracename">The name of the CSV trace file.</param>
-		/// <param name="customfiles">A list of VHDL files to include in the Makefile, without the VHDL extension</param>
-		public RenderState(IEnumerable<IProcess> processes, string targetfolder, string backupfolder = null, string csvtracename = null, IEnumerable<string> customfiles = null)
-		{
-			Processes = processes;
-			TargetFolder = targetfolder;
-			BackupFolder = backupfolder;
-			CSVTracename = csvtracename;
-			CustomFiles = customfiles;
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:SME.VHDL.RenderState"/> class.
+        /// </summary>
+        /// <param name="processes">The processes to parse.</param>
+        /// <param name="targetfolder">The folder where the output is stored.</param>
+        /// <param name="backupfolder">The folder where backups are stored.</param>
+        /// <param name="csvtracename">The name of the CSV trace file.</param>
+        /// <param name="customfiles">A list of VHDL files to include in the Makefile, without the VHDL extension</param>
+        public RenderState(IEnumerable<IProcess> processes, string targetfolder, string backupfolder = null, string csvtracename = null, IEnumerable<string> customfiles = null)
+        {
+            Processes = processes;
+            TargetFolder = targetfolder;
+            BackupFolder = backupfolder;
+            CSVTracename = csvtracename;
+            CustomFiles = customfiles;
 
-			Network = ParseProcesses.BuildNetwork(processes, true);
+            Network = ParseProcesses.BuildNetwork(processes, true);
 
-			ValidateNetwork(Network);
+            ValidateNetwork(Network);
 
-			TypeScope = new VHDLTypeScope(Network.Processes.First(x => x.MainMethod != null).MainMethod.SourceMethod.Module);
+            TypeScope = new VHDLTypeScope(Network.Processes.First(x => x.MainMethod != null).MainMethod.SourceMethod.Module);
 
-			Types = Network
-				.All()
-				.OfType<DataElement>()
-				.Select(x => x.CecilType)
-				.Distinct(new TypeRefComp())
-				.ToArray();
+            Types = Network
+                .All()
+                .OfType<DataElement>()
+                .Select(x => x.CecilType)
+                .Distinct(new TypeRefComp())
+                .ToArray();
 
-			Network.Name = Naming.AssemblyToValidName(Processes);
+            Network.Name = Naming.AssemblyToValidName(Processes);
 
-			Transformations.BuildTransformations.Transform(Network, this);
+            SME.AST.Transform.Apply.Transform(
+                Network,
+                new SME.AST.Transform.IASTTransform[] { 
+                    new Transformations.AssignNames() 
+                },
+                m => new SME.AST.Transform.IASTTransform[] {
+                    new Transformations.RewriteChainedAssignments(this, m),
+                },
+				m => new SME.AST.Transform.IASTTransform[] {
+                    new SME.AST.Transform.RemoveUIntPtrCast(),
+					new SME.AST.Transform.RemoveDoubleCast(),
+                    new Transformations.WrapIfComposite(),
+                    new Transformations.AssignNames(),
+					new SME.AST.Transform.RemoveSelfAssignments(),
+					new SME.AST.Transform.RemoveTrailingBreakStatement(),
+					new Transformations.AssignVhdlType(this),
+					new Transformations.RemoveConditionals(this, m),
+					new Transformations.InsertReturnAssignments(this, m),
+					new Transformations.InjectTypeConversions(this, m),
+                    new SME.AST.Transform.RewireCompositeAssignment(),
+					new Transformations.FixForLoopIncrements(this, m),
+					new Transformations.RewireUnaryOperators(this),
+                },
+				m => new SME.AST.Transform.IASTTransform[] {
+                    new SME.AST.Transform.RemoveExtraParenthesis()
+                }
+            );
 		}
 
 		/// <summary>
@@ -191,11 +217,11 @@ namespace SME.VHDL
 
 			foreach (
 				var vhdlfile in from f in System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceNames()
-								where
-									f.EndsWith(".vhdl", StringComparison.InvariantCultureIgnoreCase)
-									&&
-								f.StartsWith(typeof(Templates.TopLevel).Namespace + ".", StringComparison.InvariantCultureIgnoreCase)
-								select f)
+					where
+						f.EndsWith(".vhdl", StringComparison.InvariantCultureIgnoreCase)
+						&&
+						f.StartsWith(typeof(Templates.TopLevel).Namespace + ".", StringComparison.InvariantCultureIgnoreCase)
+						select f)
 				using (var rs = new System.IO.StreamReader(System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(vhdlfile)))
 					File.WriteAllText(Path.Combine(TargetFolder, vhdlfile.Substring(typeof(Templates.TopLevel).Namespace.Length + 1)), rs.ReadToEnd());
 			

@@ -1,7 +1,7 @@
 ﻿using System;
 using SME.AST;
 
-namespace SME.VHDL.Transformations
+namespace SME.AST.Transform
 {
 	/// <summary>
 	/// Removes <seealso cref="UIntPtr"/> casts injected by NRefactory
@@ -13,7 +13,7 @@ namespace SME.VHDL.Transformations
 		/// </summary>
 		/// <returns>The transformed item.</returns>
 		/// <param name="_item">The item to visit.</param>
-		public ASTItem Transform(ASTItem _item)
+		public virtual ASTItem Transform(ASTItem _item)
 		{
 			var item = _item as Expression;
 			if (item == null)

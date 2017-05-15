@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using SME.AST;
+using SME.AST.Transform;
 
 namespace SME.VHDL.Transformations
 {

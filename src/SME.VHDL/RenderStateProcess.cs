@@ -21,16 +21,10 @@ namespace SME.VHDL
 		/// </summary>
 		public readonly AST.Process Process;
 
-
 		/// <summary>
 		/// A lookup associating an AST node with a VHDL type
 		/// </summary>
 		public readonly Dictionary<ASTItem, VHDLType> TypeLookup;
-
-		/// <summary>
-		/// A list of type conversion strings used to output the right wrapping for expressions
-		/// </summary>
-		public readonly Dictionary<Expression, string> ConversionTemplates = new Dictionary<Expression, string>();
 
 		/// <summary>
 		/// The type scope used to resolve VHDL types
@@ -290,7 +284,7 @@ namespace SME.VHDL
 
 			// TODO: The loop variable is a special scope that is not honored here,
 			// and could cause issue if there is another variable with the same name
-			// it should not happen, as NRecatory assigns new names
+			// it should not happen, as NRefactory assigns new names
 
 			var indent = new string(' ', indentation);
 			yield return $"{indent}for {s.LoopIndex.Name} in {s.StartValue.DefaultValue} to {endval} loop";

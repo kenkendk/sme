@@ -77,6 +77,15 @@
     <Compile Include="ParseProcesses\ParseProcessesVariableLookup.cs" />
     <Compile Include="JsonHelpers.cs" />
     <Compile Include="CloneHelper.cs" />
+    <Compile Include="Transform\BuildTransformations.cs" />
+    <Compile Include="Transform\IASTTransform.cs" />
+    <Compile Include="Transform\RemoveUIntPtrCast.cs" />
+    <Compile Include="Transform\RemoveDoubleCast.cs" />
+    <Compile Include="Transform\WrapIfComposite.cs" />
+    <Compile Include="Transform\RemoveSelfAssignments.cs" />
+    <Compile Include="Transform\RemoveTrailingBreakStatement.cs" />
+    <Compile Include="Transform\RewireCompositeAssignment.cs" />
+    <Compile Include="Transform\RemoveExtraParenthesis.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SME\SME.csproj">
@@ -89,6 +98,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="ParseProcesses\" />
+    <Folder Include="Transform\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

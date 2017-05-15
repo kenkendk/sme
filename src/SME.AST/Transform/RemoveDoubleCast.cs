@@ -1,7 +1,7 @@
 ﻿using System;
 using SME.AST;
 
-namespace SME.VHDL.Transformations
+namespace SME.AST.Transform
 {
 	/// <summary>
 	/// Removes double cast expression
@@ -13,7 +13,7 @@ namespace SME.VHDL.Transformations
 		/// </summary>
 		/// <returns>The transformed item.</returns>
 		/// <param name="item">The item to visit.</param>
-		public ASTItem Transform(ASTItem item)
+		public virtual ASTItem Transform(ASTItem item)
 		{
 			// This fixes a case where the code has double castings that introduce unwanted parenthesis 
 			var self = item as CastExpression;

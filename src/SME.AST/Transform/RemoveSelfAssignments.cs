@@ -1,7 +1,7 @@
 ﻿using System;
 using SME.AST;
 
-namespace SME.VHDL.Transformations
+namespace SME.AST.Transform
 {
 	/// <summary>
 	/// Remove self assignments, such as &quot;x = x&quot;, which can be emitted by the C# compiler.
@@ -13,7 +13,7 @@ namespace SME.VHDL.Transformations
 		/// </summary>
 		/// <returns>The transformed item.</returns>
 		/// <param name="item">The item to visit.</param>
-		public ASTItem Transform(ASTItem item)
+		public virtual ASTItem Transform(ASTItem item)
 		{
 			var expression = item as AssignmentExpression;
 
