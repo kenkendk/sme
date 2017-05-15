@@ -5,7 +5,7 @@ using SME.AST;
 namespace SME.AST.Transform
 {
     /// <summary>
-    /// Static container for performing all AST transformations in a single place
+    /// Static container for performing multiple AST transformations on a network
     /// </summary>
     public static class Apply
     {

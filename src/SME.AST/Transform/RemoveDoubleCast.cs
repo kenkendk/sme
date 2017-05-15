@@ -4,7 +4,7 @@ using SME.AST;
 namespace SME.AST.Transform
 {
 	/// <summary>
-	/// Removes double cast expression
+	/// Removes double cast expressions
 	/// </summary>
 	public class RemoveDoubleCast : IASTTransform
 	{

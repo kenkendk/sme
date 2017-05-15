@@ -5,6 +5,9 @@ using SME.AST;
 
 namespace SME.AST.Transform
 {
+    /// <summary>
+    /// Removes break statements that are the last line of a switch case
+    /// </summary>
 	public class RemoveTrailingBreakStatement : IASTTransform
 	{
 		/// <summary>

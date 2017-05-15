@@ -5,7 +5,7 @@ using SME.AST;
 namespace SME.AST.Transform
 {
 	/// <summary>
-	/// This transformation fixes assignments using a composite assignment,
+	/// This transformation unrolls assignments using a composite assignment,
 	/// such as &quot;a += 4&quot;
 	/// </summary>
 	public class RewireCompositeAssignment : IASTTransform

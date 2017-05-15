@@ -5,7 +5,7 @@ using SME.AST;
 namespace SME.AST.Transform
 {
 	/// <summary>
-	/// Puts a parenthesized expression around an expression that cannot be non-wrapped in VHDL
+	/// Puts a parenthesized expression around an expression that cannot be non-wrapped
 	/// </summary>
 	public class WrapIfComposite : IASTTransform
 	{
