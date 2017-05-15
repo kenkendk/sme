@@ -104,15 +104,24 @@ namespace SME.AST
 		/// <param name="statement">The decompiler statement to process.</param>
 		protected virtual BlockStatement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.NRefactory.CSharp.BlockStatement statement)
 		{
+            
 			var s = new BlockStatement
 			{
 				SourceStatement = statement,
-				Statements = statement.Statements.Select(x => Decompile(network, proc, method, x)).ToArray(),
 				Parent = method
 			};
 
-			foreach (var x in s.Statements)
-				x.Parent = s;
+            method.PushScope(s);
+
+            s.Statements = statement.Statements.Select(x =>
+            {
+                var n = Decompile(network, proc, method, x);
+                n.Parent = s;
+                return n;
+            }).ToArray();
+
+			method.PopScope(s);
+
 
 			return s;
 		}
@@ -526,18 +535,13 @@ namespace SME.AST
 			if (itro == null || itre.Operator != UnaryOperatorType.PostIncrement || itro.Identifier != name)
 				throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
 
-
 			var loopvar = new Variable()
 			{
 				CecilType = LoadType(typeof(int)),
 				Name = name,
 				Source = statement.Clone(),
+                DefaultValue = startvalue.DefaultValue
 			};
-			Variable prevar;
-			method.LocalVariables.TryGetValue(name, out prevar);
-			method.LocalVariables[name] = loopvar;
-
-			loopvar.DefaultValue = startvalue.DefaultValue;
 
 			var res = new ForStatement()
 			{
@@ -546,17 +550,18 @@ namespace SME.AST
 				EndValue = endvalue,
 				Increment = increment,
 				LoopIndex = loopvar,
-				LoopBody = Decompile(network, proc, method, statement.EmbeddedStatement),
+				//LoopBody = Decompile(network, proc, method, statement.EmbeddedStatement),
 				Parent = method
 			};
 
+            method.PushScope(res);
+            method.AddVariable(loopvar);
+
 			loopvar.Parent = res;
+            res.LoopBody = Decompile(network, proc, method, statement.EmbeddedStatement);
 
 			res.LoopBody.Parent = res;
-			method.LocalVariables.Remove(name);
-
-			if (prevar != null)
-				method.LocalVariables[name] = prevar;
+            method.PopScope(res);
 
 			return res;
 		}

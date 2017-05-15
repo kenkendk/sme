@@ -54,11 +54,8 @@ namespace SME.AST
 				var e = expression as ICSharpCode.NRefactory.CSharp.IdentifierExpression;
 				var name = e.Identifier;
 
-				if (method.LocalRenames.ContainsKey(name))
-					name = method.LocalRenames[name];
-
 				Variable variable;
-				if (method != null && method.LocalVariables.TryGetValue(name, out variable))
+				if (method != null && method.TryGetVariable(name, out variable))
 					return variable;
 
 				if (method != null)
@@ -223,9 +220,10 @@ namespace SME.AST
 						var mt = current as MethodState ?? method;
 						if (mt != null)
 						{
-							if (mt.LocalVariables.ContainsKey(el))
+                            Variable temp;
+                            if (mt.TryGetVariable(el, out temp))
 							{
-								current = mt.LocalVariables[el];
+								current = temp;
 								continue;
 							}
 
@@ -385,9 +383,8 @@ namespace SME.AST
 				Source = source,
 				Parent = (ASTItem)method ?? proc
 			};
-			method.LocalVariables.Add(varname, res);
 
-			return res;
+            return method.AddVariable(res);
 		}
 
 		/// <summary>
@@ -410,8 +407,7 @@ namespace SME.AST
 				Parent = (ASTItem)method ?? proc
 			};
 
-			method.LocalVariables.Add(variable.Name, c);
-			return c;
+            return method.AddVariable(c);
 		}
 
 		/// <summary>

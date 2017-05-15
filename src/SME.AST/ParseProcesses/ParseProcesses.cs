@@ -75,12 +75,85 @@ namespace SME.AST
 			/// <summary>
 			/// The local variables
 			/// </summary>
-			public readonly Dictionary<string, Variable> LocalVariables = new Dictionary<string, Variable>();
+			public readonly Dictionary<string, Variable> xLocalVariables = new Dictionary<string, Variable>();
 		
 			/// <summary>
 			/// The local variables
 			/// </summary>
-			public readonly Dictionary<string, string> LocalRenames = new Dictionary<string, string>();
+			public readonly Dictionary<string, string> xLocalRenames = new Dictionary<string, string>();
+
+            /// <summary>
+            /// List of all variables found in the method
+            /// </summary>
+            public readonly List<Variable> AllVariables = new List<Variable>();
+
+            /// <summary>
+            /// The stack of scopes
+            /// </summary>
+            public readonly List<KeyValuePair<ASTItem, Dictionary<string, Variable>>> Scopes = new List<KeyValuePair<ASTItem, Dictionary<string, Variable>>>();
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="T:SME.AST.ParseProcesses.MethodState"/> class.
+            /// </summary>
+            public MethodState()
+            {
+                Scopes.Add(new KeyValuePair<ASTItem, Dictionary<string, Variable>>(this, new Dictionary<string, Variable>()));
+            }
+
+            /// <summary>
+            /// Adds a variable to the current scope
+            /// </summary>
+            /// <param name="variable">Variable.</param>
+            public Variable AddVariable(AST.Variable variable)
+            {
+                Scopes.Last().Value.Add(variable.Name, variable);
+                AllVariables.Add(variable);
+                return variable;
+            }
+
+			/// <summary>
+			/// Starts a new local scope
+			/// </summary>
+			/// <param name="scope">The item starting the scope.</param>
+			public void PushScope(ASTItem scope)
+            {
+                if (scope == null)
+                    throw new ArgumentNullException(nameof(scope));
+
+                Scopes.Add(new KeyValuePair<ASTItem, Dictionary<string, Variable>>(scope, new Dictionary<string, Variable>()));
+            }
+
+            /// <summary>
+            /// Closes the current local scope
+            /// </summary>
+            /// <param name="scope">The scope to close.</param>
+            public void PopScope(ASTItem scope)
+            {
+				if (scope == null)
+					throw new ArgumentNullException(nameof(scope));
+                
+                if (Scopes.Last().Key != scope)
+                    throw new Exception("PopScope had incorrect scope");
+                
+                Scopes.RemoveAt(Scopes.Count - 1);
+            }
+
+            /// <summary>
+            /// Attempts to locate a variable with the given name, looking through all active scopes
+            /// </summary>
+            /// <returns><c>true</c>, if the variable was found, <c>false</c> otherwise.</returns>
+            /// <param name="name">The name of the variable to locate.</param>
+            /// <param name="variable">The variable, if any.</param>
+            public bool TryGetVariable(string name, out Variable variable)
+            {
+                variable = null;
+
+                for (var i = Scopes.Count - 1; i >= 0; i--)
+                    if (Scopes[i].Value.TryGetValue(name, out variable))
+                        return true;
+
+                return false;
+            }
 		}
 
 		/// <summary>

@@ -179,7 +179,7 @@ namespace SME.AST
 			else
 			{
 				res.Statements = Decompile(network, proc, res);
-				res.Variables = res.LocalVariables.Values.ToArray();
+                res.Variables = res.AllVariables.ToArray();
 			}
 
 			if (res.ReturnVariable == null)
