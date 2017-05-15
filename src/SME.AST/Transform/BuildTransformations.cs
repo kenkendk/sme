@@ -37,7 +37,7 @@ namespace SME.AST.Transform
                 if (direction == VisitorState.Enter && el is Method)
                 {
                     methods.Add(el as Method);
-                    return false;
+                    return true;
                 }
 
                 return true;
