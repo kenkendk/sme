@@ -86,6 +86,7 @@
     <Compile Include="Transform\RemoveTrailingBreakStatement.cs" />
     <Compile Include="Transform\RewireCompositeAssignment.cs" />
     <Compile Include="Transform\RemoveExtraParenthesis.cs" />
+    <Compile Include="Transform\RenameDuplicateVariables.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SME\SME.csproj">
