@@ -34,7 +34,7 @@ namespace SME.CPP.Templates {
             #line hidden
             
             #line 10 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.DefinitionsFileName(Network) ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.BusDefinitionsFileName(Network) ));
             
             #line default
             #line hidden
@@ -193,56 +193,308 @@ var busses = RSP.Process.InputBusses.Union(RSP.Process.OutputBusses).Union(RSP.P
             #line hidden
             
             #line 30 ""
+            this.Write("\n");
+            
+            #line default
+            #line hidden
+            
+            #line 31 ""
+ foreach(var v in RSP.Process.SharedVariables.Cast<DataElement>().Union(RSP.Process.SharedSignals)) { 
+       var initializer = RS.Renderer.GetInitializer(v);
+       if (!string.IsNullOrWhiteSpace(initializer)) { 
+           var rt = RS.TypeScope.GetType(v);
+           if (rt.IsArray) {
+               var eltype = rt.ElementName;
+
+            
+            #line default
+            #line hidden
+            
+            #line 38 ""
+             if ((v.DefaultValue is SME.AST.ArrayCreateExpression)) { 
+            
+            #line default
+            #line hidden
+            
+            #line 39 ""
+            this.Write("    ");
+            
+            #line default
+            #line hidden
+            
+            #line 39 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( v.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 39 ""
+            this.Write(" = new ");
+            
+            #line default
+            #line hidden
+            
+            #line 39 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( eltype ));
+            
+            #line default
+            #line hidden
+            
+            #line 39 ""
+            this.Write("[");
+            
+            #line default
+            #line hidden
+            
+            #line 39 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( (v.DefaultValue as SME.AST.ArrayCreateExpression).ElementExpressions.Length ));
+            
+            #line default
+            #line hidden
+            
+            #line 39 ""
+            this.Write("];\n    ");
+            
+            #line default
+            #line hidden
+            
+            #line 40 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( eltype ));
+            
+            #line default
+            #line hidden
+            
+            #line 40 ""
+            this.Write(" orig_");
+            
+            #line default
+            #line hidden
+            
+            #line 40 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( v.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 40 ""
+            this.Write("[]");
+            
+            #line default
+            #line hidden
+            
+            #line 40 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( initializer ));
+            
+            #line default
+            #line hidden
+            
+            #line 40 ""
+            this.Write(";\n    memcpy(");
+            
+            #line default
+            #line hidden
+            
+            #line 41 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( v.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 41 ""
+            this.Write(", orig_");
+            
+            #line default
+            #line hidden
+            
+            #line 41 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( v.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 41 ""
+            this.Write(", ");
+            
+            #line default
+            #line hidden
+            
+            #line 41 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( (v.DefaultValue as SME.AST.ArrayCreateExpression).ElementExpressions.Length ));
+            
+            #line default
+            #line hidden
+            
+            #line 41 ""
+            this.Write(" * sizeof(");
+            
+            #line default
+            #line hidden
+            
+            #line 41 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( eltype ));
+            
+            #line default
+            #line hidden
+            
+            #line 41 ""
+            this.Write("));\n");
+            
+            #line default
+            #line hidden
+            
+            #line 42 ""
+             } else { 
+            
+            #line default
+            #line hidden
+            
+            #line 43 ""
+            this.Write("    ");
+            
+            #line default
+            #line hidden
+            
+            #line 43 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( v.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 43 ""
+            this.Write(" = new ");
+            
+            #line default
+            #line hidden
+            
+            #line 43 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( eltype ));
+            
+            #line default
+            #line hidden
+            
+            #line 43 ""
+            this.Write("[");
+            
+            #line default
+            #line hidden
+            
+            #line 43 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( RS.Renderer.RenderExpression((v.DefaultValue as SME.AST.EmptyArrayCreateExpression).SizeExpression) ));
+            
+            #line default
+            #line hidden
+            
+            #line 43 ""
+            this.Write("]();\n");
+            
+            #line default
+            #line hidden
+            
+            #line 44 ""
+             } 
+            
+            #line default
+            #line hidden
+            
+            #line 45 ""
+         } else { 
+            
+            #line default
+            #line hidden
+            
+            #line 46 ""
+            this.Write("    ");
+            
+            #line default
+            #line hidden
+            
+            #line 46 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( v.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 46 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( initializer ));
+            
+            #line default
+            #line hidden
+            
+            #line 46 ""
+            this.Write(";\n");
+            
+            #line default
+            #line hidden
+            
+            #line 47 ""
+         } 
+            
+            #line default
+            #line hidden
+            
+            #line 48 ""
+     } 
+            
+            #line default
+            #line hidden
+            
+            #line 49 ""
+ } 
+            
+            #line default
+            #line hidden
+            
+            #line 50 ""
             this.Write("\n    // Insert additional initialization here\n    // #### USER-DATA-INIT-START\n  " +
                     "  // #### USER-DATA-INIT-END\n}\n\nvoid ");
             
             #line default
             #line hidden
             
-            #line 36 ""
+            #line 56 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( RSP.Process.Name ));
             
             #line default
             #line hidden
             
-            #line 36 ""
+            #line 56 ""
             this.Write("::onTick() {\n    // Insert additional pre- clock-tick code here\n    // #### USER-" +
                     "DATA-PRE-START\n    // #### USER-DATA-PRE-END\n\n");
             
             #line default
             #line hidden
             
-            #line 41 ""
-     foreach(var line in RSP.RenderMethod(RSP.Process.MainMethod)) { 
+            #line 61 ""
+     foreach(var line in RS.Renderer.RenderMethod(RSP.Process.MainMethod)) { 
             
             #line default
             #line hidden
             
-            #line 42 ""
+            #line 62 ""
             this.Write("    ");
             
             #line default
             #line hidden
             
-            #line 42 ""
+            #line 62 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( line ));
             
             #line default
             #line hidden
             
-            #line 42 ""
+            #line 62 ""
             this.Write("\n");
             
             #line default
             #line hidden
             
-            #line 43 ""
+            #line 63 ""
      } 
             
             #line default
             #line hidden
             
-            #line 44 ""
+            #line 64 ""
             this.Write("\n    // Insert additional post- clock-tick code here\n    // #### USER-DATA-POST-S" +
                     "TART\n    // #### USER-DATA-POST-END\n}");
             

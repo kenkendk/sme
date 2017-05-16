@@ -7,7 +7,7 @@
 
 #include <iostream>
 #include "SystemTypes.hpp"
-#include "<#= Naming.DefinitionsFileName(Network) #>"
+#include "<#= Naming.BusDefinitionsFileName(Network) #>"
 #include "<#= RSP.Process.Name #>.hpp"
 
 // Insert additional includes and methods here
@@ -28,6 +28,26 @@ var busses = RSP.Process.InputBusses.Union(RSP.Process.OutputBusses).Union(RSP.P
     bus_<#= bus.Name #> = p<#= bus.Name #>;
 <#  } #>
 
+<# foreach(var v in RSP.Process.SharedVariables.Cast<DataElement>().Union(RSP.Process.SharedSignals)) { 
+       var initializer = RS.Renderer.GetInitializer(v);
+       if (!string.IsNullOrWhiteSpace(initializer)) { 
+           var rt = RS.TypeScope.GetType(v);
+           if (rt.IsArray) {
+               var eltype = rt.ElementName;
+#>
+<#             if ((v.DefaultValue is SME.AST.ArrayCreateExpression)) { #>
+    <#= v.Name #> = new <#= eltype #>[<#= (v.DefaultValue as SME.AST.ArrayCreateExpression).ElementExpressions.Length #>];
+    <#= eltype #> orig_<#= v.Name #>[]<#= initializer #>;
+    memcpy(<#= v.Name #>, orig_<#= v.Name #>, <#= (v.DefaultValue as SME.AST.ArrayCreateExpression).ElementExpressions.Length #> * sizeof(<#= eltype #>));
+<#             } else { #>
+    <#= v.Name #> = new <#= eltype #>[<#= RS.Renderer.RenderExpression((v.DefaultValue as SME.AST.EmptyArrayCreateExpression).SizeExpression) #>]();
+<#             } #>
+<#         } else { #>
+    <#= v.Name #><#= initializer #>;
+<#         } #>
+<#     } #>
+<# } #>
+
     // Insert additional initialization here
     // #### USER-DATA-INIT-START
     // #### USER-DATA-INIT-END
@@ -38,7 +58,7 @@ void <#= RSP.Process.Name #>::onTick() {
     // #### USER-DATA-PRE-START
     // #### USER-DATA-PRE-END
 
-<#     foreach(var line in RSP.RenderMethod(RSP.Process.MainMethod)) { #>
+<#     foreach(var line in RS.Renderer.RenderMethod(RSP.Process.MainMethod)) { #>
     <#= line #>
 <#     } #>
 

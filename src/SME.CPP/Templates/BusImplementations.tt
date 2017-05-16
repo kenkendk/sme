@@ -1,0 +1,59 @@
+﻿﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+#include "SystemTypes.hpp"
+#include "<#= Naming.BusDefinitionsFileName(Network) #>"
+
+// Insert additional includes here
+// #### USER-DATA-INCLUDE-START
+// #### USER-DATA-INCLUDE-END
+
+<# foreach(var bus in Network.Busses) { #>
+
+<#= bus.Name #>::<#= bus.Name #> () {
+<#     foreach(var signal in bus.Signals.Where(x => x.DefaultValue != null)) { #>
+    valid_<#= signal.Name #> = true;
+<#         var ini = RS.Renderer.GetInitializer(signal);
+       if (!string.IsNullOrWhiteSpace(ini)) { #>
+    read_<#= signal.Name #><#= RS.Renderer.GetInitializer(signal) #>;
+<#         } #>
+<#     } #>
+}
+
+<#     foreach(var signal in bus.Signals) { #>
+<#= Type(signal) #> <#= bus.Name #>::<#= signal.Name #>() const {
+    if (!valid_<#= signal.Name #>)
+        throw new InvalidReadException();
+
+    return read_<#= signal.Name #>;
+}
+
+<#= Type(signal) #> <#= bus.Name #>::<#= signal.Name #>(<#= Type(signal) #> value) {
+    if (written_<#= signal.Name #>)
+        throw new InvalidDoubleWriteException();
+
+    return write_<#= signal.Name #> = value;
+}
+<#     } #>
+
+void <#= bus.Name #>::forward_signals() {
+<#     foreach(var signal in bus.Signals) { #>
+    written_<#= signal.Name #> = true;
+    valid_<#= signal.Name #> = true;
+<#     } #>        
+}
+
+void <#= bus.Name #>::propagate_signals() {
+<#     foreach(var signal in bus.Signals) { #>
+    written_<#= signal.Name #> = false;
+    read_<#= signal.Name #> = write_<#= signal.Name #>;
+<#     } #>        
+}
+
+<# } #>
+
+// Insert additional code and classes here
+// #### USER-DATA-EXTRA-START
+// #### USER-DATA-EXTRA-END

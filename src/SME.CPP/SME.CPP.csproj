@@ -65,8 +65,8 @@
     </Compile>
     <Compile Include="Templates\TemplateHelpers.cs" />
     <Compile Include="ExtensionMethods.cs" />
-    <Compile Include="Templates\SharedDefinitions.cs">
-      <DependentUpon>SharedDefinitions.tt</DependentUpon>
+    <Compile Include="Templates\BusDefinitions.cs">
+      <DependentUpon>BusDefinitions.tt</DependentUpon>
     </Compile>
     <Compile Include="CppTypeScope.cs" />
     <Compile Include="CppType.cs" />
@@ -80,6 +80,10 @@
     </Compile>
     <Compile Include="Templates\ProcessHeader.cs">
       <DependentUpon>ProcessHeader.tt</DependentUpon>
+    </Compile>
+    <Compile Include="RenderHandler.cs" />
+    <Compile Include="Templates\BusImplementations.cs">
+      <DependentUpon>BusImplementations.tt</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -98,13 +102,9 @@
       <Generator>TextTemplatingFilePreprocessor</Generator>
       <LastGenOutput>TopLevel.cs</LastGenOutput>
     </None>
-    <None Include="Templates\SharedDefinitions.tt">
+    <None Include="Templates\BusDefinitions.tt">
       <Generator>TextTemplatingFilePreprocessor</Generator>
-      <LastGenOutput>SharedDefinitions.cs</LastGenOutput>
-    </None>
-    <None Include="Templates\SystemTypes.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>SystemTypes.hpp</LastGenOutput>
+      <LastGenOutput>BusDefinitions.cs</LastGenOutput>
     </None>
     <None Include="Templates\ProcessItem.tt">
       <Generator>TextTemplatingFilePreprocessor</Generator>
@@ -118,15 +118,18 @@
       <Generator>TextTemplatingFilePreprocessor</Generator>
       <LastGenOutput>ProcessHeader.cs</LastGenOutput>
     </None>
+    <None Include="Templates\BusImplementations.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>BusImplementations.cs</LastGenOutput>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Transformations\" />
     <Folder Include="Templates\" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Templates\SystemTypes.hpp">
-      <DependentUpon>SystemTypes.tt</DependentUpon>
-    </EmbeddedResource>
+    <EmbeddedResource Include="Templates\SystemTypes.hpp" />
+    <EmbeddedResource Include="Templates\SystemTypes.cpp" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

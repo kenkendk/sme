@@ -34,7 +34,7 @@ namespace SME.CPP.Templates {
             #line hidden
             
             #line 10 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.DefinitionsFileName(Network) ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.BusDefinitionsFileName(Network) ));
             
             #line default
             #line hidden
@@ -76,139 +76,98 @@ namespace SME.CPP.Templates {
             #line hidden
             
             #line 15 ""
-            this.Write(@"
-// Insert additional includes and methods here
-// #### USER-DATA-INCLUDE-START
-// #### USER-DATA-INCLUDE-END
-
-system_uint8 parse_system_uint8(std::string value) {
-    return (system_uint8)std::stoi(value, 0, 2);
-}
-
-system_int8 parse_system_int8(std::string value) {
-    return (system_int8)std::stoi(value, 0, 2);
-}
-
-system_bool parse_system_bool(std::string value) {
-    return parse_system_uint8(value) == 1;
-}
-
-system_uint16 parse_system_uint16(std::string value) {
-    return (system_uint16)std::stoi(value, 0, 2);
-}
-
-system_int16 parse_system_int16(std::string value) {
-    return (system_int16)std::stoi(value, 0, 2);
-}
-
-system_uint32 parse_system_uint32(std::string value) {
-    return (system_uint32)std::stoi(value, 0, 2);
-}
-
-system_int32 parse_system_int32(std::string value) {
-    return (system_int32)std::stoi(value, 0, 2);
-}
-
-system_uint64 parse_system_uint64(std::string value) {
-    return (system_uint64)std::stoll(value, 0, 2);
-}
-
-system_int64 parse_system_int64(std::string value) {
-    return (system_int64)std::stoll(value, 0, 2);
-}
-
-// The names of all signals
-std::string SIGNAL_NAMES[] = {
-");
+            this.Write("\n// Insert additional includes and methods here\n// #### USER-DATA-INCLUDE-START\n/" +
+                    "/ #### USER-DATA-INCLUDE-END\n\n// The names of all signals\nstd::string SIGNAL_NAM" +
+                    "ES[] = {\n");
             
             #line default
             #line hidden
             
-            #line 58 ""
+            #line 22 ""
  foreach (var signal in RS.DriverSignals.Union(RS.VerifySignals)) { 
             
             #line default
             #line hidden
             
-            #line 59 ""
+            #line 23 ""
             this.Write("    \"");
             
             #line default
             #line hidden
             
-            #line 59 ""
+            #line 23 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( RS.TestBenchSignalName(signal) ));
             
             #line default
             #line hidden
             
-            #line 59 ""
+            #line 23 ""
             this.Write("\",\n");
             
             #line default
             #line hidden
             
-            #line 60 ""
+            #line 24 ""
  } 
             
             #line default
             #line hidden
             
-            #line 61 ""
+            #line 25 ""
             this.Write("};\n\nvoid RunSimulation(const char* tracefile)\n{\n");
             
             #line default
             #line hidden
             
-            #line 65 ""
+            #line 29 ""
  foreach(var bus in Network.Busses) { 
             
             #line default
             #line hidden
             
-            #line 66 ""
+            #line 30 ""
             this.Write("    ");
             
             #line default
             #line hidden
             
-            #line 66 ""
+            #line 30 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
             
             #line default
             #line hidden
             
-            #line 66 ""
+            #line 30 ""
             this.Write(" bus_");
             
             #line default
             #line hidden
             
-            #line 66 ""
+            #line 30 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
             
             #line default
             #line hidden
             
-            #line 66 ""
+            #line 30 ""
             this.Write(";\n");
             
             #line default
             #line hidden
             
-            #line 67 ""
+            #line 31 ""
  } 
             
             #line default
             #line hidden
             
-            #line 68 ""
+            #line 32 ""
             this.Write("\n");
             
             #line default
             #line hidden
             
-            #line 69 ""
+            #line 33 ""
  foreach(var process in Network.Processes) {
 
        var busses = process.InputBusses.Union(process.OutputBusses).Union(process.InternalBusses).Distinct().OrderBy(x => x.Name).ToArray();
@@ -217,79 +176,79 @@ std::string SIGNAL_NAMES[] = {
             #line default
             #line hidden
             
-            #line 73 ""
+            #line 37 ""
             this.Write("    ");
             
             #line default
             #line hidden
             
-            #line 73 ""
+            #line 37 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( process.Name ));
             
             #line default
             #line hidden
             
-            #line 73 ""
+            #line 37 ""
             this.Write(" proc_");
             
             #line default
             #line hidden
             
-            #line 73 ""
+            #line 37 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( process.Name ));
             
             #line default
             #line hidden
             
-            #line 73 ""
+            #line 37 ""
             this.Write("(");
             
             #line default
             #line hidden
             
-            #line 73 ""
+            #line 37 ""
  foreach(var bus in busses) { 
             
             #line default
             #line hidden
             
-            #line 74 ""
+            #line 38 ""
             this.Write("&bus_");
             
             #line default
             #line hidden
             
-            #line 74 ""
+            #line 38 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
             
             #line default
             #line hidden
             
-            #line 74 ""
+            #line 38 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( bus == busses.Last() ? "" : ", " ));
             
             #line default
             #line hidden
             
-            #line 74 ""
+            #line 38 ""
  } 
             
             #line default
             #line hidden
             
-            #line 75 ""
+            #line 39 ""
             this.Write(");\n");
             
             #line default
             #line hidden
             
-            #line 76 ""
+            #line 40 ""
  } 
             
             #line default
             #line hidden
             
-            #line 77 ""
+            #line 41 ""
             this.Write(@"
     // Open the trace file and validate the headers
     std::string line;
@@ -324,68 +283,68 @@ std::string SIGNAL_NAMES[] = {
             #line default
             #line hidden
             
-            #line 106 ""
+            #line 70 ""
  if (Network.Busses.Any(x => x.IsClocked)) { 
             
             #line default
             #line hidden
             
-            #line 107 ""
+            #line 71 ""
             this.Write("        // Propagate clocked busses\n");
             
             #line default
             #line hidden
             
-            #line 108 ""
+            #line 72 ""
      foreach(var bus in Network.Busses.Where(x => x.IsClocked)) { 
             
             #line default
             #line hidden
             
-            #line 109 ""
+            #line 73 ""
             this.Write("        bus_");
             
             #line default
             #line hidden
             
-            #line 109 ""
+            #line 73 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
             
             #line default
             #line hidden
             
-            #line 109 ""
+            #line 73 ""
             this.Write(".Propagate();\n");
             
             #line default
             #line hidden
             
-            #line 110 ""
+            #line 74 ""
      } 
             
             #line default
             #line hidden
             
-            #line 111 ""
+            #line 75 ""
  } 
             
             #line default
             #line hidden
             
-            #line 112 ""
+            #line 76 ""
             this.Write("        // Apply the source signals\n        std::istringstream valuestream(line);" +
                     "\n        field = 0;\n\n");
             
             #line default
             #line hidden
             
-            #line 116 ""
+            #line 80 ""
  foreach (var signal in RS.DriverSignals) { 
             
             #line default
             #line hidden
             
-            #line 117 ""
+            #line 81 ""
             this.Write("        if (!std::getline(valuestream, token, \',\')) {\n            std::cout << \"U" +
                     "nexpected end-of-line in cycle \" << cycle << \", field \" << field << std::endl;\n " +
                     "           return;\n        }\n        bus_");
@@ -393,55 +352,55 @@ std::string SIGNAL_NAMES[] = {
             #line default
             #line hidden
             
-            #line 121 ""
+            #line 85 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Parent.Name ));
             
             #line default
             #line hidden
             
-            #line 121 ""
+            #line 85 ""
             this.Write(".");
             
             #line default
             #line hidden
             
-            #line 121 ""
+            #line 85 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 121 ""
+            #line 85 ""
             this.Write("(parse_");
             
             #line default
             #line hidden
             
-            #line 121 ""
+            #line 85 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( Type(signal) ));
             
             #line default
             #line hidden
             
-            #line 121 ""
+            #line 85 ""
             this.Write("(token));\n        field++;\n");
             
             #line default
             #line hidden
             
-            #line 123 ""
+            #line 87 ""
  } 
             
             #line default
             #line hidden
             
-            #line 124 ""
+            #line 88 ""
             this.Write("\n        // Follow the query plan\n");
             
             #line default
             #line hidden
             
-            #line 126 ""
+            #line 90 ""
  foreach(var n in Graph.ExecutionPlan) { 
        var pn = GetProcess(n.Item);
        if (pn != null) {
@@ -450,139 +409,139 @@ std::string SIGNAL_NAMES[] = {
             #line default
             #line hidden
             
-            #line 130 ""
+            #line 94 ""
             this.Write("        proc_");
             
             #line default
             #line hidden
             
-            #line 130 ""
+            #line 94 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( pn.Name ));
             
             #line default
             #line hidden
             
-            #line 130 ""
+            #line 94 ""
             this.Write(".onTick();\n");
             
             #line default
             #line hidden
             
-            #line 131 ""
+            #line 95 ""
      } 
             
             #line default
             #line hidden
             
-            #line 132 ""
+            #line 96 ""
      foreach(var b in n.Item.OutputBusses) { 
             
             #line default
             #line hidden
             
-            #line 133 ""
+            #line 97 ""
             this.Write("        bus_");
             
             #line default
             #line hidden
             
-            #line 133 ""
+            #line 97 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( GetBus(b).Name ));
             
             #line default
             #line hidden
             
-            #line 133 ""
+            #line 97 ""
             this.Write(".forward_signals();\n");
             
             #line default
             #line hidden
             
-            #line 134 ""
+            #line 98 ""
      } 
             
             #line default
             #line hidden
             
-            #line 135 ""
+            #line 99 ""
      foreach(var b in n.PropagateAfter) { 
             
             #line default
             #line hidden
             
-            #line 136 ""
+            #line 100 ""
             this.Write("        bus_");
             
             #line default
             #line hidden
             
-            #line 136 ""
+            #line 100 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( GetBus(b).Name ));
             
             #line default
             #line hidden
             
-            #line 136 ""
+            #line 100 ""
             this.Write(".propagate_signals();\n");
             
             #line default
             #line hidden
             
-            #line 137 ""
+            #line 101 ""
      } 
             
             #line default
             #line hidden
             
-            #line 138 ""
+            #line 102 ""
      foreach(var b in n.Item.InternalBusses) { 
             
             #line default
             #line hidden
             
-            #line 139 ""
+            #line 103 ""
             this.Write("        bus_");
             
             #line default
             #line hidden
             
-            #line 139 ""
+            #line 103 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( GetBus(b).Name ));
             
             #line default
             #line hidden
             
-            #line 139 ""
+            #line 103 ""
             this.Write(".propagate_signals();\n");
             
             #line default
             #line hidden
             
-            #line 140 ""
+            #line 104 ""
      } 
             
             #line default
             #line hidden
             
-            #line 141 ""
+            #line 105 ""
  } 
             
             #line default
             #line hidden
             
-            #line 142 ""
+            #line 106 ""
             this.Write("\n        // Verify the cycles\n");
             
             #line default
             #line hidden
             
-            #line 144 ""
+            #line 108 ""
  foreach (var signal in RS.VerifySignals) { 
             
             #line default
             #line hidden
             
-            #line 145 ""
+            #line 109 ""
             this.Write("        if (!std::getline(valuestream, token, \',\')) {\n            std::cout << \"U" +
                     "nexpected end-of-line in cycle \" << cycle << \", field \" << field << std::endl;\n " +
                     "           return;\n        }\n\n        if (bus_");
@@ -590,87 +549,87 @@ std::string SIGNAL_NAMES[] = {
             #line default
             #line hidden
             
-            #line 150 ""
+            #line 114 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Parent.Name ));
             
             #line default
             #line hidden
             
-            #line 150 ""
+            #line 114 ""
             this.Write(".");
             
             #line default
             #line hidden
             
-            #line 150 ""
+            #line 114 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 150 ""
+            #line 114 ""
             this.Write("() != parse_");
             
             #line default
             #line hidden
             
-            #line 150 ""
+            #line 114 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( Type(signal) ));
             
             #line default
             #line hidden
             
-            #line 150 ""
+            #line 114 ""
             this.Write("(token)) {\n            std::cout << \"Error in cycle \" << cycle << std::endl;\n    " +
                     "        std::cout << \"Expected value \" << parse_");
             
             #line default
             #line hidden
             
-            #line 152 ""
+            #line 116 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( Type(signal) ));
             
             #line default
             #line hidden
             
-            #line 152 ""
+            #line 116 ""
             this.Write("(token) << \", but got \" << bus_");
             
             #line default
             #line hidden
             
-            #line 152 ""
+            #line 116 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Parent.Name ));
             
             #line default
             #line hidden
             
-            #line 152 ""
+            #line 116 ""
             this.Write(".");
             
             #line default
             #line hidden
             
-            #line 152 ""
+            #line 116 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 152 ""
+            #line 116 ""
             this.Write("() << \" for field \" << SIGNAL_NAMES[field] << \" (raw: \" << token << \")\" << std::e" +
                     "ndl;\n            return;\n        }\n        field++;\n");
             
             #line default
             #line hidden
             
-            #line 156 ""
+            #line 120 ""
  } 
             
             #line default
             #line hidden
             
-            #line 157 ""
+            #line 121 ""
             this.Write("\n        cycle++;\n    }\n\n    std::cout << \"Completed \" << cycle << \" simulation c" +
                     "ycles\" << std::endl;\n}\n\n\nint main()\n{\n\n// Insert additional startup code here\n//" +
                     " #### USER-DATA-STARTUP-CODE-START\n// #### USER-DATA-STARTUP-CODE-END\n\n    RunSi" +
@@ -679,13 +638,13 @@ std::string SIGNAL_NAMES[] = {
             #line default
             #line hidden
             
-            #line 172 ""
+            #line 136 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( RS.CSVTracename ));
             
             #line default
             #line hidden
             
-            #line 172 ""
+            #line 136 ""
             this.Write("\");\n    return 0;\n}\n");
             
             #line default

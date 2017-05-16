@@ -33,12 +33,29 @@ namespace SME.CPP.Templates
 		}
 	}
 
-	public partial class SharedDefinitions
+	public partial class BusDefinitions
 	{
 		private readonly RenderState RS;
 		private readonly AST.Network Network;
 
-		public SharedDefinitions(RenderState rs)
+		public BusDefinitions(RenderState rs)
+		{
+			RS = rs;
+			Network = rs.Network;
+		}
+
+		public string Type(AST.Signal signal)
+		{
+			return RS.TypeScope.GetType(signal).Name;
+		}
+	}
+
+	public partial class BusImplementations
+	{
+		private readonly RenderState RS;
+		private readonly AST.Network Network;
+
+		public BusImplementations(RenderState rs)
 		{
 			RS = rs;
 			Network = rs.Network;

@@ -72,6 +72,11 @@ namespace SME.CPP
 		/// </summary>
 		public readonly CppTypeScope TypeScope;
 
+        /// <summary>
+        /// The renderer
+        /// </summary>
+        public readonly RenderHandler Renderer;
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="T:SME.VHDL.RenderState"/> class.
 		/// </summary>
@@ -118,6 +123,8 @@ namespace SME.CPP
                     new SME.AST.Transform.RemoveExtraParenthesis()
 				}
             );
+
+            Renderer = new RenderHandler(TypeScope);
 		}
 
 		/// <summary>
@@ -130,8 +137,11 @@ namespace SME.CPP
 			var targetTopLevel = Path.Combine(TargetFolder, Naming.AssemblyNameToFileName(Network));
 			File.WriteAllText(targetTopLevel, MergeUserData(new Templates.TopLevel(this).TransformText(), targetTopLevel));
 
-            var targetDefinitions = Path.Combine(TargetFolder, Naming.DefinitionsFileName(Network));
-            File.WriteAllText(targetDefinitions, MergeUserData(new Templates.SharedDefinitions(this).TransformText(), targetDefinitions));
+            var targetDefinitions = Path.Combine(TargetFolder, Naming.BusDefinitionsFileName(Network));
+            File.WriteAllText(targetDefinitions, MergeUserData(new Templates.BusDefinitions(this).TransformText(), targetDefinitions));
+
+            var busImplementations = Path.Combine(TargetFolder, Path.ChangeExtension(Naming.BusImplementationsFileName(Network), ".cpp"));
+            File.WriteAllText(busImplementations, MergeUserData(new Templates.BusImplementations(this).TransformText(), busImplementations));
 
 			var makeFileTarget = Path.Combine(TargetFolder, "Makefile");
             File.WriteAllText(makeFileTarget, MergeUserData(new Templates.Makefile(this).TransformText(), makeFileTarget));
@@ -196,13 +206,12 @@ namespace SME.CPP
 
 				Directory.CreateDirectory(backupname);
 
-				var s = Path.Combine(targetfolder, Naming.AssemblyNameToFileName(Network));
-				if (File.Exists(s))
-					File.Copy(s, Path.Combine(backupname, Naming.AssemblyNameToFileName(Network)));
-
-				s = Path.Combine(targetfolder, Naming.DefinitionsFileName(Network));
-				if (File.Exists(s))
-					File.Copy(s, Path.Combine(backupname, Naming.DefinitionsFileName(Network)));
+                foreach (var fn in new[] { Naming.AssemblyNameToFileName(Network), Naming.BusDefinitionsFileName(Network), Naming.BusImplementationsFileName(Network) })
+                {
+                    var s = Path.Combine(targetfolder, fn);
+                    if (File.Exists(s))
+                        File.Copy(s, Path.Combine(backupname, fn));
+                }
 
 				foreach (var p in Network.Processes)
 				{
@@ -344,6 +353,5 @@ namespace SME.CPP
 
 			return text;
 		}
-
 	}
 }

@@ -15,7 +15,7 @@ namespace SME.CPP.Templates {
     using System;
     
     
-    public partial class BusDefinitions : BusDefinitionsBase {
+    public partial class BusImplementations : BusImplementationsBase {
         
         public virtual string TransformText() {
             this.GenerationEnvironment = null;
@@ -27,57 +27,93 @@ namespace SME.CPP.Templates {
             #line hidden
             
             #line 6 ""
-            this.Write("#ifndef SME_BUSDEFINITIONS_HPP\n#define SME_BUSDEFINITIONS_HPP\n\n#include \"SystemTy" +
-                    "pes.hpp\"\n\n// Insert additional includes here\n// #### USER-DATA-INCLUDE-START\n// " +
-                    "#### USER-DATA-INCLUDE-END\n\n");
+            this.Write("#include \"SystemTypes.hpp\"\n#include \"");
             
             #line default
             #line hidden
             
-            #line 15 ""
+            #line 7 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.BusDefinitionsFileName(Network) ));
+            
+            #line default
+            #line hidden
+            
+            #line 7 ""
+            this.Write("\"\n\n// Insert additional includes here\n// #### USER-DATA-INCLUDE-START\n// #### USE" +
+                    "R-DATA-INCLUDE-END\n\n");
+            
+            #line default
+            #line hidden
+            
+            #line 13 ""
  foreach(var bus in Network.Busses) { 
             
             #line default
             #line hidden
             
-            #line 16 ""
-            this.Write("\nclass ");
+            #line 14 ""
+            this.Write("\n");
             
             #line default
             #line hidden
             
-            #line 17 ""
+            #line 15 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
             
             #line default
             #line hidden
             
+            #line 15 ""
+            this.Write("::");
+            
+            #line default
+            #line hidden
+            
+            #line 15 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 15 ""
+            this.Write(" () {\n");
+            
+            #line default
+            #line hidden
+            
+            #line 16 ""
+     foreach(var signal in bus.Signals.Where(x => x.DefaultValue != null)) { 
+            
+            #line default
+            #line hidden
+            
             #line 17 ""
-            this.Write(" {\nprivate:\n");
+            this.Write("    valid_");
             
             #line default
             #line hidden
             
-            #line 19 ""
-     foreach(var signal in bus.Signals) { 
+            #line 17 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 17 ""
+            this.Write(" = true;\n");
+            
+            #line default
+            #line hidden
+            
+            #line 18 ""
+         var ini = RS.Renderer.GetInitializer(signal);
+       if (!string.IsNullOrWhiteSpace(ini)) { 
             
             #line default
             #line hidden
             
             #line 20 ""
-            this.Write("    ");
-            
-            #line default
-            #line hidden
-            
-            #line 20 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Type(signal) ));
-            
-            #line default
-            #line hidden
-            
-            #line 20 ""
-            this.Write(" write_");
+            this.Write("    read_");
             
             #line default
             #line hidden
@@ -89,176 +125,326 @@ namespace SME.CPP.Templates {
             #line hidden
             
             #line 20 ""
-            this.Write(";\n    ");
+            this.Write(this.ToStringHelper.ToStringWithCulture( RS.Renderer.GetInitializer(signal) ));
             
             #line default
             #line hidden
             
-            #line 21 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Type(signal) ));
-            
-            #line default
-            #line hidden
-            
-            #line 21 ""
-            this.Write(" read_");
-            
-            #line default
-            #line hidden
-            
-            #line 21 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 21 ""
-            this.Write(";\n    bool valid_");
-            
-            #line default
-            #line hidden
-            
-            #line 22 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 22 ""
-            this.Write(";\n    bool written_");
-            
-            #line default
-            #line hidden
-            
-            #line 23 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 23 ""
+            #line 20 ""
             this.Write(";\n");
             
             #line default
             #line hidden
             
-            #line 24 ""
+            #line 21 ""
+         } 
+            
+            #line default
+            #line hidden
+            
+            #line 22 ""
      } 
+            
+            #line default
+            #line hidden
+            
+            #line 23 ""
+            this.Write("}\n\n");
             
             #line default
             #line hidden
             
             #line 25 ""
-            this.Write("\npublic:\n\n    ");
-            
-            #line default
-            #line hidden
-            
-            #line 28 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 28 ""
-            this.Write(" ();\n\n");
-            
-            #line default
-            #line hidden
-            
-            #line 30 ""
      foreach(var signal in bus.Signals) { 
             
             #line default
             #line hidden
             
-            #line 31 ""
-            this.Write("    ");
-            
-            #line default
-            #line hidden
-            
-            #line 31 ""
+            #line 26 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( Type(signal) ));
             
             #line default
             #line hidden
             
-            #line 31 ""
+            #line 26 ""
             this.Write(" ");
             
             #line default
             #line hidden
             
-            #line 31 ""
+            #line 26 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 26 ""
+            this.Write("::");
+            
+            #line default
+            #line hidden
+            
+            #line 26 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 31 ""
-            this.Write("() const;\n    ");
+            #line 26 ""
+            this.Write("() const {\n    if (!valid_");
             
             #line default
             #line hidden
             
-            #line 32 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Type(signal) ));
-            
-            #line default
-            #line hidden
-            
-            #line 32 ""
-            this.Write(" ");
-            
-            #line default
-            #line hidden
-            
-            #line 32 ""
+            #line 27 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 32 ""
-            this.Write("(");
+            #line 27 ""
+            this.Write(")\n        throw new InvalidReadException();\n\n    return read_");
             
             #line default
             #line hidden
             
-            #line 32 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Type(signal) ));
+            #line 30 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 32 ""
-            this.Write(" value);\n");
+            #line 30 ""
+            this.Write(";\n}\n\n");
             
             #line default
             #line hidden
             
             #line 33 ""
-     } 
+            this.Write(this.ToStringHelper.ToStringWithCulture( Type(signal) ));
+            
+            #line default
+            #line hidden
+            
+            #line 33 ""
+            this.Write(" ");
+            
+            #line default
+            #line hidden
+            
+            #line 33 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 33 ""
+            this.Write("::");
+            
+            #line default
+            #line hidden
+            
+            #line 33 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 33 ""
+            this.Write("(");
+            
+            #line default
+            #line hidden
+            
+            #line 33 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Type(signal) ));
+            
+            #line default
+            #line hidden
+            
+            #line 33 ""
+            this.Write(" value) {\n    if (written_");
             
             #line default
             #line hidden
             
             #line 34 ""
-            this.Write("    void forward_signals();\n    void propagate_signals();\n};\n\n");
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 38 ""
- } 
+            #line 34 ""
+            this.Write(")\n        throw new InvalidDoubleWriteException();\n\n    return write_");
+            
+            #line default
+            #line hidden
+            
+            #line 37 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 37 ""
+            this.Write(" = value;\n}\n");
             
             #line default
             #line hidden
             
             #line 39 ""
+     } 
+            
+            #line default
+            #line hidden
+            
+            #line 40 ""
+            this.Write("\nvoid ");
+            
+            #line default
+            #line hidden
+            
+            #line 41 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 41 ""
+            this.Write("::forward_signals() {\n");
+            
+            #line default
+            #line hidden
+            
+            #line 42 ""
+     foreach(var signal in bus.Signals) { 
+            
+            #line default
+            #line hidden
+            
+            #line 43 ""
+            this.Write("    written_");
+            
+            #line default
+            #line hidden
+            
+            #line 43 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 43 ""
+            this.Write(" = true;\n    valid_");
+            
+            #line default
+            #line hidden
+            
+            #line 44 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 44 ""
+            this.Write(" = true;\n");
+            
+            #line default
+            #line hidden
+            
+            #line 45 ""
+     } 
+            
+            #line default
+            #line hidden
+            
+            #line 46 ""
+            this.Write("        \n}\n\nvoid ");
+            
+            #line default
+            #line hidden
+            
+            #line 49 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 49 ""
+            this.Write("::propagate_signals() {\n");
+            
+            #line default
+            #line hidden
+            
+            #line 50 ""
+     foreach(var signal in bus.Signals) { 
+            
+            #line default
+            #line hidden
+            
+            #line 51 ""
+            this.Write("    written_");
+            
+            #line default
+            #line hidden
+            
+            #line 51 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 51 ""
+            this.Write(" = false;\n    read_");
+            
+            #line default
+            #line hidden
+            
+            #line 52 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 52 ""
+            this.Write(" = write_");
+            
+            #line default
+            #line hidden
+            
+            #line 52 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 52 ""
+            this.Write(";\n");
+            
+            #line default
+            #line hidden
+            
+            #line 53 ""
+     } 
+            
+            #line default
+            #line hidden
+            
+            #line 54 ""
+            this.Write("        \n}\n\n");
+            
+            #line default
+            #line hidden
+            
+            #line 57 ""
+ } 
+            
+            #line default
+            #line hidden
+            
+            #line 58 ""
             this.Write("\n// Insert additional code and classes here\n// #### USER-DATA-EXTRA-START\n// ####" +
-                    " USER-DATA-EXTRA-END\n\n#endif /* SME_BUSDEFINITIONS_HPP */\n");
+                    " USER-DATA-EXTRA-END\n");
             
             #line default
             #line hidden
@@ -269,7 +455,7 @@ namespace SME.CPP.Templates {
         }
     }
     
-    public class BusDefinitionsBase {
+    public class BusImplementationsBase {
         
         private global::System.Text.StringBuilder builder;
         

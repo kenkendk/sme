@@ -1,4 +1,7 @@
-﻿﻿#ifndef SME_SYSTEM_TYPES_HPP
+﻿#include <exception>
+#include <string>
+
+#ifndef SME_SYSTEM_TYPES_HPP
 #define SME_SYSTEM_TYPES_HPP
 
 typedef bool system_bool;

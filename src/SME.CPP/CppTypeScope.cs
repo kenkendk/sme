@@ -28,6 +28,15 @@ namespace SME.CPP
 		{
 			return GetType(signal.CecilType);
 		}
+		/// <summary>
+		/// Gets the Cpp type for the signal
+		/// </summary>
+		/// <returns>The cpp type.</returns>
+		/// <param name="element">The input signal.</param>
+        public CppType GetType(AST.DataElement element)
+		{
+			return GetType(element.CecilType);
+		}
 
 		/// <summary>
 		/// Gets the Cpp type for the variable
@@ -56,6 +65,17 @@ namespace SME.CPP
 		/// <param name="sourcetype">The Cecil sourcetype.</param>
 		public CppType GetType(TypeReference sourcetype)
 		{
+            if (sourcetype.IsArrayType())
+            {
+                var eltype = GetType(sourcetype.GetArrayElementType());
+                return new CppType()
+                {
+                    Name = eltype.Name + "*",
+                    IsArray = true,
+                    ElementName = eltype.Name
+                };
+            }
+
 			if (sourcetype.IsSameTypeReference<bool>())
 				return CppTypes.BOOL;
 			if (sourcetype.IsSameTypeReference<byte>())

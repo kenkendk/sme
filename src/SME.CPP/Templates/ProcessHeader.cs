@@ -310,7 +310,7 @@ var busses = RSP.Process.InputBusses.Union(RSP.Process.OutputBusses).Union(RSP.P
             #line hidden
             
             #line 43 ""
-         foreach(var line in RSP.RenderMethod(s)) { 
+         foreach(var line in RS.Renderer.RenderMethod(s)) { 
             
             #line default
             #line hidden

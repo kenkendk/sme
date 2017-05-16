@@ -40,7 +40,7 @@ class <#= RSP.Process.Name #> : public IProcess {
            var rettype = (s.ReturnVariable == null || s.ReturnVariable.CecilType.IsSameTypeReference(typeof(void))) ? "void" : Type(s.ReturnVariable);
 #>
     <#= rettype #> <#= s.Name #>(<#= string.Join(", ", s.Parameters.Select(x => $"{Type(x)} {x.Name}")) #>) {
-<#         foreach(var line in RSP.RenderMethod(s)) { #>
+<#         foreach(var line in RS.Renderer.RenderMethod(s)) { #>
         <#= line #>
 <#         } #>
     }

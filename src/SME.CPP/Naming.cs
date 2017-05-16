@@ -13,9 +13,14 @@ namespace SME.CPP
 			return network.Name + ".cpp";
 		}
 
-		public static string DefinitionsFileName(Network network)
+		public static string BusDefinitionsFileName(Network network)
 		{
-			return network.Name + "_Definitions.hpp";
+			return network.Name + "_BusDefinitions.hpp";
+		}
+
+        public static string BusImplementationsFileName(Network network)
+        {
+			return network.Name + "_BusImplementations";
 		}
 
 		public static string ProcessNameToFileName(AST.Process process)
