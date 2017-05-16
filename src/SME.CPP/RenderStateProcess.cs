@@ -112,7 +112,7 @@ namespace SME.CPP
 			var endval = (int)s.EndValue.DefaultValue;
 
 			var indent = new string(' ', indentation);
-			yield return $"{indent}for ({s.LoopIndex.Name} = {s.StartValue.DefaultValue}; {s.LoopIndex.Name} < {endval}; i++) {{";
+			yield return $"{indent}for (size_t {s.LoopIndex.Name} = {s.StartValue.DefaultValue}; {s.LoopIndex.Name} < {endval}; {s.LoopIndex.Name}++) {{";
 
 			var incr = 1;
 			var defincr = s.Increment.DefaultValue;

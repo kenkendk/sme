@@ -55,7 +55,7 @@ namespace SME.CPP
 			case BinaryOperatorType.GreaterThanOrEqual:
 				return ">=";
 			case BinaryOperatorType.Equality:
-				return "=";
+				return "==";
 			case BinaryOperatorType.InEquality:
 				return "!=";
 			case BinaryOperatorType.LessThan:
