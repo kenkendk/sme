@@ -19,11 +19,11 @@ custom_files: <# foreach(var file in CustomFiles) { #><#= file #>.o <# } #>
 
 <# } #>
 
-<#= Naming.BusImplementationsFileName(Network) #>.o: SystemTypes.hpp <#= Naming.BusDefinitionsFileName(Network) #>
+<#= Naming.BusImplementationsFileName(Network) #>.o: SystemTypes.hpp <#= Naming.BusDefinitionsFileName(Network) #> <#= Naming.BusImplementationsFileName(Network) #>.cpp
 	${GPP} ${CPPFLAGS} -c <#= Naming.BusImplementationsFileName(Network) #>.cpp
 
 <# foreach (var file in Filenames) { #>
-<#= file #>.o: <#= file #>.cpp SystemTypes.hpp <#= Naming.BusDefinitionsFileName(Network) #> <#= file #>.hpp<#= cust_tag #>
+<#= file #>.o: <#= file #>.cpp <#= file #>.hpp SystemTypes.hpp <#= Naming.BusDefinitionsFileName(Network) #><#= cust_tag #>
 	${GPP} ${CPPFLAGS} -c <#= file #>.cpp
 <# } #>
 
@@ -35,8 +35,8 @@ custom_files: <# foreach(var file in CustomFiles) { #><#= file #>.o <# } #>
 <# } #>
 
 
-<#= Naming.AssemblyNameToFileName(Network) #>: SystemTypes.hpp <#= Naming.BusDefinitionsFileName(Network) #> <#= Naming.BusImplementationsFileName(Network) #>.o <# foreach(var file in Filenames) { #><#= file #>.o <#= file #>.hpp <# } #><#= cust_tag #>
-	${GPP} <#= Naming.AssemblyNameToFileName(Network) #> <#= Naming.BusImplementationsFileName(Network) #>.o <# foreach(var file in Filenames) { #><#= file #>.o <# } #> -o <#= Network.Name #>
+<#= Naming.AssemblyNameToFileName(Network) #>: <#= Naming.AssemblyNameToFileName(Network) #>.cpp SystemTypes.hpp <#= Naming.BusDefinitionsFileName(Network) #> <#= Naming.BusImplementationsFileName(Network) #>.o <# foreach(var file in Filenames) { #><#= file #>.o <#= file #>.hpp <# } #><#= cust_tag #>
+	${GPP} <#= Naming.AssemblyNameToFileName(Network) #>.cpp <#= Naming.BusImplementationsFileName(Network) #>.o <# foreach(var file in Filenames) { #><#= file #>.o <# } #> -o <#= Network.Name #>
 
 clean:
 	rm -rf *.o <#= Network.Name #>

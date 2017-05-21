@@ -96,17 +96,15 @@ namespace SME.CPP
             var endval = (int)s.EndValue.DefaultValue;
 
             var indent = new string(' ', indentation);
-            yield return $"{indent}for (size_t {s.LoopIndex.Name} = {s.StartValue.DefaultValue}; {s.LoopIndex.Name} < {endval}; {s.LoopIndex.Name}++) {{";
 
-            var incr = 1;
-            var defincr = s.Increment.DefaultValue;
-            if (defincr is AST.Constant)
-                incr = (int)((Constant)(defincr)).DefaultValue;
-            else
-                incr = (int)s.Increment.DefaultValue;
+			var incr = 1;
+			var defincr = s.Increment.DefaultValue;
+			if (defincr is AST.Constant)
+				incr = (int)((Constant)(defincr)).DefaultValue;
+			else
+				incr = (int)s.Increment.DefaultValue;
 
-            if (incr != 1)
-                throw new Exception($"Expected the for loop to have an increment of 1, it has {incr}");
+            yield return $"{indent}for (size_t {s.LoopIndex.Name} = {s.StartValue.DefaultValue}; {s.LoopIndex.Name} < {endval}; {s.LoopIndex.Name} += {incr}) {{";
 
             foreach (var n in RenderStatement(method, s.LoopBody, indentation + 4))
                 yield return n;
@@ -340,6 +338,11 @@ namespace SME.CPP
                 var lx = RenderExpression(e.Left);
                 // Remove the trailing parenthesis
                 var tg = lx.Substring(0, lx.Length - 1);
+
+                // If we are writing a bus-array, arguments are provided as method parameters
+                if (target.CecilType.IsFixedArrayType())
+                    tg += ", ";
+
                 if (e.Operator != ICSharpCode.NRefactory.CSharp.AssignmentOperatorType.Assign)
                     return string.Format("{0}{1}{2}{3})", tg, lx, e.Operator.ToBinaryOperator().ToCpp(), RenderExpression(e.Right));
                 else
@@ -418,7 +421,11 @@ namespace SME.CPP
         /// <param name="e">The expression to render</param>
         private string RenderExpression(AST.IndexerExpression e)
         {
-            return string.Format("{0}[{1}]", RenderExpression(e.TargetExpression), RenderExpression(e.IndexExpression));
+            var res = RenderExpression(e.TargetExpression);
+            if (e.Target.Parent is AST.Bus)
+                return $"{res.Substring(0, res.Length - 1)}{RenderExpression(e.IndexExpression)})";
+            else
+                return $"{res}[{RenderExpression(e.IndexExpression)}]";
         }
 
         /// <summary>
@@ -439,13 +446,14 @@ namespace SME.CPP
         private string RenderExpression(AST.MemberReferenceExpression e)
         {
             if (e.Target.Parent is AST.Bus)
-                return "bus_" + e.Target.Parent.Name + "->" + e.Target.Name + "()";
-            else if (e.Target is AST.Constant)
+				return $"bus_{e.Target.Parent.Name}->{e.Target.Name}()";
+            
+			else if (e.Target is AST.Constant)
             {
                 var ce = e.Target as AST.Constant;
 
                 if (ce.ArrayLengthSource != null)
-                    return ((Constant)e.Target).ArrayLengthSource.Name + "_type'LENGTH";
+                    return "size_" + ((Constant)e.Target).ArrayLengthSource.Name;
 
                 if (ce.CecilType != null && ce.CecilType.Resolve().IsEnum)
                 {

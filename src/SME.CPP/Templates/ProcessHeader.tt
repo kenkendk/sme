@@ -18,6 +18,9 @@ class <#= RSP.Process.Name #> : public IProcess {
     // Shared variables
 <#     foreach(var v in RSP.Process.SharedVariables) { #>
     <#= Type(v) #> <#= v.Name #>;
+<#         if (v.CecilType.IsArrayType()) { #>
+    size_t size_<#= v.Name #>;
+<#         } #>
 <#     } #>
 
 <# } #>
@@ -25,6 +28,9 @@ class <#= RSP.Process.Name #> : public IProcess {
     // Shared signals
 <#     foreach(var v in RSP.Process.SharedSignals) { #>
     <#= Type(v) #> <#= v.Name #>;
+<#         if (v.CecilType.IsArrayType()) { #>
+    size_t size_<#= v.Name #>;
+<#         } #>
 <#     } #>
 
 <# } #>

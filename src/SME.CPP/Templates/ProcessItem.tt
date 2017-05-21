@@ -6,6 +6,7 @@
 <#@ import namespace="SME.AST" #>
 
 #include <iostream>
+#include <cstring>
 #include "SystemTypes.hpp"
 #include "<#= Naming.BusDefinitionsFileName(Network) #>"
 #include "<#= RSP.Process.Name #>.hpp"
@@ -34,14 +35,20 @@ var busses = RSP.Process.InputBusses.Union(RSP.Process.OutputBusses).Union(RSP.P
            var rt = RS.TypeScope.GetType(v);
            if (rt.IsArray) {
                var eltype = rt.ElementName;
-#>
-<#             if ((v.DefaultValue is SME.AST.ArrayCreateExpression)) { #>
-    <#= v.Name #> = new <#= eltype #>[<#= (v.DefaultValue as SME.AST.ArrayCreateExpression).ElementExpressions.Length #>];
+
+               var arraylen =
+                   (v.DefaultValue is SME.AST.ArrayCreateExpression)
+                   ? (v.DefaultValue as SME.AST.ArrayCreateExpression).ElementExpressions.Length.ToString()
+                   : RS.Renderer.RenderExpression((v.DefaultValue as SME.AST.EmptyArrayCreateExpression).SizeExpression);
+
+               if ((v.DefaultValue is SME.AST.ArrayCreateExpression)) { #>
+    <#= v.Name #> = new <#= eltype #>[<#= arraylen #>];
     <#= eltype #> orig_<#= v.Name #>[]<#= initializer #>;
-    memcpy(<#= v.Name #>, orig_<#= v.Name #>, <#= (v.DefaultValue as SME.AST.ArrayCreateExpression).ElementExpressions.Length #> * sizeof(<#= eltype #>));
+    std::memcpy(<#= v.Name #>, orig_<#= v.Name #>, <#= arraylen #> * sizeof(<#= eltype #>));
 <#             } else { #>
-    <#= v.Name #> = new <#= eltype #>[<#= RS.Renderer.RenderExpression((v.DefaultValue as SME.AST.EmptyArrayCreateExpression).SizeExpression) #>]();
+    <#= v.Name #> = new <#= eltype #>[<#= arraylen #>]();
 <#             } #>
+    size_<#= v.Name #> = <#= arraylen #>;
 <#         } else { #>
     <#= v.Name #><#= initializer #>;
 <#         } #>

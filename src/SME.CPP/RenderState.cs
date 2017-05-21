@@ -134,7 +134,7 @@ namespace SME.CPP
 		{
             BackupExistingTarget(TargetFolder, BackupFolder);
 
-			var targetTopLevel = Path.Combine(TargetFolder, Naming.AssemblyNameToFileName(Network));
+            var targetTopLevel = Path.Combine(TargetFolder, Path.ChangeExtension(Naming.AssemblyNameToFileName(Network), ".cpp"));
 			File.WriteAllText(targetTopLevel, MergeUserData(new Templates.TopLevel(this).TransformText(), targetTopLevel));
 
             var targetDefinitions = Path.Combine(TargetFolder, Naming.BusDefinitionsFileName(Network));
@@ -206,7 +206,7 @@ namespace SME.CPP
 
 				Directory.CreateDirectory(backupname);
 
-                foreach (var fn in new[] { Naming.AssemblyNameToFileName(Network), Naming.BusDefinitionsFileName(Network), Naming.BusImplementationsFileName(Network) })
+                foreach (var fn in new[] { Path.ChangeExtension(Naming.AssemblyNameToFileName(Network), ".cpp"), Naming.BusDefinitionsFileName(Network), Path.ChangeExtension(Naming.BusImplementationsFileName(Network), ".cpp") })
                 {
                     var s = Path.Combine(targetfolder, fn);
                     if (File.Exists(s))
@@ -249,11 +249,10 @@ namespace SME.CPP
 		{
 			get
 			{
-				return Network.Busses
-							  .Where(x => x.IsTopLevelInput)
-							  .SelectMany(x => x.Signals)
-							  .OrderBy(x => TestBenchSignalName(x))
-							  .SelectMany(x => SplitArray(x));
+                return Network.Busses
+                              .Where(x => x.IsTopLevelInput)
+                              .SelectMany(x => x.Signals)
+                              .OrderBy(x => TestBenchSignalName(x));
 			}
 		}
 
@@ -264,38 +263,10 @@ namespace SME.CPP
 		{
 			get
 			{
-				return Network.Busses
-							  .Where(x => !x.IsTopLevelInput && !x.IsInternal)
-							  .SelectMany(x => x.Signals)
-							  .OrderBy(x => TestBenchSignalName(x))
-							  .SelectMany(x => SplitArray(x));
-			}
-		}
-
-		/// <summary>
-		/// Splits a signal into a signal for each array element.
-		/// </summary>
-		/// <returns>The array signals.</returns>
-		/// <param name="signal">The signal to split.</param>
-		private IEnumerable<BusSignal> SplitArray(BusSignal signal)
-		{
-			if (!signal.CecilType.IsArrayType())
-			{
-				yield return signal;
-			}
-			else
-			{
-				var attr = (signal.Source as System.Reflection.MemberInfo).GetCustomAttributes(typeof(FixedArrayLengthAttribute), true).FirstOrDefault() as FixedArrayLengthAttribute;
-				if (attr == null)
-					throw new Exception($"Expected an array length on {signal.Name} ({signal.Source})");
-
-				for (var i = 0; i < attr.Length; i++)
-					yield return new BusSignal()
-					{
-						CecilType = signal.CecilType.GetArrayElementType(),
-						Parent = signal.Parent,
-						Name = string.Format("{0}({1})", signal.Name, i)
-					};
+                return Network.Busses
+                              .Where(x => !x.IsTopLevelInput && !x.IsInternal)
+                              .SelectMany(x => x.Signals)
+                              .OrderBy(x => TestBenchSignalName(x));
 			}
 		}
 
@@ -352,6 +323,38 @@ namespace SME.CPP
 			}
 
 			return text;
+		}
+
+        /// <summary>
+        /// Finds the length of an array type-signal
+        /// </summary>
+        /// <returns>The array length.</returns>
+        /// <param name="signal">The signal to get the length for.</param>
+        public AST.Constant GetArrayLength(AST.Signal signal)
+		{
+			if (signal.CecilType.IsFixedArrayType())
+			{
+				if (signal.Source is IMemberDefinition)
+				{
+					return new Constant
+					{
+						Source = signal,
+                        DefaultValue = ((IMemberDefinition)signal.Source).GetFixedArrayLength(),
+                        CecilType = signal.CecilType.LoadType(typeof(uint))
+					};
+				}
+				else if (signal.Source is System.Reflection.MemberInfo)
+				{
+					return new Constant
+					{
+						Source = signal,
+						DefaultValue = ((System.Reflection.MemberInfo)signal.Source).GetFixedArrayLength(),
+						CecilType = signal.CecilType.LoadType(typeof(uint))
+					};
+				}
+			}
+
+            throw new Exception($"Unable to guess length for signal: {signal.Name}");
 		}
 	}
 }

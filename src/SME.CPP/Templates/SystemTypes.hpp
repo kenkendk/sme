@@ -33,7 +33,29 @@ public:
    virtual void onTick() = 0;
 };
 
-class InvalidReadException: public std::exception { };
-class InvalidDoubleWriteException: public std::exception { };
+class SignalException: public std::exception {
+public:
+    std::string signal;
+    SignalException(std::string signalname) {
+        signal = signalname;
+    }
+    ~SignalException() throw() {}
+};
+
+class InvalidReadException: public SignalException { 
+public:
+    InvalidReadException(std::string signalname)
+    : SignalException(signalname) { }
+};
+class InvalidDoubleWriteException: public SignalException {
+public:
+    InvalidDoubleWriteException(std::string signalname)
+    : SignalException(signalname) { }
+};
+class IndexOutOfBoundsException : public SignalException {
+public:
+    IndexOutOfBoundsException(std::string signalname)
+    : SignalException(signalname) { }
+};
 
 #endif /* SME_SYSTEM_TYPES_HPP */

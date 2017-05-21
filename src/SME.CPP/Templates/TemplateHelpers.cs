@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using SME.AST;
 
 namespace SME.CPP.Templates
 {

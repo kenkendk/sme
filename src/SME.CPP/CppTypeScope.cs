@@ -94,6 +94,22 @@ namespace SME.CPP
 				return CppTypes.INT64;
 			if (sourcetype.IsSameTypeReference<ulong>())
 				return CppTypes.UINT64;
+            
+            if (sourcetype.IsSameTypeReference(typeof(IntPtr)))
+            {
+				if (IntPtr.Size == 4)
+					return CppTypes.INT32;
+				else if (IntPtr.Size == 8)
+					return CppTypes.INT64;
+			}
+
+			if (sourcetype.IsSameTypeReference(typeof(UIntPtr)))
+			{
+				if (IntPtr.Size == 4)
+					return CppTypes.UINT32;
+				else if (IntPtr.Size == 8)
+					return CppTypes.UINT64;
+			}
 
 			throw new Exception($"Unexpected source type: {sourcetype}");
 		}

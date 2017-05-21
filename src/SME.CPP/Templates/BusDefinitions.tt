@@ -16,20 +16,38 @@
 
 class <#= bus.Name #> {
 private:
-<#     foreach(var signal in bus.Signals) { #>
+<#     foreach(var signal in bus.Signals) { 
+           var cpptype = RS.TypeScope.GetType(signal);
+           if (cpptype.IsArray) { #>
+    <#= Type(signal) #> write_<#= signal.Name #>;
+    <#= Type(signal) #> read_<#= signal.Name #>;
+    bool* valid_<#= signal.Name #>;
+    bool* written_<#= signal.Name #>;
+    bool* staged_<#= signal.Name #>;
+    size_t size_<#= signal.Name #>;
+<#         } else { #>
     <#= Type(signal) #> write_<#= signal.Name #>;
     <#= Type(signal) #> read_<#= signal.Name #>;
     bool valid_<#= signal.Name #>;
     bool written_<#= signal.Name #>;
+    bool staged_<#= signal.Name #>;
+<#         } #>
 <#     } #>
 
 public:
 
     <#= bus.Name #> ();
 
-<#     foreach(var signal in bus.Signals) { #>
+<#     foreach(var signal in bus.Signals) { 
+           var cpptype = RS.TypeScope.GetType(signal);
+           if (cpptype.IsArray) { 
+              var eltype = cpptype.ElementName; #>
+    <#= eltype #> <#= signal.Name #>(size_t index) const;
+    <#= eltype #> <#= signal.Name #>(size_t index, <#= eltype #> value);
+<#         } else { #>
     <#= Type(signal) #> <#= signal.Name #>() const;
     <#= Type(signal) #> <#= signal.Name #>(<#= Type(signal) #> value);
+<#         } #>
 <#     } #>
     void forward_signals();
     void propagate_signals();

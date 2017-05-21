@@ -70,6 +70,10 @@
       <Project>{268A0B13-B84C-42F1-96D9-96550ED2F71F}</Project>
       <Name>SME.GraphViz</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\SME.CPP\SME.CPP.csproj">
+      <Project>{9F28DC04-2A0C-4F87-9E82-D6679DE94017}</Project>
+      <Name>SME.CPP</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

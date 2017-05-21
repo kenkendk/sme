@@ -15,6 +15,7 @@ namespace NoiseFilter
 				.BuildCSVFile()
 				.BuildGraph()
 				.BuildVHDL()
+                .BuildCPP()
 				.Run(typeof(MainClass).Assembly);
 		}
 	}

@@ -13,43 +13,147 @@
 <# foreach(var bus in Network.Busses) { #>
 
 <#= bus.Name #>::<#= bus.Name #> () {
-<#     foreach(var signal in bus.Signals.Where(x => x.DefaultValue != null)) { #>
+<#     foreach(var signal in bus.Signals) {
+           var cpptype = RS.TypeScope.GetType(signal);
+           if (cpptype.IsArray) {
+               var eltype = cpptype.ElementName;
+
+               string arraylen = string.Empty;
+
+               if (signal.DefaultValue is SME.AST.ArrayCreateExpression)
+                   arraylen = (signal.DefaultValue as SME.AST.ArrayCreateExpression).ElementExpressions.Length.ToString();
+               else if (signal.DefaultValue is SME.AST.EmptyArrayCreateExpression)
+                   arraylen = RS.Renderer.RenderExpression((signal.DefaultValue as SME.AST.EmptyArrayCreateExpression).SizeExpression);
+               else
+                   arraylen = RS.GetArrayLength(signal).DefaultValue.ToString();
+#>    
+    size_<#= signal.Name #> = <#= arraylen #>;
+    valid_<#= signal.Name #> = new bool[size_<#= signal.Name #>];
+    written_<#= signal.Name #> = new bool[size_<#= signal.Name #>];
+    staged_<#= signal.Name #> = new bool[size_<#= signal.Name #>];
+
+    write_<#= signal.Name #> = new <#= eltype #>[size_<#= signal.Name #>];
+    read_<#= signal.Name #> = new <#= eltype #>[size_<#= signal.Name #>];
+
+    std::memset(written_<#= signal.Name #>, 0, size_<#= signal.Name #> * sizeof(bool));
+    std::memset(staged_<#= signal.Name #>, 0, size_<#= signal.Name #> * sizeof(bool));
+<#             if (signal.DefaultValue == null) { #>
+    std::memset(valid_<#= signal.Name #>, 0, size_<#= signal.Name #> * sizeof(bool));
+<#             } else { #>
+    std::memset(valid_<#= signal.Name #>, 1, size_<#= signal.Name #> * sizeof(bool));
+<#                 if ((signal.DefaultValue is SME.AST.ArrayCreateExpression)) { #>
+    <#= eltype #> orig_<#= signal.Name #>[]<#= RS.Renderer.GetInitializer(signal) #>;
+    std::memcpy(read_<#= signal.Name #>, orig_<#= signal.Name #>, <#= arraylen #> * sizeof(<#= eltype #>));
+<#                 } #>
+<#             } #>
+<#         } else { #>
+    written_<#= signal.Name #> = false;
+<#             if (signal.DefaultValue == null) { #>
+    valid_<#= signal.Name #> = false;
+<#             } #>
+<#         } #>
+<#     } #>
+
+<#     foreach(var signal in bus.Signals.Where(x => x.DefaultValue != null)) { 
+           var cpptype = RS.TypeScope.GetType(signal);
+           var ini = RS.Renderer.GetInitializer(signal);
+
+           if (!cpptype.IsArray) { #>
     valid_<#= signal.Name #> = true;
-<#         var ini = RS.Renderer.GetInitializer(signal);
-       if (!string.IsNullOrWhiteSpace(ini)) { #>
+<#         } #>
+<#         if (!string.IsNullOrWhiteSpace(ini)) { #>
     read_<#= signal.Name #><#= RS.Renderer.GetInitializer(signal) #>;
 <#         } #>
 <#     } #>
 }
 
-<#     foreach(var signal in bus.Signals) { #>
+<#     foreach(var signal in bus.Signals) { 
+           var cpptype = RS.TypeScope.GetType(signal);
+           if (cpptype.IsArray) {
+               var eltype = cpptype.ElementName;
+
+#>
+<#= eltype #> <#= bus.Name #>::<#= signal.Name #>(size_t index) const {
+    if (index >= size_<#= signal.Name #>)
+        throw IndexOutOfBoundsException("Invalid index: <#= bus.Name #>.<#= signal.Name #>");
+    if (!valid_<#= signal.Name #>[index])
+        throw InvalidReadException("Invalid read: <#= bus.Name #>.<#= signal.Name #>");
+
+    return read_<#= signal.Name #>[index];
+}
+
+<#= eltype #> <#= bus.Name #>::<#= signal.Name #>(size_t index, <#= eltype #> value) {
+    if (index >= size_<#= signal.Name #>)
+        throw IndexOutOfBoundsException("Invalid index: <#= bus.Name #>.<#= signal.Name #>");
+    if (written_<#= signal.Name #>[index])
+        throw InvalidDoubleWriteException("Invalid write: <#= bus.Name #>.<#= signal.Name #>");
+
+    staged_<#= signal.Name #>[index] = true;
+    return write_<#= signal.Name #>[index] = value;
+}
+<#         } else { #>
 <#= Type(signal) #> <#= bus.Name #>::<#= signal.Name #>() const {
     if (!valid_<#= signal.Name #>)
-        throw new InvalidReadException();
+        throw InvalidReadException("Invalid read: <#= bus.Name #>.<#= signal.Name #>");
 
     return read_<#= signal.Name #>;
 }
 
 <#= Type(signal) #> <#= bus.Name #>::<#= signal.Name #>(<#= Type(signal) #> value) {
     if (written_<#= signal.Name #>)
-        throw new InvalidDoubleWriteException();
+        throw InvalidDoubleWriteException("Invalid write: <#= bus.Name #>.<#= signal.Name #>");
 
+    staged_<#= signal.Name #> = true;
     return write_<#= signal.Name #> = value;
 }
+<#         } #>
 <#     } #>
 
 void <#= bus.Name #>::forward_signals() {
-<#     foreach(var signal in bus.Signals) { #>
-    written_<#= signal.Name #> = true;
-    valid_<#= signal.Name #> = true;
-<#     } #>        
+    size_t i;
+
+<#     foreach(var signal in bus.Signals) {
+           var cpptype = RS.TypeScope.GetType(signal);
+           if (cpptype.IsArray) {
+               var eltype = cpptype.ElementName; 
+#>
+    for(i = 0; i < size_<#= signal.Name #>; i++) {
+        if (staged_<#= signal.Name #>[i]) {
+            written_<#= signal.Name #>[i] = true;
+            staged_<#= signal.Name #>[i] = false;
+        }
+    }
+<#         } else { #>
+    if (staged_<#= signal.Name #>) {
+        written_<#= signal.Name #> = true;
+        staged_<#= signal.Name #> = false;
+    }
+<#         } #>
+<#     } #>
 }
 
 void <#= bus.Name #>::propagate_signals() {
-<#     foreach(var signal in bus.Signals) { #>
-    written_<#= signal.Name #> = false;
-    read_<#= signal.Name #> = write_<#= signal.Name #>;
-<#     } #>        
+    size_t i;
+
+<#     foreach(var signal in bus.Signals) {
+           var cpptype = RS.TypeScope.GetType(signal);
+           if (cpptype.IsArray) {
+               var eltype = cpptype.ElementName; #>
+    for (i = 0; i < size_<#= signal.Name #>; i++) {
+        if (written_<#= signal.Name #>[i]) {
+            written_<#= signal.Name #>[i] = false;
+            read_<#= signal.Name #>[i] |= write_<#= signal.Name #>[i];
+            valid_<#= signal.Name #>[i] = true;
+        }
+    }
+<#         } else { #>
+    if (written_<#= signal.Name #>) {
+        written_<#= signal.Name #> = false;
+        read_<#= signal.Name #> = write_<#= signal.Name #>;
+        valid_<#= signal.Name #> = true;
+    }
+<#         } #>
+<#     } #>
 }
 
 <# } #>

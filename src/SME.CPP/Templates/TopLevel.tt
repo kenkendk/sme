@@ -19,8 +19,18 @@
 
 // The names of all signals
 std::string SIGNAL_NAMES[] = {
-<# foreach (var signal in RS.DriverSignals.Union(RS.VerifySignals)) { #>
+<# foreach (var signal in RS.DriverSignals.Union(RS.VerifySignals)) { 
+       var cpptype = RS.TypeScope.GetType(signal);
+       if (cpptype.IsArray) {
+           var eltype = cpptype.ElementName;
+           var length = (int)RS.GetArrayLength(signal).DefaultValue;
+           for(var i = 0; i < length; i++) {
+#>
+    "<#= RS.TestBenchSignalName(signal) #>(<#= i #>)",
+<#         } #>
+<#     } else { #>
     "<#= RS.TestBenchSignalName(signal) #>",
+<#     } #>
 <# } #>
 };
 
@@ -62,6 +72,8 @@ void RunSimulation(const char* tracefile)
     }
 
     size_t cycle = 0;
+    size_t i;
+    bool source_is_undef = false;
 
     // Run all clock ticks
     while(std::getline(trace, line)) {
@@ -75,13 +87,31 @@ void RunSimulation(const char* tracefile)
         std::istringstream valuestream(line);
         field = 0;
 
-<# foreach (var signal in RS.DriverSignals) { #>
+<# foreach (var signal in RS.DriverSignals) { 
+       var cpptype = RS.TypeScope.GetType(signal);
+       if (cpptype.IsArray) {
+           var eltype = cpptype.ElementName;
+           var length = (int)RS.GetArrayLength(signal).DefaultValue;
+#>
+        for (i = 0; i < <#= length #>; i++) {
+            if (!std::getline(valuestream, token, ',')) {
+                std::cout << "Unexpected end-of-line in cycle " << cycle << ", field " << field << ", <#= signal.Name #>[" << i << "]" << std::endl;
+                return;
+            }
+            if (token.compare("U") != 0)
+                bus_<#= signal.Parent.Name #>.<#= signal.Name #>(i, parse_<#= eltype #>(token));            
+            field++;
+        }
+<#     } else { #>
         if (!std::getline(valuestream, token, ',')) {
-            std::cout << "Unexpected end-of-line in cycle " << cycle << ", field " << field << std::endl;
+            std::cout << "Unexpected end-of-line in cycle " << cycle << ", field " << field << ", <#= signal.Name #>[" << i << "]" << std::endl;
             return;
         }
-        bus_<#= signal.Parent.Name #>.<#= signal.Name #>(parse_<#= Type(signal) #>(token));
+        if (token.compare("U") != 0)
+            bus_<#= signal.Parent.Name #>.<#= signal.Name #>(parse_<#= Type(signal) #>(token));
         field++;
+<#     } #>
+
 <# } #>
 
         // Follow the query plan
@@ -91,7 +121,7 @@ void RunSimulation(const char* tracefile)
 #>
         proc_<#= pn.Name #>.onTick();
 <#     } #>
-<#     foreach(var b in n.Item.OutputBusses) { #>
+<#     foreach(var b in n.Item.OutputBusses.Union(n.Item.InternalBusses)) { #>
         bus_<#= GetBus(b).Name #>.forward_signals();
 <#     } #>
 <#     foreach(var b in n.PropagateAfter) { #>
@@ -103,18 +133,59 @@ void RunSimulation(const char* tracefile)
 <# } #>
 
         // Verify the cycles
-<# foreach (var signal in RS.VerifySignals) { #>
+<# foreach (var signal in RS.VerifySignals) {
+       var cpptype = RS.TypeScope.GetType(signal);
+       var typecast = cpptype.Name == "system_uint8" ? "(int)" : "";
+       if (cpptype.IsArray) {
+           typecast = cpptype.ElementName == "system_uint8" ? "(int)" : "";
+           var eltype = cpptype.ElementName;
+           var length = (int)RS.GetArrayLength(signal).DefaultValue;
+#>
+        for (i = 0; i < <#= length #>; i++) {
+            if (!std::getline(valuestream, token, ',')) {
+                std::cout << "Unexpected end-of-line in cycle " << cycle << ", field " << field << std::endl;
+                return;
+            }
+
+            source_is_undef = false;
+            try {
+                <#= eltype #> tmpval = bus_<#= signal.Parent.Name #>.<#= signal.Name #>(i);
+            } catch (InvalidReadException e) {
+                source_is_undef = true;
+            }
+
+            if (token.compare("U") == 0 && source_is_undef) {
+             // Don't care
+            } else if (token.compare("U") != 0 && bus_<#= signal.Parent.Name #>.<#= signal.Name #>(i) != parse_<#= eltype #>(token)) {
+                std::cout << "Error in cycle " << cycle << std::endl;
+                std::cout << "Expected value " << <#= typecast #>parse_<#= eltype #>(token) << ", but got " << <#= typecast #>bus_<#= signal.Parent.Name #>.<#= signal.Name #>(i) << " for field " << SIGNAL_NAMES[field] << " (raw: " << token << ")" << std::endl;
+                return;
+            }
+            field++;
+        }
+
+<#     } else { #>
         if (!std::getline(valuestream, token, ',')) {
             std::cout << "Unexpected end-of-line in cycle " << cycle << ", field " << field << std::endl;
             return;
         }
 
-        if (bus_<#= signal.Parent.Name #>.<#= signal.Name #>() != parse_<#= Type(signal) #>(token)) {
+        source_is_undef = false;
+        try {
+            <#= Type(signal) #> tmpval = bus_<#= signal.Parent.Name #>.<#= signal.Name #>();
+        } catch (InvalidReadException e) {
+            source_is_undef = true;
+        }
+
+        if (token.compare("U") == 0 && source_is_undef) {
+            // Don't care
+        } else if (token.compare("U") != 0 && bus_<#= signal.Parent.Name #>.<#= signal.Name #>() != parse_<#= Type(signal) #>(token)) {
             std::cout << "Error in cycle " << cycle << std::endl;
-            std::cout << "Expected value " << parse_<#= Type(signal) #>(token) << ", but got " << bus_<#= signal.Parent.Name #>.<#= signal.Name #>() << " for field " << SIGNAL_NAMES[field] << " (raw: " << token << ")" << std::endl;
+            std::cout << "Expected value " << parse_<#= Type(signal) #>(token) << ", but got " << <#= typecast #>bus_<#= signal.Parent.Name #>.<#= signal.Name #>() << " for field " << SIGNAL_NAMES[field] << " (raw: " << token << ")" << std::endl;
             return;
         }
         field++;
+<#     } #>
 <# } #>
 
         cycle++;
@@ -131,6 +202,12 @@ int main()
 // #### USER-DATA-STARTUP-CODE-START
 // #### USER-DATA-STARTUP-CODE-END
 
-    RunSimulation("<#= RS.CSVTracename #>");
+    try
+    {
+        RunSimulation("<#= RS.CSVTracename #>");
+    } catch (SignalException s) {
+        std::cout << s.signal << std::endl;
+        throw s;
+    }
     return 0;
 }

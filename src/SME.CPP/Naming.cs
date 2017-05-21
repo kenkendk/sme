@@ -10,7 +10,7 @@ namespace SME.CPP
 	{
 		public static string AssemblyNameToFileName(Network network)
 		{
-			return network.Name + ".cpp";
+			return network.Name;
 		}
 
 		public static string BusDefinitionsFileName(Network network)
