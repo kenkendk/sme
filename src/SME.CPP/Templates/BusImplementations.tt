@@ -121,12 +121,16 @@ void <#= bus.Name #>::forward_signals() {
         if (staged_<#= signal.Name #>[i]) {
             written_<#= signal.Name #>[i] = true;
             staged_<#= signal.Name #>[i] = false;
+            valid_<#= signal.Name #>[i] = true;
+            read_<#= signal.Name #>[i] = write_<#= signal.Name #>[i];
         }
     }
 <#         } else { #>
     if (staged_<#= signal.Name #>) {
         written_<#= signal.Name #> = true;
         staged_<#= signal.Name #> = false;
+        valid_<#= signal.Name #> = true;
+        read_<#= signal.Name #> = write_<#= signal.Name #>;
     }
 <#         } #>
 <#     } #>
@@ -142,15 +146,11 @@ void <#= bus.Name #>::propagate_signals() {
     for (i = 0; i < size_<#= signal.Name #>; i++) {
         if (written_<#= signal.Name #>[i]) {
             written_<#= signal.Name #>[i] = false;
-            read_<#= signal.Name #>[i] |= write_<#= signal.Name #>[i];
-            valid_<#= signal.Name #>[i] = true;
         }
     }
 <#         } else { #>
     if (written_<#= signal.Name #>) {
         written_<#= signal.Name #> = false;
-        read_<#= signal.Name #> = write_<#= signal.Name #>;
-        valid_<#= signal.Name #> = true;
     }
 <#         } #>
 <#     } #>

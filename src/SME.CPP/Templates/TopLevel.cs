@@ -897,7 +897,19 @@ namespace SME.CPP.Templates {
             #line hidden
             
             #line 184 ""
-            this.Write("(token)) {\n            std::cout << \"Error in cycle \" << cycle << std::endl;\n            std::cout << \"Expected value \" << parse_");
+            this.Write("(token)) {\n            std::cout << \"Error in cycle \" << cycle << std::endl;\n            std::cout << \"Expected value \" << ");
+            
+            #line default
+            #line hidden
+            
+            #line 186 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( typecast ));
+            
+            #line default
+            #line hidden
+            
+            #line 186 ""
+            this.Write("parse_");
             
             #line default
             #line hidden

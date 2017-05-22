@@ -1217,90 +1217,162 @@ namespace SME.CPP.Templates {
             #line hidden
             
             #line 124 ""
-            this.Write("[i] = false;\n        }\n    }\n");
+            this.Write("[i] = false;\n            valid_");
             
             #line default
             #line hidden
             
-            #line 127 ""
+            #line 125 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 125 ""
+            this.Write("[i] = true;\n            read_");
+            
+            #line default
+            #line hidden
+            
+            #line 126 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 126 ""
+            this.Write("[i] = write_");
+            
+            #line default
+            #line hidden
+            
+            #line 126 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 126 ""
+            this.Write("[i];\n        }\n    }\n");
+            
+            #line default
+            #line hidden
+            
+            #line 129 ""
          } else { 
             
             #line default
             #line hidden
             
-            #line 128 ""
+            #line 130 ""
             this.Write("    if (staged_");
             
             #line default
             #line hidden
             
-            #line 128 ""
+            #line 130 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 128 ""
+            #line 130 ""
             this.Write(") {\n        written_");
             
             #line default
             #line hidden
             
-            #line 129 ""
+            #line 131 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 129 ""
+            #line 131 ""
             this.Write(" = true;\n        staged_");
             
             #line default
             #line hidden
             
-            #line 130 ""
+            #line 132 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 130 ""
-            this.Write(" = false;\n    }\n");
-            
-            #line default
-            #line hidden
-            
             #line 132 ""
-         } 
+            this.Write(" = false;\n        valid_");
             
             #line default
             #line hidden
             
             #line 133 ""
-     } 
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 133 ""
+            this.Write(" = true;\n        read_");
             
             #line default
             #line hidden
             
             #line 134 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 134 ""
+            this.Write(" = write_");
+            
+            #line default
+            #line hidden
+            
+            #line 134 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 134 ""
+            this.Write(";\n    }\n");
+            
+            #line default
+            #line hidden
+            
+            #line 136 ""
+         } 
+            
+            #line default
+            #line hidden
+            
+            #line 137 ""
+     } 
+            
+            #line default
+            #line hidden
+            
+            #line 138 ""
             this.Write("}\n\nvoid ");
             
             #line default
             #line hidden
             
-            #line 136 ""
+            #line 140 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
             
             #line default
             #line hidden
             
-            #line 136 ""
+            #line 140 ""
             this.Write("::propagate_signals() {\n    size_t i;\n\n");
             
             #line default
             #line hidden
             
-            #line 139 ""
+            #line 143 ""
      foreach(var signal in bus.Signals) {
            var cpptype = RS.TypeScope.GetType(signal);
            if (cpptype.IsArray) {
@@ -1309,144 +1381,72 @@ namespace SME.CPP.Templates {
             #line default
             #line hidden
             
-            #line 143 ""
+            #line 147 ""
             this.Write("    for (i = 0; i < size_");
             
             #line default
             #line hidden
             
-            #line 143 ""
+            #line 147 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 143 ""
+            #line 147 ""
             this.Write("; i++) {\n        if (written_");
             
             #line default
             #line hidden
             
-            #line 144 ""
+            #line 148 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 144 ""
+            #line 148 ""
             this.Write("[i]) {\n            written_");
             
             #line default
             #line hidden
             
-            #line 145 ""
+            #line 149 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 145 ""
-            this.Write("[i] = false;\n            read_");
+            #line 149 ""
+            this.Write("[i] = false;\n        }\n    }\n");
             
             #line default
             #line hidden
             
-            #line 146 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 146 ""
-            this.Write("[i] |= write_");
-            
-            #line default
-            #line hidden
-            
-            #line 146 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 146 ""
-            this.Write("[i];\n            valid_");
-            
-            #line default
-            #line hidden
-            
-            #line 147 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 147 ""
-            this.Write("[i] = true;\n        }\n    }\n");
-            
-            #line default
-            #line hidden
-            
-            #line 150 ""
+            #line 152 ""
          } else { 
             
             #line default
             #line hidden
             
-            #line 151 ""
+            #line 153 ""
             this.Write("    if (written_");
             
             #line default
             #line hidden
             
-            #line 151 ""
+            #line 153 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 151 ""
+            #line 153 ""
             this.Write(") {\n        written_");
             
             #line default
             #line hidden
             
-            #line 152 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 152 ""
-            this.Write(" = false;\n        read_");
-            
-            #line default
-            #line hidden
-            
-            #line 153 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 153 ""
-            this.Write(" = write_");
-            
-            #line default
-            #line hidden
-            
-            #line 153 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 153 ""
-            this.Write(";\n        valid_");
-            
-            #line default
-            #line hidden
-            
             #line 154 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
@@ -1454,7 +1454,7 @@ namespace SME.CPP.Templates {
             #line hidden
             
             #line 154 ""
-            this.Write(" = true;\n    }\n");
+            this.Write(" = false;\n    }\n");
             
             #line default
             #line hidden

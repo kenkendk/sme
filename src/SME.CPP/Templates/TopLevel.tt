@@ -181,7 +181,7 @@ void RunSimulation(const char* tracefile)
             // Don't care
         } else if (token.compare("U") != 0 && bus_<#= signal.Parent.Name #>.<#= signal.Name #>() != parse_<#= Type(signal) #>(token)) {
             std::cout << "Error in cycle " << cycle << std::endl;
-            std::cout << "Expected value " << parse_<#= Type(signal) #>(token) << ", but got " << <#= typecast #>bus_<#= signal.Parent.Name #>.<#= signal.Name #>() << " for field " << SIGNAL_NAMES[field] << " (raw: " << token << ")" << std::endl;
+            std::cout << "Expected value " << <#= typecast #>parse_<#= Type(signal) #>(token) << ", but got " << <#= typecast #>bus_<#= signal.Parent.Name #>.<#= signal.Name #>() << " for field " << SIGNAL_NAMES[field] << " (raw: " << token << ")" << std::endl;
             return;
         }
         field++;
