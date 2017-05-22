@@ -24,7 +24,7 @@ namespace SME.AST.Transform
             {
                 var basename = v.Name;
                 var i = 2;
-                if (usednames.ContainsKey(v.Name))
+                while (usednames.ContainsKey(v.Name))
                 {
                     v.Name = basename + i.ToString();
                     i++;
