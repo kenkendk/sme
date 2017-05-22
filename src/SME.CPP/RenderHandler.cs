@@ -240,7 +240,7 @@ namespace SME.CPP
         private IEnumerable<string> RenderStatement(AST.Method method, AST.CommentStatement s, int indentation)
         {
             var indent = new string(' ', indentation);
-            foreach (var c in (s.Message ?? string.Empty).Split(new string[] { Environment.NewLine }, StringSplitOptions.None))
+            foreach (var c in (s.Message ?? string.Empty).Split(new string[] { "\r\n", "\r", "\n" }, StringSplitOptions.None))
                 yield return $"{indent}// {s.Message}";
         }
 
