@@ -123,6 +123,15 @@ namespace SME.VHDL.Transformations
 				Parent = stm					
 			};
 
+            stm.EndValue = new Constant() {
+                CecilType = stm.EndValue.CecilType,
+                DefaultValue = ((int) stm.EndValue.DefaultValue)/ incr,
+                Name = stm.EndValue.Name,
+                Parent = stm.EndValue.Parent,
+                Source = stm.EndValue.Source,
+                Type = stm.EndValue.Type
+            };
+
 			return nstm;
 		}
 	}

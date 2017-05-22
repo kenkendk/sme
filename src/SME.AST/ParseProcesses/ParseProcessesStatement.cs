@@ -502,38 +502,31 @@ namespace SME.AST
 			};
 
 			var itr = statement.Iterators.First() as ICSharpCode.NRefactory.CSharp.ExpressionStatement;
-			if (itr == null || !(itr.Expression is ICSharpCode.NRefactory.CSharp.UnaryOperatorExpression))
-			{
-				var ae = itr == null ? null : itr.Expression as ICSharpCode.NRefactory.CSharp.AssignmentExpression;
+            if (itr == null || !(itr.Expression is ICSharpCode.NRefactory.CSharp.UnaryOperatorExpression))
+            {
+                var ae = itr == null ? null : itr.Expression as ICSharpCode.NRefactory.CSharp.AssignmentExpression;
 
-				if (ae != null && ae.Left is ICSharpCode.NRefactory.CSharp.IdentifierExpression && (ae.Left as ICSharpCode.NRefactory.CSharp.IdentifierExpression).Identifier == name && ae.Right is ICSharpCode.NRefactory.CSharp.PrimitiveExpression)
-				{
-					// Support for increments like "i += 2"
-					increment = new Constant() 
-					{ 
-						Source = ae.Right, 
-						DefaultValue = ResolveArrayLengthOrPrimitive(network, proc, method, ae.Right as ICSharpCode.NRefactory.CSharp.PrimitiveExpression),
-						CecilType = LoadType(typeof(int))
-					};
+                if (ae != null && ae.Left is ICSharpCode.NRefactory.CSharp.IdentifierExpression && (ae.Left as ICSharpCode.NRefactory.CSharp.IdentifierExpression).Identifier == name && ae.Right is ICSharpCode.NRefactory.CSharp.PrimitiveExpression)
+                {
+                    // Support for increments like "i += 2"
+                    increment = new Constant()
+                    {
+                        Source = ae.Right,
+                        DefaultValue = ResolveArrayLengthOrPrimitive(network, proc, method, ae.Right as ICSharpCode.NRefactory.CSharp.PrimitiveExpression),
+                        CecilType = LoadType(typeof(int))
+                    };
+                }
+                else
+                    throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
+            }
+            else
+            {
+                var itre = itr.Expression as ICSharpCode.NRefactory.CSharp.UnaryOperatorExpression;
+                var itro = itre.Expression as ICSharpCode.NRefactory.CSharp.IdentifierExpression;
 
-					itr = new ICSharpCode.NRefactory.CSharp.ExpressionStatement(
-						new ICSharpCode.NRefactory.CSharp.UnaryOperatorExpression(
-							UnaryOperatorType.PostIncrement,
-							ae.Left.Clone()
-						)
-					);
-
-					endvalue.DefaultValue = ((int)endvalue.DefaultValue) / (int)Convert.ChangeType((ae.Right as ICSharpCode.NRefactory.CSharp.PrimitiveExpression).Value, typeof(int));
-				}
-				else
-					throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
-			}
-
-			var itre = itr.Expression as ICSharpCode.NRefactory.CSharp.UnaryOperatorExpression;
-			var itro = itre.Expression as ICSharpCode.NRefactory.CSharp.IdentifierExpression;
-
-			if (itro == null || itre.Operator != UnaryOperatorType.PostIncrement || itro.Identifier != name)
-				throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
+                if (itro == null || itre.Operator != UnaryOperatorType.PostIncrement || itro.Identifier != name)
+                    throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
+            }
 
 			var loopvar = new Variable()
 			{
