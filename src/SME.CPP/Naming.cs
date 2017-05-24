@@ -13,6 +13,11 @@ namespace SME.CPP
 			return network.Name;
 		}
 
+        public static string SharedDefinitionsFilename(Network network)
+        {
+            return network.Name + "_SharedDefinitions.hpp";
+        }
+
 		public static string BusDefinitionsFileName(Network network)
 		{
 			return network.Name + "_BusDefinitions.hpp";

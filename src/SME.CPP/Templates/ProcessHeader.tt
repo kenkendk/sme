@@ -4,6 +4,10 @@
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#@ import namespace="SME.AST" #>
+#include "SystemTypes.hpp"
+#include "<#= Naming.SharedDefinitionsFilename(Network) #>"
+#include "<#= Naming.BusDefinitionsFileName(Network) #>"
+
 <#
 
 var busses = RSP.Process.InputBusses.Union(RSP.Process.OutputBusses).Union(RSP.Process.InternalBusses).Distinct().OrderBy(x => x.Name).ToArray();

@@ -19,23 +19,23 @@ custom_files: <# foreach(var file in CustomFiles) { #><#= file #>.o <# } #>
 
 <# } #>
 
-<#= Naming.BusImplementationsFileName(Network) #>.o: SystemTypes.hpp <#= Naming.BusDefinitionsFileName(Network) #> <#= Naming.BusImplementationsFileName(Network) #>.cpp
+<#= Naming.BusImplementationsFileName(Network) #>.o: SystemTypes.hpp <#= Naming.BusDefinitionsFileName(Network) #> <#= Naming.SharedDefinitionsFilename(Network) #> <#= Naming.BusImplementationsFileName(Network) #>.cpp
 	${GPP} ${CPPFLAGS} -c <#= Naming.BusImplementationsFileName(Network) #>.cpp
 
 <# foreach (var file in Filenames) { #>
-<#= file #>.o: <#= file #>.cpp <#= file #>.hpp SystemTypes.hpp <#= Naming.BusDefinitionsFileName(Network) #><#= cust_tag #>
+<#= file #>.o: <#= file #>.cpp <#= file #>.hpp SystemTypes.hpp <#= Naming.SharedDefinitionsFilename(Network) #> <#= Naming.BusDefinitionsFileName(Network) #><#= cust_tag #>
 	${GPP} ${CPPFLAGS} -c <#= file #>.cpp
 <# } #>
 
 <# if (!string.IsNullOrEmpty(cust_tag)) { #>
 <#     foreach (var file in CustomFiles) { #>
-<#= file #>.o: <#= file #>.cpp SystemTypes.hpp <#= Naming.BusDefinitionsFileName(Network) #>
+<#= file #>.o: <#= file #>.cpp SystemTypes.hpp <#= Naming.SharedDefinitionsFilename(Network) #> <#= Naming.BusDefinitionsFileName(Network) #>
 	${GPP} ${CPPFLAGS} -c <#= file #>.cpp
 <#     } #>
 <# } #>
 
 
-<#= Naming.AssemblyNameToFileName(Network) #>: <#= Naming.AssemblyNameToFileName(Network) #>.cpp SystemTypes.hpp <#= Naming.BusDefinitionsFileName(Network) #> <#= Naming.BusImplementationsFileName(Network) #>.o <# foreach(var file in Filenames) { #><#= file #>.o <#= file #>.hpp <# } #><#= cust_tag #>
+<#= Naming.AssemblyNameToFileName(Network) #>: <#= Naming.AssemblyNameToFileName(Network) #>.cpp SystemTypes.hpp <#= Naming.SharedDefinitionsFilename(Network) #> <#= Naming.BusDefinitionsFileName(Network) #> <#= Naming.BusImplementationsFileName(Network) #>.o <# foreach(var file in Filenames) { #><#= file #>.o <#= file #>.hpp <# } #><#= cust_tag #>
 	${GPP} <#= Naming.AssemblyNameToFileName(Network) #>.cpp <#= Naming.BusImplementationsFileName(Network) #>.o <# foreach(var file in Filenames) { #><#= file #>.o <# } #> -o <#= Network.Name #>
 
 clean:

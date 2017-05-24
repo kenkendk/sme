@@ -8,6 +8,7 @@
 #include <sstream>
 #include "SystemTypes.hpp"
 #include "<#= Naming.BusDefinitionsFileName(Network) #>"
+#include "<#= Naming.SharedDefinitionsFilename(Network) #>"
 
 <# foreach(var process in Network.Processes) { #>
 #include "<#= process.Name #>.hpp"

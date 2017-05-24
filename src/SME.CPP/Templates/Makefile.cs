@@ -137,6 +137,18 @@ var cust_tag = CustomFiles == null || CustomFiles.Count() == 0 ? "" : " custom_f
             #line hidden
             
             #line 23 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.SharedDefinitionsFilename(Network) ));
+            
+            #line default
+            #line hidden
+            
+            #line 23 ""
+            this.Write(" ");
+            
+            #line default
+            #line hidden
+            
+            #line 23 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( Naming.BusImplementationsFileName(Network) ));
             
             #line default
@@ -198,6 +210,18 @@ var cust_tag = CustomFiles == null || CustomFiles.Count() == 0 ? "" : " custom_f
             
             #line 27 ""
             this.Write(".hpp SystemTypes.hpp ");
+            
+            #line default
+            #line hidden
+            
+            #line 27 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.SharedDefinitionsFilename(Network) ));
+            
+            #line default
+            #line hidden
+            
+            #line 27 ""
+            this.Write(" ");
             
             #line default
             #line hidden
@@ -281,6 +305,18 @@ var cust_tag = CustomFiles == null || CustomFiles.Count() == 0 ? "" : " custom_f
             #line hidden
             
             #line 33 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.SharedDefinitionsFilename(Network) ));
+            
+            #line default
+            #line hidden
+            
+            #line 33 ""
+            this.Write(" ");
+            
+            #line default
+            #line hidden
+            
+            #line 33 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( Naming.BusDefinitionsFileName(Network) ));
             
             #line default
@@ -342,6 +378,18 @@ var cust_tag = CustomFiles == null || CustomFiles.Count() == 0 ? "" : " custom_f
             
             #line 39 ""
             this.Write(".cpp SystemTypes.hpp ");
+            
+            #line default
+            #line hidden
+            
+            #line 39 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.SharedDefinitionsFilename(Network) ));
+            
+            #line default
+            #line hidden
+            
+            #line 39 ""
+            this.Write(" ");
             
             #line default
             #line hidden

@@ -143,6 +143,9 @@ namespace SME.CPP
             var busImplementations = Path.Combine(TargetFolder, Path.ChangeExtension(Naming.BusImplementationsFileName(Network), ".cpp"));
             File.WriteAllText(busImplementations, MergeUserData(new Templates.BusImplementations(this).TransformText(), busImplementations));
 
+			var sharedDefinitions = Path.Combine(TargetFolder, Naming.SharedDefinitionsFilename(Network));
+            File.WriteAllText(sharedDefinitions, MergeUserData(new Templates.SharedTypes(this).TransformText(), sharedDefinitions));
+
 			var makeFileTarget = Path.Combine(TargetFolder, "Makefile");
             File.WriteAllText(makeFileTarget, MergeUserData(new Templates.Makefile(this).TransformText(), makeFileTarget));
 
@@ -206,7 +209,11 @@ namespace SME.CPP
 
 				Directory.CreateDirectory(backupname);
 
-                foreach (var fn in new[] { Path.ChangeExtension(Naming.AssemblyNameToFileName(Network), ".cpp"), Naming.BusDefinitionsFileName(Network), Path.ChangeExtension(Naming.BusImplementationsFileName(Network), ".cpp") })
+                foreach (var fn in new[] { 
+                    Path.ChangeExtension(Naming.AssemblyNameToFileName(Network), ".cpp"), 
+                    Naming.SharedDefinitionsFilename(Network),
+                    Naming.BusDefinitionsFileName(Network), 
+                    Path.ChangeExtension(Naming.BusImplementationsFileName(Network), ".cpp") })
                 {
                     var s = Path.Combine(targetfolder, fn);
                     if (File.Exists(s))
@@ -242,6 +249,115 @@ namespace SME.CPP
 			return name;
 		}
 
+
+		/// <summary>
+		/// Gets all enum types in the network
+		/// </summary>
+        public IEnumerable<TypeDefinition> EnumTypes
+		{
+			get
+			{
+                return Types
+                    .Where(x => x.Resolve().IsEnum)
+                    .Select(x => x.Resolve());
+			}
+		}
+
+		/// <summary>
+		/// Gets all enum types in the network
+		/// </summary>
+		public IEnumerable<TypeDefinition> StructTypes
+		{
+			get
+			{
+				return Types
+                    .Where(x =>
+                    {
+                        var tr = x.Resolve();
+                        return !tr.IsEnum && tr.IsValueType && !tr.IsPrimitive && !tr.IsSameTypeReference(typeof(void));
+                    })
+					.Select(x => x.Resolve());
+			}
+		}
+
+		/// <summary>
+		/// Lists all members for a given value type
+		/// </summary>
+		/// <returns>The member VHDL strings.</returns>
+		/// <param name="type">The VHDL type.</param>
+		public IEnumerable<string> ListMembers(TypeDefinition type)
+		{
+			if (type.IsEnum)
+			{
+                foreach (var e in type.Fields.Where(x => x.Name != "value__"))
+                    yield return e.Name;
+			}
+			else if (type.IsValueType && !type.IsPrimitive)
+			{
+				foreach (var m in type.Fields)
+					if (!m.IsStatic)
+                        yield return string.Format("{0} {1}", TypeScope.GetType(m.FieldType), Naming.ToValidName(m.Name));
+			}
+		}
+
+		/// <summary>
+		/// Gets all constant definition strings
+		/// </summary>
+		public IEnumerable<string> Constants
+        {
+            get
+            {
+                foreach (var n in Network.Constants)
+                {
+					object nx = n.DefaultValue;
+
+                    if (nx is ICSharpCode.NRefactory.CSharp.ArrayCreateExpression)
+                    {
+                        var arc = nx as ICSharpCode.NRefactory.CSharp.ArrayCreateExpression;
+						var eltype = n.CecilType.GetElementType();
+						var cpptype = TypeScope.GetType(n);
+
+						string values;
+                        if (new[] { typeof(sbyte), typeof(byte), typeof(ushort), typeof(short), typeof(int) }.Select(x => eltype.Module.Import(x).Resolve()).Contains(eltype.Resolve()))
+                            values = string.Join(", ", arc.Initializer.Elements.Select(x => string.Format("{0}", x)));
+                        else
+                            throw new Exception("Unexpected initializer type");
+
+                        yield return string.Format("const {0} {1}[{2}] = {{ {3} }}", cpptype.ElementName, n.Name, arc.Initializer.Elements.Count, values);
+					}
+                    else if (nx is AST.ArrayCreateExpression)
+                    {
+                        var arc = nx as AST.ArrayCreateExpression;
+						var eltype = n.CecilType.GetElementType();
+						var cpptype = TypeScope.GetType(n);
+
+						string values;
+						if (new[] { typeof(sbyte), typeof(byte), typeof(ushort), typeof(short), typeof(int) }.Select(x => eltype.Module.Import(x).Resolve()).Contains(eltype.Resolve()))
+                            values = string.Join(", ", arc.ElementExpressions.Select(x => Renderer.RenderExpression(x)));
+						else
+							throw new Exception("Unexpected initializer type");
+
+                        yield return string.Format("const {0} {1}[{2}] = {{ {3} }}", cpptype.ElementName, n.Name, arc.ElementExpressions.Length, values);
+
+					}
+                    else if (nx is AST.EmptyArrayCreateExpression)
+                    {
+                        var arc = nx as AST.EmptyArrayCreateExpression;
+						var cpptype = TypeScope.GetType(n);
+						yield return $"const {cpptype.ElementName} {n.Name}[{Renderer.RenderExpression(((EmptyArrayCreateExpression)nx).SizeExpression)}]()";
+                    }
+                    else if (nx != null)
+                    {
+                        var cpptype = TypeScope.GetType(n);                        
+                        yield return $"const {cpptype.Name} {n.Name} = {nx}";
+                    }
+                    else
+                    {
+                        yield return $"const {n.Name} = 0";
+					}
+                }
+			}
+        }
 		/// <summary>
 		/// Returns all signals from top-level input busses
 		/// </summary>

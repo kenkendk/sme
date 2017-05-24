@@ -282,10 +282,6 @@ namespace SME.VHDL
 			var endval = (int)s.EndValue.DefaultValue;
 			endval--;
 
-			// TODO: The loop variable is a special scope that is not honored here,
-			// and could cause issue if there is another variable with the same name
-			// it should not happen, as NRefactory assigns new names
-
 			var indent = new string(' ', indentation);
 			yield return $"{indent}for {s.LoopIndex.Name} in {s.StartValue.DefaultValue} to {endval} loop";
 

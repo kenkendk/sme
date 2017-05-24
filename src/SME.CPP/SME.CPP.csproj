@@ -85,6 +85,9 @@
     <Compile Include="Templates\BusImplementations.cs">
       <DependentUpon>BusImplementations.tt</DependentUpon>
     </Compile>
+    <Compile Include="Templates\SharedTypes.cs">
+      <DependentUpon>SharedTypes.tt</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SME\SME.csproj">
@@ -121,6 +124,10 @@
     <None Include="Templates\BusImplementations.tt">
       <Generator>TextTemplatingFilePreprocessor</Generator>
       <LastGenOutput>BusImplementations.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\SharedTypes.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>SharedTypes.cs</LastGenOutput>
     </None>
   </ItemGroup>
   <ItemGroup>

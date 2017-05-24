@@ -183,4 +183,16 @@ namespace SME.CPP.Templates
 			}
 		}
     }
+
+    public partial class SharedTypes
+    {
+		private readonly RenderState RS;
+		private readonly AST.Network Network;
+
+		public SharedTypes(RenderState rs)
+		{
+			RS = rs;
+			Network = rs.Network;
+		}
+	}
 }
