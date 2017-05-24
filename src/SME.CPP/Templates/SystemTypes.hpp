@@ -35,27 +35,32 @@ public:
 
 class SignalException: public std::exception {
 public:
-    std::string signal;
-    SignalException(std::string signalname) {
-        signal = signalname;
+    std::string message;
+    SignalException(std::string what) {
+        message = what;
     }
     ~SignalException() throw() {}
 };
 
 class InvalidReadException: public SignalException { 
 public:
-    InvalidReadException(std::string signalname)
-    : SignalException(signalname) { }
+    InvalidReadException(std::string what)
+    : SignalException(what) { }
 };
 class InvalidDoubleWriteException: public SignalException {
 public:
-    InvalidDoubleWriteException(std::string signalname)
-    : SignalException(signalname) { }
+    InvalidDoubleWriteException(std::string what)
+    : SignalException(what) { }
 };
 class IndexOutOfBoundsException : public SignalException {
 public:
-    IndexOutOfBoundsException(std::string signalname)
-    : SignalException(signalname) { }
+    IndexOutOfBoundsException(std::string what)
+    : SignalException(what) { }
+};
+class MessageException : public SignalException {
+public:
+    MessageException(std::string what)
+    : SignalException(what) { }
 };
 
 #endif /* SME_SYSTEM_TYPES_HPP */

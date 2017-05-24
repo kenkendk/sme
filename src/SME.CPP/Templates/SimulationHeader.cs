@@ -15,7 +15,7 @@ namespace SME.CPP.Templates {
     using System;
     
     
-    public partial class TopLevel : TopLevelBase {
+    public partial class SimulationHeader : SimulationHeaderBase {
         
         public virtual string TransformText() {
             this.GenerationEnvironment = null;
@@ -27,43 +27,187 @@ namespace SME.CPP.Templates {
             #line hidden
             
             #line 6 ""
-            this.Write("#include <iostream>\n#include <fstream>\n#include <sstream>\n#include \"");
+            this.Write("#include <iostream>\n#include <fstream>\n#include <sstream>\n#include \"SystemTypes.hpp\"\n#include \"");
             
             #line default
             #line hidden
             
-            #line 9 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.SimulatorFileName(Network) ));
+            #line 10 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.BusDefinitionsFileName(Network) ));
             
             #line default
             #line hidden
             
-            #line 9 ""
-            this.Write(".hpp\"\n\n// Insert additional includes and methods here\n// #### USER-DATA-INCLUDE-START\n// #### USER-DATA-INCLUDE-END\n\nint main()\n{\n\n// Insert additional startup code here\n// #### USER-DATA-STARTUP-CODE-START\n// #### USER-DATA-STARTUP-CODE-END\n\n    try\n    {\n        ");
+            #line 10 ""
+            this.Write("\"\n#include \"");
             
             #line default
             #line hidden
             
-            #line 24 ""
+            #line 11 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.SharedDefinitionsFileName(Network) ));
+            
+            #line default
+            #line hidden
+            
+            #line 11 ""
+            this.Write("\"\n\n");
+            
+            #line default
+            #line hidden
+            
+            #line 13 ""
+ foreach(var process in Network.Processes) { 
+            
+            #line default
+            #line hidden
+            
+            #line 14 ""
+            this.Write("#include \"");
+            
+            #line default
+            #line hidden
+            
+            #line 14 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( process.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 14 ""
+            this.Write(".hpp\"\n");
+            
+            #line default
+            #line hidden
+            
+            #line 15 ""
+ } 
+            
+            #line default
+            #line hidden
+            
+            #line 16 ""
+            this.Write("\n// Insert additional includes and classes here\n// #### USER-DATA-INCLUDE-START\n// #### USER-DATA-INCLUDE-END\n\nclass ");
+            
+            #line default
+            #line hidden
+            
+            #line 21 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( Naming.AssemblyNameToFileName(Network) ));
             
             #line default
             #line hidden
             
-            #line 24 ""
-            this.Write(" simulator;\n        size_t cycles = simulator.RunSimulation(\"");
+            #line 21 ""
+            this.Write(" {\n\n// Insert additional variables and methods here\n// #### USER-VARIABLE-INCLUDE-START\n// #### USER-VARIABLE-INCLUDE-END\n\nprivate:\n\n    // Busses\n");
             
             #line default
             #line hidden
             
-            #line 25 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( RS.CSVTracename ));
+            #line 30 ""
+ foreach(var bus in Network.Busses) { 
             
             #line default
             #line hidden
             
-            #line 25 ""
-            this.Write("\");\n        std::cout << \"Completed simulation in \" << cycles << \" cycles\" << std::endl;\n\n    } catch (SignalException s) {\n        std::cout << s.message << std::endl;\n        throw s;\n    }\n    return 0;\n}\n");
+            #line 31 ""
+            this.Write("    ");
+            
+            #line default
+            #line hidden
+            
+            #line 31 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 31 ""
+            this.Write(" bus_");
+            
+            #line default
+            #line hidden
+            
+            #line 31 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 31 ""
+            this.Write(";\n");
+            
+            #line default
+            #line hidden
+            
+            #line 32 ""
+ } 
+            
+            #line default
+            #line hidden
+            
+            #line 33 ""
+            this.Write("\n    // Processes\n");
+            
+            #line default
+            #line hidden
+            
+            #line 35 ""
+ foreach(var process in Network.Processes) { 
+            
+            #line default
+            #line hidden
+            
+            #line 36 ""
+            this.Write("    ");
+            
+            #line default
+            #line hidden
+            
+            #line 36 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( process.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 36 ""
+            this.Write(" proc_");
+            
+            #line default
+            #line hidden
+            
+            #line 36 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( process.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 36 ""
+            this.Write(";\n");
+            
+            #line default
+            #line hidden
+            
+            #line 37 ""
+ } 
+            
+            #line default
+            #line hidden
+            
+            #line 38 ""
+            this.Write("\n    // The trace input file, if any\n    std::ifstream* trace_input;\n\n    // The current trace input line\n    std::string input_line;\n\n    // The currently simulated cycle\n    size_t cycle;\n\npublic:\n    // Default constructor\n    ");
+            
+            #line default
+            #line hidden
+            
+            #line 50 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.AssemblyNameToFileName(Network) ));
+            
+            #line default
+            #line hidden
+            
+            #line 50 ""
+            this.Write("();\n\n    // Helper method for running a complete simulation from a\n    // trace file\n    size_t RunSimulation(const char* inputfile);\n\n    // Opens the file and prepares the input for driving signals\n    // and post simulation verification\n    void LoadTraceInput(const char* inputfile);\n\n    // Drives the input signals with the values found in the\n    // tracefile passed to the constructor\n    bool DriveFromTraceInput();\n\n    // Prepares the simulation for the next tick\n    void BeforeNextTick();\n\n    // Performs a single iteration of the program\n    void OnTick();\n\n    // Performs post-tick verification of all signals\n    void VerifyTrace();\n\n    // Shuts down the simulation, closing all open files\n    void Stop();\n\n    // Gets the current cycle\n    size_t Cycle() { return cycle; }\n};");
             
             #line default
             #line hidden
@@ -74,7 +218,7 @@ namespace SME.CPP.Templates {
         }
     }
     
-    public class TopLevelBase {
+    public class SimulationHeaderBase {
         
         private global::System.Text.StringBuilder builder;
         

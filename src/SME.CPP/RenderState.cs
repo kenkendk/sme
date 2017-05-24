@@ -143,8 +143,14 @@ namespace SME.CPP
             var busImplementations = Path.Combine(TargetFolder, Path.ChangeExtension(Naming.BusImplementationsFileName(Network), ".cpp"));
             File.WriteAllText(busImplementations, MergeUserData(new Templates.BusImplementations(this).TransformText(), busImplementations));
 
-			var sharedDefinitions = Path.Combine(TargetFolder, Naming.SharedDefinitionsFilename(Network));
+			var sharedDefinitions = Path.Combine(TargetFolder, Naming.SharedDefinitionsFileName(Network));
             File.WriteAllText(sharedDefinitions, MergeUserData(new Templates.SharedTypes(this).TransformText(), sharedDefinitions));
+
+            var simulatorHeader = Path.Combine(TargetFolder, Path.ChangeExtension(Naming.SimulatorFileName(Network), ".hpp"));
+            File.WriteAllText(simulatorHeader, MergeUserData(new Templates.SimulationHeader(this).TransformText(), simulatorHeader));
+
+            var simulatorImplementation = Path.Combine(TargetFolder, Path.ChangeExtension(Naming.SimulatorFileName(Network), ".cpp"));
+            File.WriteAllText(simulatorImplementation, MergeUserData(new Templates.SimulationImplementation(this).TransformText(), simulatorImplementation));
 
 			var makeFileTarget = Path.Combine(TargetFolder, "Makefile");
             File.WriteAllText(makeFileTarget, MergeUserData(new Templates.Makefile(this).TransformText(), makeFileTarget));
@@ -211,9 +217,11 @@ namespace SME.CPP
 
                 foreach (var fn in new[] { 
                     Path.ChangeExtension(Naming.AssemblyNameToFileName(Network), ".cpp"), 
-                    Naming.SharedDefinitionsFilename(Network),
-                    Naming.BusDefinitionsFileName(Network), 
-                    Path.ChangeExtension(Naming.BusImplementationsFileName(Network), ".cpp") })
+                    Naming.SharedDefinitionsFileName(Network),
+                    Naming.BusDefinitionsFileName(Network),
+                    Path.ChangeExtension(Naming.SimulatorFileName(Network), ".cpp"),
+                    Path.ChangeExtension(Naming.SimulatorFileName(Network), ".hpp"),
+					Path.ChangeExtension(Naming.BusImplementationsFileName(Network), ".cpp") })
                 {
                     var s = Path.Combine(targetfolder, fn);
                     if (File.Exists(s))

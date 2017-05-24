@@ -33,7 +33,7 @@ namespace SME.CPP.Templates {
             #line hidden
             
             #line 10 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.SharedDefinitionsFilename(Network) ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.SharedDefinitionsFileName(Network) ));
             
             #line default
             #line hidden

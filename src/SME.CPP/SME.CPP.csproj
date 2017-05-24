@@ -88,6 +88,12 @@
     <Compile Include="Templates\SharedTypes.cs">
       <DependentUpon>SharedTypes.tt</DependentUpon>
     </Compile>
+    <Compile Include="Templates\SimulationHeader.cs">
+      <DependentUpon>SimulationHeader.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Templates\SimulationImplementation.cs">
+      <DependentUpon>SimulationImplementation.tt</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SME\SME.csproj">
@@ -128,6 +134,14 @@
     <None Include="Templates\SharedTypes.tt">
       <Generator>TextTemplatingFilePreprocessor</Generator>
       <LastGenOutput>SharedTypes.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\SimulationHeader.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>SimulationHeader.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\SimulationImplementation.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>SimulationImplementation.cs</LastGenOutput>
     </None>
   </ItemGroup>
   <ItemGroup>

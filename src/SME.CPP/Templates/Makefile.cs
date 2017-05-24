@@ -21,7 +21,7 @@ namespace SME.CPP.Templates {
             this.GenerationEnvironment = null;
             
             #line 1 ""
-            this.Write("﻿﻿");
+            this.Write("﻿﻿﻿");
             
             #line default
             #line hidden
@@ -137,7 +137,7 @@ var cust_tag = CustomFiles == null || CustomFiles.Count() == 0 ? "" : " custom_f
             #line hidden
             
             #line 23 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.SharedDefinitionsFilename(Network) ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.SharedDefinitionsFileName(Network) ));
             
             #line default
             #line hidden
@@ -215,7 +215,7 @@ var cust_tag = CustomFiles == null || CustomFiles.Count() == 0 ? "" : " custom_f
             #line hidden
             
             #line 27 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.SharedDefinitionsFilename(Network) ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.SharedDefinitionsFileName(Network) ));
             
             #line default
             #line hidden
@@ -305,7 +305,7 @@ var cust_tag = CustomFiles == null || CustomFiles.Count() == 0 ? "" : " custom_f
             #line hidden
             
             #line 33 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.SharedDefinitionsFilename(Network) ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.SharedDefinitionsFileName(Network) ));
             
             #line default
             #line hidden
@@ -353,151 +353,181 @@ var cust_tag = CustomFiles == null || CustomFiles.Count() == 0 ? "" : " custom_f
             #line hidden
             
             #line 37 ""
-            this.Write("\n\n");
+            this.Write("\n");
             
             #line default
             #line hidden
             
-            #line 39 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.AssemblyNameToFileName(Network) ));
+            #line 38 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.SimulatorFileName(Network) ));
             
             #line default
             #line hidden
             
-            #line 39 ""
-            this.Write(": ");
+            #line 38 ""
+            this.Write(".o: ");
             
             #line default
             #line hidden
             
-            #line 39 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.AssemblyNameToFileName(Network) ));
+            #line 38 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.SimulatorFileName(Network) ));
             
             #line default
             #line hidden
             
-            #line 39 ""
-            this.Write(".cpp SystemTypes.hpp ");
-            
-            #line default
-            #line hidden
-            
-            #line 39 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.SharedDefinitionsFilename(Network) ));
-            
-            #line default
-            #line hidden
-            
-            #line 39 ""
-            this.Write(" ");
-            
-            #line default
-            #line hidden
-            
-            #line 39 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.BusDefinitionsFileName(Network) ));
-            
-            #line default
-            #line hidden
-            
-            #line 39 ""
-            this.Write(" ");
-            
-            #line default
-            #line hidden
-            
-            #line 39 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.BusImplementationsFileName(Network) ));
-            
-            #line default
-            #line hidden
-            
-            #line 39 ""
-            this.Write(".o ");
-            
-            #line default
-            #line hidden
-            
-            #line 39 ""
- foreach(var file in Filenames) { 
-            
-            #line default
-            #line hidden
-            
-            #line 40 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( file ));
-            
-            #line default
-            #line hidden
-            
-            #line 40 ""
-            this.Write(".o ");
-            
-            #line default
-            #line hidden
-            
-            #line 40 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( file ));
-            
-            #line default
-            #line hidden
-            
-            #line 40 ""
-            this.Write(".hpp ");
-            
-            #line default
-            #line hidden
-            
-            #line 40 ""
- } 
-            
-            #line default
-            #line hidden
-            
-            #line 41 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( cust_tag ));
-            
-            #line default
-            #line hidden
-            
-            #line 41 ""
-            this.Write("\n\t${GPP} ");
-            
-            #line default
-            #line hidden
-            
-            #line 42 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.AssemblyNameToFileName(Network) ));
-            
-            #line default
-            #line hidden
-            
-            #line 42 ""
+            #line 38 ""
             this.Write(".cpp ");
             
             #line default
             #line hidden
             
-            #line 42 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.BusImplementationsFileName(Network) ));
+            #line 38 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.SimulatorFileName(Network) ));
             
             #line default
             #line hidden
             
-            #line 42 ""
-            this.Write(".o ");
+            #line 38 ""
+            this.Write(".hpp SystemTypes.hpp ");
             
             #line default
             #line hidden
             
-            #line 42 ""
+            #line 38 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.SharedDefinitionsFileName(Network) ));
+            
+            #line default
+            #line hidden
+            
+            #line 38 ""
+            this.Write(" ");
+            
+            #line default
+            #line hidden
+            
+            #line 38 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.BusDefinitionsFileName(Network) ));
+            
+            #line default
+            #line hidden
+            
+            #line 38 ""
+            this.Write(" ");
+            
+            #line default
+            #line hidden
+            
+            #line 38 ""
  foreach(var file in Filenames) { 
             
             #line default
             #line hidden
             
-            #line 43 ""
+            #line 39 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( file ));
+            
+            #line default
+            #line hidden
+            
+            #line 39 ""
+            this.Write(".o ");
+            
+            #line default
+            #line hidden
+            
+            #line 39 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( file ));
+            
+            #line default
+            #line hidden
+            
+            #line 39 ""
+            this.Write(".hpp ");
+            
+            #line default
+            #line hidden
+            
+            #line 39 ""
+ } 
+            
+            #line default
+            #line hidden
+            
+            #line 40 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( cust_tag ));
+            
+            #line default
+            #line hidden
+            
+            #line 40 ""
+            this.Write("\n\t${GPP} ${CPPFLAGS} -c ");
+            
+            #line default
+            #line hidden
+            
+            #line 41 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.SimulatorFileName(Network) ));
+            
+            #line default
+            #line hidden
+            
+            #line 41 ""
+            this.Write(".cpp\n\n");
+            
+            #line default
+            #line hidden
+            
+            #line 43 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.AssemblyNameToFileName(Network) ));
+            
+            #line default
+            #line hidden
+            
+            #line 43 ""
+            this.Write(": ");
+            
+            #line default
+            #line hidden
+            
+            #line 43 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.AssemblyNameToFileName(Network) ));
+            
+            #line default
+            #line hidden
+            
+            #line 43 ""
+            this.Write(".cpp SystemTypes.hpp ");
+            
+            #line default
+            #line hidden
+            
+            #line 43 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.SharedDefinitionsFileName(Network) ));
+            
+            #line default
+            #line hidden
+            
+            #line 43 ""
+            this.Write(" ");
+            
+            #line default
+            #line hidden
+            
+            #line 43 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.BusDefinitionsFileName(Network) ));
+            
+            #line default
+            #line hidden
+            
+            #line 43 ""
+            this.Write(" ");
+            
+            #line default
+            #line hidden
+            
+            #line 43 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.BusImplementationsFileName(Network) ));
             
             #line default
             #line hidden
@@ -509,48 +539,174 @@ var cust_tag = CustomFiles == null || CustomFiles.Count() == 0 ? "" : " custom_f
             #line hidden
             
             #line 43 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.SimulatorFileName(Network) ));
+            
+            #line default
+            #line hidden
+            
+            #line 43 ""
+            this.Write(".o ");
+            
+            #line default
+            #line hidden
+            
+            #line 43 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.SimulatorFileName(Network) ));
+            
+            #line default
+            #line hidden
+            
+            #line 43 ""
+            this.Write(".hpp ");
+            
+            #line default
+            #line hidden
+            
+            #line 43 ""
+ foreach(var file in Filenames) { 
+            
+            #line default
+            #line hidden
+            
+            #line 44 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( file ));
+            
+            #line default
+            #line hidden
+            
+            #line 44 ""
+            this.Write(".o ");
+            
+            #line default
+            #line hidden
+            
+            #line 44 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( file ));
+            
+            #line default
+            #line hidden
+            
+            #line 44 ""
+            this.Write(".hpp ");
+            
+            #line default
+            #line hidden
+            
+            #line 44 ""
  } 
             
             #line default
             #line hidden
             
-            #line 44 ""
-            this.Write(" -o ");
-            
-            #line default
-            #line hidden
-            
-            #line 44 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Network.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 44 ""
-            this.Write("\n\nclean:\n\trm -rf *.o ");
-            
-            #line default
-            #line hidden
-            
-            #line 47 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Network.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 47 ""
-            this.Write("\n\n\n.PHONY: all clean ");
-            
-            #line default
-            #line hidden
-            
-            #line 50 ""
+            #line 45 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( cust_tag ));
             
             #line default
             #line hidden
             
-            #line 50 ""
+            #line 45 ""
+            this.Write("\n\t${GPP} ");
+            
+            #line default
+            #line hidden
+            
+            #line 46 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.AssemblyNameToFileName(Network) ));
+            
+            #line default
+            #line hidden
+            
+            #line 46 ""
+            this.Write(".cpp ");
+            
+            #line default
+            #line hidden
+            
+            #line 46 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.BusImplementationsFileName(Network) ));
+            
+            #line default
+            #line hidden
+            
+            #line 46 ""
+            this.Write(".o ");
+            
+            #line default
+            #line hidden
+            
+            #line 46 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.SimulatorFileName(Network) ));
+            
+            #line default
+            #line hidden
+            
+            #line 46 ""
+            this.Write(".o ");
+            
+            #line default
+            #line hidden
+            
+            #line 46 ""
+ foreach(var file in Filenames) { 
+            
+            #line default
+            #line hidden
+            
+            #line 47 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( file ));
+            
+            #line default
+            #line hidden
+            
+            #line 47 ""
+            this.Write(".o ");
+            
+            #line default
+            #line hidden
+            
+            #line 47 ""
+ } 
+            
+            #line default
+            #line hidden
+            
+            #line 48 ""
+            this.Write(" -o ");
+            
+            #line default
+            #line hidden
+            
+            #line 48 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Network.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 48 ""
+            this.Write("\n\nclean:\n\trm -rf *.o ");
+            
+            #line default
+            #line hidden
+            
+            #line 51 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Network.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 51 ""
+            this.Write("\n\n\n.PHONY: all clean ");
+            
+            #line default
+            #line hidden
+            
+            #line 54 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( cust_tag ));
+            
+            #line default
+            #line hidden
+            
+            #line 54 ""
             this.Write("\n");
             
             #line default

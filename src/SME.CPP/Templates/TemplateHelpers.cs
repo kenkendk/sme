@@ -9,28 +9,11 @@ namespace SME.CPP.Templates
 	{
 		private readonly RenderState RS;
 		private readonly AST.Network Network;
-        private readonly DependencyGraph Graph;
 
 		public TopLevel(RenderState rs)
 		{
 			RS = rs;
 			Network = rs.Network;
-            Graph = new DependencyGraph(RS.Processes);
-		}
-
-        public AST.Bus GetBus(IBus bus)
-        {
-            return Network.Busses.First(x => x.SourceType == bus.BusType);   
-        }
-
-        public AST.Process GetProcess(IProcess proc)
-        {
-            return Network.Processes.FirstOrDefault(x => x.SourceInstance == proc);
-        }
-
-		public string Type(AST.Signal signal)
-		{
-			return RS.TypeScope.GetType(signal).Name;
 		}
 	}
 
@@ -195,4 +178,42 @@ namespace SME.CPP.Templates
 			Network = rs.Network;
 		}
 	}
+
+	public partial class SimulationHeader
+	{
+		private readonly RenderState RS;
+		private readonly AST.Network Network;
+
+		public SimulationHeader(RenderState rs)
+		{
+			RS = rs;
+			Network = rs.Network;
+		}
+	}
+
+	public partial class SimulationImplementation
+	{
+		private readonly RenderState RS;
+		private readonly AST.Network Network;
+		private readonly DependencyGraph Graph;
+
+		public SimulationImplementation(RenderState rs)
+		{
+			RS = rs;
+			Network = rs.Network;
+			Graph = new DependencyGraph(RS.Processes);
+		}
+
+		public AST.Process GetProcess(IProcess proc)
+		{
+			return Network.Processes.FirstOrDefault(x => x.SourceInstance == proc);
+		}
+
+		public AST.Bus GetBus(IBus bus)
+		{
+			return Network.Busses.First(x => x.SourceType == bus.BusType);
+		}
+
+	}
+
 }

@@ -4,8 +4,11 @@
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#@ import namespace="SME.AST" #>
+#ifndef SME_<#= RSP.Process.Name.ToUpper() #>_HPP
+#define SME_<#= RSP.Process.Name.ToUpper() #>_HPP
+
 #include "SystemTypes.hpp"
-#include "<#= Naming.SharedDefinitionsFilename(Network) #>"
+#include "<#= Naming.SharedDefinitionsFileName(Network) #>"
 #include "<#= Naming.BusDefinitionsFileName(Network) #>"
 
 <#
@@ -65,3 +68,5 @@ public:
 
     void onTick();
 };
+
+#endif /* SME_<#= RSP.Process.Name.ToUpper() #>_HPP */

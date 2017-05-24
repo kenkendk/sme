@@ -7,8 +7,6 @@
 
 #include <iostream>
 #include <cstring>
-#include "SystemTypes.hpp"
-#include "<#= Naming.BusDefinitionsFileName(Network) #>"
 #include "<#= RSP.Process.Name #>.hpp"
 
 // Insert additional includes and methods here

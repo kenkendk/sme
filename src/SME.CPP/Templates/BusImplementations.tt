@@ -3,7 +3,8 @@
 <#@ import namespace="System.Linq" #>
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
-#include "SystemTypes.hpp"
+#include <iostream>
+#include <cstring>
 #include "<#= Naming.BusDefinitionsFileName(Network) #>"
 
 // Insert additional includes here

@@ -28,36 +28,24 @@ namespace SME.CPP.Templates {
             #line hidden
             
             #line 7 ""
-            this.Write("\n#include <iostream>\n#include <cstring>\n#include \"SystemTypes.hpp\"\n#include \"");
+            this.Write("\n#include <iostream>\n#include <cstring>\n#include \"");
             
             #line default
             #line hidden
             
-            #line 11 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.BusDefinitionsFileName(Network) ));
-            
-            #line default
-            #line hidden
-            
-            #line 11 ""
-            this.Write("\"\n#include \"");
-            
-            #line default
-            #line hidden
-            
-            #line 12 ""
+            #line 10 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( RSP.Process.Name ));
             
             #line default
             #line hidden
             
-            #line 12 ""
+            #line 10 ""
             this.Write(".hpp\"\n\n// Insert additional includes and methods here\n// #### USER-DATA-EXTRA-START\n// #### USER-DATA-EXTRA-END\n\n\n");
             
             #line default
             #line hidden
             
-            #line 19 ""
+            #line 17 ""
 
 var busses = RSP.Process.InputBusses.Union(RSP.Process.OutputBusses).Union(RSP.Process.InternalBusses).Distinct().OrderBy(x => x.Name).ToArray();
 
@@ -65,139 +53,139 @@ var busses = RSP.Process.InputBusses.Union(RSP.Process.OutputBusses).Union(RSP.P
             #line default
             #line hidden
             
-            #line 22 ""
+            #line 20 ""
             this.Write("\n");
             
             #line default
             #line hidden
             
-            #line 23 ""
+            #line 21 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( RSP.Process.Name ));
             
             #line default
             #line hidden
             
-            #line 23 ""
+            #line 21 ""
             this.Write("::");
             
             #line default
             #line hidden
             
-            #line 23 ""
+            #line 21 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( RSP.Process.Name ));
             
             #line default
             #line hidden
             
-            #line 23 ""
+            #line 21 ""
             this.Write("(\n");
             
             #line default
             #line hidden
             
-            #line 24 ""
+            #line 22 ""
  foreach(var bus in busses) { 
             
             #line default
             #line hidden
             
-            #line 25 ""
+            #line 23 ""
             this.Write("    ");
             
             #line default
             #line hidden
             
-            #line 25 ""
+            #line 23 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
             
             #line default
             #line hidden
             
-            #line 25 ""
+            #line 23 ""
             this.Write("* p");
             
             #line default
             #line hidden
             
-            #line 25 ""
+            #line 23 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
             
             #line default
             #line hidden
             
-            #line 25 ""
+            #line 23 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( bus == busses.Last() ? "" : "," ));
             
             #line default
             #line hidden
             
-            #line 25 ""
+            #line 23 ""
             this.Write("\n");
             
             #line default
             #line hidden
             
-            #line 26 ""
+            #line 24 ""
   } 
             
             #line default
             #line hidden
             
-            #line 27 ""
+            #line 25 ""
             this.Write(") {\n");
             
             #line default
             #line hidden
             
-            #line 28 ""
+            #line 26 ""
  foreach(var bus in busses) { 
             
             #line default
             #line hidden
             
-            #line 29 ""
+            #line 27 ""
             this.Write("    bus_");
             
             #line default
             #line hidden
             
-            #line 29 ""
+            #line 27 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
             
             #line default
             #line hidden
             
-            #line 29 ""
+            #line 27 ""
             this.Write(" = p");
             
             #line default
             #line hidden
             
-            #line 29 ""
+            #line 27 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
             
             #line default
             #line hidden
             
-            #line 29 ""
+            #line 27 ""
             this.Write(";\n");
             
             #line default
             #line hidden
             
-            #line 30 ""
+            #line 28 ""
   } 
             
             #line default
             #line hidden
             
-            #line 31 ""
+            #line 29 ""
             this.Write("\n");
             
             #line default
             #line hidden
             
-            #line 32 ""
+            #line 30 ""
  foreach(var v in RSP.Process.SharedVariables.Cast<DataElement>().Union(RSP.Process.SharedSignals)) { 
        var initializer = RS.Renderer.GetInitializer(v);
        if (!string.IsNullOrWhiteSpace(initializer)) { 
@@ -215,164 +203,200 @@ var busses = RSP.Process.InputBusses.Union(RSP.Process.OutputBusses).Union(RSP.P
             #line default
             #line hidden
             
-            #line 45 ""
+            #line 43 ""
             this.Write("    ");
             
             #line default
             #line hidden
             
-            #line 45 ""
+            #line 43 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( v.Name ));
             
             #line default
             #line hidden
             
-            #line 45 ""
+            #line 43 ""
             this.Write(" = new ");
             
             #line default
             #line hidden
             
-            #line 45 ""
+            #line 43 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( eltype ));
             
             #line default
             #line hidden
             
-            #line 45 ""
+            #line 43 ""
             this.Write("[");
             
             #line default
             #line hidden
             
-            #line 45 ""
+            #line 43 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( arraylen ));
             
             #line default
             #line hidden
             
-            #line 45 ""
+            #line 43 ""
             this.Write("];\n    ");
             
             #line default
             #line hidden
             
-            #line 46 ""
+            #line 44 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( eltype ));
             
             #line default
             #line hidden
             
-            #line 46 ""
+            #line 44 ""
             this.Write(" orig_");
             
             #line default
             #line hidden
             
-            #line 46 ""
+            #line 44 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( v.Name ));
             
             #line default
             #line hidden
             
-            #line 46 ""
+            #line 44 ""
             this.Write("[]");
             
             #line default
             #line hidden
             
-            #line 46 ""
+            #line 44 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( initializer ));
             
             #line default
             #line hidden
             
-            #line 46 ""
+            #line 44 ""
             this.Write(";\n    std::memcpy(");
             
             #line default
             #line hidden
             
-            #line 47 ""
+            #line 45 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( v.Name ));
             
             #line default
             #line hidden
             
-            #line 47 ""
+            #line 45 ""
             this.Write(", orig_");
             
             #line default
             #line hidden
             
-            #line 47 ""
+            #line 45 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( v.Name ));
             
             #line default
             #line hidden
             
-            #line 47 ""
+            #line 45 ""
             this.Write(", ");
             
             #line default
             #line hidden
             
-            #line 47 ""
+            #line 45 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( arraylen ));
             
             #line default
             #line hidden
             
-            #line 47 ""
+            #line 45 ""
             this.Write(" * sizeof(");
             
             #line default
             #line hidden
             
-            #line 47 ""
+            #line 45 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( eltype ));
             
             #line default
             #line hidden
             
-            #line 47 ""
+            #line 45 ""
             this.Write("));\n");
             
             #line default
             #line hidden
             
-            #line 48 ""
+            #line 46 ""
              } else { 
             
             #line default
             #line hidden
             
-            #line 49 ""
+            #line 47 ""
             this.Write("    ");
             
             #line default
             #line hidden
             
-            #line 49 ""
+            #line 47 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( v.Name ));
             
             #line default
             #line hidden
             
-            #line 49 ""
+            #line 47 ""
             this.Write(" = new ");
             
             #line default
             #line hidden
             
-            #line 49 ""
+            #line 47 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( eltype ));
             
             #line default
             #line hidden
             
-            #line 49 ""
+            #line 47 ""
             this.Write("[");
+            
+            #line default
+            #line hidden
+            
+            #line 47 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( arraylen ));
+            
+            #line default
+            #line hidden
+            
+            #line 47 ""
+            this.Write("]();\n");
+            
+            #line default
+            #line hidden
+            
+            #line 48 ""
+             } 
+            
+            #line default
+            #line hidden
+            
+            #line 49 ""
+            this.Write("    size_");
+            
+            #line default
+            #line hidden
+            
+            #line 49 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( v.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 49 ""
+            this.Write(" = ");
             
             #line default
             #line hidden
@@ -384,19 +408,19 @@ var busses = RSP.Process.InputBusses.Union(RSP.Process.OutputBusses).Union(RSP.P
             #line hidden
             
             #line 49 ""
-            this.Write("]();\n");
+            this.Write(";\n");
             
             #line default
             #line hidden
             
             #line 50 ""
-             } 
+         } else { 
             
             #line default
             #line hidden
             
             #line 51 ""
-            this.Write("    size_");
+            this.Write("    ");
             
             #line default
             #line hidden
@@ -408,13 +432,7 @@ var busses = RSP.Process.InputBusses.Union(RSP.Process.OutputBusses).Union(RSP.P
             #line hidden
             
             #line 51 ""
-            this.Write(" = ");
-            
-            #line default
-            #line hidden
-            
-            #line 51 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( arraylen ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( initializer ));
             
             #line default
             #line hidden
@@ -426,102 +444,72 @@ var busses = RSP.Process.InputBusses.Union(RSP.Process.OutputBusses).Union(RSP.P
             #line hidden
             
             #line 52 ""
-         } else { 
-            
-            #line default
-            #line hidden
-            
-            #line 53 ""
-            this.Write("    ");
-            
-            #line default
-            #line hidden
-            
-            #line 53 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( v.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 53 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( initializer ));
-            
-            #line default
-            #line hidden
-            
-            #line 53 ""
-            this.Write(";\n");
-            
-            #line default
-            #line hidden
-            
-            #line 54 ""
          } 
             
             #line default
             #line hidden
             
-            #line 55 ""
+            #line 53 ""
      } 
             
             #line default
             #line hidden
             
-            #line 56 ""
+            #line 54 ""
  } 
             
             #line default
             #line hidden
             
-            #line 57 ""
+            #line 55 ""
             this.Write("\n    // Insert additional initialization here\n    // #### USER-DATA-INIT-START\n    // #### USER-DATA-INIT-END\n}\n\nvoid ");
             
             #line default
             #line hidden
             
-            #line 63 ""
+            #line 61 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( RSP.Process.Name ));
             
             #line default
             #line hidden
             
-            #line 63 ""
+            #line 61 ""
             this.Write("::onTick() {\n    // Insert additional pre- clock-tick code here\n    // #### USER-DATA-PRE-START\n    // #### USER-DATA-PRE-END\n\n");
             
             #line default
             #line hidden
             
-            #line 68 ""
+            #line 66 ""
      foreach(var line in RS.Renderer.RenderMethod(RSP.Process.MainMethod)) { 
             
             #line default
             #line hidden
             
-            #line 69 ""
+            #line 67 ""
             this.Write("    ");
             
             #line default
             #line hidden
             
-            #line 69 ""
+            #line 67 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( line ));
             
             #line default
             #line hidden
             
-            #line 69 ""
+            #line 67 ""
             this.Write("\n");
             
             #line default
             #line hidden
             
-            #line 70 ""
+            #line 68 ""
      } 
             
             #line default
             #line hidden
             
-            #line 71 ""
+            #line 69 ""
             this.Write("\n    // Insert additional post- clock-tick code here\n    // #### USER-DATA-POST-START\n    // #### USER-DATA-POST-END\n}");
             
             #line default

@@ -13,7 +13,7 @@ namespace SME.CPP
 			return network.Name;
 		}
 
-        public static string SharedDefinitionsFilename(Network network)
+        public static string SharedDefinitionsFileName(Network network)
         {
             return network.Name + "_SharedDefinitions.hpp";
         }
@@ -23,7 +23,12 @@ namespace SME.CPP
 			return network.Name + "_BusDefinitions.hpp";
 		}
 
-        public static string BusImplementationsFileName(Network network)
+		public static string SimulatorFileName(Network network)
+		{
+			return network.Name + "_Simulator";
+		}
+
+		public static string BusImplementationsFileName(Network network)
         {
 			return network.Name + "_BusImplementations";
 		}

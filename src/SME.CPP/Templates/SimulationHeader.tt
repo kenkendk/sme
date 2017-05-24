@@ -1,0 +1,78 @@
+﻿﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include "SystemTypes.hpp"
+#include "<#= Naming.BusDefinitionsFileName(Network) #>"
+#include "<#= Naming.SharedDefinitionsFileName(Network) #>"
+
+<# foreach(var process in Network.Processes) { #>
+#include "<#= process.Name #>.hpp"
+<# } #>
+
+// Insert additional includes and classes here
+// #### USER-DATA-INCLUDE-START
+// #### USER-DATA-INCLUDE-END
+
+class <#= Naming.AssemblyNameToFileName(Network) #> {
+
+// Insert additional variables and methods here
+// #### USER-VARIABLE-INCLUDE-START
+// #### USER-VARIABLE-INCLUDE-END
+
+private:
+
+    // Busses
+<# foreach(var bus in Network.Busses) { #>
+    <#= bus.Name #> bus_<#= bus.Name #>;
+<# } #>
+
+    // Processes
+<# foreach(var process in Network.Processes) { #>
+    <#= process.Name #> proc_<#= process.Name #>;
+<# } #>
+
+    // The trace input file, if any
+    std::ifstream* trace_input;
+
+    // The current trace input line
+    std::string input_line;
+
+    // The currently simulated cycle
+    size_t cycle;
+
+public:
+    // Default constructor
+    <#= Naming.AssemblyNameToFileName(Network) #>();
+
+    // Helper method for running a complete simulation from a
+    // trace file
+    size_t RunSimulation(const char* inputfile);
+
+    // Opens the file and prepares the input for driving signals
+    // and post simulation verification
+    void LoadTraceInput(const char* inputfile);
+
+    // Drives the input signals with the values found in the
+    // tracefile passed to the constructor
+    bool DriveFromTraceInput();
+
+    // Prepares the simulation for the next tick
+    void BeforeNextTick();
+
+    // Performs a single iteration of the program
+    void OnTick();
+
+    // Performs post-tick verification of all signals
+    void VerifyTrace();
+
+    // Shuts down the simulation, closing all open files
+    void Stop();
+
+    // Gets the current cycle
+    size_t Cycle() { return cycle; }
+};
