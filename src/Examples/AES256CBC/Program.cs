@@ -14,6 +14,7 @@ namespace AES256CBC
 				.BuildCSVFile()
 				.BuildGraph()
 				.BuildVHDL()
+                .BuildCPP()
 				.Run(typeof(MainClass).Assembly);
 		}
 	}
