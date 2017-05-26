@@ -523,7 +523,10 @@ namespace SME.CPP
         /// <param name="e">The expression to render</param>
         private string RenderExpression(AST.UnaryOperatorExpression e)
         {
-            return string.Format("{0} {1}", e.Operator.ToCpp(), RenderExpression(e.Operand));
+            if (e.Operator == ICSharpCode.NRefactory.CSharp.UnaryOperatorType.PostDecrement || e.Operator == ICSharpCode.NRefactory.CSharp.UnaryOperatorType.PostIncrement)
+                return string.Format("{1} {0}", e.Operator.ToCpp(), RenderExpression(e.Operand));
+			else
+                return string.Format("{0} {1}", e.Operator.ToCpp(), RenderExpression(e.Operand));
         }
 
         /// <summary>
