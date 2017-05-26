@@ -26,8 +26,8 @@ class <#= Naming.AssemblyNameToFileName(Network) #> {
 
 private:
 
-    // Busses
-<# foreach(var bus in Network.Busses) { #>
+    // Internal Busses
+<# foreach(var bus in Network.Busses.Where(x => !(x.IsTopLevelInput || x.IsTopLevelOutput))) { #>
     <#= bus.Name #> bus_<#= bus.Name #>;
 <# } #>
 
@@ -46,6 +46,11 @@ private:
     size_t cycle;
 
 public:
+    // Top level input/output busses
+<# foreach(var bus in Network.Busses.Where(x => (x.IsTopLevelInput || x.IsTopLevelOutput))) { #>
+    <#= bus.Name #> bus_<#= bus.Name #>;
+<# } #>
+
     // Default constructor
     <#= Naming.AssemblyNameToFileName(Network) #>();
 

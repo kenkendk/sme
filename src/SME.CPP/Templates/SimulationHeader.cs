@@ -99,13 +99,13 @@ namespace SME.CPP.Templates {
             #line hidden
             
             #line 21 ""
-            this.Write(" {\n\n// Insert additional variables and methods here\n// #### USER-VARIABLE-INCLUDE-START\n// #### USER-VARIABLE-INCLUDE-END\n\nprivate:\n\n    // Busses\n");
+            this.Write(" {\n\n// Insert additional variables and methods here\n// #### USER-VARIABLE-INCLUDE-START\n// #### USER-VARIABLE-INCLUDE-END\n\nprivate:\n\n    // Internal Busses\n");
             
             #line default
             #line hidden
             
             #line 30 ""
- foreach(var bus in Network.Busses) { 
+ foreach(var bus in Network.Busses.Where(x => !(x.IsTopLevelInput || x.IsTopLevelOutput))) { 
             
             #line default
             #line hidden
@@ -195,19 +195,67 @@ namespace SME.CPP.Templates {
             #line hidden
             
             #line 38 ""
-            this.Write("\n    // The trace input file, if any\n    std::ifstream* trace_input;\n\n    // The current trace input line\n    std::string input_line;\n\n    // The currently simulated cycle\n    size_t cycle;\n\npublic:\n    // Default constructor\n    ");
+            this.Write("\n    // The trace input file, if any\n    std::ifstream* trace_input;\n\n    // The current trace input line\n    std::string input_line;\n\n    // The currently simulated cycle\n    size_t cycle;\n\npublic:\n    // Top level input/output busses\n");
             
             #line default
             #line hidden
             
             #line 50 ""
+ foreach(var bus in Network.Busses.Where(x => (x.IsTopLevelInput || x.IsTopLevelOutput))) { 
+            
+            #line default
+            #line hidden
+            
+            #line 51 ""
+            this.Write("    ");
+            
+            #line default
+            #line hidden
+            
+            #line 51 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 51 ""
+            this.Write(" bus_");
+            
+            #line default
+            #line hidden
+            
+            #line 51 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 51 ""
+            this.Write(";\n");
+            
+            #line default
+            #line hidden
+            
+            #line 52 ""
+ } 
+            
+            #line default
+            #line hidden
+            
+            #line 53 ""
+            this.Write("\n    // Default constructor\n    ");
+            
+            #line default
+            #line hidden
+            
+            #line 55 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( Naming.AssemblyNameToFileName(Network) ));
             
             #line default
             #line hidden
             
-            #line 50 ""
-            this.Write("();\n\n    // Helper method for running a complete simulation from a\n    // trace file\n    size_t RunSimulation(const char* inputfile);\n\n    // Opens the file and prepares the input for driving signals\n    // and post simulation verification\n    void LoadTraceInput(const char* inputfile);\n\n    // Drives the input signals with the values found in the\n    // tracefile passed to the constructor\n    bool DriveFromTraceInput();\n\n    // Prepares the simulation for the next tick\n    void BeforeNextTick();\n\n    // Performs a single iteration of the program\n    void OnTick();\n\n    // Performs post-tick verification of all signals\n    void VerifyTrace();\n\n    // Shuts down the simulation, closing all open files\n    void Stop();\n\n    // Gets the current cycle\n    size_t Cycle() { return cycle; }\n};");
+            #line 55 ""
+            this.Write("();\n\n    // Helper method for running a complete simulation from a\n    // trace file\n    size_t RunSimulation(const char* inputfile);\n\n    // Opens the file and prepares the input for driving signals\n    // and post simulation verification\n    void LoadTraceInput(const char* inputfile);\n\n    // Drives the input signals with the values found in the\n    // tracefile passed to the constructor\n    bool DriveFromTraceInput();\n\n    // Prepares the simulation for the next tick\n    void FinishCycle();\n\n    // Performs a single iteration of the program\n    void OnTick();\n\n    // Performs post-tick verification of all signals\n    void VerifyTrace();\n\n    // Shuts down the simulation, closing all open files\n    void Stop();\n\n    // Gets the current cycle\n    size_t Cycle() { return cycle; }\n};");
             
             #line default
             #line hidden
