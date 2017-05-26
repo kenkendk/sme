@@ -510,7 +510,129 @@ var busses = RSP.Process.InputBusses.Union(RSP.Process.OutputBusses).Union(RSP.P
             #line hidden
             
             #line 69 ""
-            this.Write("\n    // Insert additional post- clock-tick code here\n    // #### USER-DATA-POST-START\n    // #### USER-DATA-POST-END\n}");
+            this.Write("\n    // Insert additional post- clock-tick code here\n    // #### USER-DATA-POST-START\n    // #### USER-DATA-POST-END\n}\n");
+            
+            #line default
+            #line hidden
+            
+            #line 74 ""
+ if (RSP.Process.Methods != null && RSP.Process.Methods.Any(x => !x.Ignore)) { 
+            
+            #line default
+            #line hidden
+            
+            #line 75 ""
+            this.Write("\n// Internal methods\n");
+            
+            #line default
+            #line hidden
+            
+            #line 77 ""
+     foreach (var s in RSP.Process.Methods.Where(x => !x.Ignore)) { 
+            
+            #line default
+            #line hidden
+            
+            #line 78 ""
+
+           var rettype = (s.ReturnVariable == null || s.ReturnVariable.CecilType.IsSameTypeReference(typeof(void))) ? "void" : Type(s.ReturnVariable);
+
+            
+            #line default
+            #line hidden
+            
+            #line 81 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( rettype ));
+            
+            #line default
+            #line hidden
+            
+            #line 81 ""
+            this.Write(" ");
+            
+            #line default
+            #line hidden
+            
+            #line 81 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( RSP.Process.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 81 ""
+            this.Write("::");
+            
+            #line default
+            #line hidden
+            
+            #line 81 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( s.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 81 ""
+            this.Write("(");
+            
+            #line default
+            #line hidden
+            
+            #line 81 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( string.Join(", ", s.Parameters.Select(x => $"{Type(x)} {x.Name}")) ));
+            
+            #line default
+            #line hidden
+            
+            #line 81 ""
+            this.Write(") {\n");
+            
+            #line default
+            #line hidden
+            
+            #line 82 ""
+         foreach(var line in RS.Renderer.RenderMethod(s)) { 
+            
+            #line default
+            #line hidden
+            
+            #line 83 ""
+            this.Write("    ");
+            
+            #line default
+            #line hidden
+            
+            #line 83 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( line ));
+            
+            #line default
+            #line hidden
+            
+            #line 83 ""
+            this.Write("\n");
+            
+            #line default
+            #line hidden
+            
+            #line 84 ""
+         } 
+            
+            #line default
+            #line hidden
+            
+            #line 85 ""
+            this.Write("}\n");
+            
+            #line default
+            #line hidden
+            
+            #line 86 ""
+     } 
+            
+            #line default
+            #line hidden
+            
+            #line 87 ""
+ } 
             
             #line default
             #line hidden

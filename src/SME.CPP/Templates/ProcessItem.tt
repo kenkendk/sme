@@ -71,3 +71,17 @@ void <#= RSP.Process.Name #>::onTick() {
     // #### USER-DATA-POST-START
     // #### USER-DATA-POST-END
 }
+<# if (RSP.Process.Methods != null && RSP.Process.Methods.Any(x => !x.Ignore)) { #>
+
+// Internal methods
+<#     foreach (var s in RSP.Process.Methods.Where(x => !x.Ignore)) { #>
+<#
+           var rettype = (s.ReturnVariable == null || s.ReturnVariable.CecilType.IsSameTypeReference(typeof(void))) ? "void" : Type(s.ReturnVariable);
+#>
+<#= rettype #> <#= RSP.Process.Name #>::<#= s.Name #>(<#= string.Join(", ", s.Parameters.Select(x => $"{Type(x)} {x.Name}")) #>) {
+<#         foreach(var line in RS.Renderer.RenderMethod(s)) { #>
+    <#= line #>
+<#         } #>
+}
+<#     } #>
+<# } #>

@@ -21,6 +21,7 @@ class <#= RSP.Process.Name #> : public IProcess {
     // #### USER-DATA-PRIVATE-START
     // #### USER-DATA-PRIVATE-END
 
+private:
 <# if (RSP.Process.SharedVariables.Any()) { #>
     // Shared variables
 <#     foreach(var v in RSP.Process.SharedVariables) { #>
@@ -52,11 +53,7 @@ class <#= RSP.Process.Name #> : public IProcess {
 <#
            var rettype = (s.ReturnVariable == null || s.ReturnVariable.CecilType.IsSameTypeReference(typeof(void))) ? "void" : Type(s.ReturnVariable);
 #>
-    <#= rettype #> <#= s.Name #>(<#= string.Join(", ", s.Parameters.Select(x => $"{Type(x)} {x.Name}")) #>) {
-<#         foreach(var line in RS.Renderer.RenderMethod(s)) { #>
-        <#= line #>
-<#         } #>
-    }
+    <#= rettype #> <#= s.Name #>(<#= string.Join(", ", s.Parameters.Select(x => $"{Type(x)} {x.Name}")) #>);
 <#     } #>
 <# } #>
 
