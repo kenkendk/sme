@@ -326,7 +326,7 @@ namespace SME.CPP
 						var cpptype = TypeScope.GetType(n);
 
 						string values;
-                        if (new[] { typeof(sbyte), typeof(byte), typeof(ushort), typeof(short), typeof(int) }.Select(x => eltype.Module.Import(x).Resolve()).Contains(eltype.Resolve()))
+                        if (new[] { typeof(sbyte), typeof(byte), typeof(ushort), typeof(short), typeof(int), typeof(uint), typeof(long), typeof(ulong) }.Select(x => eltype.Module.Import(x).Resolve()).Contains(eltype.Resolve()))
                             values = string.Join(", ", arc.Initializer.Elements.Select(x => string.Format("{0}", x)));
                         else
                             throw new Exception("Unexpected initializer type");
@@ -340,7 +340,7 @@ namespace SME.CPP
 						var cpptype = TypeScope.GetType(n);
 
 						string values;
-						if (new[] { typeof(sbyte), typeof(byte), typeof(ushort), typeof(short), typeof(int) }.Select(x => eltype.Module.Import(x).Resolve()).Contains(eltype.Resolve()))
+                        if (new[] { typeof(sbyte), typeof(byte), typeof(ushort), typeof(short), typeof(int), typeof(uint), typeof(long), typeof(ulong) }.Select(x => eltype.Module.Import(x).Resolve()).Contains(eltype.Resolve()))
                             values = string.Join(", ", arc.ElementExpressions.Select(x => Renderer.RenderExpression(x)));
 						else
 							throw new Exception("Unexpected initializer type");
