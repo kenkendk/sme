@@ -510,7 +510,23 @@ namespace SME.CPP
             {
                 return Naming.ToValidName(e.SourceResultType.FullName + "." + e.Value.ToString());
             }
-            else
+            else if (e.SourceResultType.IsSameTypeReference(typeof(long)))
+            {
+                var lv = (long)e.Value;
+                if (lv > int.MaxValue || lv < int.MinValue)
+                    return lv + "ll";
+                else
+                    return lv.ToString();
+            }
+			else if (e.SourceResultType.IsSameTypeReference(typeof(ulong)))
+			{
+				var lv = (ulong)e.Value;
+				if (lv > int.MaxValue)
+					return lv + "ull";
+				else
+                    return lv.ToString();
+			}
+			else
             {
                 return e.Value.ToString();
             }
