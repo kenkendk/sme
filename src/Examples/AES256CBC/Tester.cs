@@ -11,6 +11,17 @@ namespace AES256CBC
 	//[ClockedProcess]
 	public class Tester : Process
 	{
+        // The AES test reference vectors
+        private static readonly byte[][] REFERENCE_VECTORS = new[] {
+			StringToByteArray("6bc1bee22e409f96e93d7e117393172a"),
+			StringToByteArray("ae2d8a571e03ac9c9eb76fac45af8e51"),
+			StringToByteArray("30c81c46a35ce411e5fbc1191a0a52ef"),
+			StringToByteArray("f69f2445df4f9b17ad2b417be66c3710"),
+		};
+
+        // Set to zero or less to use the reference vectors
+        public static int NUMBER_OF_RUNS = -1;
+
 		public static byte[] StringToByteArray(string hex) {
 			return Enumerable.Range(0, hex.Length)
 				.Where(x => x % 2 == 0)
@@ -23,6 +34,12 @@ namespace AES256CBC
 		{
 			string hex = BitConverter.ToString(ba);
 			return hex.Replace("-","");
+		}
+
+		public static string ToHex(uint data)
+		{
+            string hex = BitConverter.ToString(BitConverter.GetBytes(data));
+			return hex.Replace("-", "");
 		}
 
 		[OutputBus]
@@ -53,6 +70,48 @@ namespace AES256CBC
 				;
 		}
 
+		/// <summary>
+		/// Computes the resulting encrypted value from the sequence of input values
+		/// </summary>
+		/// <returns>The pairs.</returns>
+		/// <param name="key">The encryption key</param>
+		/// <param name="iv">The initialization vector</param>
+		/// <param name="input">The inputs to encrypt.</param>
+		private static IEnumerable<KeyValuePair<byte[], byte[]>> Pairs(byte[] key, byte[] iv, IEnumerable<byte[]> input)
+        {
+            var cr = System.Security.Cryptography.Aes.Create();
+
+            foreach (var n in input)
+            {
+                byte[] res;
+                using (var enc = cr.CreateEncryptor(key, iv))
+                    res = enc.TransformFinalBlock(n, 0, n.Length);
+
+                Array.Copy(res, iv, iv.Length);
+
+                yield return new KeyValuePair<byte[], byte[]>(n, iv);
+            }
+        }
+
+        private static IEnumerable<byte[]> RandomVectors(int count)
+        {
+            if (count <= 0)
+            {
+                foreach (var v in REFERENCE_VECTORS)
+                    yield return v;
+            }
+            else
+            {
+                var rng = new Random();
+                byte[] tmp = new byte[16];
+                while (count-- > 0)
+                {
+                    rng.NextBytes(tmp);
+                    yield return tmp;
+                }
+            }
+        }
+
 		public override async Task Run()
 		{
 			var key = StringToByteArray("603deb1015ca71be2b73aef0857d77811f352c073b6108d72d9810a30914dff4");
@@ -74,27 +133,7 @@ namespace AES256CBC
 
 			Input.LoadKey = false;
 
-
-			var testvectors = new[] {
-				new KeyValuePair<byte[], byte[]>(
-					StringToByteArray("6bc1bee22e409f96e93d7e117393172a"),
-					StringToByteArray("f58c4c04d6e5f1ba779eabfb5f7bfbd6")
-				),
-				new KeyValuePair<byte[], byte[]>(
-					StringToByteArray("ae2d8a571e03ac9c9eb76fac45af8e51"),
-					StringToByteArray("9cfc4e967edb808d679f777bc6702c7d")
-				),
-				new KeyValuePair<byte[], byte[]>(
-					StringToByteArray("30c81c46a35ce411e5fbc1191a0a52ef"),
-					StringToByteArray("39f23369a9d9bacfa530e26304231461")
-				),
-				new KeyValuePair<byte[], byte[]>(
-					StringToByteArray("f69f2445df4f9b17ad2b417be66c3710"),
-					StringToByteArray("b2eb05e2c39be9fcda6c19078c6a9d1b")
-				)
-			};
-
-			foreach (var testvector in testvectors)
+            foreach (var testvector in Pairs(key, iv, RandomVectors(NUMBER_OF_RUNS)))
 			{
 				Input.DataReady = true;
 

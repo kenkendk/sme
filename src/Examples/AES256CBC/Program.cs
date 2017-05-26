@@ -8,6 +8,8 @@ namespace AES256CBC
 	{
 		public static void Main(string[] args)
 		{
+            //Tester.NUMBER_OF_RUNS = 10000;
+
 			new Simulation()
 				.BuildCSVFile()
 				.BuildGraph()
