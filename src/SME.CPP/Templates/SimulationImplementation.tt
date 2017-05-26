@@ -53,7 +53,7 @@ size_t <#= Naming.AssemblyNameToFileName(Network) #>::RunSimulation(const char* 
         }
         OnTick();
         VerifyTrace();
-        BeforeNextTick();
+        FinishCycle();
     }
 }
 
@@ -146,7 +146,7 @@ bool <#= Naming.AssemblyNameToFileName(Network) #>::DriveFromTraceInput()
     return true;
 }
 
-void <#= Naming.AssemblyNameToFileName(Network) #>::BeforeNextTick() 
+void <#= Naming.AssemblyNameToFileName(Network) #>::FinishCycle() 
 {
     cycle++;
 <# if (Network.Busses.Any(x => x.IsClocked)) { #>

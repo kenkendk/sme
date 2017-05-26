@@ -67,7 +67,7 @@ public:
     bool DriveFromTraceInput();
 
     // Prepares the simulation for the next tick
-    void BeforeNextTick();
+    void FinishCycle();
 
     // Performs a single iteration of the program
     void OnTick();

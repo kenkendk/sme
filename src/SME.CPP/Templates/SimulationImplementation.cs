@@ -282,7 +282,7 @@ namespace SME.CPP.Templates {
             #line hidden
             
             #line 46 ""
-            this.Write("::RunSimulation(const char* inputfile)\n{\n    LoadTraceInput(inputfile);\n\n    while(true) {\n        if (!DriveFromTraceInput()) {\n            size_t res = cycle;\n            Stop();\n            return res;\n        }\n        OnTick();\n        VerifyTrace();\n        BeforeNextTick();\n    }\n}\n\nvoid ");
+            this.Write("::RunSimulation(const char* inputfile)\n{\n    LoadTraceInput(inputfile);\n\n    while(true) {\n        if (!DriveFromTraceInput()) {\n            size_t res = cycle;\n            Stop();\n            return res;\n        }\n        OnTick();\n        VerifyTrace();\n        FinishCycle();\n    }\n}\n\nvoid ");
             
             #line default
             #line hidden
@@ -519,7 +519,7 @@ namespace SME.CPP.Templates {
             #line hidden
             
             #line 151 ""
-            this.Write("::BeforeNextTick() \n{\n    cycle++;\n");
+            this.Write("::FinishCycle() \n{\n    cycle++;\n");
             
             #line default
             #line hidden
