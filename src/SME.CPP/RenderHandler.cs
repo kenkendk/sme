@@ -121,12 +121,13 @@ namespace SME.CPP
         /// <param name="indentation">The indentation to use.</param>
         private IEnumerable<string> RenderStatement(AST.Method method, AST.ReturnStatement s, int indentation)
         {
-            if (!(s.ReturnExpression is EmptyExpression))
-                throw new Exception("Expected return expression to be empty");
+			var indent = new string(' ', indentation);
 
-            var indent = new string(' ', indentation);
-            yield return $"{indent}return {method.ReturnVariable.Name};";
-        }
+			if (s.ReturnExpression is EmptyExpression && method != ((AST.Process)method.Parent).MainMethod)
+                yield return $"{indent}return {method.ReturnVariable.Name};";
+            else
+                yield return $"{indent}return {RenderExpression(s.ReturnExpression)};";
+		}
 
         /// <summary>
         /// Renders a single BlockStatement with the given indentation
