@@ -79,9 +79,6 @@ namespace SME.VHDL.Components
 			where TOutputB : class, IOutputB
 		{
 			string default_namespace = null;
-			var nsattr = this.GetType().GetCustomAttributes(typeof(NamespaceAttribute), true).FirstOrDefault() as NamespaceAttribute;
-			if (nsattr != null)
-				default_namespace = nsattr.Name;
 
 			InA = BusManager.GetBus<TInputA>(clock, default_namespace, false);
 			InB = BusManager.GetBus<TInputB>(clock, default_namespace, false);

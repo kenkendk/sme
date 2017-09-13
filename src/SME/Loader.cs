@@ -249,11 +249,6 @@ namespace SME
 		/// <param name="clock">The clock that the busses operate under.</param>
 		public static object AutoloadBusses(object o, Clock clock)
 		{
-			string default_namespace = null;
-			var nsattr = o.GetType().GetCustomAttributes(typeof(NamespaceAttribute)).FirstOrDefault() as NamespaceAttribute;
-			if (nsattr != null)
-				default_namespace = nsattr.Name;
-
 			if (DebugBusAssignments)
 				Console.WriteLine("Autoloading busses for {0}", o.GetType().FullName);
 
@@ -268,18 +263,16 @@ namespace SME
 						continue;
 					}
 						
-					var @namespace = default_namespace;
-					var ns = f.GetCustomAttributes(typeof(NamespaceAttribute)).FirstOrDefault() as NamespaceAttribute;
-					if (ns != null)
-						@namespace = ns.Name;
-
 					var internalBus = (f.GetCustomAttributes(typeof(InternalBusAttribute)).FirstOrDefault() as InternalBusAttribute != null);
 
-					var bus = BusManager.GetBus(f.FieldType, clock, @namespace, internalBus);
-					if (DebugBusAssignments)
-						Console.WriteLine("Setting field {0}.{1} = {2}:{3}:{4} -> {5}", f.DeclaringType.Name, f.Name, @namespace, bus, f.FieldType.FullName, bus.GetHashCode());
+                    if (typeof(ISingletonBus).IsAssignableFrom(f.FieldType))
+                    {
+                        var bus = BusManager.GetBus(f.FieldType, clock, null, internalBus);
+                        if (DebugBusAssignments)
+                            Console.WriteLine("Setting field {0}.{1} = {2}:{3}:{4} -> {5}", f.DeclaringType.Name, f.Name, null, bus, f.FieldType.FullName, bus.GetHashCode());
 
-					f.SetValue(o, BusManager.GetBus(f.FieldType, clock, @namespace, internalBus));
+                        f.SetValue(o, Scope.CreateOrLoadBus(f.FieldType, null, internalBus, clock));
+                    }
 				}
 
 			return o;
@@ -313,7 +306,7 @@ namespace SME
 		/// </summary>
 		/// <param name="components">The started component instances.</param>
 		/// <param name="tickcallback">An optional method to call after each tick.</param>
-		public static DependencyGraph RunUntilCompletion(IProcess simulator, IEnumerable<IProcess> components, Action tickcallback = null)
+		public static DependencyGraph RunUntilCompletion(this IProcess simulator, IEnumerable<IProcess> components, Action tickcallback = null)
 		{
 			return RunUntilCompletion(components.Union(new[] { simulator }), tickcallback);
 		}
@@ -323,8 +316,10 @@ namespace SME
 		/// </summary>
 		/// <param name="components">The started component instances.</param>
 		/// <param name="tickcallback">An optional method to call after each tick.</param>
-		public static DependencyGraph RunUntilCompletion(IEnumerable<IProcess> components, Action tickcallback = null)
+		public static DependencyGraph RunUntilCompletion(this IEnumerable<IProcess> components, Action tickcallback = null)
 		{
+            LoadItems(components);
+
 			var dg = new DependencyGraph(components, tickcallback);
 			while (dg.Execute())
 			{ }
@@ -333,7 +328,7 @@ namespace SME
 			
 		}
 
-		/// <summary>
+		/*/// <summary>
 		/// Runs all the specified component instances until a process quits
 		/// </summary>
 		/// <param name="assembly">The assembly to load from. Defaults to the calling assembly.</param>
@@ -342,7 +337,7 @@ namespace SME
 		{
 			assembly = assembly ?? Assembly.GetCallingAssembly();
 			return RunUntilCompletion(LoadAssemblies(assembly), tickcallback);
-		}
+		}*/
 
 		/// <summary>
 		/// Reset all loaded items

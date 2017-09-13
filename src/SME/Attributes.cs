@@ -3,19 +3,6 @@
 namespace SME
 {
 	/// <summary>
-	/// Attribute for setting a namespace on a Bus
-	/// </summary>
-	public class NamespaceAttribute : Attribute
-	{
-		public string Name { get; set; }
-
-		public NamespaceAttribute(string name = null)
-		{
-			Name = name;
-		}
-	}
-
-	/// <summary>
 	/// Attribute for setting a multiplier on a Component
 	/// </summary>
 	public class ClockMultiplierAttribute : Attribute
@@ -45,6 +32,11 @@ namespace SME
 			Value = value;
 		}
 	}
+
+    /// <summary>
+    /// Marker attribute to signal that the bus only exists once and is automatically assigned
+    /// </summary>
+    public class SingletonBusAttribute : Attribute { }
 
 	/// <summary>
 	/// Marker attribute to mark a bus with being initialized with default values

@@ -126,17 +126,15 @@ namespace SME
 			var nodeLookup = components.Select(x => new Node(x)).ToDictionary(k => k.Item, k => k);
 
 			// Build a map, indicating which processes write to a given bus
-			var neededForOutput = 
-				(from g in
-					from n in nodeLookup
-					from b in n.Key.OutputBusses
-					select new {Bus = b, Node = n.Value}
-					group g by g.Bus)
-					.ToDictionary(
-						k => k.Key, 
-						y => y.Select(n => n.Node).ToList()
-					);
-								
+			var neededForOutput = nodeLookup
+                .SelectMany(
+                    x => x.Key.OutputBusses.Where(y => y != null).Select(
+                        y => new { Bus = y, Node = x.Value }))
+                .GroupBy(x => x.Bus)
+                .ToDictionary(
+                    x => x.Key, 
+                    y => y.Select(n => n.Node).ToList());
+
 
 			// Build the tree by assigning children and parents to the nodes
 			foreach (var n in nodeLookup.Values)
@@ -144,8 +142,14 @@ namespace SME
 				foreach (var b in n.Item.InputBusses)
 				{
 					List<Node> waitsFor;
-					if (!neededForOutput.TryGetValue(b, out waitsFor))
-						throw new Exception(string.Format("A process from the type {0} depends on the bus of type {1}, but no process writes this bus", n.Item.GetType().FullName, b.BusType.FullName));
+                    if (!neededForOutput.TryGetValue(b, out waitsFor))
+                    {
+                        var target = nodeLookup.Where(x => x.Key.OutputBusses.Any(y => y == null)).FirstOrDefault();
+                        if (target.Key == null)
+                            throw new Exception(string.Format("A process from the type {0} depends on the bus of type {1}, but no process writes this bus", n.Item.GetType().FullName, b.BusType.FullName));
+                        else
+                            throw new Exception(string.Format("A process from the type {0} depends on the bus of type {1}, but no process writes this bus. Also, the process {2} has an unassigned output bus.", n.Item.GetType().FullName, b.BusType.FullName, target.Key.GetType().FullName));
+					}
 
 					foreach (var p in waitsFor)
 					{

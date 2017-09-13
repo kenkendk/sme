@@ -4,17 +4,16 @@ using System.Threading.Tasks;
 
 namespace SimpleNestedComponent
 {
-	[ClockedProcess]
-	public class TestDriver : Process
+    public class TestDriver : SimulationProcess
 	{
-		[OutputBus]
-		private CounterInput Input;
+        [OutputBus]
+        private CounterInput Input = Scope.CreateOrLoadBus<CounterInput>();
 
-		[InputBus]
-		private CounterOutput Output;
+        [InputBus]
+        private CounterOutput Output = Scope.CreateOrLoadBus<CounterOutput>();
 
 		public async override Task Run()
-		{
+        {
 			await ClockAsync();
 
 			Input.InputEnabled = true;

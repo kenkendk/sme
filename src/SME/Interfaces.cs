@@ -17,6 +17,13 @@ namespace SME
 		Clock Clock { get; }
 		IBus Manager { get; }
 	}
+
+    /// <summary>
+    /// The interface for a special Bus that only exists once in the application
+    /// </summary>
+    public interface ISingletonBus : IBus
+    {
+    }
 		
 	/// <summary>
 	/// The interface of a component, which can be structural or functional

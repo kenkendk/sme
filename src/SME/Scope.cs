@@ -1,0 +1,281 @@
+﻿using System;
+using System.Collections.Generic;
+
+namespace SME
+{
+    public class Scope : IDisposable
+    {
+        /// <summary>
+        /// A flag keeping the disposed state for the scope
+        /// </summary>
+        private bool m_disposed = false;
+
+        /// <summary>
+        /// The parent scope
+        /// </summary>
+        private readonly Scope m_parent;
+        /// <summary>
+        /// The call context key for this scope
+        /// </summary>
+        private readonly string m_scopeKey;
+        /// <summary>
+        /// A flag indicating if this scope is isolated
+        /// </summary>
+        private readonly bool m_isolated;
+
+        /// <summary>
+        /// The lookup table for busses
+        /// </summary>
+        private readonly Dictionary<string, IBus> m_busses = new Dictionary<string, IBus>();
+
+        /// <summary>
+        /// The lookup table for processes
+        /// </summary>
+        private readonly Dictionary<string, IProcess> m_processes = new Dictionary<string, IProcess>();
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:SME.NamingScope"/> class.
+        /// </summary>
+        /// <param name="isolated">If set to <c>true</c> this scope is isolated.</param>
+        public Scope(bool isolated = true)
+            : this(Current, isolated, false)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:SME.NamingScope"/> class.
+        /// </summary>
+        /// <param name="parent">The scope parent.</param>
+        /// <param name="isolated">If set to <c>true</c> this scope is isolated.</param>
+        /// <param name="isRoot">If set to <c>true</c> this scope is the root scope.</param>
+        private Scope(Scope parent, bool isolated, bool isRoot)
+        {
+            if (!isRoot && parent == null)
+                throw new ArgumentNullException(nameof(parent));
+
+            m_parent = parent;
+            m_isolated = isolated;
+            ScopeKey = m_scopeKey = isRoot ? "ROOT" : Guid.NewGuid().ToString();
+            Current = this;
+        }
+
+        /// <summary>
+        /// Releases all resource used by the <see cref="T:SME.NamingScope"/> object.
+        /// </summary>
+        /// <remarks>Call <see cref="Dispose"/> when you are finished using the <see cref="T:SME.NamingScope"/>. The
+        /// <see cref="Dispose"/> method leaves the <see cref="T:SME.NamingScope"/> in an unusable state. After calling
+        /// <see cref="Dispose"/>, you must release all references to the <see cref="T:SME.NamingScope"/> so the garbage
+        /// collector can reclaim the memory that the <see cref="T:SME.NamingScope"/> was occupying.</remarks>
+        public void Dispose()
+        {
+            if (!m_disposed)
+            {
+                if (this == ROOT_SCOPE)
+                    throw new InvalidOperationException("Cannot dispose the root scope");
+
+                m_disposed = true;
+
+                if (Current == this)
+                {
+                    Current = null;
+
+                    var parent = m_parent;
+                    ScopeKey = parent.m_scopeKey;
+                    while (parent != null && parent.m_disposed)
+                    {
+                        parent = parent.m_parent;
+
+                        Current = null;
+                        ScopeKey = parent.m_scopeKey;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Registers an existing bus with the given name in this scope
+        /// </summary>
+        /// <returns>The registered bus.</returns>
+        /// <param name="name">The name of the bus to register.</param>
+        /// <param name="bus">The bus to register.</param>
+        /// <typeparam name="T">The bus type</typeparam>
+        public static T RegisterBus<T>(string name, T bus) where T : class, IBus
+        {
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+            if (bus == null)
+                throw new ArgumentNullException(nameof(bus));
+            if (typeof(T) == typeof(IBus))
+                throw new ArgumentException($"Cannot create a bus of type {typeof(T).FullName}");
+
+            Current.m_busses[name] = bus;
+
+            return bus;
+        }
+
+        /// <summary>
+        /// Finds the bus with the given name and type, or creates a new if none is found
+        /// </summary>
+        /// <returns>The loaded or created bus.</returns>
+        /// <param name="name">The name of the bus to find.</param>
+        /// <typeparam name="T">The bus type</typeparam>
+        public static T CreateOrLoadBus<T>(string name = null, bool internalBus = false, Clock clock = null) where T : class, IBus
+        {
+            return (T)CreateOrLoadBus(typeof(T), name, internalBus, clock);
+        }
+
+		/// <summary>
+		/// Finds the bus with the given name and type, or creates a new if none is found
+		/// </summary>
+		/// <returns>The loaded or created bus.</returns>
+		/// <param name="name">The name of the bus to find.</param>
+		/// <typeparam name="T">The bus type</typeparam>
+		public static IBus CreateOrLoadBus(Type bustype, string name = null, bool internalBus = false, Clock clock = null)
+        {
+            if (typeof(ISingletonBus).IsAssignableFrom(bustype))
+            {
+                if (name != null)
+                    throw new ArgumentException($"Cannot set the name of a {nameof(ISingletonBus)}");
+                name = bustype.FullName;
+            }
+            else
+            {
+                if (name == null)
+                    name = bustype.Name;
+            }
+
+            if (bustype == typeof(IBus) || bustype == typeof(ISingletonBus))
+                throw new ArgumentException($"Cannot create a bus of type {bustype.FullName}");
+
+            var res = Current.FindBus(name);
+            if (res != null && res.BusType != bustype)
+                throw new InvalidOperationException($"Attempted to create a bus with the name {name} and the type {bustype.FullName}, but a bus is already registered under that name with the type {res.GetType().FullName}");
+
+            if (res == null)
+                Current.m_busses[name] = res = BusManager.GetBus(bustype, clock, null, internalBus);
+
+            return res;
+        }
+
+        /// <summary>
+        /// Creates an internal bus.
+        /// </summary>
+        /// <returns>The internal bus.</returns>
+        /// <typeparam name="T">The bus type</typeparam>
+        public static T CreateInternalBus<T>(Clock clock = null) where T : class, IBus
+        {
+            return CreateOrLoadBus<T>(typeof(T).FullName + ":" + Guid.NewGuid().ToString(), clock: clock, internalBus: true);
+        }
+
+        /// <summary>
+        /// Finds a named bus by searching the scope hierarchy
+        /// </summary>
+        /// <returns>The bus or null.</returns>
+        /// <param name="name">The name of the bus to find.</param>
+        internal IBus FindBus(string name)
+        {
+            return RecursiveLookup(x => x.m_busses, name);
+        }
+        /// <summary>
+        /// Finds a named process by searching the scope hierarchy
+        /// </summary>
+        /// <returns>The process or null.</returns>
+        /// <param name="name">The name of the process to find.</param>
+        internal IProcess FindProcess(string name)
+        {
+            return RecursiveLookup(x => x.m_processes, name);
+        }
+
+        /// <summary>
+        /// Finds a named item by searching the scope hierarchy
+        /// </summary>
+        /// <returns>The matching item or null.</returns>
+        /// <param name="dict_fun">The function used to extract the dictionary.</param>
+        /// <param name="name">The name of the item to find.</param>
+        /// <typeparam name="T">The type of the element to find.</typeparam>
+        internal T RecursiveLookup<T>(Func<Scope, Dictionary<string, T>> dict_fun, string name)
+        {
+            T res = default(T);
+            var cur = this;
+            while (cur != null)
+            {
+                var dict = dict_fun(cur);
+                if (dict.TryGetValue(name, out res))
+                    break;
+
+                cur = cur.m_isolated ? null : cur.m_parent;
+            }
+
+            return res;
+        }
+
+        #region "Static members giving access to the call context"
+        /// <summary>
+        /// The one and only root scope
+        /// </summary>
+        private static readonly Scope ROOT_SCOPE;
+
+        /// <summary>
+        /// Static initializer for the <see cref="T:SME.Scope"/> class.
+        /// </summary>
+        static Scope()
+        {
+            // This is done to enforce the order of initializing the fields,
+            // as the ROOT_SCOPE variable depends on the _scope being
+            // initialized
+
+            _scopes = new Dictionary<string, Scope>();
+            ROOT_SCOPE = new Scope(null, true, true);
+        }
+
+        /// <summary>
+        /// Gets the current scope.
+        /// </summary>
+        /// <value>The current scope.</value>
+        public static Scope Current
+        {
+            get
+            {
+                var key = ScopeKey;
+                if (key == null)
+                    return ROOT_SCOPE;
+
+                Scope res;
+                _scopes.TryGetValue(key, out res);
+                return res ?? ROOT_SCOPE;
+            }
+
+            private set
+            {
+                var key = ScopeKey;
+                if (key == null)
+                    throw new InvalidOperationException("Cannot set the scope without a key");
+                if (value == null)
+                    _scopes.Remove(key);
+                else
+                    _scopes[key] = value;
+            }
+        }
+
+        /// <summary>
+        /// The scopes matching the keys.
+        /// </summary>
+        private static readonly Dictionary<string, Scope> _scopes;
+
+        /// <summary>
+        /// The key used to store data in the CallContext
+        /// </summary>
+        private const string CONTEXT_SCOPE_KEY = "SME_SCOPE_KEY";
+
+        /// <summary>
+        /// Gets or sets the scope key from the call context.
+        /// </summary>
+        /// <value>The scope key.</value>
+        private static string ScopeKey
+        {
+            get { return System.Runtime.Remoting.Messaging.CallContext.GetData(CONTEXT_SCOPE_KEY) as string; }
+            set { System.Runtime.Remoting.Messaging.CallContext.SetData(CONTEXT_SCOPE_KEY, value); }
+        }
+        #endregion
+    }
+}

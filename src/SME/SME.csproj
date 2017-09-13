@@ -51,6 +51,7 @@
     <Compile Include="FixedArray.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Simulation.cs" />
+    <Compile Include="Scope.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

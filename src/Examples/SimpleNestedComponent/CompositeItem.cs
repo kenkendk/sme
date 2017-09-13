@@ -6,6 +6,7 @@ namespace SimpleNestedComponent
 {
 	public class CompositeItem
 	{
+        [SingletonBus]
 		public interface TickBus : IBus
 		{
 			[InitialValue(false)]
@@ -14,14 +15,13 @@ namespace SimpleNestedComponent
 			bool Reset { get; set; }
 		}
 
-		private class CounterTicker : Process
+		public class CounterTicker : Process
 		{
-			[OutputBus]
-			[Namespace("C2")]
-			private TickBus Ticker;
+            [OutputBus]
+            private TickBus Ticker = Scope.CreateOrLoadBus<TickBus>();
 
 			[InputBus]
-			private CounterInput Input;
+            private CounterInput Input = Scope.CreateOrLoadBus<CounterInput>();
 
 			public async override Task Run()
 			{
@@ -29,7 +29,7 @@ namespace SimpleNestedComponent
 
 				while (true)
 				{
-					await WaitUntilAsync(() => Input.InputEnabled );
+                    await WaitUntilAsync(() => Input.InputEnabled);
 
 					int cnt = Input.RepeatCount;
 					Ticker.Reset = true;
@@ -50,17 +50,16 @@ namespace SimpleNestedComponent
 			}
 		}
 
-		private class ValueIncrementer : Process
+		public class ValueIncrementer : Process
 		{
 			[InputBus]
-			[Namespace("C2")]
-			private TickBus Ticker;
+            private TickBus Ticker = Scope.CreateOrLoadBus<TickBus>();
 
 			[InputBus]
-			private CounterInput Input;
+			private CounterInput Input = Scope.CreateOrLoadBus<CounterInput>();
 
 			[OutputBus]
-			private CounterOutput Output;
+			private CounterOutput Output = Scope.CreateOrLoadBus<CounterOutput>();
 
 			public async override Task Run()
 			{

@@ -64,9 +64,6 @@ namespace SME.VHDL.Components
 			where TWriteIn : class, IWriteIn
 		{
 			string default_namespace = null;
-			var nsattr = this.GetType().GetCustomAttributes(typeof(NamespaceAttribute), true).FirstOrDefault() as NamespaceAttribute;
-			if (nsattr != null)
-				default_namespace = nsattr.Name;
 
 			ReadIn = BusManager.GetBus<TReadIn>(clock, default_namespace, false);
 			ReadOut = BusManager.GetBus<TReadOut>(clock, default_namespace, false);
