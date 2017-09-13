@@ -169,6 +169,7 @@ namespace SME.VHDL
                     new SME.AST.Transform.RewireCompositeAssignment(),
 					new Transformations.FixForLoopIncrements(this, m),
 					new Transformations.RewireUnaryOperators(this),
+                    new Transformations.UntangleElseStatements(this, m),
                 },
 				m => new SME.AST.Transform.IASTTransform[] {
                     new SME.AST.Transform.RemoveExtraParenthesis()
