@@ -21,6 +21,8 @@ namespace SimpleNestedComponent
 			Input.StartRegister = 4;
 			Input.RepeatCount = 4;
 
+            await ClockAsync();
+
 			await WaitUntilAsync(() => { Input.InputEnabled = false; return Output.OutputEnabled; });
 
 			Console.WriteLine("Output is {0} expected {1}", Output.RegisterNumber, 4);
