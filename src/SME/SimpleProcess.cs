@@ -8,16 +8,6 @@ namespace SME
 	/// </summary>
 	public abstract class SimpleProcess : Process
 	{
-		public SimpleProcess()
-			: this(Clock.DefaultClock)
-		{
-		}
-
-		public SimpleProcess(Clock clock)
-			: base(clock)
-		{
-		}
-
 		/// <summary>
 		/// Called on each clock tick
 		/// </summary>

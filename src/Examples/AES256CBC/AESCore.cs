@@ -36,11 +36,11 @@ namespace AES256CBC
 			ulong Data1 { get; set; }
 		}
 
-		[InputBus]
-		private IInput Input;
+        [InputBus]
+        private IInput Input = Scope.CreateBus<IInput>();
 
-		[OutputBus]
-		private IOutput Output;
+        [OutputBus]
+        private IOutput Output = Scope.CreateBus<IOutput>();
 
 		private readonly byte[] m_key = new byte[32];
 		private readonly byte[] m_iv = new byte[16];

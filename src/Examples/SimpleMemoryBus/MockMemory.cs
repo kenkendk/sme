@@ -7,7 +7,7 @@ namespace Tester
 	public class MockMemory : Process
 	{
 		[InputBus, OutputBus]
-		private IMemoryInterface Interface;
+        public IMemoryInterface Interface = Scope.CreateBus<IMemoryInterface>();
 
 		private ulong[] m_data;
 		private int m_cycle = 0;
@@ -24,11 +24,11 @@ namespace Tester
 			{
 				await ClockAsync();
 
-				Console.WriteLine("Phase: {0}", ++m_cycle);
+                PrintDebug("Phase: {0}", ++m_cycle);
 
 				if (Interface.ReadEnabled)
 				{
-					Console.WriteLine("Setting readvalue to {0}", m_data[Interface.ReadAddr]);
+					PrintDebug("Setting readvalue to {0}", m_data[Interface.ReadAddr]);
 					Interface.ReadValue = m_data[Interface.ReadAddr];
 				}
 

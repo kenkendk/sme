@@ -10,12 +10,15 @@ namespace AES256CBC
 		{
             //Tester.NUMBER_OF_RUNS = 10000;
 
-			new Simulation()
-				.BuildCSVFile()
-				.BuildGraph()
-				.BuildVHDL()
+            new Simulation()
+                .BuildCSVFile()
+                .BuildGraph()
+                .BuildVHDL()
                 .BuildCPP()
-				.Run(typeof(MainClass).Assembly);
+                .Run(
+                    new AESCore(),
+                    new Tester()
+                );
 		}
 	}
 }

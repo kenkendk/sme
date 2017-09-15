@@ -7,13 +7,13 @@ namespace NoiseFilter
 	/// <summary>
 	/// Process that applies the stencil to fragments and outputs the pixels
 	/// </summary>
-	public class StecilApplier : SimpleProcess
+	public class StencilApplier : SimpleProcess
 	{
 		[InputBus]
-		private ImageFragment Input;
+        private readonly ImageFragment Input = Scope.CreateOrLoadBus<ImageFragment>();
 
 		[OutputBus]
-		private ImageOutputLine Output;
+        private readonly ImageOutputLine Output = Scope.CreateOrLoadBus<ImageOutputLine>();
 
 		public interface IInternal : IBus
 		{
@@ -36,7 +36,7 @@ namespace NoiseFilter
 		//private uint m_index = 0;
 
 		[InternalBus]
-		private IInternal Internal;
+        private readonly IInternal Internal = Scope.CreateInternalBus<IInternal>();
 
 		private static readonly byte[] FILTER = new byte[] {
 			1,1,1, 1,1,1, 1,1,1,

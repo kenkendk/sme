@@ -24,6 +24,11 @@ namespace SME
         private readonly bool m_isolated;
 
         /// <summary>
+        /// The clock used in this instance
+        /// </summary>
+        private readonly Clock m_clock;
+
+        /// <summary>
         /// The lookup table for busses
         /// </summary>
         private readonly Dictionary<string, IBus> m_busses = new Dictionary<string, IBus>();
@@ -34,11 +39,18 @@ namespace SME
         private readonly Dictionary<string, IProcess> m_processes = new Dictionary<string, IProcess>();
 
         /// <summary>
+        /// Gets or sets the clock used in this scope
+        /// </summary>
+        /// <value>The clock.</value>
+        public Clock Clock => m_clock;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="T:SME.NamingScope"/> class.
         /// </summary>
         /// <param name="isolated">If set to <c>true</c> this scope is isolated.</param>
-        public Scope(bool isolated = true)
-            : this(Current, isolated, false)
+        /// <param name="clock">The clock to use, if not using the inherited clock</param>
+        public Scope(bool isolated = true, Clock clock = null)
+            : this(Current, isolated, clock, false)
         {
         }
 
@@ -48,14 +60,16 @@ namespace SME
         /// <param name="parent">The scope parent.</param>
         /// <param name="isolated">If set to <c>true</c> this scope is isolated.</param>
         /// <param name="isRoot">If set to <c>true</c> this scope is the root scope.</param>
-        private Scope(Scope parent, bool isolated, bool isRoot)
+        /// <param name="clock">The clock to use if not using the inherited clock</param>
+        private Scope(Scope parent, bool isolated, Clock clock, bool isRoot)
         {
             if (!isRoot && parent == null)
                 throw new ArgumentNullException(nameof(parent));
 
             m_parent = parent;
             m_isolated = isolated;
-            ScopeKey = m_scopeKey = isRoot ? "ROOT" : Guid.NewGuid().ToString();
+            ScopeKey = m_scopeKey = (isRoot ? "ROOT" : Guid.NewGuid().ToString());
+            m_clock = isRoot ? new Clock() : (clock ?? m_parent.Clock);
             Current = this;
         }
 
@@ -113,15 +127,28 @@ namespace SME
             return bus;
         }
 
-        /// <summary>
-        /// Finds the bus with the given name and type, or creates a new if none is found
-        /// </summary>
-        /// <returns>The loaded or created bus.</returns>
-        /// <param name="name">The name of the bus to find.</param>
-        /// <typeparam name="T">The bus type</typeparam>
-        public static T CreateOrLoadBus<T>(string name = null, bool internalBus = false, Clock clock = null) where T : class, IBus
+		/// <summary>
+		/// Creates a new bus with the given name
+		/// </summary>
+		/// <returns>The created bus.</returns>
+		/// <param name="name">The name of the bus to create.</param>
+		/// <typeparam name="T">The bus type</typeparam>
+		/// <param name="internalBus">A flag indicating if this is an internal bus</param>
+		public static T CreateBus<T>(string name = null, bool internalBus = false) where T : class, IBus
+		{
+            return (T)CreateBus(typeof(T), name, internalBus);
+		}
+
+		/// <summary>
+		/// Creates a new bus with the given name
+		/// </summary>
+		/// <returns>The created bus.</returns>
+		/// <param name="name">The name of the bus to create.</param>
+        /// <param name="bustype">The bus type</param>
+        /// <param name="internalBus">A flag indicating if this is an internal bus</param>
+		public static IBus CreateBus(Type bustype, string name = null, bool internalBus = false)
         {
-            return (T)CreateOrLoadBus(typeof(T), name, internalBus, clock);
+            return CreateOrLoadBus(bustype, name, internalBus, true);
         }
 
 		/// <summary>
@@ -130,29 +157,55 @@ namespace SME
 		/// <returns>The loaded or created bus.</returns>
 		/// <param name="name">The name of the bus to find.</param>
 		/// <typeparam name="T">The bus type</typeparam>
-		public static IBus CreateOrLoadBus(Type bustype, string name = null, bool internalBus = false, Clock clock = null)
+		/// <param name="clock">The optional clock to use if not using the default clock</param>
+		/// <param name="internalBus">A flag indicating if this is an internal bus</param>
+        /// <param name="forceCreate">A flag indicating if the bus should be created even if it exists</param>
+		public static T CreateOrLoadBus<T>(string name = null, bool internalBus = false, bool forceCreate = false) where T : class, IBus
         {
-            if (typeof(ISingletonBus).IsAssignableFrom(bustype))
+            return (T)CreateOrLoadBus(typeof(T), name, internalBus, forceCreate);
+        }
+
+		/// <summary>
+		/// Finds the bus with the given name and type, or creates a new if none is found
+		/// </summary>
+		/// <returns>The loaded or created bus.</returns>
+		/// <param name="name">The name of the bus to find.</param>
+		/// <param name="bustype">The bus type</param>
+		/// <param name="internalBus">A flag indicating if this is an internal bus</param>
+		/// <param name="forceCreate">A flag indicating if the bus should be created even if it exists</param>
+		public static IBus CreateOrLoadBus(Type bustype, string name = null, bool internalBus = false, bool forceCreate = false)
+        {
+            Scope targetScope;
+            if (internalBus)
+            {
+				if (name != null)
+					throw new ArgumentException($"Cannot set the name of an internal bus");
+                
+                return BusManager.CreateBus(bustype, Scope.Current.Clock, internalBus);
+			}
+            else if (typeof(ISingletonBus).IsAssignableFrom(bustype))
             {
                 if (name != null)
                     throw new ArgumentException($"Cannot set the name of a {nameof(ISingletonBus)}");
                 name = bustype.FullName;
+                targetScope = ROOT_SCOPE;
             }
             else
             {
                 if (name == null)
-                    name = bustype.Name;
+                    name = bustype.FullName;
+                targetScope = Current;
             }
 
             if (bustype == typeof(IBus) || bustype == typeof(ISingletonBus))
                 throw new ArgumentException($"Cannot create a bus of type {bustype.FullName}");
 
-            var res = Current.FindBus(name);
+            var res = forceCreate ? null : targetScope.FindBus(name);
             if (res != null && res.BusType != bustype)
                 throw new InvalidOperationException($"Attempted to create a bus with the name {name} and the type {bustype.FullName}, but a bus is already registered under that name with the type {res.GetType().FullName}");
 
             if (res == null)
-                Current.m_busses[name] = res = BusManager.GetBus(bustype, clock, null, internalBus);
+                targetScope.m_busses[name] = res = BusManager.CreateBus(bustype, targetScope.Clock, internalBus);
 
             return res;
         }
@@ -162,9 +215,9 @@ namespace SME
         /// </summary>
         /// <returns>The internal bus.</returns>
         /// <typeparam name="T">The bus type</typeparam>
-        public static T CreateInternalBus<T>(Clock clock = null) where T : class, IBus
+        public static T CreateInternalBus<T>() where T : class, IBus
         {
-            return CreateOrLoadBus<T>(typeof(T).FullName + ":" + Guid.NewGuid().ToString(), clock: clock, internalBus: true);
+            return CreateOrLoadBus<T>(null, internalBus: true);
         }
 
         /// <summary>
@@ -225,7 +278,7 @@ namespace SME
             // initialized
 
             _scopes = new Dictionary<string, Scope>();
-            ROOT_SCOPE = new Scope(null, true, true);
+            ROOT_SCOPE = new Scope(null, true, null, true);
         }
 
         /// <summary>

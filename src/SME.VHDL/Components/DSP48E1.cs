@@ -3,17 +3,38 @@ using SME.VHDL;
 
 namespace SME.VHDL.Components
 {
-	public abstract class DSP48E1<TA, TB, TC, TD, TOut> : SimpleProcess, IVHDLComponent
+    public sealed class DSP48E1<TA, TB, TC, TD, TOut> : SimpleProcess, IVHDLComponent
 	{
-		protected abstract void Setup(Clock clock);
+        public readonly int InputAWidth;
+		public readonly int InputBWidth;
+		public readonly int InputCWidth;
+		public readonly int InputDWidth;
+		public readonly int OutputWidth;
 
-		protected abstract int InputAWidth { get; }
-		protected abstract int InputBWidth { get; }
-		protected abstract int InputCWidth { get; }
-		protected abstract int InputDWidth { get; }
-		protected abstract int OutputWidth { get; }
+        public readonly ConfigParams DSPConfig;
 
-		protected abstract ConfigParams DSPConfig { get; }
+        public DSP48E1(int inputAwidth, int inputBwidth, int inputCwidth, int inputDwidth, int outputwidth, ConfigParams dspconfig)
+        {
+			if (inputAwidth < 0)
+				throw new ArgumentOutOfRangeException(nameof(inputAwidth), inputAwidth, $"{nameof(inputAwidth)} must be a positive integer");
+			if (inputBwidth < 0)
+				throw new ArgumentOutOfRangeException(nameof(inputBwidth), inputBwidth, $"{nameof(inputBwidth)} must be a positive integer");
+			if (inputCwidth < 0)
+				throw new ArgumentOutOfRangeException(nameof(inputCwidth), inputCwidth, $"{nameof(inputCwidth)} must be a positive integer");
+			if (inputDwidth < 0)
+				throw new ArgumentOutOfRangeException(nameof(inputDwidth), inputDwidth, $"{nameof(inputDwidth)} must be a positive integer");
+			if (outputwidth < 0)
+				throw new ArgumentOutOfRangeException(nameof(outputwidth), outputwidth, $"{nameof(outputwidth)} must be a positive integer");
+            if (dspconfig == null)
+                throw new ArgumentNullException(nameof(dspconfig));
+
+			InputAWidth = inputAwidth;
+            InputBWidth = inputBwidth;
+            InputCWidth = inputCwidth;
+            InputDWidth = inputDwidth;
+            OutputWidth = outputwidth;
+            DSPConfig = dspconfig;
+        }
 
 		public interface IInput : IBus
 		{
@@ -96,17 +117,6 @@ namespace SME.VHDL.Components
 			bool UNDERFLOW { get; set; }
 		}
 
-		public DSP48E1()
-			: this(Clock.DefaultClock)
-		{
-		}
-
-		public DSP48E1(Clock clock)
-			: base(clock)
-		{
-			Setup(clock);
-		}
-
 		private string FormatOutString(string componentname, int indentation, string str)
 		{
 			var ind = new string(' ', indentation);
@@ -124,7 +134,7 @@ namespace SME.VHDL.Components
 			return "";
 		}
 
-		protected class ConfigParams
+		public class ConfigParams
 		{
 			public enum InputSourceMode
 			{
@@ -336,5 +346,9 @@ port map (
 
 		}
 
-	}
+        protected override void OnTick()
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

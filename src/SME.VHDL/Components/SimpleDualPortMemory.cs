@@ -7,19 +7,8 @@ namespace SME.VHDL.Components
 {
 	[ClockedProcess]
 	[SuppressBody]
-	public abstract class SimpleDualPortMemory<TAddress, TData> : SimpleProcess, IVHDLComponent
+	public sealed class SimpleDualPortMemory<TAddress, TData> : SimpleProcess, IVHDLComponent
 	{
-		public SimpleDualPortMemory()
-			: this(Clock.DefaultClock)
-		{
-		}
-
-		public SimpleDualPortMemory(Clock clock)
-			: base(clock)
-		{
-			Setup(clock);
-		}
-
 		public interface IReadIn : IBus
 		{
 			[InitialValue]
@@ -40,36 +29,56 @@ namespace SME.VHDL.Components
 		}
 
 		[InputBus]
-		[NoAutoLoad]
-		protected IReadIn ReadIn;
+        public IReadIn ReadIn = Scope.CreateBus<IReadIn>();
 		[OutputBus]
-		[NoAutoLoad]
-		protected IReadOut ReadOut;
+		public IReadOut ReadOut = Scope.CreateBus<IReadOut>();
 		[InputBus]
-		[NoAutoLoad]
-		protected IWriteIn WriteIn;
+		public IWriteIn WriteIn = Scope.CreateBus<IWriteIn>();
 
-		[Ignore]
-		protected TData[] m_memory = new TData[1024];
+        private readonly TData[] m_memory;
+		private readonly TData[] m_initial;
 
-		protected abstract int ConvertAddress(TAddress adr);
-		protected abstract void Setup(Clock clock);
+		// Workaround for not having a "numeric" or "integer" generic constraint
+		private int ConvertAddress(TAddress adr)
+        {
+            return (int)(object)adr;
+        }
 
-		protected abstract int DataWidth { get; }
-		protected abstract int AddressWidth { get; }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:SME.VHDL.Components.SimpleDualPortMemory`2"/> class.
+        /// </summary>
+        /// <param name="datawidth">The width (in bits) of the data bus.</param>
+        /// <param name="addresswidth">The width (in bits) of the address bus.</param>
+        /// <param name="initial">The initial memory to use</param>
+        public SimpleDualPortMemory(int datawidth, int addresswidth, TData[] initial = null)
+            : base()
+        {
+			if (datawidth < 0)
+				throw new ArgumentOutOfRangeException(nameof(datawidth), datawidth, $"{nameof(datawidth)} must be a positive integer");
+			if (addresswidth < 0)
+				throw new ArgumentOutOfRangeException(nameof(addresswidth), addresswidth, $"{nameof(addresswidth)} must be a positive integer");
+			
+            DataWidth = datawidth;
+            AddressWidth = addresswidth;
+            m_memory = new TData[(int)Math.Pow(2, addresswidth)];
 
-		protected void SetBusses<TReadIn, TReadOut, TWriteIn>(Clock clock)
-			where TReadIn : class, IReadIn
-			where TReadOut : class, IReadOut
-			where TWriteIn : class, IWriteIn
-		{
-			string default_namespace = null;
+			m_initial = initial;
 
-			ReadIn = BusManager.GetBus<TReadIn>(clock, default_namespace, false);
-			ReadOut = BusManager.GetBus<TReadOut>(clock, default_namespace, false);
-			WriteIn = BusManager.GetBus<TWriteIn>(clock, default_namespace, false);
-			ReloadBusMaps();
-		}
+			if (initial != null && initial.Length > m_memory.Length)
+				throw new ArgumentException($"You are attempting to set an initial memory with {initial.Length}, but the with {addresswidth} bits you can only store {m_memory.Length} elements");
+			if (initial != null)
+				Array.Copy(initial, m_memory, initial.Length);
+        }
+
+		/// <summary>
+		/// The width (in bits) of the data bus.
+		/// </summary>
+		public readonly int DataWidth;
+		/// <summary>
+		/// The width (in bits) of the address bus.
+		/// </summary>
+		public readonly int AddressWidth;
+
 
 		protected override void OnTick()
 		{

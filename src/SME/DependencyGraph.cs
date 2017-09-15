@@ -141,6 +141,9 @@ namespace SME
 			{
 				foreach (var b in n.Item.InputBusses)
 				{
+                    if (b == null)
+                        throw new Exception(string.Format("Found an unassigned input bus for {0}", n.Item.GetType().FullName));
+
 					List<Node> waitsFor;
                     if (!neededForOutput.TryGetValue(b, out waitsFor))
                     {
@@ -230,11 +233,10 @@ namespace SME
 		/// <summary>
 		/// Advances all processes a tick according to the execution plan
 		/// </summary>
-		/// <param name="clock">The clock to use.</param>
-		public bool Execute(Clock clock = null)
+		public bool Execute()
 		{
-			clock = clock ?? Clock.DefaultClock;
-			clock.Tick();
+            var clock = Scope.Current.Clock;			
+            clock.Tick();
 
 			if (m_tickcallback != null)
 				m_tickcallback();

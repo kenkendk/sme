@@ -28,16 +28,16 @@ namespace NoiseFilter
 		}
 
 		[InputBus]
-		private ImageInputConfiguration Configuration;
+        private readonly ImageInputConfiguration Configuration = Scope.CreateOrLoadBus<ImageInputConfiguration>();
 
-		[InputBus]
-		private PaddedInputLine Data;
+        [InputBus]
+        private readonly PaddedInputLine Data = Scope.CreateOrLoadBus<PaddedInputLine>();
 
 		[OutputBus]
-		private ImageFragment Output;
+        private readonly ImageFragment Output = Scope.CreateOrLoadBus<ImageFragment>();
 
-		[InternalBus]
-		private IInternal Internal;
+        [InternalBus]
+        private readonly IInternal Internal = Scope.CreateInternalBus<IInternal>();
 
 		private readonly byte[] m_buffer = new byte[COLOR_WIDTH * STENCIL_HEIGHT * MAX_IMAGE_WIDTH];
 

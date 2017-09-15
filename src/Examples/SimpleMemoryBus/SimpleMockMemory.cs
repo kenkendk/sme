@@ -5,8 +5,8 @@ namespace Tester
 {
 	public class SimpleMockMemory : SimpleProcess
 	{
-		[InputBus, OutputBus]
-		private IMemoryInterface Interface;
+        [InputBus, OutputBus]
+        public IMemoryInterface Interface = Scope.CreateBus<IMemoryInterface>();
 
 		private readonly ulong[] m_data = new ulong[1024];
 		private int m_cycle = 0;

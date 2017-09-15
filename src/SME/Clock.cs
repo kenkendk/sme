@@ -12,11 +12,6 @@ namespace SME
 	public sealed class Clock
 	{
 		/// <summary>
-		/// The default clock, used if nothing else is specified
-		/// </summary>
-		public readonly static Clock DefaultClock = new Clock();
-
-		/// <summary>
 		/// The clock waiting source
 		/// </summary>
 		private TaskCompletionSource<bool> m_release = new TaskCompletionSource<bool>();

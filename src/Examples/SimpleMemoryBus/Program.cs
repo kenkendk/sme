@@ -12,7 +12,17 @@ namespace Tester
 			new Simulation()
 				.BuildCSVFile()
 				.BuildVHDL()
-				.Run(typeof(MainClass).Assembly);
+                .Run(
+                    // Same scope, but we make the memory first
+                    new MockMemory(),
+                    // Then we connect to the named bus
+					new MemoryTester(),
+
+                    // Then, in the same scope we make a new bus
+					new SimpleMockMemory(),
+                    // And connect to that
+                    new MemoryTester()
+                );
 
 
 		}

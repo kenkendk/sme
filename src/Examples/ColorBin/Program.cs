@@ -8,9 +8,6 @@ namespace ColorBin
 	{
 		public static void Main(string[] args)
 		{
-			// Faster test
-			ImageInputSimulator.IMAGES = new[] { "image1.png" };
-
 			var sim = new Simulation()
 				.BuildCSVFile()
 				.BuildGraph()
@@ -18,7 +15,10 @@ namespace ColorBin
 				.BuildCPP()
 				;
 
-			sim.Run(typeof(MainClass).Assembly);
+			sim.Run(
+                new ImageInputSimulator("image1.png"),
+                new ColorBinCollector()
+            );
 		}
 	}
 }

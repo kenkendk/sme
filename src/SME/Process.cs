@@ -12,7 +12,7 @@ namespace SME
 		/// <summary>
 		/// The clock that drives this process
 		/// </summary>
-		protected readonly Clock m_clock;
+        protected readonly Clock m_clock = Scope.Current.Clock;
 
 		/// <summary>
 		/// The clocked input busses
@@ -35,22 +35,22 @@ namespace SME
 		/// Gets the clocked input busses.
 		/// </summary>
 		/// <value>The input busses.</value>
-		IBus[] IProcess.ClockedInputBusses { get { return m_clockedinputbusses; } }
+        IBus[] IProcess.ClockedInputBusses { get { LoadBusMapsIfRequired(); return m_clockedinputbusses; } }
 		/// <summary>
 		/// Gets the input busses.
 		/// </summary>
 		/// <value>The input busses.</value>
-		IBus[] IProcess.InputBusses { get { return m_inputbusses; } }
+		IBus[] IProcess.InputBusses { get { LoadBusMapsIfRequired(); return m_inputbusses; } }
 		/// <summary>
 		/// Gets the output busses.
 		/// </summary>
 		/// <value>The output busses.</value>
-		IBus[] IProcess.OutputBusses { get { return m_outputbusses; } }
+		IBus[] IProcess.OutputBusses { get { LoadBusMapsIfRequired(); return m_outputbusses; } }
 		/// <summary>
 		/// Gets the output busses.
 		/// </summary>
 		/// <value>The output busses.</value>
-		IBus[] IProcess.InternalBusses { get { return m_internalbusses; } }
+		IBus[] IProcess.InternalBusses { get { LoadBusMapsIfRequired(); return m_internalbusses; } }
 
 		/// <summary>
 		/// Gets a value indicating whether this instance is a clocked process.
@@ -80,23 +80,21 @@ namespace SME
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="SME.Component"/> class with the default clock.
+		/// Initializes a new instance of the <see cref="SME.Component"/> class
 		/// </summary>
 		public Process()
-			: this(Clock.DefaultClock)
 		{
+            Loader.AutoloadBusses(this);
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="SME.Component"/> class.
+		/// Helper method to refresh the internal list of input and output busses
 		/// </summary>
-		/// <param name="clock">The clock that drives the process.</param>
-		public Process(Clock clock)
-		{
-			Loader.AutoloadBusses(this, clock);
-			m_clock = clock;
-			ReloadBusMaps();
-		}
+		protected void LoadBusMapsIfRequired()
+        {
+            if (m_internalbusses == null || m_outputbusses == null || m_inputbusses == null || m_clockedinputbusses == null)
+                ReloadBusMaps();
+        }
 
 		/// <summary>
 		/// Helper method to refresh the internal list of input and output busses
@@ -199,16 +197,13 @@ namespace SME
 				Console.WriteLine(msg, arg);
 		}
 
-
 		/// <summary>
 		/// Helper method for performing an operation that only occurs during simulation
 		/// </summary>
 		/// <returns>The input value</returns>
-		/// <param name="value">The value to return</param>
-		/// <typeparam name="T">The data type parameter.</typeparam>
-		protected T SimulationOnly<T>(T value)
+		protected void SimulationOnly(Action f)
 		{
-			return value;
+            f();
 		}
 	}
 }

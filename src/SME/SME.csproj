@@ -4,7 +4,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{CDC88908-F9B8-40CB-B746-86C8A4C1871B}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <RootNamespace>SME</RootNamespace>
     <AssemblyName>SME</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
@@ -49,7 +49,6 @@
     <Compile Include="SimpleProcess.cs" />
     <Compile Include="SimulationProcess.cs" />
     <Compile Include="FixedArray.cs" />
-    <Compile Include="Program.cs" />
     <Compile Include="Simulation.cs" />
     <Compile Include="Scope.cs" />
   </ItemGroup>

@@ -7,15 +7,15 @@ namespace SimpleNestedComponent
 	{
 		public static void Main(string[] args)
 		{
-            var network = new IProcess[] {
-                new TestDriver(),
-                new CompositeItem.CounterTicker(),
-                new CompositeItem.ValueIncrementer()
-            };
+            new Simulation()
+                .AddTicker(ticks => Console.WriteLine("Ticked {0}", ticks))
+                .Run(
+                    new TestDriver(),
+				    new CompositeItem.CounterTicker(),
+				    new CompositeItem.ValueIncrementer()
+				);
 
-            Loader.RunUntilCompletion(network, () => Console.WriteLine("Ticked {0}", Clock.DefaultClock.Ticks));
-
-			Console.WriteLine("Execution complete after {0} ticks", Clock.DefaultClock.Ticks);
+			Console.WriteLine("Execution complete after {0} ticks", Scope.Current.Clock.Ticks);
 		}
 	}
 }

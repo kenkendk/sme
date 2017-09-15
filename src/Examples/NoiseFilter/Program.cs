@@ -8,15 +8,18 @@ namespace NoiseFilter
 	{
 		public static void Main(string[] args)
 		{
-			// Faster test
-			ImageInputSimulator.IMAGES = new [] { "image1.png" };
-			
 			new Simulation()
 				.BuildCSVFile()
 				.BuildGraph()
 				.BuildVHDL()
                 .BuildCPP()
-				.Run(typeof(MainClass).Assembly);
+				.Run(
+                    new ImageInputSimulator("image1.png"),
+                    new BorderEmitter(),
+                    new StencilEmitter(),
+                    new StencilApplier(),
+                    new ImageOutputSink()
+                );
 		}
 	}
 }

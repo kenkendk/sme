@@ -27,13 +27,13 @@ namespace SimpleTrader
 		}
 
 		[InputBus]
-		private ITraderInput Input;
+        private ITraderInput Input = Scope.CreateOrLoadBus<ITraderInput>();
 
-		[OutputBus]
-		private ITraderOutput Output;
+        [OutputBus]
+        private ITraderOutput Output = Scope.CreateBus<ITraderOutput>();
 
-		[InternalBus]
-		private IInternal Internal;
+        [InternalBus]
+        private IInternal Internal = Scope.CreateInternalBus<IInternal>();
 
 		/// <summary>
 		/// The number of values to read before setting outputs

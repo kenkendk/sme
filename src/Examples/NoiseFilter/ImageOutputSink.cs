@@ -13,13 +13,13 @@ namespace NoiseFilter
 	public class ImageOutputSink : SimulationProcess
 	{
 		[InputBus]
-		private ImageInputConfiguration Config;
+        private readonly ImageInputConfiguration Config = Scope.CreateOrLoadBus<ImageInputConfiguration>();
 		
 		[InputBus]
-		private ImageOutputLine Input;
+        private readonly ImageOutputLine Input = Scope.CreateOrLoadBus<ImageOutputLine>();
 
 		[InputBus]
-		private PaddedInputLine Padded;
+        private readonly PaddedInputLine Padded = Scope.CreateOrLoadBus<PaddedInputLine>();
 
 		private class Item : IDisposable
 		{

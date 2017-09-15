@@ -10,7 +10,7 @@ namespace SimpleTrader
 	class SimulationDriver : SimulationProcess
 	{
 		[OutputBus]
-		private SimpleTrader.ITraderInput Output;
+        private SimpleTrader.ITraderInput Output = Scope.CreateOrLoadBus<SimpleTrader.ITraderInput>();
 
 		public override async Task Run()
 		{

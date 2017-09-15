@@ -22,19 +22,19 @@ namespace NoiseFilter
 		}
 
 		[InputBus]
-		private ImageInputConfiguration Configuration;
+        private readonly ImageInputConfiguration Configuration = Scope.CreateOrLoadBus<ImageInputConfiguration>();
 
 		[InputBus]
-		private ImageInputLine Input;
+        private readonly ImageInputLine Input = Scope.CreateOrLoadBus<ImageInputLine>();
 
 		[OutputBus]
-		private PaddedInputLine Output;
+        private readonly PaddedInputLine Output = Scope.CreateOrLoadBus<PaddedInputLine>();
 
 		[OutputBus]
-		private BorderDelayUpdate Delay;
+        private readonly BorderDelayUpdate Delay = Scope.CreateOrLoadBus<BorderDelayUpdate>();
 
 		[InternalBus]
-		private IInternal Internal;
+        private readonly IInternal Internal = Scope.CreateInternalBus<IInternal>();
 
 		/// <summary>
 		/// A buffer to hold all border pixels

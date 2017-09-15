@@ -15,7 +15,11 @@ namespace SimpleTrader
 				.BuildGraph()
 				.BuildVHDL()
                 .BuildCPP()
-				.Run(typeof(MainClass).Assembly);
+				.Run(
+                    new SimulationDriver(),
+                    new TraderCoreFIR(),
+                    new TraderCoreEWMA()
+                );
 		}
 	}
 }

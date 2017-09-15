@@ -7,19 +7,8 @@ namespace SME.VHDL.Components
 {
 	[ClockedProcess]
 	[SuppressBody]
-	public abstract class TrueDualPortMemory<TAddress, TData> : SimpleProcess
+	public sealed class TrueDualPortMemory<TAddress, TData> : SimpleProcess
 	{
-		public TrueDualPortMemory()
-			: this(Clock.DefaultClock)
-		{
-		}
-
-		public TrueDualPortMemory(Clock clock)
-			: base(clock)
-		{
-			Setup(clock);
-		}
-
 		public interface IInputA : IBus
 		{
 			[InitialValue]
@@ -52,40 +41,76 @@ namespace SME.VHDL.Components
 			TData Data { get; set; }
 		}
 
+        [InputBus]
+        public IInputA InA = Scope.CreateBus<IInputA>();
 		[InputBus]
-		[NoAutoLoad]
-		protected IInputA InA;
-		[InputBus]
-		[NoAutoLoad]
-		protected IInputB InB;
+		public IInputB InB = Scope.CreateBus<IInputB>();
 
 		[OutputBus]
-		[NoAutoLoad]
-		protected IOutputA OutA;
+		public IOutputA OutA = Scope.CreateBus<IOutputA>();
 		[OutputBus]
-		[NoAutoLoad]
-		protected IOutputB OutB;
+        public IOutputB OutB = Scope.CreateBus<IOutputB>();
 
-		[Ignore]
-		protected TData[] m_memory = new TData[1024];
+        private readonly TData[] m_memory;
 
-		protected abstract int ConvertAddress(TAddress adr);
-		protected abstract void Setup(Clock clock);
+        private readonly TData[] m_initial;
 
-		protected void SetBusses<TInputA, TInputB, TOutputA, TOutputB>(Clock clock)
-			where TInputA : class, IInputA
-			where TInputB : class, IInputB
-			where TOutputA : class, IOutputA
-			where TOutputB : class, IOutputB
-		{
-			string default_namespace = null;
+        // Workaround for not having a "numeric" or "integer" generic constraint
+        private int ConvertAddress(TAddress adr)
+        {
+            return (int)(object)adr;
+        }
 
-			InA = BusManager.GetBus<TInputA>(clock, default_namespace, false);
-			InB = BusManager.GetBus<TInputB>(clock, default_namespace, false);
-			OutA = BusManager.GetBus<TOutputA>(clock, default_namespace, false);
-			OutB = BusManager.GetBus<TOutputB>(clock, default_namespace, false);
-			ReloadBusMaps();
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="T:SME.VHDL.Components.TrueDualPortMemory`2"/> class.
+		/// </summary>
+		/// <param name="datawidthA">The width (in bits) of the A data bus.</param>
+		/// <param name="addresswidthA">The width (in bits) of the A address bus.</param>
+		/// <param name="datawidthB">The width (in bits) of the B data bus.</param>
+		/// <param name="addresswidthB">The width (in bits) of the B address bus.</param>
+        /// <param name="initial">The initial memory contents</param>
+        public TrueDualPortMemory(int datawidthA, int addresswidthA, int datawidthB, int addresswidthB, TData[] initial = null)
+            : base()
+        {
+            if (datawidthA < 0)
+                throw new ArgumentOutOfRangeException(nameof(datawidthA), datawidthA, $"{nameof(datawidthA)} must be a positive integer");
+			if (addresswidthA < 0)
+				throw new ArgumentOutOfRangeException(nameof(addresswidthA), addresswidthA, $"{nameof(addresswidthA)} must be a positive integer");
+			if (datawidthB < 0)
+				throw new ArgumentOutOfRangeException(nameof(datawidthB), datawidthB, $"{nameof(datawidthB)} must be a positive integer");
+			if (addresswidthB < 0)
+				throw new ArgumentOutOfRangeException(nameof(addresswidthB), addresswidthB, $"{nameof(addresswidthB)} must be a positive integer");
+            
+			DataWidthA = datawidthA;
+			AddressWidthA = addresswidthA;
+			DataWidthB = datawidthB;
+			AddressWidthB = addresswidthB;
+			m_memory = new TData[(int)Math.Pow(2, Math.Max(addresswidthA, addresswidthB))];
+            m_initial = initial;
+
+            if (initial != null && initial.Length > m_memory.Length)
+                throw new ArgumentException($"You are attempting to set an initial memory with {initial.Length}, but the with {Math.Max(addresswidthA, addresswidthB)} bits you can only store {m_memory.Length} elements");
+            if (initial != null)
+                Array.Copy(initial, m_memory, initial.Length);
 		}
+
+		/// <summary>
+		/// The width (in bits) of the A data bus.
+		/// </summary>
+		public readonly int DataWidthA;
+		/// <summary>
+		/// The width (in bits) of the A address bus.
+		/// </summary>
+		public readonly int AddressWidthA;
+		/// <summary>
+		/// The width (in bits) of the B data bus.
+		/// </summary>
+		public readonly int DataWidthB;
+		/// <summary>
+		/// The width (in bits) of the B address bus.
+		/// </summary>
+		public readonly int AddressWidthB;
 
 		protected override void OnTick()
 		{

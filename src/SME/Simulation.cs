@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 
 namespace SME
@@ -43,48 +44,56 @@ namespace SME
 		/// Adds a preloader.
 		/// </summary>
 		/// <param name="loader">The preloader.</param>
-		public void AddPreloader(Action<IEnumerable<IProcess>, string> loader)
+        public Simulation AddPreloader(Action<IEnumerable<IProcess>, string> loader)
 		{
 			if (loader == null)
 				throw new ArgumentNullException($"{loader}");
 
 			m_preloaders.Add(loader);
+			return this;
 		}
 
 		/// <summary>
 		/// Adds a postloader.
 		/// </summary>
 		/// <param name="loader">The postloader.</param>
-		public void AddPostloader(Action<IEnumerable<IProcess>, string> loader)
+        public Simulation AddPostloader(Action<IEnumerable<IProcess>, string> loader)
 		{
 			if (loader == null)
 				throw new ArgumentNullException($"{loader}");
 
 			m_postloaders.Add(loader);
+			return this;
 		}
 
 		/// <summary>
 		/// Adds a ticker.
 		/// </summary>
 		/// <param name="ticker">The ticker.</param>
-		public void AddTicker(Action<ulong> ticker)
+        public Simulation AddTicker(Action<ulong> ticker)
 		{
 			if (ticker == null)
 				throw new ArgumentNullException($"{ticker}");
 
 			m_tickers.Add(ticker);
+            return this;
 		}
 
+        public IEnumerable<IProcess> Run(IEnumerable<IProcess> processes)
+        {
+            if (processes == null)
+                throw new ArgumentNullException(nameof(processes));
+            return Run(processes.ToArray());
+        }
 
-		/// <summary>
-		/// Runs the simulation on the specified assembly
-		/// </summary>
-		/// <param name="asm">The assembly to load and simulate.</param>
-		public IEnumerable<IProcess> Run(Assembly asm)
-		{
-			var processes = SME.Loader.LoadAssemblies(asm);
+        public IEnumerable<IProcess> Run(params IProcess[] processes)
+        {
+			if (processes == null)
+				throw new ArgumentNullException(nameof(processes));
+            if (processes.Length == 0)
+                throw new ArgumentOutOfRangeException(nameof(processes), "No processes to run?");
 
-			foreach(var cfg in m_preloaders)
+			foreach (var cfg in m_preloaders)
 				cfg(processes, TargetFolder);
 
 			var tick = 0UL;
@@ -99,7 +108,7 @@ namespace SME
 			foreach (var cfg in m_postloaders)
 				cfg(processes, TargetFolder);
 
-			return processes;			
+			return processes;
 		}
 	}
 }

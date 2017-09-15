@@ -28,13 +28,13 @@ namespace SimpleTrader
 		}
 
 		[InputBus]
-		private ITraderInput Input;
+        private ITraderInput Input = Scope.CreateOrLoadBus<ITraderInput>();
 
-		[OutputBus]
-		private ITraderOutput Output;
+        [OutputBus]
+        private ITraderOutput Output = Scope.CreateBus<ITraderOutput>();
 
-		[InternalBus]
-		private IInternal Internal;
+        [InternalBus]
+        private IInternal Internal = Scope.CreateInternalBus<IInternal>();
 
 
 		// Weights for the short tap
@@ -43,9 +43,9 @@ namespace SimpleTrader
 		private readonly byte[] WeightsLong = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1 };
 
 		// Storage for short sample list
-		private uint[] SamplesShort = new uint[4];
+		private readonly uint[] SamplesShort = new uint[4];
 		// Storage for long sample list
-		private uint[] SamplesLong = new uint[8];
+		private readonly uint[] SamplesLong = new uint[8];
 
 		/// <summary>
 		/// The number of values to read before setting outputs

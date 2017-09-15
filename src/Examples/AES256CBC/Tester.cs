@@ -43,10 +43,10 @@ namespace AES256CBC
 		}
 
 		[OutputBus]
-		private AES256CBC.AESCore.IInput Input;
+        private AES256CBC.AESCore.IInput Input = Scope.CreateOrLoadBus<AES256CBC.AESCore.IInput>();
 
-		[InputBus]
-		private AES256CBC.AESCore.IOutput Output;
+        [InputBus]
+        private AES256CBC.AESCore.IOutput Output = Scope.CreateOrLoadBus<AES256CBC.AESCore.IOutput>();
 
 
 		public static ulong PackArrayToLong(byte[] source, byte offset)

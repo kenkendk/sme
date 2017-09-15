@@ -13,15 +13,39 @@ namespace NoiseFilter
 	public class ImageInputSimulator : SimulationProcess
 	{
 		[OutputBus]
-		private ImageInputConfiguration Configuration;
+        private readonly ImageInputConfiguration Configuration = Scope.CreateOrLoadBus<ImageInputConfiguration>();
 
 		[OutputBus]
-		private ImageInputLine Data;
+        private readonly ImageInputLine Data = Scope.CreateOrLoadBus<ImageInputLine>();
 
 		[InputBus]
-		private BorderDelayUpdate Delay;
+        private readonly BorderDelayUpdate Delay = Scope.CreateOrLoadBus<BorderDelayUpdate>();
 
-		public static string[] IMAGES = new string[] { "image1.png", "image2.jpg", "image3.png" };
+		/// <summary>
+		/// The images to process
+		/// </summary>
+		private readonly string[] IMAGES;
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="T:NoiseFilter.ImageInputSimulator"/> class.
+		/// </summary>
+		public ImageInputSimulator()
+			: this("image1.png", "image2.jpg", "image3.png")
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="T:NoiseFilter.ImageInputSimulator"/> class.
+		/// </summary>
+		/// <param name="images">The images to process.</param>
+		public ImageInputSimulator(params string[] images)
+		{
+			if (images == null)
+				throw new ArgumentNullException(nameof(images));
+			if (images.Length == 0)
+				throw new ArgumentOutOfRangeException(nameof(images), "No images to send?");
+			IMAGES = images;
+		}
 
 		/// <summary>
 		/// Run this instance.

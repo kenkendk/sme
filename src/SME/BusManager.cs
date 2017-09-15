@@ -13,12 +13,12 @@ namespace SME
 		/// <summary>
 		/// Lookup table of all busses in the system
 		/// </summary>
-		private static Dictionary<string, IBus> m_busses = new Dictionary<string, IBus>();
+		private static List<IBus> m_busses = new List<IBus>();
 
 		/// <summary>
 		/// List of all internal buss instances
 		/// </summary>
-		private static Dictionary<string, IBus> m_internalBusses = new Dictionary<string, IBus>();
+		private static List<IBus> m_internalBusses = new List<IBus>();
 
 		/// <summary>
 		/// Lookup table of all clocked busses
@@ -31,36 +31,20 @@ namespace SME
 		/// <returns>The matching bus.</returns>
 		/// <param name="t">The interface type to map</param>
 		/// <param name="clock">The clock the Bus is defined for.</param>
-		/// <param name="namespace">An optional namespace parameter.</param>
 		/// <param name="internalBus">True if the bus is marked internal</param>
-		public static IBus GetBus(Type t, Clock clock, string @namespace = null, bool internalBus = false)
+		public static IBus CreateBus(Type t, Clock clock, bool internalBus = false)
 		{
-			if (internalBus)
-			{
-				var name = t.FullName;
-				if (m_internalBusses.ContainsKey(name))
-					return m_internalBusses[name];
-
-				var bus = Bus.CreateFromInterface(t, clock);
-				m_internalBusses.Add(name, bus);
-				return bus;
+			var bus = Bus.CreateFromInterface(t, clock);
+            if (internalBus)
+                m_internalBusses.Add(bus);
+            else
+            {
+				m_busses.Add(bus);
+				if (t.GetCustomAttributes(typeof(ClockedBusAttribute), true).FirstOrDefault() != null)
+					m_clockedBusses[bus] = clock;
 			}
-			else
-			{
-				var name = t.FullName;
-				if (!string.IsNullOrEmpty(@namespace))
-					name += "@" + @namespace;
 
-				if (!m_busses.ContainsKey(name))
-				{
-					m_busses[name] = Bus.CreateFromInterface(t, clock);
-					if (t.GetCustomAttributes(typeof(ClockedBusAttribute), true).FirstOrDefault() != null)
-						m_clockedBusses[m_busses[name]] = clock;
-				}
-
-
-				return m_busses[name];
-			}
+            return bus;
 		}
 
 		/// <summary>
@@ -83,26 +67,25 @@ namespace SME
 		/// Gets all non-clocked busses
 		/// </summary>
 		/// <value>The busses.</value>
-		public static IEnumerable<IBus> Busses { get { return m_busses.Values; } }
+        public static IEnumerable<IBus> Busses { get { return m_busses.AsReadOnly(); } }
 
 		/// <summary>
 		/// Gets all internal busses
 		/// </summary>
 		/// <value>The busses.</value>
-		public static IEnumerable<IBus> InternalBusses { get { return m_internalBusses.Values; } }
+        public static IEnumerable<IBus> InternalBusses { get { return m_internalBusses.AsReadOnly(); } }
 
 		/// <summary>
 		/// Gets the bus for a specific interface type and namespace.
 		/// </summary>
 		/// <returns>The matching bus.</returns>
 		/// <param name="clock">The clock the Bus is defined for.</param>
-		/// <param name="namespace">An optional namespace parameter.</param>
 		/// <param name="internalBus">True if the bus is marked internal</param>
 		/// <typeparam name="T">The interface type to map.</typeparam>
-		public static T GetBus<T>(Clock clock, string @namespace = null, bool internalBus = false)
+		public static T CreateBus<T>(Clock clock, bool internalBus = false)
 			where T : class, IBus
 		{
-			return (T)GetBus(typeof(T), clock, @namespace, internalBus);
+			return (T)CreateBus(typeof(T), clock, internalBus);
 		}
 
 		/// <summary>

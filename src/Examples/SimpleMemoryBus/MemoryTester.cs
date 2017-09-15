@@ -8,7 +8,12 @@ namespace Tester
 	public class MemoryTester : Process
 	{
 		[InputBus, OutputBus]
-		private IMemoryInterface Interface;
+        private readonly IMemoryInterface Interface;
+
+        public MemoryTester(IMemoryInterface bus = null)
+        {
+            Interface = bus ?? Scope.CreateOrLoadBus<IMemoryInterface>();
+        }
 
 		public async override Task Run()
 		{
