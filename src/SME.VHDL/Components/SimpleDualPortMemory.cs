@@ -29,11 +29,11 @@ namespace SME.VHDL.Components
 		}
 
 		[InputBus]
-        public IReadIn ReadIn = Scope.CreateBus<IReadIn>();
+        public readonly IReadIn ReadIn = Scope.CreateBus<IReadIn>();
 		[OutputBus]
-		public IReadOut ReadOut = Scope.CreateBus<IReadOut>();
+		public readonly IReadOut ReadOut = Scope.CreateBus<IReadOut>();
 		[InputBus]
-		public IWriteIn WriteIn = Scope.CreateBus<IWriteIn>();
+		public readonly IWriteIn WriteIn = Scope.CreateBus<IWriteIn>();
 
         private readonly TData[] m_memory;
 		private readonly TData[] m_initial;

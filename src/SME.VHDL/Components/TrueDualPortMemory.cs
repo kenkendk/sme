@@ -42,14 +42,14 @@ namespace SME.VHDL.Components
 		}
 
         [InputBus]
-        public IInputA InA = Scope.CreateBus<IInputA>();
+        public readonly IInputA InA = Scope.CreateBus<IInputA>();
 		[InputBus]
-		public IInputB InB = Scope.CreateBus<IInputB>();
+		public readonly IInputB InB = Scope.CreateBus<IInputB>();
 
 		[OutputBus]
-		public IOutputA OutA = Scope.CreateBus<IOutputA>();
+		public readonly IOutputA OutA = Scope.CreateBus<IOutputA>();
 		[OutputBus]
-        public IOutputB OutB = Scope.CreateBus<IOutputB>();
+        public readonly IOutputB OutB = Scope.CreateBus<IOutputB>();
 
         private readonly TData[] m_memory;
 
