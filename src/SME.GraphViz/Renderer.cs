@@ -19,9 +19,9 @@ namespace SME
 		/// <param name="filename">The output filename.</param>
 		public static Simulation BuildGraph(this Simulation self, string filename = "network.dot")
 		{
-			self.AddPostloader((processes, target) =>
+			self.AddPostloader(sim =>
 			{
-				SME.GraphViz.Renderer.Render(processes, Path.Combine(target, filename));
+                SME.GraphViz.Renderer.Render(sim.Processes, Path.Combine(sim.TargetFolder, filename));
 			});
 			return self;
 		}

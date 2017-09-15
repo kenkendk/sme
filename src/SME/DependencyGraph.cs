@@ -106,19 +106,29 @@ namespace SME
         /// <summary>
         /// A callback method to invoke before each tick
         /// </summary>
-        private readonly Action m_tickcallback;
+        private readonly Action<DependencyGraph> m_tickcallback;
 
         /// <summary>
-        /// Readonly access to the execution plan, i.e. the root nodes
+        /// List of all clocked busses
         /// </summary>
-        /// <value>The execution plan.</value>
-        public INode[] ExecutionPlan { get { return m_executionPlan.Cast<INode>().ToArray(); } }
+        private readonly IBus[] m_clockedBusses;
+
+        /// <summary>
+		/// List of all busses
+		/// </summary>
+        public IBus[] AllBusses { get; private set; }
+
+		/// <summary>
+		/// Readonly access to the execution plan, i.e. the root nodes
+		/// </summary>
+		/// <value>The execution plan.</value>
+		public INode[] ExecutionPlan { get { return m_executionPlan.Cast<INode>().ToArray(); } }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="SME.DependencyGraph"/> class.
 		/// </summary>
 		/// <param name="components">The components in the graph.</param>
-		public DependencyGraph(IEnumerable<IProcess> components, Action tickcallback = null)
+		public DependencyGraph(IEnumerable<IProcess> components, Action<DependencyGraph> tickcallback = null)
 		{
 			m_tickcallback = tickcallback;
 
@@ -135,6 +145,14 @@ namespace SME
                     x => x.Key, 
                     y => y.Select(n => n.Node).ToList());
 
+            AllBusses = components
+                .SelectMany(x =>
+                            x.InputBusses.Union(x.OutputBusses).Union(x.InternalBusses)
+                           )
+                .Distinct()
+                .ToArray();
+
+            m_clockedBusses = AllBusses.Where(x => x.IsClocked).ToArray();
 
 			// Build the tree by assigning children and parents to the nodes
 			foreach (var n in nodeLookup.Values)
@@ -200,7 +218,7 @@ namespace SME
 							if (!neededForOutput[b].Where(x => !(completed.ContainsKey(x) || p.IsInChildren(x))).Any())
 							{
 								// Clocked busses are handled by the execution system
-								if (!BusManager.IsBusClocked(b))
+                                if (!b.IsClocked)
 									p.AddBus(b);
 							}
 					}
@@ -233,16 +251,16 @@ namespace SME
 		/// <summary>
 		/// Advances all processes a tick according to the execution plan
 		/// </summary>
-		public bool Execute()
+		public void Execute()
 		{
             var clock = Scope.Current.Clock;			
             clock.Tick();
 
 			if (m_tickcallback != null)
-				m_tickcallback();
+				m_tickcallback(this);
 
-			foreach (var b in BusManager.ClockedBusses.Where(x => x.Value == clock))
-				b.Key.Propagate();
+            foreach (var b in m_clockedBusses.Where(x => x.Clock == clock))
+				b.Propagate();
 
 			foreach (var n in m_executionPlan)
 			{
@@ -274,9 +292,6 @@ namespace SME
 				foreach (var b in n.Item.InternalBusses)
 					b.Propagate();
 			}
-
-			Loader.CheckForCrashes();
-			return Loader.CheckForCompletion();
 		}
 	}
 }

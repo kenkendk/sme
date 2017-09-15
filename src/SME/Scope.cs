@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SME
 {
@@ -176,12 +177,13 @@ namespace SME
 		public static IBus CreateOrLoadBus(Type bustype, string name = null, bool internalBus = false, bool forceCreate = false)
         {
             Scope targetScope;
+            var isClocked = (bustype.GetCustomAttributes(typeof(ClockedBusAttribute), true).FirstOrDefault() as ClockedBusAttribute) != null;
             if (internalBus)
             {
 				if (name != null)
 					throw new ArgumentException($"Cannot set the name of an internal bus");
                 
-                return BusManager.CreateBus(bustype, Scope.Current.Clock, internalBus);
+                return Bus.CreateFromInterface(bustype, Current.Clock, isClocked, true);
 			}
             else if (typeof(ISingletonBus).IsAssignableFrom(bustype))
             {
@@ -205,7 +207,7 @@ namespace SME
                 throw new InvalidOperationException($"Attempted to create a bus with the name {name} and the type {bustype.FullName}, but a bus is already registered under that name with the type {res.GetType().FullName}");
 
             if (res == null)
-                targetScope.m_busses[name] = res = BusManager.CreateBus(bustype, targetScope.Clock, internalBus);
+                targetScope.m_busses[name] = res = Bus.CreateFromInterface(bustype, targetScope.Clock, isClocked, false);
 
             return res;
         }

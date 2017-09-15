@@ -80,17 +80,30 @@ namespace SME
 		/// <value>The manager.</value>
 		IBus IBus.Manager { get { return this; } }
 
+        /// <summary>
+        /// Gets a value indicating whether this <see cref="T:SME.Bus"/> is clocked.
+        /// </summary>
+        public bool IsClocked { get; private set; }
+        /// <summary>
+        /// Gets a value indicating whether this <see cref="T:SME.Bus"/> is internal.
+        /// </summary>
+        public bool IsInternal { get; private set; }
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="SME.Bus"/> class from an interface definition.
 		/// </summary>
 		/// <param name="t">The interface type to map</param>
 		/// <param name="clock">The clock to tick with</param>
-		public Bus(Type t, Clock clock)
+		/// <param name="isClocked">A value indicating if the bus is clocked</param>
+		/// <param name="isInternal">A value indicating if the bus is internal</param>
+		public Bus(Type t, Clock clock, bool isClocked, bool isInternal)
 		{
 			if (!t.IsInterface)
 				throw new Exception(string.Format("Cannot create bus from non-interface type: {0}", t.FullName));
 
 			BusType = t;
+            IsClocked = isClocked;
+            IsInternal = isInternal;
 
 			var props = t.GetProperties().Union(t.GetInterfaces().Where(x => x != typeof(IBus)).SelectMany(x => x.GetProperties())).Distinct();
 			foreach (var n in props)
@@ -241,8 +254,8 @@ namespace SME
 		/// </summary>
 		internal class PropertyIntercepter<T> : PropertyIntercepter
 		{
-			public PropertyIntercepter(Clock clock)
-				: base(typeof(T), clock)
+			public PropertyIntercepter(Clock clock, bool isClocked, bool isInternal)
+                : base(typeof(T), clock, isClocked, isInternal)
 			{
 			}
 		}
@@ -257,9 +270,9 @@ namespace SME
 			/// </summary>
 			protected Bus m_target;
 
-			public PropertyIntercepter(Type t, Clock clock)
+			public PropertyIntercepter(Type t, Clock clock, bool isClocked, bool isInternal)
 			{
-				m_target = new Bus(t, clock);
+                m_target = new Bus(t, clock, isClocked, isInternal);
 			}
 				
 			public virtual void Intercept(IInvocation invocation)
@@ -280,6 +293,14 @@ namespace SME
 				else if (name.Equals("NonStaged") && invocation.Arguments.Length == 0)
 				{
 					invocation.ReturnValue = m_target.NonStaged();
+				}
+				else if (name.Equals("get_IsInternal") && invocation.Arguments.Length == 0)
+				{
+					invocation.ReturnValue = m_target.IsInternal;
+				}
+				else if (name.Equals("get_IsClocked") && invocation.Arguments.Length == 0)
+				{
+					invocation.ReturnValue = m_target.IsClocked;
 				}
 				else if (name.Equals("get_BusType") && invocation.Arguments.Length == 0)
 				{
@@ -317,12 +338,12 @@ namespace SME
 		/// <returns>The DynamicProxy instance.</returns>
 		/// <param name="t">The interface type to map.</param>
 		/// <param name="clock">The clock to keep the Bus on.</param>
-		public static IBus CreateFromInterface(Type t, Clock clock)
+		public static IBus CreateFromInterface(Type t, Clock clock, bool isClocked, bool isInternal)
 		{
 			if (!t.IsInterface)
 				throw new Exception(string.Format("Cannot create proxy from non-interface type: {0}", t.FullName));
 
-			return (IBus)new ProxyGenerator().CreateInterfaceProxyWithoutTarget(t, new PropertyIntercepter(t, clock));
+            return (IBus)new ProxyGenerator().CreateInterfaceProxyWithoutTarget(t, new PropertyIntercepter(t, clock, isClocked, isInternal));
 
 		}
 
@@ -332,13 +353,13 @@ namespace SME
 		/// <returns>The DynamicProxy instance.</returns>
 		/// <param name="clock">The clock to keep the Bus on.</param>
 		/// <typeparam name="T">The interface type to map.</typeparam>
-		public static T CreateFromInterface<T>(Clock clock)
+		public static T CreateFromInterface<T>(Clock clock, bool isClocked, bool isInternal)
 			where T : class, IBus
 		{
 			if (!typeof(T).IsInterface)
 				throw new Exception(string.Format("Cannot create proxy from non-interface type: {0}", typeof(T).FullName));
 
-			return new ProxyGenerator().CreateInterfaceProxyWithoutTarget<T>(new PropertyIntercepter<T>(clock));
+            return new ProxyGenerator().CreateInterfaceProxyWithoutTarget<T>(new PropertyIntercepter<T>(clock, isClocked, isInternal));
 			
 		}
 	}

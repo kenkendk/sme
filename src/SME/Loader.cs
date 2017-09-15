@@ -13,64 +13,9 @@ namespace SME
 	public static class Loader
 	{
 		/// <summary>
-		/// Internal list of started items
-		/// </summary>
-		private static List<Task> m_startedItems = new List<Task>();
-
-		/// <summary>
 		/// Helper variable to toggle assignment debug output
 		/// </summary>
 		public static bool DebugBusAssignments = false;
-
-		/// <summary>
-		/// Loads and starts the supplied processes
-		/// </summary>
-		/// <returns>The list of loaded components.</returns>
-		/// <param name="items">The The types to start.</param>
-		public static IEnumerable<IProcess> LoadItems(IEnumerable<IProcess> items)
-		{
-			return LoadItems(items.ToArray());
-		}
-
-		/// <summary>
-		/// Loads and starts the supplied process
-		/// </summary>
-		/// <returns>The list of loaded components.</returns>
-		/// <param name="item">The The type to start.</param>
-		public static IEnumerable<IProcess> LoadItem(IProcess item)
-		{
-			return LoadItems(new[] { item });
-		}
-
-		/// <summary>
-		/// Loads and starts the supplied processes
-		/// </summary>
-		/// <returns>The list of loaded components.</returns>
-		/// <param name="items">The The type to start.</param>
-		public static IEnumerable<IProcess> LoadItems(params IProcess[] items)
-		{
-			var lst = new List<IProcess>();
-
-			foreach (var item in items)
-			{
-				var p = (IProcess)AutoloadBusses(item);
-				StartTask(p);
-
-				if (p != null)
-					lst.Add(p);
-			}
-
-			return lst;
-		}
-
-		/// <summary>
-		/// Starts a process and registers it as running
-		/// </summary>
-		/// <param name="f">The process to start.</param>
-		public static void StartTask(IProcess f)
-		{
-			m_startedItems.Add(f.Run());
-		}
 
 		/// <summary>
 		/// Gets all IBus fields in the specified type
@@ -111,76 +56,6 @@ namespace SME
 
 			return o;
 		}
-
-		/// <summary>
-		/// Checks if any registered processes have crashed and throws the appropriate exception
-		/// </summary>
-		public static void CheckForCrashes()
-		{
-			var all = from n in m_startedItems
-				where n.Exception != null
-				from x in n.Exception.InnerExceptions
-				select x;
-
-			if (all.Any())
-				throw new AggregateException(all);
-		}
-
-		/// <summary>
-		/// Checks if any registered processes have exited
-		/// </summary>
-		/// <returns><c>true</c>, if any processes where compled, <c>false</c> otherwise.</returns>
-		public static bool CheckForCompletion()
-		{
-			return !m_startedItems.Where(x => x.IsCompleted).Any();
-		}
-
-		/// <summary>
-		/// Runs all the specified component instances until a process quits
-		/// </summary>
-		/// <param name="components">The started component instances.</param>
-		/// <param name="tickcallback">An optional method to call after each tick.</param>
-		public static DependencyGraph RunUntilCompletion(this IProcess simulator, IEnumerable<IProcess> components, Action tickcallback = null)
-		{
-			return RunUntilCompletion(components.Union(new[] { simulator }), tickcallback);
-		}
-
-		/// <summary>
-		/// Runs all the specified component instances until a process quits
-		/// </summary>
-		/// <param name="components">The started component instances.</param>
-		/// <param name="tickcallback">An optional method to call after each tick.</param>
-		public static DependencyGraph RunUntilCompletion(this IEnumerable<IProcess> components, Action tickcallback = null)
-		{
-            LoadItems(components);
-
-			var dg = new DependencyGraph(components, tickcallback);
-			while (dg.Execute())
-			{ }
-
-			return dg;
-			
-		}
-
-		/// <summary>
-		/// Reset all loaded items
-		/// </summary>
-		public static void Reset()
-		{
-			BusManager.Clear();
-            Scope.Current.Clock.Clear();
-
-			try
-			{
-				CheckForCrashes();
-			}
-			catch
-			{
-			}
-
-			m_startedItems.Clear();
-		}
-
 	}
 }
 

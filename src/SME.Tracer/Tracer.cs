@@ -12,24 +12,22 @@ namespace SME.Tracer
 		protected SignalEntry[] m_props;
 		private bool m_first = true;
 
-		public static IEnumerable<SignalEntry> BuildPropertyMap()
+        public static IEnumerable<SignalEntry> BuildPropertyMap(Simulation simulation)
 		{
 			return
-				(from bus in BusManager.Busses.Union(BusManager.ClockedBusses.Select(x => x.Key)).Union(BusManager.InternalBusses).Distinct()
+				(from bus in simulation.Graph.AllBusses
 				 from prop in bus.BusType.GetProperties(BindingFlags.FlattenHierarchy | BindingFlags.Instance | BindingFlags.Public)
 				 let isDriver = bus.BusType.CustomAttributes.Any(x => typeof(TopLevelInputBusAttribute).IsAssignableFrom(x.AttributeType))
-				 let isInternal = BusManager.InternalBusses.Contains(bus)
 				 select new SignalEntry()
 				 {
 					 Bus = bus,
 					 Property = prop,
 					 IsDriver = isDriver,
-					 IsInternal = isInternal,
 					 SortKey = 
 						(bus.BusType.DeclaringType != null ? bus.BusType.DeclaringType.Name + "." : string.Empty)
 						+ bus.BusType.Name + "." + prop.Name
 				})
-				.Where(x => !x.IsInternal)
+				.Where(x => !x.Bus.IsInternal)
 				.OrderByDescending(x => x.IsDriver)
 				.ThenBy(x => x.SortKey)
 			 ;
@@ -63,12 +61,13 @@ namespace SME.Tracer
 			}
 		}
 
-		public void OnClockTick()
+        public void OnClockTick(Simulation parent)
 		{
 			// Skip the very first clock tick to be in sync with the HW version
 			if (m_first)
 			{
-				m_props = BuildPropertyMap().ToArray();
+                
+				m_props = BuildPropertyMap(parent).ToArray();
 				OutputSignalNames(m_props);
 				m_first = false;
 				return;

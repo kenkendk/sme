@@ -17,8 +17,8 @@ namespace SME
 		public static Simulation BuildCSVFile(this Simulation self, string filename = "trace.csv")
 		{
 			var tracer = new Tracer.CSVTracer(filename, self.TargetFolder);
-			self.AddTicker(tickno => { tracer.OnClockTick(); });
-			self.AddPostloader((arg1, arg2) => { tracer.Dispose(); });
+			self.AddTicker(tracer.OnClockTick);
+			self.AddPostloader(_ => { tracer.Dispose(); });
 			return self;
 		}
 
@@ -31,8 +31,8 @@ namespace SME
 		public static Simulation BuildJsonFile(this Simulation self, string filename = "trace.json")
 		{
 			var tracer = new Tracer.JsonTracer(filename, self.TargetFolder);
-			self.AddTicker(tickno => { tracer.OnClockTick(); });
-			self.AddPostloader((arg1, arg2) => { tracer.Dispose(); });
+			self.AddTicker(tracer.OnClockTick);
+			self.AddPostloader(_ => { tracer.Dispose(); });
 			return self;
 		}
 	}

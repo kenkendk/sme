@@ -16,6 +16,8 @@ namespace SME
 		IEnumerable<string> NonStaged();
 		Clock Clock { get; }
 		IBus Manager { get; }
+        bool IsInternal { get; }
+        bool IsClocked { get; }
 	}
 
     /// <summary>

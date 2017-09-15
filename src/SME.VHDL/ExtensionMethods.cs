@@ -20,9 +20,9 @@ namespace SME
 		/// <param name="customfiles">A list of VHDL files to include in the Makefile, without the VHDL extension</param>
 		public static Simulation BuildVHDL(this Simulation self, string targetfolder = "vhdl", string backupfolder = null, string csvfile = "../trace.csv", IEnumerable<string> customfiles = null)
 		{
-			self.AddPostloader((processes, target) =>
+			self.AddPostloader(sim =>
 			{
-				new SME.VHDL.RenderState(processes, Path.Combine(target, targetfolder ?? string.Empty), backupfolder, csvfile, customfiles).Render();
+                new SME.VHDL.RenderState(sim.Processes, Path.Combine(sim.TargetFolder, targetfolder ?? string.Empty), backupfolder, csvfile, customfiles).Render();
 			});
 			return self;
 		}
