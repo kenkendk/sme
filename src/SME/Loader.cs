@@ -96,10 +96,12 @@ namespace SME
 				if (f.GetValue(o) == null)
 				{
 					var internalBus = (f.GetCustomAttributes(typeof(InternalBusAttribute)).FirstOrDefault() as InternalBusAttribute != null);
+					var componentBus = (f.GetCustomAttributes(typeof(ComponentBusAttribute)).FirstOrDefault() as ComponentBusAttribute != null);
+					var autoloadbus = (f.GetCustomAttributes(typeof(AutoloadBusAttribute)).FirstOrDefault() as AutoloadBusAttribute != null);
 
-                    if (typeof(ISingletonBus).IsAssignableFrom(f.FieldType))
+					if (autoloadbus || typeof(ISingletonBus).IsAssignableFrom(f.FieldType))
                     {
-                        var bus = Scope.CreateOrLoadBus(f.FieldType, null, internalBus);
+                        var bus = Scope.CreateOrLoadBus(f.FieldType, null, internalBus, componentBus);
                         if (DebugBusAssignments)
                             Console.WriteLine("Setting field {0}.{1} = {2}:{3}:{4} -> {5}", f.DeclaringType.Name, f.Name, null, bus, f.FieldType.FullName, bus.GetHashCode());
 

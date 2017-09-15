@@ -54,6 +54,16 @@ namespace SME
 	public class OutputBusAttribute : Attribute { }
 
 	/// <summary>
+	/// Marker attribute to mark a bus for a component
+	/// </summary>
+	public class ComponentBusAttribute : Attribute { }
+
+	/// <summary>
+	/// Marker attribute to mark a bus as automatic loading
+	/// </summary>
+	public class AutoloadBusAttribute : Attribute { }
+
+	/// <summary>
 	/// Marker attribute to mark a bus as internal only
 	/// </summary>
 	public class InternalBusAttribute : Attribute { }
