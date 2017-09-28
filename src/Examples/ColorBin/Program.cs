@@ -8,17 +8,15 @@ namespace ColorBin
 	{
 		public static void Main(string[] args)
 		{
-			var sim = new Simulation()
-				.BuildCSVFile()
-				.BuildGraph()
-				.BuildVHDL()
-				.BuildCPP()
-				;
-
-			sim.Run(
-                new ImageInputSimulator("image1.png"),
-                new ColorBinCollector()
-            );
+            new Simulation()
+                .BuildCSVFile()
+                .BuildGraph()
+                .BuildVHDL()
+                .BuildCPP()
+			    .Run(
+                    new ImageInputSimulator("image1.png"),
+                    new ColorBinCollector()
+                );
 		}
 	}
 }
