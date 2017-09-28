@@ -37,10 +37,10 @@ namespace AES256CBC
 		}
 
         [InputBus]
-        private IInput Input = Scope.CreateBus<IInput>();
+        private readonly IInput Input = Scope.CreateBus<IInput>();
 
         [OutputBus]
-        private IOutput Output = Scope.CreateBus<IOutput>();
+        private readonly IOutput Output = Scope.CreateBus<IOutput>();
 
 		private readonly byte[] m_key = new byte[32];
 		private readonly byte[] m_iv = new byte[16];
