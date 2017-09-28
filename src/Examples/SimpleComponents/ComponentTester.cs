@@ -4,18 +4,38 @@ using SME;
 
 namespace SimpleComponents
 {
+    /// <summary>
+    /// The tester for the FifoBuffer components
+    /// </summary>
     public class ComponentTester : SimulationProcess
     {
+        /// <summary>
+        /// The control channel for the buffer
+        /// </summary>
         SimpleFifoBuffer<byte>.IInputBus Control = Scope.CreateOrLoadBus<SimpleFifoBuffer<byte>.IInputBus>();
+        /// <summary>
+        /// The data channel for the buffer
+        /// </summary>
         SimpleFifoBuffer<byte>.IOutputBus Data = Scope.CreateOrLoadBus<SimpleFifoBuffer<byte>.IOutputBus>();
 
+        /// <summary>
+        /// The assigned index for testing
+        /// </summary>
         private readonly byte m_index;
 
-		public ComponentTester(byte index)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:SimpleComponents.ComponentTester"/> class.
+        /// </summary>
+        /// <param name="offset">The index to use.</param>
+        public ComponentTester(byte offset)
         {
-            m_index = index;
+            m_index = offset;
         }
 
+        /// <summary>
+        /// Runs the testing methods
+        /// </summary>
+        /// <returns>The awaitable task.</returns>
         public override async Task Run()
         {
             await ClockAsync();

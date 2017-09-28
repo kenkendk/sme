@@ -70,11 +70,13 @@ namespace SimpleComponents
         /// <summary>
         /// The input bus.
         /// </summary>
+        [InputBus]
         public readonly IInputBus Input;
 
         /// <summary>
         /// The output bus.
         /// </summary>
+        [OutputBus]
         public readonly IOutputBus Output;
 
         /// <summary>

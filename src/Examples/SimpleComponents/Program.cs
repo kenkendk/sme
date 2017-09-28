@@ -7,52 +7,44 @@ namespace SimpleComponents
     {
         public static void Main(string[] args)
         {
-            SimpleFifoBuffer<byte> buffer1;
-			SimpleFifoBuffer<byte> buffer2;
-			SimpleFifoBuffer<byte> buffer3;
-			SimpleFifoBuffer<byte> buffer4;
-
-			ComponentTester tester1;
-			ComponentTester tester2;
-			ComponentTester tester3;
-			ComponentTester tester4;
-
-			// This is using the root scope
-			buffer1 = new SimpleFifoBuffer<byte>(2);
-            using (new Scope())
+            using (new Simulation())
             {
-                // This is using the scope, and will allocate new busses
-                buffer2 = new SimpleFifoBuffer<byte>(2);
+                // This is using the root scope
+                var buffer1 = new SimpleFifoBuffer<byte>(depth: 2);
 
-                // Create the tester while we have the scope set up
-				tester2 = new ComponentTester(2);
+                using (new Scope())
+                {
+                    // This is using the scope, and will allocate new busses
+                    var buffer2 = new SimpleFifoBuffer<byte>(depth: 2);
 
-				// This is using the same scope and will overwrite the previous
-				buffer3 = new SimpleFifoBuffer<byte>(2);
+                    // Create the tester while we have the scope set up
+                    var tester2 = new ComponentTester(offset: 2);
 
-                // This will use the newly created busses
-				tester3 = new ComponentTester(3);
-			}
+                    // This is using the same scope and will overwrite the previous
+                    var buffer3 = new SimpleFifoBuffer<byte>(depth: 2);
 
-            using (new Scope())
-            {
-                // This is using the new scope, and will not interfere with the others
-                buffer4 = new SimpleFifoBuffer<byte>(2);
+                    // This will use the newly created busses
+                    var tester3 = new ComponentTester(offset: 3);
+                }
 
-                // Create the tester while we have the scope set up
-                tester4 = new ComponentTester(4);
+                using (new Scope())
+                {
+                    // This is using the new scope, and will not interfere with the others
+                    var buffer4 = new SimpleFifoBuffer<byte>(depth: 2);
+
+                    // Create the tester while we have the scope set up
+                    var tester4 = new ComponentTester(offset: 4);
+                }
+
+                // This will use the root scope
+                var tester1 = new ComponentTester(offset: 1);
+
+                // Fire it up
+                Simulation
+                    .Current
+                    .AddTicker(s => Console.WriteLine("Ticked {0}", Scope.Current.Clock.Ticks))
+                    .Run();
             }
-
-            // This will use the root scope
-	    	tester1 = new ComponentTester(1);
-
-            // Fire it up
-            new Simulation()
-                .AddTicker(ticks => Console.WriteLine("Ticked {0}", ticks))
-                .Run(
-                    buffer1, buffer2, buffer3, buffer4,
-                    tester1, tester2, tester3, tester4
-                );
 
 		}
     }
