@@ -10,7 +10,7 @@ namespace SME
 	/// <summary>
 	/// Helper class to run a simulation
 	/// </summary>
-	public class Simulation
+    public class Simulation : IDisposable
 	{
 		/// <summary>
 		/// The methods to call prior to running the simulation
@@ -24,6 +24,15 @@ namespace SME
 		/// The methods to call after the simulation
 		/// </summary>
 		private List<Action<Simulation>> m_postloaders = new List<Action<Simulation>>();
+        /// <summary>
+        /// The list of processes in the simulation
+        /// </summary>
+        private HashSet<IProcess> m_processes = new HashSet<IProcess>();
+
+        /// <summary>
+        /// Create a unique scope for the simulation
+        /// </summary>
+        private Scope m_scope = new Scope(isolated: true);
 
 		/// <summary>
 		/// The output folder
@@ -38,7 +47,7 @@ namespace SME
         /// <summary>
         /// Gets the currently running processes
         /// </summary>
-        public IProcess[] Processes { get; private set; }
+        public IList<IProcess> Processes => m_processes.ToList();
 
         /// <summary>
         /// Gets the current running dependency graph
@@ -53,7 +62,11 @@ namespace SME
 		{
 			TargetFolder = Path.GetFullPath(outputfolder);
 			if (!Directory.Exists(TargetFolder))
-				Directory.CreateDirectory(TargetFolder);			
+				Directory.CreateDirectory(TargetFolder);
+            if (Current != null)
+                throw new InvalidOperationException("Cannot start a new simulation before the current one is disposed");
+            ScopeKey = Guid.NewGuid().ToString();
+            Current = this;
 		}
 
 		/// <summary>
@@ -96,34 +109,22 @@ namespace SME
 		}
 
         /// <summary>
-        /// Run the specified processes until one exits or crashes.
-        /// </summary>
-        /// <returns>The awaitable task.</returns>
-        /// <param name="processes">The processes to run.</param>
-        public void Run(IEnumerable<IProcess> processes)
-        {
-            if (processes == null)
-                throw new ArgumentNullException(nameof(processes));
-            Run(processes.ToArray());
-        }
-
-        /// <summary>
         /// Run the specified processes.
         /// </summary>
         /// <returns>The awaitable task.</returns>
-        /// <param name="processes">The processes to run.</param>
         public void Run(params IProcess[] processes)
         {
-			if (processes == null)
-				throw new ArgumentNullException(nameof(processes));
-            if (processes.Length == 0)
-                throw new ArgumentOutOfRangeException(nameof(processes), "No processes to run?");
+            if (processes != null)
+                foreach (var p in processes)
+                    RegisterProcess(p);
+            
+            if (m_processes.Count == 0)
+                throw new InvalidOperationException("No processes to run?");
 
             try
             {
-                Processes = processes;
                 Tick = 0uL;
-                Graph = new DependencyGraph(processes);
+                Graph = new DependencyGraph(m_processes);
 
                 foreach (var cfg in m_preloaders)
                     cfg(this);
@@ -131,7 +132,7 @@ namespace SME
                 var tick = 0UL;
 
                 // Fire up all the processes
-                var running_tasks = processes
+                var running_tasks = m_processes
                     .Select(x =>
                     {
                         SME.Loader.AutoloadBusses(x);
@@ -160,5 +161,81 @@ namespace SME
 				Scope.Current.Clock.Clear();
 			}
 		}
-	}
+
+        /// <summary>
+        /// Releases all resource used by the <see cref="T:SME.Simulation"/> object.
+        /// </summary>
+        /// <remarks>Call <see cref="Dispose"/> when you are finished using the <see cref="T:SME.Simulation"/>. The
+        /// <see cref="Dispose"/> method leaves the <see cref="T:SME.Simulation"/> in an unusable state. After calling
+        /// <see cref="Dispose"/>, you must release all references to the <see cref="T:SME.Simulation"/> so the garbage
+        /// collector can reclaim the memory that the <see cref="T:SME.Simulation"/> was occupying.</remarks>
+        public void Dispose()
+        {
+            if (Current == this)
+            {
+                Current = null;
+                m_scope.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// Registers a process for running in this simulation
+        /// </summary>
+        /// <param name="p">P.</param>
+        public void RegisterProcess(IProcess p)
+        {
+            if (p == null)
+                throw new ArgumentNullException(nameof(p));
+            m_processes.Add(p);
+        }
+
+		/// <summary>
+		/// Gets the current scope.
+		/// </summary>
+		/// <value>The current scope.</value>
+        public static Simulation Current
+		{
+			get
+			{
+				var key = ScopeKey;
+				if (key == null)
+					return null;
+
+				_scopes.TryGetValue(key, out var res);
+				return res;
+			}
+
+			private set
+			{
+				var key = ScopeKey;
+				if (key == null)
+					throw new InvalidOperationException("Cannot set the simulation without a key");
+                if (value == null)
+                    _scopes.Remove(key);
+                else if (_scopes.ContainsKey(key) && _scopes[key] != null)
+                    throw new InvalidOperationException("Cannot use nested simulations");
+                else                    
+					_scopes[key] = value;
+			}
+		}
+		/// <summary>
+		/// The simulation scopes matching the keys.
+		/// </summary>
+        private static readonly Dictionary<string, Simulation> _scopes = new Dictionary<string, Simulation>();
+
+		/// <summary>
+		/// The key used to store data in the CallContext
+		/// </summary>
+		private const string CONTEXT_SCOPE_KEY = "SME_SIMULATION_SCOPE_KEY";
+
+		/// <summary>
+		/// Gets or sets the scope key from the call context.
+		/// </summary>
+		/// <value>The scope key.</value>
+		private static string ScopeKey
+		{
+			get { return System.Runtime.Remoting.Messaging.CallContext.GetData(CONTEXT_SCOPE_KEY) as string; }
+			set { System.Runtime.Remoting.Messaging.CallContext.SetData(CONTEXT_SCOPE_KEY, value); }
+		}
+    }
 }

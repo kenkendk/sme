@@ -84,6 +84,9 @@ namespace SME
 		/// </summary>
 		public Process()
 		{
+            if (Simulation.Current == null)
+                throw new InvalidOperationException($"Cannot create a {nameof(Process)} element when there is no active simulation");
+            Simulation.Current.RegisterProcess(this);         
             Loader.AutoloadBusses(this);
 		}
 
