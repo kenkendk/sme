@@ -210,8 +210,14 @@ namespace SME.VHDL
 
 			File.WriteAllText(Path.Combine(TargetFolder, "Makefile"), new GHDL_Makefile(this).TransformText());
 
-			foreach (var p in Network.Processes)
+            var used = new HashSet<Type>();
+            foreach (var p in Network.Processes)
 			{
+                if (used.Contains(p.SourceType))
+                    continue;
+
+                used.Add(p.SourceType);
+
 				var rsp = new RenderStateProcess(this, p);
 				var targetfile = Path.Combine(TargetFolder, Naming.ProcessNameToFileName(p.SourceInstance));
 				File.WriteAllText(targetfile, MergeUserData(new Entity(this, rsp).TransformText(), targetfile));
@@ -255,7 +261,7 @@ namespace SME.VHDL
 					File.Copy(s, Path.Combine(backupname, Naming.AssemblyNameToFileName(processes)));
 
 
-				foreach (var p in processes)
+                foreach (var p in processes.Select(x => x.GetType()).Distinct())
 				{
 					var source = Path.Combine(targetfolder, Naming.ProcessNameToFileName(p));
 					if (File.Exists(source))
