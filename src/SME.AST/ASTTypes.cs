@@ -73,6 +73,10 @@ namespace SME.AST
 		/// The data type of this bus
 		/// </summary>
 		public Type SourceType;
+        /// <summary>
+        /// The instance that this AST bus represents
+        /// </summary>
+        public IBus SourceInstance;
 	}
 
 	/// <summary>
