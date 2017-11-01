@@ -402,7 +402,7 @@ namespace SME.AST
 			{
 				CecilType = vartype,
 				Name = variable.Name,
-				DefaultValue = variable.Initializer ,
+				DefaultValue = variable.Initializer,
 				Source = variable,
 				Parent = (ASTItem)method ?? proc
 			};
@@ -419,7 +419,15 @@ namespace SME.AST
 		/// <param name="field">The field to parse.</param>
 		protected virtual Bus RegisterBusReference(NetworkState network, ProcessState proc, FieldDefinition field)
 		{
-			var bus = proc.InputBusses.Union(proc.OutputBusses).Union(proc.InternalBusses).FirstOrDefault(x => LoadType(x.SourceType).IsSameTypeReference(field.FieldType));
+            var fd = proc.SourceType.GetField(field.Name, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.FlattenHierarchy);
+            if (fd == null)
+                throw new Exception($"No such field: {field.Name} on {proc.SourceType.FullName}");
+            
+            var businstance = fd.GetValue(proc.SourceInstance);
+            if (businstance == null)
+                return null;
+
+            var bus = proc.InputBusses.Union(proc.OutputBusses).Union(proc.InternalBusses).FirstOrDefault(x => x.SourceInstance == businstance);
 			if (bus == null)
 				throw new Exception($"No such bus: {field.FieldType.FullName}");
 

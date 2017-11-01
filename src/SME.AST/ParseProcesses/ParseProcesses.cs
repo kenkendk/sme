@@ -28,7 +28,7 @@ namespace SME.AST
 			/// <summary>
 			/// A lookup table of bus instances
 			/// </summary>
-			public readonly Dictionary<Type, Bus> BusInstanceLookup = new Dictionary<Type, Bus>();
+			public readonly Dictionary<IBus, Bus> BusInstanceLookup = new Dictionary<IBus, Bus>();
 		}
 
 		/// <summary>
@@ -378,8 +378,8 @@ namespace SME.AST
 		{
 			var st = bus.BusType;
 
-			if (network.BusInstanceLookup.ContainsKey(st))
-				return network.BusInstanceLookup[st];
+			if (network.BusInstanceLookup.ContainsKey(bus))
+				return network.BusInstanceLookup[bus];
 
 			var res = new Bus()
 			{
@@ -393,7 +393,7 @@ namespace SME.AST
 				Parent = network
 			};
 
-			network.BusInstanceLookup[st] = res;
+			network.BusInstanceLookup[bus] = res;
 			res.Signals = st.GetPropertiesRecursive().Where(x => x.DeclaringType != typeof(IBus)).Select(x => Parse(network, proc, res, x)).ToArray();
 			return res;
 		}
