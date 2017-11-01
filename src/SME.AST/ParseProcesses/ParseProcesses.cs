@@ -223,6 +223,14 @@ namespace SME.AST
 			foreach (var el in network.All().OfType<DataElement>().Where(x => x.CecilType == null))
 				el.CecilType = LoadType(el.Type);
 
+            foreach (var el in network.All().OfType<DataElement>().Where(x => x.DefaultValue == null))
+            {
+                if (new[] { typeof(byte), typeof(sbyte), typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong) }.Any(x => el.CecilType.IsSameTypeReference(x)))
+                    el.DefaultValue = 0;
+                else if (el.CecilType.IsSameTypeReference(typeof(bool)))
+                    el.DefaultValue = false;
+            }
+
 			foreach (var el in network.Constants.Where(x => x.DefaultValue == null))
 			{
 				if (el.Source is Mono.Cecil.FieldDefinition)
