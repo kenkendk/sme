@@ -17,15 +17,34 @@ namespace SME.VHDL
 			return ProcessNameToValidName(process) + ".vhdl";
 		}
 
+        public static string ProcessNameToFileName(Type type)
+        {
+            return ProcessNameToValidName(type) + ".vhdl";
+        }
+
 		public static string ProcessNameToValidName(IProcess process)
 		{
-			var processname = process.GetType().FullName;
-			var asmname = process.GetType().Assembly.GetName().Name + '.';
-			if (processname.StartsWith(asmname, StringComparison.Ordinal))
-				processname = processname.Substring(asmname.Length);
-
-			return ToValidName(processname);
+            return ProcessNameToValidName(process.GetType());
 		}
+
+        public static string ProcessNameToValidName(Type type)
+        {
+            var processname = type.FullName;
+            var extras = string.Empty;
+            if (type.IsGenericType)
+            {
+                processname = type.GetGenericTypeDefinition().FullName;
+                extras = "<" + string.Join(", ", type.GenericTypeArguments.Select(x => x.Name)) + ">";
+            }
+
+
+            var asmname = type.Assembly.GetName().Name + '.';
+            if (processname.StartsWith(asmname, StringComparison.Ordinal))
+                processname = processname.Substring(asmname.Length);
+
+            return ToValidName(processname + extras);
+        }
+
 
 		public static string BusSignalToValidName(IProcess process, System.Reflection.PropertyInfo pi)
 		{

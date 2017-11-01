@@ -65,6 +65,40 @@ namespace SME.AST
 			/// A flag indicating if the method should be decompiled
 			/// </summary>
 			public bool Decompile;
+
+            /// <summary>
+            /// The map of generic parameters on this process
+            /// </summary>
+            public readonly Dictionary<string, Mono.Cecil.GenericParameter> GenericMap = new Dictionary<string, Mono.Cecil.GenericParameter>();
+
+            /// <summary>
+            /// The map of generic types on this process
+            /// </summary>
+            public readonly Dictionary<string, Mono.Cecil.TypeReference> GenericTypes = new Dictionary<string, Mono.Cecil.TypeReference>();
+
+            /// <summary>
+            /// Converts a generic type description into a non-generic version
+            /// </summary>
+            /// <returns>The resolved type.</returns>
+            /// <param name="ft">The type to resolve.</param>
+            /// <param name="method">The method context, if any</param>
+            public Mono.Cecil.TypeReference ResolveGenericType(Mono.Cecil.TypeReference ft, MethodState method = null)
+            {
+                if (ft != null)
+                {
+                    if (ft.IsArray)
+                    {
+                        var elt = ft.GetElementType();
+                        if (elt.IsGenericParameter)
+                            return Mono.Cecil.Rocks.TypeReferenceRocks.MakeArrayType(this.GenericTypes[elt.Name]);
+                    }
+                    else if (ft.IsGenericParameter)
+                    {
+                        return this.GenericTypes[ft.Name];
+                    }
+                }
+                return ft;
+            }
 		}
 
 		/// <summary>
@@ -250,12 +284,20 @@ namespace SME.AST
 		/// <returns>The name without the prefix.</returns>
 		/// <param name="network">The top-level network instance.</param>
 		/// <param name="fullname">The name to shorten.</param>
-		protected virtual string NameWithoutPrefix(NetworkState network, string fullname)
+        /// <param name="sourcetype">The type of the source process</param>
+		protected virtual string NameWithoutPrefix(NetworkState network, string fullname, Type sourcetype)
 		{
-			if (fullname.StartsWith(network.Name + ".", StringComparison.Ordinal) && fullname.Length > network.Name.Length - 1)
-				return fullname.Substring(network.Name.Length + 1);
+            var extras = string.Empty;
+            if (sourcetype.IsGenericType)
+            {
+                fullname = sourcetype.GetGenericTypeDefinition().FullName;
+                extras = "<" + string.Join(", ", sourcetype.GenericTypeArguments.Select(x => x.Name)) + ">";
+            }
 
-			return fullname;			
+			if (fullname.StartsWith(network.Name + ".", StringComparison.Ordinal) && fullname.Length > network.Name.Length - 1)
+                fullname = fullname.Substring(network.Name.Length + 1);
+
+            return fullname + extras;			
 		}
 
 		/// <summary>
@@ -272,7 +314,7 @@ namespace SME.AST
 
 			var res = new ProcessState()
 			{
-				Name = NameWithoutPrefix(network, st.FullName),
+				Name = NameWithoutPrefix(network, st.FullName, st),
 				SourceType = st,
 				CecilType = LoadType(st),
 				SourceInstance = process,
@@ -286,23 +328,39 @@ namespace SME.AST
 					!st.HasAttribute<SuppressBodyAttribute>()
 			};
 
+            var proctype = res.CecilType.Resolve();
+
+            if (res.CecilType is Mono.Cecil.GenericInstanceType)
+            {
+                var gp = res.CecilType as Mono.Cecil.GenericInstanceType;
+                var names = gp.GenericArguments.ToArray();
+                var ga = proctype.GenericParameters.ToArray();
+
+                foreach (var g in ga)
+                {
+                    res.GenericMap[g.Name] = g;
+                    res.GenericTypes[g.Name] = names[g.Position];
+                }
+            }
+
 			res.InputBusses = inputbusses.Select(x => Parse(network, res, x)).ToArray();
 			res.OutputBusses = outputbusses.Select(x => Parse(network, res, x)).ToArray();
 			res.InternalBusses = process.InternalBusses.Select(x => Parse(network, res, x)).ToArray();
 			foreach (var ib in res.InternalBusses)
 				ib.IsInternal = true;
 
-
 			if (res.Decompile)
 			{
-				var proctype = res.CecilType.Resolve();
+                // Register all variables
+                foreach (var f in proctype.Fields)
+                {
+                    var ft = res.ResolveGenericType(f.FieldType);
 
-				// Register all variables
-				foreach (var f in proctype.Fields)
-					if (f.FieldType.IsBusType())
-						RegisterBusReference(network, res, f);
-					else
-						RegisterVariable(network, res, f);
+                    if (ft.IsBusType())
+                        RegisterBusReference(network, res, f);
+                    else
+                        RegisterVariable(network, res, f);
+                }
 			}
 
 			res.SharedSignals = res.Signals.Values.ToArray();
@@ -325,8 +383,9 @@ namespace SME.AST
 
 			var res = new Bus()
 			{
-				Name = NameWithoutPrefix(network, st.FullName),
+				Name = NameWithoutPrefix(network, st.FullName, st),
 				SourceType = st,
+                SourceInstance = bus,
 				IsTopLevelInput = st.HasAttribute<TopLevelInputBusAttribute>(),
 				IsTopLevelOutput = st.HasAttribute<TopLevelOutputBusAttribute>(),
 				IsClocked = st.HasAttribute<ClockedBusAttribute>(),

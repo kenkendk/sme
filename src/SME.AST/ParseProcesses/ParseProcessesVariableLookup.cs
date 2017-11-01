@@ -439,10 +439,12 @@ namespace SME.AST
 		{
 			DataElement res;
 
+            var ceciltype = proc.ResolveGenericType(field.FieldType);
+
 			if (field.IsLiteral)
 			{
 				var c = new Constant() {
-					CecilType = field.FieldType,
+                    CecilType = ceciltype,
 					DefaultValue = field.Constant,
 					Name = field.Name,
 					Source = field,
@@ -455,7 +457,7 @@ namespace SME.AST
 			{
 				var c = new Constant()
 				{
-					CecilType = field.FieldType,
+                    CecilType = ceciltype,
 					DefaultValue = field.Constant,
 					Name = field.Name,
 					Source = field,
@@ -473,7 +475,7 @@ namespace SME.AST
 			{
 				var c = new Variable()
 				{
-					CecilType = field.FieldType,
+                    CecilType = ceciltype,
 					DefaultValue = null,
 					Name = field.Name,
 					Source = field,
@@ -487,7 +489,7 @@ namespace SME.AST
 			{
 				var c = new Signal()
 				{
-					CecilType = field.FieldType,
+                    CecilType = ceciltype,
 					DefaultValue = null,
 					Name = field.Name,
 					Source = field,
