@@ -40,7 +40,7 @@ namespace SME.AST
 				var si = expression as ICSharpCode.NRefactory.CSharp.InvocationExpression;
 				var mt = si.Target as ICSharpCode.NRefactory.CSharp.MemberReferenceExpression;
 
-				if (mt.ToString() == "base.PrintDebug")
+                if (mt.ToString() == "base.PrintDebug" || mt.ToString() == "base.SimulationOnly")
 					return new EmptyExpression()
 					{
 						SourceExpression = si,
@@ -179,7 +179,7 @@ namespace SME.AST
 		/// <param name="statement">The statement where the expression is found.</param>
 		/// <param name="expression">The expression to decompile</param>
 		protected PrimitiveExpression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.NRefactory.CSharp.PrimitiveExpression expression)
-		{
+        {            
 			return new PrimitiveExpression()
 			{
 				SourceResultType = ResolveExpressionType(network, proc, method, statement, expression),
