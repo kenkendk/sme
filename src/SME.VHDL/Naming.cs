@@ -71,7 +71,7 @@ namespace SME.VHDL
 			var r = RX_ALPHANUMERIC.Replace(name, "_");
 			if (new string[] { "register", "record", "variable", "process", "if", "then", "else", "begin", "end", "architecture", "of", "is" }.Contains(r.ToLowerInvariant()))
 				r = "vhdl_" + r;
-			return r;
+            return r.Replace("__", "_").Trim('_');
 		}	
 	}
 }
