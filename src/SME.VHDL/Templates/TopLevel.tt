@@ -37,7 +37,7 @@ var feedbacks = RS.FeedbackBusses.ToArray();
 #>
     -- Top-level bus <#= bus.Name #> signals
 <#     foreach (var signal in bus.Signals) { #>
-    <#= bus.Name #>_<#= signal.Name #>: <#= signaltype #> <#= RS.VHDLWrappedTypeName(signal) #>;
+    <#= bus.InstanceName #>_<#= signal.Name #>: <#= signaltype #> <#= RS.VHDLWrappedTypeName(signal) #>;
 <#     } #>
 
 <# } #>
@@ -62,7 +62,7 @@ architecture RTL of <#= Network.Name #> is
   -- Internal wiring signals for clocked processes
 <# foreach (var bus in Network.Busses.Where(x => !x.IsInternal && x.IsClocked && !feedbacks.Contains(x))) { #>
 <#     foreach (var signal in bus.Signals) { #>
-    signal <#= bus.Name #>_<#= signal.Name #>_next: <#= RS.VHDLWrappedTypeName(signal) #>;
+    signal <#= bus.InstanceName #>_<#= signal.Name #>_next: <#= RS.VHDLWrappedTypeName(signal) #>;
 <#     } #>
 <# } #>
 <# if (feedbacks.Length > 0) { #>
@@ -70,7 +70,7 @@ architecture RTL of <#= Network.Name #> is
     -- Feedback signals
 <#     foreach (var bus in feedbacks) { #>
 <#         foreach (var signal in bus.Signals) { #>
-    signal <#= bus.Name #>_<#= signal.Name #>_current, <#= bus.Name #>_<#= signal.Name #>_next: <#= RS.VHDLWrappedTypeName(signal) #>;
+    signal <#= bus.InstanceName #>_<#= signal.Name #>_current, <#= bus.InstanceName #>_<#= signal.Name #>_next: <#= RS.VHDLWrappedTypeName(signal) #>;
 <#         } #>
 <#     } #>
 <# } #>
@@ -79,8 +79,8 @@ begin
 
 <# foreach (var p in Network.Processes.Where(x => !x.IsSimulation)) { #>
 
-    -- Entity  <#= p.Name #> signals
-    <#= p.Name #>: entity work.<#= p.Name #>
+    -- Entity  <#= p.InstanceName #> signals
+    <#= p.InstanceName #>: entity work.<#= p.Name #>
     port map (
 <#    foreach (var bus in p.InputBusses.Union(p.OutputBusses).Distinct()) { 
 	      var isInput = p.InputBusses.Contains(bus);
@@ -107,15 +107,15 @@ begin
         -- <#= type #> bus <#= bus.Name #>
 <#		  foreach(var signal in signals) { #>
 <#              if (isInput || isBoth) { #>
-        <#= bus.Name #>_<#= signal.Name #> => <#= bus.Name #>_<#= signal.Name #><#= input_suffix #>,
+        <#= bus.Name #>_<#= signal.Name #> => <#= bus.InstanceName #>_<#= signal.Name #><#= input_suffix #>,
 <#              } else { #>
-        <#= bus.Name #>_<#= signal.Name #> => <#= bus.Name #>_<#= signal.Name #><#= output_suffix #>,
+        <#= bus.Name #>_<#= signal.Name #> => <#= bus.InstanceName #>_<#= signal.Name #><#= output_suffix #>,
 <#              } #>
 <#        } #>
 
 <#        if (isBoth) { #>
 <#		      foreach(var signal in bus.Signals) { #>
-        out_<#= bus.Name #>_<#= signal.Name #> => <#= bus.Name #>_<#= signal.Name #><#= output_suffix #>,
+        out_<#= bus.Name #>_<#= signal.Name #> => <#= bus.InstanceName #>_<#= signal.Name #><#= output_suffix #>,
 <#            } #>
 <#        } #>
 
@@ -129,7 +129,7 @@ begin
     -- Propagate all feedback signals immediately
 <# foreach(var bus in feedbacks) { #>
 <#     foreach (var signal in bus.Signals) { #>
-    <#= bus.Name #>_<#= signal.Name #> <= <#= bus.Name #>_<#= signal.Name #><#= bus.IsClocked ? "_current" : "_next" #>;
+    <#= bus.InstanceName #>_<#= signal.Name #> <= <#= bus.InstanceName #>_<#= signal.Name #><#= bus.IsClocked ? "_current" : "_next" #>;
 <#     } #>
 <# } #>
 
@@ -141,26 +141,26 @@ begin
         if RST = '1' then
 <# foreach(var bus in Network.Busses.Where(x => !x.IsInternal && x.IsClocked && !feedbacks.Contains(x))) { #>
 <#     foreach (var signal in bus.Signals) { #>
-            <#= bus.Name #>_<#= signal.Name #> <= <#= RS.DefaultValue(signal) #>;
+            <#= bus.InstanceName #>_<#= signal.Name #> <= <#= RS.DefaultValue(signal) #>;
 <#     } #>
 <# } #>
 <# foreach(var bus in feedbacks) { #>
 <#     foreach (var signal in bus.Signals) { #>
-            <#= bus.Name #>_<#= signal.Name #>_current <= <#= RS.DefaultValue(signal) #>;
+            <#= bus.InstanceName #>_<#= signal.Name #>_current <= <#= RS.DefaultValue(signal) #>;
 <#     } #>
 
 <# } #>
         elsif rising_edge(CLK) then
 <# foreach(var bus in Network.Busses.Where(x => !x.IsInternal && x.IsClocked && !feedbacks.Contains(x))) { #>
 <#     foreach (var signal in bus.Signals) { #>
-            <#= bus.Name #>_<#= signal.Name #> <= <#= bus.Name #>_<#= signal.Name #>_next;
+            <#= bus.InstanceName #>_<#= signal.Name #> <= <#= bus.InstanceName #>_<#= signal.Name #>_next;
 <#     } #>
 
 <# } #>
 
 <# foreach(var bus in feedbacks) { #>
 <#     foreach (var signal in bus.Signals) { #>
-            <#= bus.Name #>_<#= signal.Name #>_current <= <#= bus.Name #>_<#= signal.Name #>_next;
+            <#= bus.InstanceName #>_<#= signal.Name #>_current <= <#= bus.InstanceName #>_<#= signal.Name #>_next;
 <#     } #>
 
 <# } #>

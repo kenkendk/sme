@@ -77,6 +77,11 @@ namespace SME.AST
         /// The instance that this AST bus represents
         /// </summary>
         public IBus SourceInstance;
+
+        /// <summary>
+        /// The name of the instance, if different from the type name
+        /// </summary>
+        public string InstanceName;
 	}
 
 	/// <summary>
@@ -206,6 +211,11 @@ namespace SME.AST
 		/// A value indicating if the process is clocked
 		/// </summary>
 		public bool IsClocked;
+
+        /// <summary>
+        /// The name of the instance, if different from the type name
+        /// </summary>
+        public string InstanceName;
 	}
 
 	/// <summary>

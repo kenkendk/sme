@@ -90,8 +90,8 @@ namespace SME.VHDL.Templates
 		{
 			get
 			{
-				foreach (var p in RS.Network.Processes)
-					yield return Naming.ProcessNameToValidName(p.SourceInstance);
+                foreach (var p in RS.Network.Processes.Select(x => x.SourceType).Distinct())
+					yield return Naming.ProcessNameToValidName(p);
 
 				foreach (var p in RawVHDL)
 					yield return p;

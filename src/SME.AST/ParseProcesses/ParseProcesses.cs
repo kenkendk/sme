@@ -265,6 +265,51 @@ namespace SME.AST
                     el.DefaultValue = false;
             }
 
+            // Build a list of duplicate process names
+            var proc_rename_table = new Dictionary<Type, List<AST.Process>>();
+            foreach (var el in network.All().OfType<AST.Process>().Distinct())
+            {
+                if (!proc_rename_table.TryGetValue(el.SourceType, out List<Process> lst))
+                    proc_rename_table[el.SourceType] = lst = new List<Process>();
+                lst.Add(el);
+            }
+
+            // Assign a special name for all processes with more than one instance
+            foreach (var lst in proc_rename_table.Values)
+            {
+                var basename = lst[0].Name;
+                if (lst.Count == 1)
+                    lst[0].InstanceName = basename;
+                else
+                {
+                    for (var i = 0; i < lst.Count; i++)
+                        lst[i].InstanceName = basename + "_" + (i + 1).ToString();
+                }
+            }
+
+            // Build a list of duplicate process names
+            var bus_rename_table = new Dictionary<Type, List<AST.Bus>>();
+            foreach (var el in network.All().OfType<AST.Bus>().Distinct())
+            {
+                if (!bus_rename_table.TryGetValue(el.SourceType, out List<Bus> lst))
+                    bus_rename_table[el.SourceType] = lst = new List<Bus>();
+                lst.Add(el);
+            }
+
+            // Assign a special name for all processes with more than one instance
+            foreach (var lst in bus_rename_table.Values)
+            {
+                var basename = lst[0].Name;
+                if (lst.Count == 1)
+                    lst[0].InstanceName = basename;
+                else
+                {
+                    for (var i = 0; i < lst.Count; i++)
+                        lst[i].InstanceName = basename + "_" + (i + 1).ToString();
+                }
+            }
+
+            // Compute the constant values from read-only fields
 			foreach (var el in network.Constants.Where(x => x.DefaultValue == null))
 			{
 				if (el.Source is Mono.Cecil.FieldDefinition)

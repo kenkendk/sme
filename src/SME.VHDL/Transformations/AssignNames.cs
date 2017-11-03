@@ -20,6 +20,11 @@ namespace SME.VHDL.Transformations
 			if (el.Name != null && (el is AST.Bus || el is AST.Process || el is AST.DataElement))
 				el.Name = Naming.ToValidName(el.Name);
 
+            if (el is AST.Bus && ((AST.Bus)el).InstanceName != null)
+                ((AST.Bus)el).InstanceName = Naming.ToValidName(((AST.Bus)el).InstanceName);
+            if (el is AST.Process && ((AST.Process)el).InstanceName != null)
+                ((AST.Process)el).InstanceName = Naming.ToValidName(((AST.Process)el).InstanceName);
+
 			if (el is AST.Constant)
 			{
 				if (((Constant)el).Source is Mono.Cecil.FieldDefinition)

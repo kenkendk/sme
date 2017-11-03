@@ -70,7 +70,7 @@ begin
 	#>
         -- <#= type #> bus <#= bus.Name #>
 <#		  foreach(var signal in bus.Signals) { #>
-        <#= bus.Name #>_<#= signal.Name #> => <#= bus.Name #>_<#= signal.Name #>,
+        <#= bus.InstanceName #>_<#= signal.Name #> => <#= bus.Name #>_<#= signal.Name #>,
 <#        } #>
 
 <#    } #>

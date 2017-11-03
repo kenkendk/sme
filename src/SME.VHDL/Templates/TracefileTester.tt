@@ -34,7 +34,7 @@ architecture TestBench of <#= Network.Name #>_tb is
   signal RESET : Std_logic;
 
 <# foreach (var signal in RS.AllSignals) { #>
-  signal <#= signal.Parent.Name#>_<#= signal.Name#> : <#= RS.VHDLWrappedTypeName(signal) #>;
+  signal <#= ((AST.Bus)signal.Parent).InstanceName#>_<#= signal.Name#> : <#= RS.VHDLWrappedTypeName(signal) #>;
 <# } #>
 
 begin
@@ -43,7 +43,7 @@ begin
   port map (
 
 <#foreach (var signal in RS.AllSignals) { #>
-    <#= signal.Parent.Name#>_<#=signal.Name#> => <#= signal.Parent.Name#>_<#=signal.Name#>,
+    <#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#> => <#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#>,
 <# } #>
 
     RST => RESET,
@@ -108,18 +108,18 @@ begin
             read_csv_field(L, tmp);
 <#    if (vhdltype.IsStdLogic || vhdltype == VHDLTypes.SYSTEM_BOOL) { #>
             if are_strings_equal(tmp, "U") then
-                <#= signal.Parent.Name#>_<#=signal.Name#> <= 'U';
+                <#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#> <= 'U';
             else
-                <#= signal.Parent.Name#>_<#=signal.Name#> <= to_std_logic(truncate(tmp));
+                <#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#> <= to_std_logic(truncate(tmp));
             end if;
 <#    } else if (vhdltype.IsStdLogicVector || vhdltype.IsSystemType) { #>
             if are_strings_equal(tmp, "U") then
-            	<#= signal.Parent.Name#>_<#=signal.Name#> <= (others => 'U');
+            	<#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#> <= (others => 'U');
             else
-                <#= signal.Parent.Name#>_<#=signal.Name#> <= to_std_logic_vector(truncate(tmp));
+                <#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#> <= to_std_logic_vector(truncate(tmp));
             end if;
 <#    } else { #>
-            <#= signal.Parent.Name#>_<#=signal.Name#> <= <#= vhdltype.ToSafeVHDLName()#>'value(to_safe_name(truncate(tmp)));
+            <#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#> <= <#= vhdltype.ToSafeVHDLName()#>'value(to_safe_name(truncate(tmp)));
 <#    } #>
             fieldno := fieldno + 1;
 <# } #>
@@ -133,9 +133,9 @@ begin
 	        read_csv_field(L, tmp);
 	        if not are_strings_equal(tmp, "U") then
 <#    if (vhdltype.IsStdLogicVector || vhdltype.IsSystemType) { #>
-            	assert are_strings_equal(str(<#= signal.Parent.Name#>_<#=signal.Name#>), tmp) report "Value for <#= signal.Parent.Name#>_<#=signal.Name#> in cycle " & integer'image(clockcycle) & " was: " & str(<#= signal.Parent.Name#>_<#=signal.Name#>) & " but should have been: " & truncate(tmp) severity Error;
+            	assert are_strings_equal(str(<#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#>), tmp) report "Value for <#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#> in cycle " & integer'image(clockcycle) & " was: " & str(<#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#>) & " but should have been: " & truncate(tmp) severity Error;
 <#    } else { #>
-            	assert are_strings_equal(<#= vhdltype.ToSafeVHDLName()#>'image(<#= signal.Parent.Name#>_<#=signal.Name#>), to_safe_name(tmp)) report "Value for <#= signal.Parent.Name#>_<#=signal.Name#> in cycle " & integer'image(clockcycle) & " was: " & <#= vhdltype.ToSafeVHDLName()#>'image(<#= signal.Parent.Name#>_<#=signal.Name#>) & " but should have been: " & to_safe_name(truncate(tmp)) severity Error;
+            	assert are_strings_equal(<#= vhdltype.ToSafeVHDLName()#>'image(<#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#>), to_safe_name(tmp)) report "Value for <#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#> in cycle " & integer'image(clockcycle) & " was: " & <#= vhdltype.ToSafeVHDLName()#>'image(<#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#>) & " but should have been: " & to_safe_name(truncate(tmp)) severity Error;
 <#    } #>
             end if;
             fieldno := fieldno + 1;
