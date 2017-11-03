@@ -49,6 +49,10 @@
       <Project>{9F28DC04-2A0C-4F87-9E82-D6679DE94017}</Project>
       <Name>SME.CPP</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\SME.Tracer\SME.Tracer.csproj">
+      <Project>{325E539D-9BA8-4EAE-BE6E-D7226A8E8B45}</Project>
+      <Name>SME.Tracer</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
