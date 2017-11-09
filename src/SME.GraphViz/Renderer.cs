@@ -21,7 +21,7 @@ namespace SME
 		{
 			self.AddPostloader(sim =>
 			{
-                SME.GraphViz.Renderer.Render(sim.Processes, Path.Combine(sim.TargetFolder, filename));
+                SME.GraphViz.Renderer.Render(sim, Path.Combine(sim.TargetFolder, filename));
 			});
 			return self;
 		}
@@ -38,34 +38,34 @@ namespace SME.GraphViz
 		/// <summary>
 		/// Render the specified processes into a dot file.
 		/// </summary>
-		/// <param name="components">The proccesses to render.</param>
+		/// <param name="simulation">The simulation setup to render.</param>
 		/// <param name="file">The filename to write into.</param>
-		public static void Render(IEnumerable<IProcess> components, string file)
+        public static void Render(Simulation simulation, string file)
 		{
 			var sb = new StringBuilder();
 
-			sb.AppendFormat("digraph {0} {{", components.First().GetType().Assembly.GetName().Name);
+            sb.AppendFormat("digraph {0} {{", simulation.Processes.First().Instance.GetType().Assembly.GetName().Name);
 			sb.AppendLine();
 
-			var r = new NetworkMapper(components).ReduceToTypes();
+            var r = new NetworkMapper(simulation).ReduceToNames();
 
 			foreach (var b in r.BusDependsOn.Keys.Union(r.DependsOnBus.Keys).Union(r.DependsOnClockedBus.Keys).Distinct())
-				sb.AppendFormat("\"{0}\" [shape=oval];{1}", b.FullName, Environment.NewLine);
+				sb.AppendFormat("\"{0}\" [shape=oval];{1}", b, Environment.NewLine);
 
 			foreach (var p in r.BusDependsOn.Values.Union(r.DependsOnBus.Values).Union(r.DependsOnClockedBus.Values).SelectMany(x => x).Select(n => n).Distinct())
-				sb.AppendFormat("\"{0}\" [shape=box];{1}", p.FullName, Environment.NewLine);
+				sb.AppendFormat("\"{0}\" [shape=box];{1}", p, Environment.NewLine);
 
 			foreach (var b in r.BusDependsOn)
 				foreach (var p in b.Value)
-					sb.AppendFormat("\"{0}\" -> \"{1}\";{2}", b.Key.FullName, p.FullName, Environment.NewLine);
+					sb.AppendFormat("\"{0}\" -> \"{1}\";{2}", b.Key, p, Environment.NewLine);
 
 			foreach (var b in r.DependsOnBus)
 				foreach (var p in b.Value)
-					sb.AppendFormat("\"{1}\" -> \"{0}\";{2}", b.Key.FullName, p.FullName, Environment.NewLine);
+					sb.AppendFormat("\"{1}\" -> \"{0}\";{2}", b.Key, p, Environment.NewLine);
 
 			foreach (var b in r.DependsOnClockedBus)
 				foreach (var p in b.Value)
-					sb.AppendFormat("\"{0}\" -> \"{1}\" [style=dotted];{2}", b.Key.FullName, p.FullName, Environment.NewLine);
+					sb.AppendFormat("\"{0}\" -> \"{1}\" [style=dotted];{2}", b.Key, p, Environment.NewLine);
 			
 
 			sb.AppendLine("}");
@@ -73,40 +73,45 @@ namespace SME.GraphViz
 			File.WriteAllText(file, sb.ToString());
 		}
 
-		private class NetworkMapperTypes
+		private class NetworkMapperNames
 		{
-			public Dictionary<Type, List<Type>> BusDependsOn { get; private set; }
-			public Dictionary<Type, List<Type>> DependsOnBus { get; private set; }
-			public Dictionary<Type, List<Type>> DependsOnClockedBus { get; private set; }
+            public Dictionary<string, List<string>> BusDependsOn { get; private set; }
+            public Dictionary<string, List<string>> DependsOnBus { get; private set; }
+            public Dictionary<string, List<string>> DependsOnClockedBus { get; private set; }
 
-			public NetworkMapperTypes(NetworkMapper mapper)
+			public NetworkMapperNames(NetworkMapper mapper)
 			{
-				BusDependsOn = ReduceToTypes(mapper.BusDependsOn);
-				DependsOnBus = ReduceToTypes(mapper.DependsOnBus);
-				DependsOnClockedBus = ReduceToTypes(mapper.DependsOnClockedBus);
+                BusDependsOn = ReduceToNames(mapper.Simulation, mapper.BusDependsOn);
+                DependsOnBus = ReduceToNames(mapper.Simulation, mapper.DependsOnBus);
+                DependsOnClockedBus = ReduceToNames(mapper.Simulation, mapper.DependsOnClockedBus);
 			}
 
-			private static Dictionary<Type, List<Type>> ReduceToTypes(Dictionary<IBus, List<IProcess>> input)
+            private static Dictionary<string, List<string>> ReduceToNames(Simulation simulation, Dictionary<IBus, List<ProcessMetadata>> input)
 			{
-				var res = new Dictionary<Type, List<Type>>();
+                var res = new Dictionary<string, List<string>>();
 				foreach (var k in input)
-					res[k.Key.BusType] = k.Value.Select(x => x.GetType()).ToList();
+                    res[simulation.BusNames[k.Key]] = k.Value.Select(x => x.InstanceName).ToList();
 				return res;
 			}
 		}
 
 		private class NetworkMapper
 		{
-			public Dictionary<IBus, List<IProcess>> BusDependsOn { get; private set; }
-			public Dictionary<IBus, List<IProcess>> DependsOnBus { get; private set; }
-			public Dictionary<IBus, List<IProcess>> DependsOnClockedBus { get; private set; }
+            public readonly Simulation Simulation;
+            public Dictionary<IBus, List<ProcessMetadata>> BusDependsOn { get; private set; }
+            public Dictionary<IBus, List<ProcessMetadata>> DependsOnBus { get; private set; }
+            public Dictionary<IBus, List<ProcessMetadata>> DependsOnClockedBus { get; private set; }
 
-			public NetworkMapper(IEnumerable<IProcess> components)
+            public NetworkMapper(Simulation simulation)
 			{
+                Simulation = simulation;
+
+                var components = simulation.Processes;
+
 				DependsOnBus = 
 					(from g in
 					from c in components
-					from b in c.OutputBusses
+					from b in c.Instance.OutputBusses
 					select new {Bus = b, Component = c}
 					group g by g.Bus)
 						.ToDictionary(
@@ -117,7 +122,7 @@ namespace SME.GraphViz
 				BusDependsOn = 
 					(from g in
 						from c in components
-						from b in c.InputBusses
+						from b in c.Instance.InputBusses
 						select new {Bus = b, Component = c}
 						group g by g.Bus)
 						.ToDictionary(
@@ -128,7 +133,7 @@ namespace SME.GraphViz
 				DependsOnClockedBus = 
 					(from g in
 						from c in components
-						from b in c.ClockedInputBusses
+						from b in c.Instance.ClockedInputBusses
 						select new {Bus = b, Component = c}
 						group g by g.Bus)
 						.ToDictionary(
@@ -137,9 +142,9 @@ namespace SME.GraphViz
 						);
 			}
 
-			public NetworkMapperTypes ReduceToTypes()
+			public NetworkMapperNames ReduceToNames()
 			{
-				return new NetworkMapperTypes(this);
+				return new NetworkMapperNames(this);
 			}
 		}
 	}

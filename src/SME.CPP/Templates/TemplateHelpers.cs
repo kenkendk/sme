@@ -201,7 +201,7 @@ namespace SME.CPP.Templates
 		{
 			RS = rs;
 			Network = rs.Network;
-			Graph = new DependencyGraph(RS.Processes);
+            Graph = new DependencyGraph(RS.Simulation.Processes.Select(x => x.Instance));
 		}
 
 		public AST.Process GetProcess(IProcess proc)

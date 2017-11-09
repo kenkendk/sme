@@ -92,15 +92,6 @@ namespace SME.AST
 			var proctype = proc.CecilType.Resolve();
 			proc.DecompilerContext = new DecompilerContext(proc.CecilType.Module) { CurrentType = proctype };
 
-			var static_constructor = proctype.Methods.Where(x => x.IsConstructor && !x.HasParameters && x.IsStatic).FirstOrDefault();
-
-			if (static_constructor != null)
-				statements.AddRange(DecompileConstructor(network, proc, static_constructor, true));
-
-			var constructor = proctype.Methods.Where(x => x.IsConstructor && !x.HasParameters && !x.IsStatic).FirstOrDefault();
-			if (constructor != null)
-				statements.AddRange(DecompileConstructor(network, proc, constructor, false));
-
 			var m = proctype.Methods.FirstOrDefault(x => x.Name == method.Name && x.Parameters.Count == method.GetParameters().Length);
 			if (m == null)
 				throw new Exception($"Unable to find a method with the name {method.Name} in type {proc.CecilType.FullName}");

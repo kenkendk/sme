@@ -50,6 +50,7 @@
     <Compile Include="FixedArray.cs" />
     <Compile Include="Simulation.cs" />
     <Compile Include="Scope.cs" />
+    <Compile Include="ProcessMetadata.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

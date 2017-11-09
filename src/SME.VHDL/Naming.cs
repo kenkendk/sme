@@ -7,6 +7,11 @@ namespace SME.VHDL
 {
 	public static class Naming
 	{
+        public static string AssemblyNameToFileName(Simulation simulation)
+        {
+            return simulation.Processes.First().Instance.GetType().Assembly.GetName().Name + ".vhdl";
+        }
+
 		public static string AssemblyNameToFileName(IEnumerable<IProcess> processes)
 		{
 			return processes.First().GetType().Assembly.GetName().Name + ".vhdl";
@@ -59,6 +64,11 @@ namespace SME.VHDL
 			return ToValidName(busname);
 		}
 
+        public static string AssemblyToValidName(Simulation simulation)
+        {
+            return ToValidName(simulation.Processes.First().Instance.GetType().Assembly.GetName().Name);
+        }
+
 		public static string AssemblyToValidName(IEnumerable<IProcess> processes)
 		{
 			return ToValidName(processes.First().GetType().Assembly.GetName().Name);
@@ -71,7 +81,11 @@ namespace SME.VHDL
 			var r = RX_ALPHANUMERIC.Replace(name, "_");
 			if (new string[] { "register", "record", "variable", "process", "if", "then", "else", "begin", "end", "architecture", "of", "is" }.Contains(r.ToLowerInvariant()))
 				r = "vhdl_" + r;
-            return r.Replace("__", "_").Trim('_');
+
+            while (r.IndexOf("__", StringComparison.Ordinal) >= 0)
+                r = r.Replace("__", "_");
+
+            return r.TrimEnd('_');
 		}	
 	}
 }

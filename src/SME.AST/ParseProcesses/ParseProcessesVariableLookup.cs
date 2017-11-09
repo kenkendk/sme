@@ -423,7 +423,7 @@ namespace SME.AST
             if (fd == null)
                 throw new Exception($"No such field: {field.Name} on {proc.SourceType.FullName}");
             
-            var businstance = fd.GetValue(proc.SourceInstance);
+            var businstance = fd.GetValue(proc.SourceInstance.Instance);
             if (businstance == null)
                 return null;
 

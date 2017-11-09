@@ -99,7 +99,7 @@ entity ");
             #line hidden
             
             #line 36 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( bus.InstanceName ));
             
             #line default
             #line hidden
@@ -313,7 +313,7 @@ entity ");
             #line hidden
             
             #line 73 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( bus.InstanceName ));
             
             #line default
             #line hidden

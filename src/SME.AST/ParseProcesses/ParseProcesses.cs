@@ -187,34 +187,34 @@ namespace SME.AST
 		/// Static method for building an AST
 		/// </summary>
 		/// <returns>The network.</returns>
-		/// <param name="processes">The processes to build the AST for.</param>
+        /// <param name="simulation">The simulation instance to build the AST for.</param>
 		/// <param name="decompile">Set to <c>true</c> to enable decompilation of the IL code.</param>
-		public static Network BuildNetwork(IEnumerable<IProcess> processes, bool decompile = false)
+        public static Network BuildNetwork(Simulation simulation, bool decompile = false)
 		{
-			return new ParseProcesses().Parse(processes, decompile);
+            return new ParseProcesses().Parse(simulation, decompile);
 		}
 
 		/// <summary>
 		/// Static method for building an AST with a custom subclass
 		/// </summary>
 		/// <returns>The network.</returns>
-		/// <param name="processes">The processes to build the AST for.</param>
+        /// <param name="simulation">The simulation instance to build the AST for.</param>
 		/// <param name="decompile">Set to <c>true</c> to enable decompilation of the IL code.</param>
-		public static Network BuildNetwork<T>(IEnumerable<IProcess> processes, bool decompile = false)
+        public static Network BuildNetwork<T>(Simulation simulation, bool decompile = false)
 			where T : ParseProcesses, new()
 		{
-			return new T().Parse(processes, decompile);
+            return new T().Parse(simulation, decompile);
 		}
 
 
 		/// <summary>
 		/// Builds an AST by inspecting the processes
 		/// </summary>
-		/// <param name="processes">The processes to build the AST for.</param>
+        /// <param name="simulation">The simulation instance to build the AST for.</param>
 		/// <param name="decompile">Set to <c>true</c> to enable decompilation of the IL code.</param>
-		public virtual Network Parse(IEnumerable<IProcess> processes, bool decompile = false)
+		public virtual Network Parse(Simulation simulation, bool decompile = false)
 		{
-			var sourceasm = processes.First().GetType().Assembly;
+            var sourceasm = simulation.Processes.First().Instance.GetType().Assembly;
 			var network = new NetworkState()
 			{
 				Source = sourceasm,
@@ -222,19 +222,17 @@ namespace SME.AST
 				Parent = null
 			};
 
-			network.Processes = processes
+            network.Processes = simulation.Processes
 				.Where(n => 
-				       n.GetType().GetCustomAttributes(typeof(IgnoreAttribute), true).FirstOrDefault() == null
+                       n.Instance.GetType().GetCustomAttributes(typeof(IgnoreAttribute), true).FirstOrDefault() == null
 							&&
-						!(n is SimulationProcess))
+                       !(n.Instance is SimulationProcess))
 				.Select(x => Parse(network, x))
 				.ToArray();
 
 			if (network.Processes.Length == 0)
 				throw new Exception("No processes were found in the list");
 			
-			//network.Processes = processes.Select(x => Parse(network, x)).ToArray();
-
 			network.Busses = network.Processes.SelectMany(x => x.InternalBusses.Union(x.InputBusses).Union(x.OutputBusses)).Distinct().ToArray();
 			network.Constants = network.ConstantLookup.Values.ToArray();
 
@@ -250,7 +248,6 @@ namespace SME.AST
 					Decompile(network, pr, method);
 				}
 			}
-
 			network.Constants = network.ConstantLookup.Values.ToArray();
 
 			// Patch up all types if they are missing
@@ -265,48 +262,11 @@ namespace SME.AST
                     el.DefaultValue = false;
             }
 
-            // Build a list of duplicate process names
-            var proc_rename_table = new Dictionary<Type, List<AST.Process>>();
-            foreach (var el in network.All().OfType<AST.Process>().Distinct())
+            // Assign bus names, processes are handled elsewhere
+            foreach (var el in network.All().OfType<AST.Bus>())
             {
-                if (!proc_rename_table.TryGetValue(el.SourceType, out List<Process> lst))
-                    proc_rename_table[el.SourceType] = lst = new List<Process>();
-                lst.Add(el);
-            }
-
-            // Assign a special name for all processes with more than one instance
-            foreach (var lst in proc_rename_table.Values)
-            {
-                var basename = lst[0].Name;
-                if (lst.Count == 1)
-                    lst[0].InstanceName = basename;
-                else
-                {
-                    for (var i = 0; i < lst.Count; i++)
-                        lst[i].InstanceName = basename + "_" + (i + 1).ToString();
-                }
-            }
-
-            // Build a list of duplicate process names
-            var bus_rename_table = new Dictionary<Type, List<AST.Bus>>();
-            foreach (var el in network.All().OfType<AST.Bus>().Distinct())
-            {
-                if (!bus_rename_table.TryGetValue(el.SourceType, out List<Bus> lst))
-                    bus_rename_table[el.SourceType] = lst = new List<Bus>();
-                lst.Add(el);
-            }
-
-            // Assign a special name for all processes with more than one instance
-            foreach (var lst in bus_rename_table.Values)
-            {
-                var basename = lst[0].Name;
-                if (lst.Count == 1)
-                    lst[0].InstanceName = basename;
-                else
-                {
-                    for (var i = 0; i < lst.Count; i++)
-                        lst[i].InstanceName = basename + "_" + (i + 1).ToString();
-                }
+                if (el.SourceInstance != null && simulation.BusNames.ContainsKey(el.SourceInstance))
+                    el.InstanceName = simulation.BusNames[el.SourceInstance];
             }
 
             // Compute the constant values from read-only fields
@@ -350,21 +310,22 @@ namespace SME.AST
 		/// </summary>
 		/// <param name="network">The top-level network.</param>
 		/// <param name="process">The process to build the AST for.</param>
-		protected virtual Process Parse(NetworkState network, IProcess process)
+        protected virtual Process Parse(NetworkState network, ProcessMetadata process)
 		{
-			var st = process.GetType();
+            var st = process.Instance.GetType();
 
-			var inputbusses = process.InputBusses.Union(process.ClockedInputBusses).Distinct().ToArray();
-			var outputbusses = process.OutputBusses.Distinct().ToArray();
+            var inputbusses = process.Instance.InputBusses.Union(process.Instance.ClockedInputBusses).Distinct().ToArray();
+            var outputbusses = process.Instance.OutputBusses.Distinct().ToArray();
 
 			var res = new ProcessState()
 			{
 				Name = NameWithoutPrefix(network, st.FullName, st),
 				SourceType = st,
 				CecilType = LoadType(st),
-				SourceInstance = process,
+                SourceInstance = process,
+                InstanceName = process.InstanceName,
 				Parent = network,
-				IsSimulation = process is SimulationProcess,
+                IsSimulation = process.Instance is SimulationProcess,
 				IsClocked = st.GetCustomAttribute<ClockedProcessAttribute>() != null,
 				Decompile = typeof(SimpleProcess).IsAssignableFrom(st)
 					&&
@@ -390,7 +351,7 @@ namespace SME.AST
 
 			res.InputBusses = inputbusses.Select(x => Parse(network, res, x)).ToArray();
 			res.OutputBusses = outputbusses.Select(x => Parse(network, res, x)).ToArray();
-			res.InternalBusses = process.InternalBusses.Select(x => Parse(network, res, x)).ToArray();
+            res.InternalBusses = process.Instance.InternalBusses.Select(x => Parse(network, res, x)).ToArray();
 			foreach (var ib in res.InternalBusses)
 				ib.IsInternal = true;
 
@@ -407,6 +368,16 @@ namespace SME.AST
                         RegisterVariable(network, res, f);
                 }
 			}
+
+            foreach (var f in process.Initialization)
+            {
+                if (f.Value == null)
+                    continue;
+                
+                Variable v;
+                if (res.Variables.TryGetValue(f.Key, out v))
+                    SetDataElementDefaultValue(network, res, v, f.Value, false);
+            }
 
 			res.SharedSignals = res.Signals.Values.ToArray();
 			res.SharedVariables = res.Variables.Values.ToArray();

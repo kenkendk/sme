@@ -12,6 +12,7 @@ namespace SimpleComponents
         /// <summary>
         /// The input bus
         /// </summary>
+        [TopLevelInputBus]
         public interface IInputBus : IBus
         {
             /// <summary>
@@ -35,6 +36,7 @@ namespace SimpleComponents
         /// <summary>
         /// The output bus
         /// </summary>
+        [TopLevelOutputBus]
         public interface IOutputBus : IBus
         {
 			/// <summary>
@@ -66,6 +68,10 @@ namespace SimpleComponents
         /// The first element in the buffer
         /// </summary>
         private int m_head;
+        /// <summary>
+        /// Test element for the AST parser, not used in code
+        /// </summary>
+        private T m_test;
 
         /// <summary>
         /// The input bus.
@@ -78,6 +84,7 @@ namespace SimpleComponents
         /// </summary>
         [OutputBus]
         public readonly IOutputBus Output;
+
 
         /// <summary>
         /// Initializes a new instance of the <see cref="T:SimpleComponents.SimpleFifoBuffer`1"/> class.

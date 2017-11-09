@@ -63,9 +63,9 @@ namespace SME.VHDL
 		public readonly bool AVOID_SLL_AND_SRL = true;
 
 		/// <summary>
-		/// The processes forming the basis of the network
+		/// The simulation forming the basis of the network
 		/// </summary>
-		public readonly IEnumerable<IProcess> Processes;
+		public readonly Simulation Simulation;
 
 		/// <summary>
 		/// The folder where data is place
@@ -118,20 +118,20 @@ namespace SME.VHDL
         /// <summary>
         /// Initializes a new instance of the <see cref="T:SME.VHDL.RenderState"/> class.
         /// </summary>
-        /// <param name="processes">The processes to parse.</param>
+        /// <param name="simulation">The simulation to parse.</param>
         /// <param name="targetfolder">The folder where the output is stored.</param>
         /// <param name="backupfolder">The folder where backups are stored.</param>
         /// <param name="csvtracename">The name of the CSV trace file.</param>
         /// <param name="customfiles">A list of VHDL files to include in the Makefile, without the VHDL extension</param>
-        public RenderState(IEnumerable<IProcess> processes, string targetfolder, string backupfolder = null, string csvtracename = null, IEnumerable<string> customfiles = null)
+        public RenderState(Simulation simulation, string targetfolder, string backupfolder = null, string csvtracename = null, IEnumerable<string> customfiles = null)
         {
-            Processes = processes;
+            Simulation = simulation;
             TargetFolder = targetfolder;
             BackupFolder = backupfolder;
             CSVTracename = csvtracename;
             CustomFiles = customfiles;
 
-            Network = ParseProcesses.BuildNetwork(processes, true);
+            Network = ParseProcesses.BuildNetwork(simulation, true);
 
             ValidateNetwork(Network);
 
@@ -144,7 +144,7 @@ namespace SME.VHDL
                 .Distinct(new TypeRefComp())
                 .ToArray();
 
-            Network.Name = Naming.AssemblyToValidName(Processes);
+            Network.Name = Naming.AssemblyToValidName(simulation);
 
             SME.AST.Transform.Apply.Transform(
                 Network,
@@ -193,33 +193,40 @@ namespace SME.VHDL
 		/// </summary>
 		public void Render()
 		{
-			BackupExistingTarget(Processes, TargetFolder, BackupFolder);
+            // Build a distinct map based on the types
+            var used = new HashSet<Type>();
+            var processes =
+                Network.Processes.Select(x => {
+                    if (used.Contains(x.SourceType))
+                        return null;
 
-			var targetTopLevel = Path.Combine(TargetFolder, Naming.AssemblyNameToFileName(Processes));
+                    used.Add(x.SourceType);
+                    return x;
+            })
+            .Where(x => x != null)
+            .ToArray();
+
+            BackupExistingTarget(processes.Select(x => x.SourceInstance.Instance), TargetFolder, BackupFolder);
+
+            var targetTopLevel = Path.Combine(TargetFolder, Naming.AssemblyNameToFileName(Simulation));
 
 			File.WriteAllText(targetTopLevel, MergeUserData(new TopLevel(this).TransformText(), targetTopLevel));
 
-			var targetTestBench = Path.Combine(TargetFolder, "TestBench_" + Naming.AssemblyNameToFileName(Processes));
+            var targetTestBench = Path.Combine(TargetFolder, "TestBench_" + Naming.AssemblyNameToFileName(Simulation));
 			File.WriteAllText(targetTestBench, MergeUserData(new TracefileTester(this).TransformText(), targetTestBench));
 
-			var targetTypeLib = Path.Combine(TargetFolder, "Types_" + Naming.AssemblyNameToFileName(Processes));
+            var targetTypeLib = Path.Combine(TargetFolder, "Types_" + Naming.AssemblyNameToFileName(Simulation));
 			File.WriteAllText(targetTypeLib, MergeUserData(new CustomTypes(this).TransformText(), targetTypeLib));
 
-			var exportTypeLib = Path.Combine(TargetFolder, "Export_" + Naming.AssemblyNameToFileName(Processes));
+            var exportTypeLib = Path.Combine(TargetFolder, "Export_" + Naming.AssemblyNameToFileName(Simulation));
 			File.WriteAllText(exportTypeLib, MergeUserData(new ExportTopLevel(this).TransformText(), exportTypeLib));
 
 			File.WriteAllText(Path.Combine(TargetFolder, "Makefile"), new GHDL_Makefile(this).TransformText());
 
-            var used = new HashSet<Type>();
-            foreach (var p in Network.Processes)
+            foreach (var p in processes)
 			{
-                if (used.Contains(p.SourceType))
-                    continue;
-
-                used.Add(p.SourceType);
-
 				var rsp = new RenderStateProcess(this, p);
-				var targetfile = Path.Combine(TargetFolder, Naming.ProcessNameToFileName(p.SourceInstance));
+                var targetfile = Path.Combine(TargetFolder, Naming.ProcessNameToFileName(p.SourceInstance.Instance));
 				File.WriteAllText(targetfile, MergeUserData(new Entity(this, rsp).TransformText(), targetfile));
 			}
 
@@ -844,7 +851,10 @@ namespace SME.VHDL
 		{
 			var bus = (AST.Bus)s.Parent;
 			var st = bus.SourceType;
-			var name = st.Name + "." + s.Name;
+            if (bus.SourceInstance != null && Simulation.BusNames.ContainsKey(bus.SourceInstance))
+                return Simulation.BusNames[bus.SourceInstance] + "." + s.Name;
+            
+            var name = st.Name + "." + s.Name;
 			if (st.DeclaringType != null)
 				name = st.DeclaringType.Name + "." + name;
 			

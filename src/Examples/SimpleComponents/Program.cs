@@ -44,6 +44,7 @@ namespace SimpleComponents
                     .Current
                     .AddTicker(s => Console.WriteLine("Ticked {0}", Scope.Current.Clock.Ticks))
                     .BuildCSVFile()
+                    .BuildVHDL()
                     .Run();
             }
 

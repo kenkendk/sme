@@ -40,9 +40,9 @@ namespace SME.CPP
 		public readonly Network Network;
 
 		/// <summary>
-		/// The processes forming the basis of the network
+		/// The simulation forming the basis of the network
 		/// </summary>
-		public readonly IEnumerable<IProcess> Processes;
+		public readonly Simulation Simulation;
 
 		/// <summary>
 		/// The folder where data is place
@@ -80,20 +80,20 @@ namespace SME.CPP
 		/// <summary>
 		/// Initializes a new instance of the <see cref="T:SME.VHDL.RenderState"/> class.
 		/// </summary>
-		/// <param name="processes">The processes to parse.</param>
+		/// <param name="simulation">The simulation to parse.</param>
 		/// <param name="targetfolder">The folder where the output is stored.</param>
 		/// <param name="backupfolder">The folder where backups are stored.</param>
 		/// <param name="csvtracename">The name of the CSV trace file.</param>
 		/// <param name="customfiles">A list of VHDL files to include in the Makefile, without the VHDL extension</param>
-		public RenderState(IEnumerable<IProcess> processes, string targetfolder, string backupfolder = null, string csvtracename = null, IEnumerable<string> customfiles = null)
+        public RenderState(Simulation simulation, string targetfolder, string backupfolder = null, string csvtracename = null, IEnumerable<string> customfiles = null)
 		{
-			Processes = processes;
+            Simulation = simulation;
 			TargetFolder = targetfolder;
 			BackupFolder = backupfolder;
 			CSVTracename = csvtracename;
 			CustomFiles = customfiles;
 
-			Network = ParseProcesses.BuildNetwork(processes, true);
+			Network = ParseProcesses.BuildNetwork(simulation, true);
 
 			ValidateNetwork(Network);
 
@@ -106,7 +106,7 @@ namespace SME.CPP
 				.Distinct(new TypeRefComp())
 				.ToArray();
 
-			Network.Name = Naming.ToValidName(Processes.First().GetType().Assembly.GetName().Name);
+            Network.Name = Naming.ToValidName(simulation.Processes.First().Instance.GetType().Assembly.GetName().Name);
 
             SME.AST.Transform.Apply.Transform(
                 Network,

@@ -33,7 +33,7 @@ entity <#= Network.Name #>_export is
 	#>
     -- Top-level bus <#= bus.Name #> signals
 <#     foreach (var signal in bus.Signals) { #>
-    <#= bus.Name #>_<#= signal.Name #>: <#= signaltype #> <#= RS.VHDLWrappedTypeName(signal) #>;
+    <#= bus.InstanceName #>_<#= signal.Name #>: <#= signaltype #> <#= RS.VHDLWrappedTypeName(signal) #>;
 <#     } #>
 
 <# } #>
@@ -70,7 +70,7 @@ begin
 	#>
         -- <#= type #> bus <#= bus.Name #>
 <#		  foreach(var signal in bus.Signals) { #>
-        <#= bus.InstanceName #>_<#= signal.Name #> => <#= bus.Name #>_<#= signal.Name #>,
+        <#= bus.InstanceName #>_<#= signal.Name #> => <#= bus.InstanceName #>_<#= signal.Name #>,
 <#        } #>
 
 <#    } #>

@@ -27,7 +27,7 @@ namespace SME
         /// <summary>
         /// The list of processes in the simulation
         /// </summary>
-        private HashSet<IProcess> m_processes = new HashSet<IProcess>();
+        private Dictionary<IProcess, ProcessMetadata> m_processes = new Dictionary<IProcess, ProcessMetadata>();
 
         /// <summary>
         /// Create a unique scope for the simulation
@@ -47,7 +47,13 @@ namespace SME
         /// <summary>
         /// Gets the currently running processes
         /// </summary>
-        public IList<IProcess> Processes => m_processes.ToList();
+        public IList<ProcessMetadata> Processes => m_processes.Values.ToList();
+
+        /// <summary>
+        /// Bus name lookup table
+        /// </summary>
+        /// <value>The bus names.</value>
+        public Dictionary<IBus, string> BusNames { get; } = new Dictionary<IBus, string>();
 
         /// <summary>
         /// Gets the current running dependency graph
@@ -117,14 +123,67 @@ namespace SME
             if (processes != null)
                 foreach (var p in processes)
                     RegisterProcess(p);
-            
+
             if (m_processes.Count == 0)
                 throw new InvalidOperationException("No processes to run?");
+
+            foreach (var p in m_processes.Values)
+                p.RegisterInitializationData();
+
+            // Assign unique names to processes if there are multiple instances
+            var processmap = new Dictionary<Type, List<ProcessMetadata>>();
+            foreach (var p in m_processes.Values)
+            {
+                List<ProcessMetadata> lp;
+                if (!processmap.TryGetValue(p.Instance.GetType(), out lp))
+                    processmap[p.Instance.GetType()] = lp = new List<ProcessMetadata>();
+                lp.Add(p);
+            }
+
+            foreach (var lp in processmap.Values)
+            {
+                var t = TypeNameToName(lp[0].Instance.GetType());
+                if (lp.Count == 1)
+                {
+                    lp[0].InstanceName = t;
+                }
+                else
+                {
+                    for (var i = 0; i < lp.Count; i++)
+                        lp[i].InstanceName = t + "#" + i.ToString();
+                }
+            }
+
+
+            // Assign unique names to processes if there are multiple instances
+            var busmap = new Dictionary<Type, List<IBus>>();
+            foreach (var b in m_processes.Values.SelectMany(x => x.Instance.InputBusses.Union(x.Instance.OutputBusses).Union(x.Instance.InternalBusses)).Distinct())
+            {
+                List<IBus> lp;
+                if (!busmap.TryGetValue(b.BusType, out lp))
+                    busmap[b.BusType] = lp = new List<IBus>();
+                lp.Add(b);
+            }
+
+            foreach (var lp in busmap.Values)
+            {
+                var t = TypeNameToName(lp[0].BusType);
+
+                if (lp.Count == 1)
+                {
+                    BusNames[lp[0]] = t;
+                }
+                else
+                {
+                    for (var i = 0; i < lp.Count; i++)
+                        BusNames[lp[i]] = t + "#" + i.ToString();
+                }
+            }
 
             try
             {
                 Tick = 0uL;
-                Graph = new DependencyGraph(m_processes);
+                Graph = new DependencyGraph(m_processes.Keys);
 
                 foreach (var cfg in m_preloaders)
                     cfg(this);
@@ -132,7 +191,7 @@ namespace SME
                 var tick = 0UL;
 
                 // Fire up all the processes
-                var running_tasks = m_processes
+                var running_tasks = m_processes.Keys
                     .Select(x =>
                     {
                         SME.Loader.AutoloadBusses(x);
@@ -163,6 +222,28 @@ namespace SME
 		}
 
         /// <summary>
+        /// Converts a type to a friendly name
+        /// </summary>
+        /// <returns>The name of the type.</returns>
+        /// <param name="type">The type to get the name for.</param>
+        public string TypeNameToName(Type type)
+        {
+            var fullname = type.FullName;
+            var extras = string.Empty;
+            if (type.IsGenericType)
+            {
+                fullname = type.GetGenericTypeDefinition().FullName;
+                extras = "<" + string.Join(", ", type.GenericTypeArguments.Select(x => x.Name)) + ">";
+            }
+
+            var asmname = type.Assembly.GetName().Name + '.';
+            if (fullname.StartsWith(asmname, StringComparison.Ordinal))
+                fullname = fullname.Substring(asmname.Length);
+
+            return fullname + extras;
+        }
+
+        /// <summary>
         /// Releases all resource used by the <see cref="T:SME.Simulation"/> object.
         /// </summary>
         /// <remarks>Call <see cref="Dispose"/> when you are finished using the <see cref="T:SME.Simulation"/>. The
@@ -186,7 +267,7 @@ namespace SME
         {
             if (p == null)
                 throw new ArgumentNullException(nameof(p));
-            m_processes.Add(p);
+            m_processes.Add(p, new ProcessMetadata(p));
         }
 
 		/// <summary>
@@ -201,7 +282,8 @@ namespace SME
 				if (key == null)
 					return null;
 
-				_scopes.TryGetValue(key, out var res);
+                Simulation res;
+				_scopes.TryGetValue(key, out res);
 				return res;
 			}
 

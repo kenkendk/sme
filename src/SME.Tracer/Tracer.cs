@@ -23,9 +23,7 @@ namespace SME.Tracer
 					 Bus = bus,
 					 Property = prop,
 					 IsDriver = isDriver,
-					 SortKey = 
-						(bus.BusType.DeclaringType != null ? bus.BusType.DeclaringType.Name + "." : string.Empty)
-						+ bus.BusType.Name + "." + prop.Name
+                     SortKey = simulation.BusNames[bus] + "." + prop.Name
 				})
 				.Where(x => !x.Bus.IsInternal)
 				.OrderByDescending(x => x.IsDriver)

@@ -128,16 +128,18 @@ namespace SME.VHDL
 					if (v.CecilType.IsArrayType())
 					{
 						int arraylen;
-						if (v.DefaultValue is EmptyArrayCreateExpression)
-						{
-							var az = ((EmptyArrayCreateExpression)v.DefaultValue).SizeExpression;
-							if (az is PrimitiveExpression)
-								arraylen = (int)((PrimitiveExpression)az).Value;
-							else
-								throw new Exception($"Unable to figure out what length to assign {v.Name} from {az.SourceExpression}");
-						}
-						else if (v.DefaultValue is ArrayCreateExpression)
-							arraylen = ((ArrayCreateExpression)v.DefaultValue).ElementExpressions.Length;
+                        if (v.DefaultValue is EmptyArrayCreateExpression)
+                        {
+                            var az = ((EmptyArrayCreateExpression)v.DefaultValue).SizeExpression;
+                            if (az is PrimitiveExpression)
+                                arraylen = (int)((PrimitiveExpression)az).Value;
+                            else
+                                throw new Exception($"Unable to figure out what length to assign {v.Name} from {az.SourceExpression}");
+                        }
+                        else if (v.DefaultValue is ArrayCreateExpression)
+                            arraylen = ((ArrayCreateExpression)v.DefaultValue).ElementExpressions.Length;
+                        else if (v.DefaultValue is Array)
+                            arraylen = ((Array)v.DefaultValue).Length;
 						else
 						{
 							Console.WriteLine($"Unable to find variable for {v.Name}, ignoring");
@@ -828,33 +830,60 @@ namespace SME.VHDL
 			};
 			exp.Parent = res;
 
-			if (element.DefaultValue is AST.ArrayCreateExpression)
-			{
-				var asexp = (AST.ArrayCreateExpression)element.DefaultValue;
+            if (element.DefaultValue is AST.ArrayCreateExpression)
+            {
+                var asexp = (AST.ArrayCreateExpression)element.DefaultValue;
 
-				var nae = new ArrayCreateExpression()
-				{
-					SourceExpression = asexp.SourceExpression,
-					SourceResultType = asexp.SourceResultType,
-				};
+                var nae = new ArrayCreateExpression()
+                {
+                    SourceExpression = asexp.SourceExpression,
+                    SourceResultType = asexp.SourceResultType,
+                };
 
-				nae.ElementExpressions = asexp.ElementExpressions
-					.Select(x => new PrimitiveExpression()
-					{
-						SourceExpression = x.SourceExpression,
-						SourceResultType = x.SourceResultType,
-						Parent = nae,
-						Value = ((PrimitiveExpression)x).Value
-					}).Cast<Expression>().ToArray();
+                nae.ElementExpressions = asexp.ElementExpressions
+                    .Select(x => new PrimitiveExpression()
+                    {
+                        SourceExpression = x.SourceExpression,
+                        SourceResultType = x.SourceResultType,
+                        Parent = nae,
+                        Value = ((PrimitiveExpression)x).Value
+                    }).Cast<Expression>().ToArray();
 
-				var elvhdl = Parent.TypeScope.GetByName(tvhdl.ElementName);
+                var elvhdl = Parent.TypeScope.GetByName(tvhdl.ElementName);
 
-				for (var i = 0; i < nae.ElementExpressions.Length; i++)
-					VHDLTypeConversion.ConvertExpression(Parent, null, nae.ElementExpressions[i], elvhdl, nae.ElementExpressions[i].SourceResultType, false);
+                for (var i = 0; i < nae.ElementExpressions.Length; i++)
+                    VHDLTypeConversion.ConvertExpression(Parent, null, nae.ElementExpressions[i], elvhdl, nae.ElementExpressions[i].SourceResultType, false);
 
-				exp.Right = nae;
-				Parent.TypeLookup[nae] = tvhdl;
-			}
+                exp.Right = nae;
+                Parent.TypeLookup[nae] = tvhdl;
+            }
+            else if (element.DefaultValue is Array)
+            {
+                var asexp = (Array)element.DefaultValue;
+
+                var nae = new ArrayCreateExpression()
+                {
+                    SourceExpression = null,
+                    SourceResultType = element.CecilType
+                };
+
+                nae.ElementExpressions = Enumerable.Range(0, asexp.Length)
+                    .Select(x => new PrimitiveExpression()
+                    {
+                        SourceExpression = null,
+                        SourceResultType = element.CecilType.GetElementType(),
+                        Parent = nae,
+                        Value = asexp.GetValue(x)
+                    }).Cast<Expression>().ToArray();
+
+                var elvhdl = Parent.TypeScope.GetByName(tvhdl.ElementName);
+
+                for (var i = 0; i < nae.ElementExpressions.Length; i++)
+                    VHDLTypeConversion.ConvertExpression(Parent, null, nae.ElementExpressions[i], elvhdl, nae.ElementExpressions[i].SourceResultType, false);
+
+                exp.Right = nae;
+                Parent.TypeLookup[nae] = tvhdl;
+            }
 			else if (element.DefaultValue is ICSharpCode.NRefactory.CSharp.AstNode)
 			{
 				var eltype = Type.GetType(element.CecilType.FullName);

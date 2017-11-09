@@ -195,7 +195,7 @@ namespace SME.AST
 		/// <summary>
 		/// The instance that this AST element is based on
 		/// </summary>
-		public SME.IProcess SourceInstance;
+        public SME.ProcessMetadata SourceInstance;
 
 		/// <summary>
 		/// The type that defines this process for Cecil

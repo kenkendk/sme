@@ -22,7 +22,7 @@ namespace SME
 		{
 			self.AddPostloader(sim =>
 			{
-                new SME.CPP.RenderState(sim.Processes, Path.Combine(sim.TargetFolder, targetfolder ?? string.Empty), backupfolder, csvfile, customfiles).Render();
+                new SME.CPP.RenderState(sim, Path.Combine(sim.TargetFolder, targetfolder ?? string.Empty), backupfolder, csvfile, customfiles).Render();
 			});
 			return self;
 		}
