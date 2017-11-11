@@ -472,7 +472,7 @@ namespace SME.AST
 					Parent = proc
 				};
 				res = c;
-				network.ConstantLookup.Add(field, c);				
+                network.ConstantLookup[field] = c;
 			}
 			else if (field.IsStatic)
 			{

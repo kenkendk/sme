@@ -120,6 +120,15 @@ begin
 <#        } #>
 
 <#    } #>
+
+        -- Initialization values
+<#     foreach (var variable in p.SharedVariables) { #>
+        <#= variable.Name #>_reset_value => <#= RS.GetResetExpression(variable) #>,
+<#     } #>
+<#     foreach (var variable in p.SharedSignals) { #>
+        <#= variable.Name #>_reset_value => <#= RS.GetResetExpression(variable) #>,
+<#     } #>
+
         RST => RST,
         CLK => CLK
     );

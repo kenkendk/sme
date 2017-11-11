@@ -110,6 +110,7 @@
     <Compile Include="Transformations\InsertReturnAssignments.cs" />
     <Compile Include="Transformations\WrapIfComposite.cs" />
     <Compile Include="Transformations\UntangleElseStatements.cs" />
+    <Compile Include="RenderHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

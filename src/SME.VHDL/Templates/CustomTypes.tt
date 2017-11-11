@@ -21,13 +21,20 @@ package CUSTOM_TYPES is
 -- #### USER-DATA-CORETYPES-START
 -- #### USER-DATA-CORETYPES-END
 
+<# if (RS.CustomTypes.Any()) { #>
+    -- Types for processes
 <# foreach(var t in RS.CustomTypes) {#>
     type <#= t.ToSafeVHDLName()#> is
 <#     foreach(var f in RS.ListMembers(t)) { #>
     <#= f #>
 <#     } #>
+<# } #>
 
 <# } #>
+<# foreach (var t in RS.TypeDefinitions) { #>
+    <#= t #>;
+<# } #>
+
 <# if (RS.BusArrays.Any()) { #>
     -- Bus array definitions
 <#     foreach(var signal in RS.BusArrays) {

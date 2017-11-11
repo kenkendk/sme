@@ -48,6 +48,14 @@ entity <#= Process.Name #> is
 <#     } #>
 <# } #>
 
+    -- Initialization values
+<# foreach (var variable in Process.SharedVariables) { #>
+    <#= variable.Name #>_reset_value: in <#= RS.VHDLWrappedTypeName(variable) #>;
+<# } #>
+<# foreach (var variable in Process.SharedSignals) { #>
+    <#= variable.Name #>_reset_value: in <#= RS.VHDLWrappedTypeName(variable) #>;
+<# } #>
+
     -- Reset signal
     RST : Std_logic;
 
@@ -57,14 +65,6 @@ entity <#= Process.Name #> is
 end <#= Process.Name #>;
 
 architecture RTL of <#= Process.Name #> is
-<# if (RSP.TypeDefinitions.Count() > 0) { #>
-
-   -- Type definitions
-<# } #>
-<# foreach (var t in RSP.TypeDefinitions) { #>
-  <#= t #>;
-<# } #>
-
 <# foreach (var bus in Process.InternalBusses) { #>
   -- Internal bus <#= bus.Name #> signals
 <#     foreach (var signal in bus.Signals) { #>
@@ -92,7 +92,7 @@ architecture RTL of <#= Process.Name #> is
 <# if (Process.Methods != null && Process.Methods.Any(x => !x.Ignore)) { #>
   -- Internal methods
 <#     foreach (var s in Process.Methods.Where(x => !x.Ignore)) { #>
-<#         foreach(var line in RSP.RenderMethod(s)) { #>
+<#         foreach(var line in RSP.Helper.RenderMethod(s)) { #>
   <#= line #>
 <#         } #>
 
@@ -146,6 +146,14 @@ begin
             <#= s #>
 <#         } #>
 
+<#         foreach(var variable in Process.SharedVariables) { #>
+            <#= variable.Name #> := <#= variable.Name #>_reset_value;
+<#         } #>
+<#         foreach(var variable in Process.SharedSignals) { #>
+            <#= variable.Name #> <= <#= variable.Name #>_reset_value;
+<#         } #>
+
+
 <#     } else { #>
 <#          foreach(var s in RSP.ClockResetStaments) { #>
             <#= s.Substring("next_".Length) #>
@@ -172,7 +180,7 @@ begin
 <#     } #>
 <#     if (Process.IsClocked) { #>
 
-<#     foreach(var line in RSP.RenderMethod(Process.MainMethod)) { #>
+<#     foreach(var line in RSP.Helper.RenderMethod(Process.MainMethod)) { #>
             <#= line #>
 <#     } #>
 
@@ -220,6 +228,12 @@ begin
 <#     foreach(var s in RSP.ProcessResetStaments) { #>
             <#= s #>
 <#     } #>
+<#     foreach(var variable in Process.SharedVariables) { #>
+            <#= variable.Name #> := <#= variable.Name #>_reset_value;
+<#     } #>
+<#     foreach(var variable in Process.SharedSignals) { #>
+            <#= variable.Name #> <= <#= variable.Name #>_reset_value;
+<#     } #>
 
             -- Initialize code here
             -- #### USER-DATA-NONCLOCKEDRESETCODE-START
@@ -240,7 +254,7 @@ begin
             -- #### USER-DATA-NONCLOCKEDINITIALIZECODE-END
 
 
-<#     foreach(var line in RSP.RenderMethod(Process.MainMethod)) { #>
+<#     foreach(var line in RSP.Helper.RenderMethod(Process.MainMethod)) { #>
             <#= line #>
 <#     } #>
 

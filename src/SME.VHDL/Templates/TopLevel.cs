@@ -749,338 +749,326 @@ var feedbacks = RS.FeedbackBusses.ToArray();
             #line hidden
             
             #line 123 ""
-            this.Write("        RST => RST,\n        CLK => CLK\n    );\n\n");
+            this.Write("\n        -- Initialization values\n");
+            
+            #line default
+            #line hidden
+            
+            #line 125 ""
+     foreach (var variable in p.SharedVariables) { 
+            
+            #line default
+            #line hidden
+            
+            #line 126 ""
+            this.Write("        ");
+            
+            #line default
+            #line hidden
+            
+            #line 126 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( variable.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 126 ""
+            this.Write("_reset_value => ");
+            
+            #line default
+            #line hidden
+            
+            #line 126 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( RS.GetResetExpression(variable) ));
+            
+            #line default
+            #line hidden
+            
+            #line 126 ""
+            this.Write(",\n");
             
             #line default
             #line hidden
             
             #line 127 ""
- } 
-            
-            #line default
-            #line hidden
-            
-            #line 128 ""
-            this.Write("\n    -- Propagate all feedback signals immediately\n");
-            
-            #line default
-            #line hidden
-            
-            #line 130 ""
- foreach(var bus in feedbacks) { 
-            
-            #line default
-            #line hidden
-            
-            #line 131 ""
-     foreach (var signal in bus.Signals) { 
-            
-            #line default
-            #line hidden
-            
-            #line 132 ""
-            this.Write("    ");
-            
-            #line default
-            #line hidden
-            
-            #line 132 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( bus.InstanceName ));
-            
-            #line default
-            #line hidden
-            
-            #line 132 ""
-            this.Write("_");
-            
-            #line default
-            #line hidden
-            
-            #line 132 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 132 ""
-            this.Write(" <= ");
-            
-            #line default
-            #line hidden
-            
-            #line 132 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( bus.InstanceName ));
-            
-            #line default
-            #line hidden
-            
-            #line 132 ""
-            this.Write("_");
-            
-            #line default
-            #line hidden
-            
-            #line 132 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 132 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( bus.IsClocked ? "_current" : "_next" ));
-            
-            #line default
-            #line hidden
-            
-            #line 132 ""
-            this.Write(";\n");
-            
-            #line default
-            #line hidden
-            
-            #line 133 ""
      } 
             
             #line default
             #line hidden
             
-            #line 134 ""
+            #line 128 ""
+     foreach (var variable in p.SharedSignals) { 
+            
+            #line default
+            #line hidden
+            
+            #line 129 ""
+            this.Write("        ");
+            
+            #line default
+            #line hidden
+            
+            #line 129 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( variable.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 129 ""
+            this.Write("_reset_value => ");
+            
+            #line default
+            #line hidden
+            
+            #line 129 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( RS.GetResetExpression(variable) ));
+            
+            #line default
+            #line hidden
+            
+            #line 129 ""
+            this.Write(",\n");
+            
+            #line default
+            #line hidden
+            
+            #line 130 ""
+     } 
+            
+            #line default
+            #line hidden
+            
+            #line 131 ""
+            this.Write("\n        RST => RST,\n        CLK => CLK\n    );\n\n");
+            
+            #line default
+            #line hidden
+            
+            #line 136 ""
  } 
             
             #line default
             #line hidden
             
-            #line 135 ""
+            #line 137 ""
+            this.Write("\n    -- Propagate all feedback signals immediately\n");
+            
+            #line default
+            #line hidden
+            
+            #line 139 ""
+ foreach(var bus in feedbacks) { 
+            
+            #line default
+            #line hidden
+            
+            #line 140 ""
+     foreach (var signal in bus.Signals) { 
+            
+            #line default
+            #line hidden
+            
+            #line 141 ""
+            this.Write("    ");
+            
+            #line default
+            #line hidden
+            
+            #line 141 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( bus.InstanceName ));
+            
+            #line default
+            #line hidden
+            
+            #line 141 ""
+            this.Write("_");
+            
+            #line default
+            #line hidden
+            
+            #line 141 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 141 ""
+            this.Write(" <= ");
+            
+            #line default
+            #line hidden
+            
+            #line 141 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( bus.InstanceName ));
+            
+            #line default
+            #line hidden
+            
+            #line 141 ""
+            this.Write("_");
+            
+            #line default
+            #line hidden
+            
+            #line 141 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 141 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( bus.IsClocked ? "_current" : "_next" ));
+            
+            #line default
+            #line hidden
+            
+            #line 141 ""
+            this.Write(";\n");
+            
+            #line default
+            #line hidden
+            
+            #line 142 ""
+     } 
+            
+            #line default
+            #line hidden
+            
+            #line 143 ""
+ } 
+            
+            #line default
+            #line hidden
+            
+            #line 144 ""
             this.Write("\n    -- Propagate all clocked and feedback signals\n    process(\n        CLK,\n    " +
                     "    RST)\n    begin\n        if RST = \'1\' then\n");
             
             #line default
             #line hidden
             
-            #line 142 ""
- foreach(var bus in Network.Busses.Where(x => !x.IsInternal && x.IsClocked && !feedbacks.Contains(x))) { 
-            
-            #line default
-            #line hidden
-            
-            #line 143 ""
-     foreach (var signal in bus.Signals) { 
-            
-            #line default
-            #line hidden
-            
-            #line 144 ""
-            this.Write("            ");
-            
-            #line default
-            #line hidden
-            
-            #line 144 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( bus.InstanceName ));
-            
-            #line default
-            #line hidden
-            
-            #line 144 ""
-            this.Write("_");
-            
-            #line default
-            #line hidden
-            
-            #line 144 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 144 ""
-            this.Write(" <= ");
-            
-            #line default
-            #line hidden
-            
-            #line 144 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( RS.DefaultValue(signal) ));
-            
-            #line default
-            #line hidden
-            
-            #line 144 ""
-            this.Write(";\n");
-            
-            #line default
-            #line hidden
-            
-            #line 145 ""
-     } 
-            
-            #line default
-            #line hidden
-            
-            #line 146 ""
- } 
-            
-            #line default
-            #line hidden
-            
-            #line 147 ""
- foreach(var bus in feedbacks) { 
-            
-            #line default
-            #line hidden
-            
-            #line 148 ""
-     foreach (var signal in bus.Signals) { 
-            
-            #line default
-            #line hidden
-            
-            #line 149 ""
-            this.Write("            ");
-            
-            #line default
-            #line hidden
-            
-            #line 149 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( bus.InstanceName ));
-            
-            #line default
-            #line hidden
-            
-            #line 149 ""
-            this.Write("_");
-            
-            #line default
-            #line hidden
-            
-            #line 149 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 149 ""
-            this.Write("_current <= ");
-            
-            #line default
-            #line hidden
-            
-            #line 149 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( RS.DefaultValue(signal) ));
-            
-            #line default
-            #line hidden
-            
-            #line 149 ""
-            this.Write(";\n");
-            
-            #line default
-            #line hidden
-            
-            #line 150 ""
-     } 
-            
-            #line default
-            #line hidden
-            
             #line 151 ""
-            this.Write("\n");
+ foreach(var bus in Network.Busses.Where(x => !x.IsInternal && x.IsClocked && !feedbacks.Contains(x))) { 
             
             #line default
             #line hidden
             
             #line 152 ""
- } 
-            
-            #line default
-            #line hidden
-            
-            #line 153 ""
-            this.Write("        elsif rising_edge(CLK) then\n");
-            
-            #line default
-            #line hidden
-            
-            #line 154 ""
- foreach(var bus in Network.Busses.Where(x => !x.IsInternal && x.IsClocked && !feedbacks.Contains(x))) { 
-            
-            #line default
-            #line hidden
-            
-            #line 155 ""
      foreach (var signal in bus.Signals) { 
             
             #line default
             #line hidden
             
-            #line 156 ""
+            #line 153 ""
             this.Write("            ");
             
             #line default
             #line hidden
             
-            #line 156 ""
+            #line 153 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( bus.InstanceName ));
             
             #line default
             #line hidden
             
-            #line 156 ""
+            #line 153 ""
             this.Write("_");
             
             #line default
             #line hidden
             
-            #line 156 ""
+            #line 153 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 156 ""
+            #line 153 ""
             this.Write(" <= ");
             
             #line default
             #line hidden
             
-            #line 156 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( bus.InstanceName ));
+            #line 153 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( RS.DefaultValue(signal) ));
             
             #line default
             #line hidden
             
-            #line 156 ""
-            this.Write("_");
+            #line 153 ""
+            this.Write(";\n");
             
             #line default
             #line hidden
             
-            #line 156 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 156 ""
-            this.Write("_next;\n");
-            
-            #line default
-            #line hidden
-            
-            #line 157 ""
+            #line 154 ""
      } 
             
             #line default
             #line hidden
             
+            #line 155 ""
+ } 
+            
+            #line default
+            #line hidden
+            
+            #line 156 ""
+ foreach(var bus in feedbacks) { 
+            
+            #line default
+            #line hidden
+            
+            #line 157 ""
+     foreach (var signal in bus.Signals) { 
+            
+            #line default
+            #line hidden
+            
             #line 158 ""
-            this.Write("\n");
+            this.Write("            ");
+            
+            #line default
+            #line hidden
+            
+            #line 158 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( bus.InstanceName ));
+            
+            #line default
+            #line hidden
+            
+            #line 158 ""
+            this.Write("_");
+            
+            #line default
+            #line hidden
+            
+            #line 158 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 158 ""
+            this.Write("_current <= ");
+            
+            #line default
+            #line hidden
+            
+            #line 158 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( RS.DefaultValue(signal) ));
+            
+            #line default
+            #line hidden
+            
+            #line 158 ""
+            this.Write(";\n");
             
             #line default
             #line hidden
             
             #line 159 ""
- } 
+     } 
             
             #line default
             #line hidden
@@ -1092,90 +1080,192 @@ var feedbacks = RS.FeedbackBusses.ToArray();
             #line hidden
             
             #line 161 ""
- foreach(var bus in feedbacks) { 
-            
-            #line default
-            #line hidden
-            
-            #line 162 ""
-     foreach (var signal in bus.Signals) { 
-            
-            #line default
-            #line hidden
-            
-            #line 163 ""
-            this.Write("            ");
-            
-            #line default
-            #line hidden
-            
-            #line 163 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( bus.InstanceName ));
-            
-            #line default
-            #line hidden
-            
-            #line 163 ""
-            this.Write("_");
-            
-            #line default
-            #line hidden
-            
-            #line 163 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 163 ""
-            this.Write("_current <= ");
-            
-            #line default
-            #line hidden
-            
-            #line 163 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( bus.InstanceName ));
-            
-            #line default
-            #line hidden
-            
-            #line 163 ""
-            this.Write("_");
-            
-            #line default
-            #line hidden
-            
-            #line 163 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 163 ""
-            this.Write("_next;\n");
-            
-            #line default
-            #line hidden
-            
-            #line 164 ""
-     } 
-            
-            #line default
-            #line hidden
-            
-            #line 165 ""
-            this.Write("\n");
-            
-            #line default
-            #line hidden
-            
-            #line 166 ""
  } 
             
             #line default
             #line hidden
             
+            #line 162 ""
+            this.Write("        elsif rising_edge(CLK) then\n");
+            
+            #line default
+            #line hidden
+            
+            #line 163 ""
+ foreach(var bus in Network.Busses.Where(x => !x.IsInternal && x.IsClocked && !feedbacks.Contains(x))) { 
+            
+            #line default
+            #line hidden
+            
+            #line 164 ""
+     foreach (var signal in bus.Signals) { 
+            
+            #line default
+            #line hidden
+            
+            #line 165 ""
+            this.Write("            ");
+            
+            #line default
+            #line hidden
+            
+            #line 165 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( bus.InstanceName ));
+            
+            #line default
+            #line hidden
+            
+            #line 165 ""
+            this.Write("_");
+            
+            #line default
+            #line hidden
+            
+            #line 165 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 165 ""
+            this.Write(" <= ");
+            
+            #line default
+            #line hidden
+            
+            #line 165 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( bus.InstanceName ));
+            
+            #line default
+            #line hidden
+            
+            #line 165 ""
+            this.Write("_");
+            
+            #line default
+            #line hidden
+            
+            #line 165 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 165 ""
+            this.Write("_next;\n");
+            
+            #line default
+            #line hidden
+            
+            #line 166 ""
+     } 
+            
+            #line default
+            #line hidden
+            
             #line 167 ""
+            this.Write("\n");
+            
+            #line default
+            #line hidden
+            
+            #line 168 ""
+ } 
+            
+            #line default
+            #line hidden
+            
+            #line 169 ""
+            this.Write("\n");
+            
+            #line default
+            #line hidden
+            
+            #line 170 ""
+ foreach(var bus in feedbacks) { 
+            
+            #line default
+            #line hidden
+            
+            #line 171 ""
+     foreach (var signal in bus.Signals) { 
+            
+            #line default
+            #line hidden
+            
+            #line 172 ""
+            this.Write("            ");
+            
+            #line default
+            #line hidden
+            
+            #line 172 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( bus.InstanceName ));
+            
+            #line default
+            #line hidden
+            
+            #line 172 ""
+            this.Write("_");
+            
+            #line default
+            #line hidden
+            
+            #line 172 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 172 ""
+            this.Write("_current <= ");
+            
+            #line default
+            #line hidden
+            
+            #line 172 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( bus.InstanceName ));
+            
+            #line default
+            #line hidden
+            
+            #line 172 ""
+            this.Write("_");
+            
+            #line default
+            #line hidden
+            
+            #line 172 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 172 ""
+            this.Write("_next;\n");
+            
+            #line default
+            #line hidden
+            
+            #line 173 ""
+     } 
+            
+            #line default
+            #line hidden
+            
+            #line 174 ""
+            this.Write("\n");
+            
+            #line default
+            #line hidden
+            
+            #line 175 ""
+ } 
+            
+            #line default
+            #line hidden
+            
+            #line 176 ""
             this.Write("\n        end if;\n    end process;\n\n-- User defined processes here\n-- #### USER-DA" +
                     "TA-CODE-START\n-- #### USER-DATA-CODE-END\n\nend RTL;");
             

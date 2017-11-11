@@ -10,7 +10,7 @@ namespace SME.VHDL.Templates
 		public readonly Network Network;
 		public readonly RenderState RS;
 
-		public TopLevel(RenderState renderer)
+        public TopLevel(RenderState renderer)
 		{
 			RS = renderer;
 			Network = renderer.Network;

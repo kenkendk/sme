@@ -225,7 +225,7 @@ namespace SME.VHDL
 
             foreach (var p in processes)
 			{
-				var rsp = new RenderStateProcess(this, p);
+                var rsp = new RenderStateProcess(this, p);
                 var targetfile = Path.Combine(TargetFolder, Naming.ProcessNameToFileName(p.SourceInstance.Instance));
 				File.WriteAllText(targetfile, MergeUserData(new Entity(this, rsp).TransformText(), targetfile));
 			}
@@ -382,8 +382,15 @@ namespace SME.VHDL
 			{
 				if (element.Parent is AST.Bus)
 					return element.Parent.Name + "_" + element.Name + "_type";
-				
-				return element.Name + "_type";
+
+                var p = element.Parent;
+                while (p != null && !(p is AST.Process))
+                    p = p.Parent;
+
+                if (p is AST.Process)
+                    return p.Name + "_" + element.Name + "_type";
+                        
+                return element.Name + "_type";
 			}
 
 			return vt.ToSafeVHDLName();
@@ -399,6 +406,9 @@ namespace SME.VHDL
 			var vt = TypeScope.GetVHDLType(fd);
 			if (fd.FieldType.IsArrayType())
 			{
+                if (fd.DeclaringType.IsSameTypeReference(typeof(Process)))
+                    return fd.DeclaringType.Name + "_" + fd.Name + "_type";
+
 				return fd.Name + "_type";
 			}
 
@@ -677,11 +687,11 @@ namespace SME.VHDL
 					string convm = null;
 					try
 					{
-						if (nx is ArrayCreateExpression)
-						{
-							var eltype = n.CecilType.GetElementType();
-							convm = TypeScope.GetVHDLType(eltype).ToString().Substring("T_".Length);
-						}
+                        if (nx is ArrayCreateExpression || nx is Array)
+                        {
+                            var eltype = n.CecilType.GetElementType();
+                            convm = TypeScope.GetVHDLType(eltype).ToString().Substring("T_".Length);
+                        }
 						else
 						{
 							convm = VHDLType(n).ToString().Substring("T_".Length);
@@ -701,95 +711,132 @@ namespace SME.VHDL
 					{
 						if (nx != null && convm != null)
 						{
-							if (nx is ICSharpCode.NRefactory.CSharp.ArrayCreateExpression)
-							{
-								var arc = nx as ICSharpCode.NRefactory.CSharp.ArrayCreateExpression;
+                            if (nx is ICSharpCode.NRefactory.CSharp.ArrayCreateExpression)
+                            {
+                                var arc = nx as ICSharpCode.NRefactory.CSharp.ArrayCreateExpression;
 
-								var varname = Naming.ToValidName(n.Name);
-								var eltype = n.CecilType.GetElementType();
-								var vhdl_eltype = TypeScope.GetVHDLType(eltype);
+                                var varname = Naming.ToValidName(n.Name);
+                                var eltype = n.CecilType.GetElementType();
+                                var vhdl_eltype = TypeScope.GetVHDLType(eltype);
 
-								var ellength = arc.Initializer.Elements.Count;
-								var eltrail = " - 1";
-								if (USE_EXPLICIT_LITERAL_ARRAY_LENGTH)
-								{
-									ellength--;
-									eltrail = "";
-								}
+                                var ellength = arc.Initializer.Elements.Count;
+                                var eltrail = " - 1";
+                                if (USE_EXPLICIT_LITERAL_ARRAY_LENGTH)
+                                {
+                                    ellength--;
+                                    eltrail = "";
+                                }
 
-								yield return string.Format("type {0}_type is array (0 to {1}{3}) of {2}", varname, ellength, vhdl_eltype, eltrail);
+                                yield return string.Format("type {0}_type is array (0 to {1}{3}) of {2}", varname, ellength, vhdl_eltype, eltrail);
 
-								string values;
-								if (new[] { typeof(sbyte), typeof(byte), typeof(ushort), typeof(short), typeof(int) }.Select(x => eltype.Module.Import(x).Resolve()).Contains(eltype.Resolve()))
-									values = string.Join(", ", arc.Initializer.Elements.Select(x => string.Format("{0}({1})", convm, x)));
-								else
-								{
-									if (eltype.Resolve() == eltype.Module.Import(typeof(uint)).Resolve())
-										values = string.Join(", ", arc.Initializer.Elements.Select(x => string.Format("\"{1}\"", convm, Convert.ToString((uint)(x as ICSharpCode.NRefactory.CSharp.PrimitiveExpression).Value, 2).PadLeft(32, '0'))));
-									else if (eltype.Resolve() == eltype.Module.Import(typeof(long)).Resolve())
-										values = string.Join(", ", arc.Initializer.Elements.Select(x => string.Format("\"{1}\"", convm, Convert.ToString((long)(x as ICSharpCode.NRefactory.CSharp.PrimitiveExpression).Value, 2).PadLeft(64, '0'))));
-									/*else if (eltype.Resolve() == eltype.Module.Import(typeof(ulong)).Resolve())
+                                string values;
+                                if (new[] { typeof(sbyte), typeof(byte), typeof(ushort), typeof(short), typeof(int) }.Select(x => eltype.Module.Import(x).Resolve()).Contains(eltype.Resolve()))
+                                    values = string.Join(", ", arc.Initializer.Elements.Select(x => string.Format("{0}({1})", convm, x)));
+                                else
+                                {
+                                    if (eltype.Resolve() == eltype.Module.Import(typeof(uint)).Resolve())
+                                        values = string.Join(", ", arc.Initializer.Elements.Select(x => string.Format("\"{1}\"", convm, Convert.ToString((uint)(x as ICSharpCode.NRefactory.CSharp.PrimitiveExpression).Value, 2).PadLeft(32, '0'))));
+                                    else if (eltype.Resolve() == eltype.Module.Import(typeof(long)).Resolve())
+                                        values = string.Join(", ", arc.Initializer.Elements.Select(x => string.Format("\"{1}\"", convm, Convert.ToString((long)(x as ICSharpCode.NRefactory.CSharp.PrimitiveExpression).Value, 2).PadLeft(64, '0'))));
+                                    /*else if (eltype.Resolve() == eltype.Module.Import(typeof(ulong)).Resolve())
 										values = string.Join(", ", arc.Initializer.Elements.Select(x => string.Format("{0}({1})", convm, Convert.ToString((ulong)(x as ICSharpCode.NRefactory.CSharp.PrimitiveExpression).Value, 2).PadLeft(64, '0'))));*/
-									else
-										values = " ??? unsupported type ??? ";
-								}
+                                    else
+                                        values = " ??? unsupported type ??? ";
+                                }
 
-								yield return string.Format("constant {0}: {0}_type := ({1})", varname, values);
+                                yield return string.Format("constant {0}: {0}_type := ({1})", varname, values);
 
-							}
-							else if (nx is AST.ArrayCreateExpression)
-							{
-								var arc = nx as AST.ArrayCreateExpression;
+                            }
+                            else if (nx is AST.ArrayCreateExpression)
+                            {
+                                var arc = nx as AST.ArrayCreateExpression;
 
-								var varname = Naming.ToValidName(n.Name);
-								var eltype = n.CecilType.GetElementType();
-								var vhdl_eltype = TypeScope.GetVHDLType(eltype);
+                                var varname = Naming.ToValidName(n.Name);
+                                var eltype = n.CecilType.GetElementType();
+                                var vhdl_eltype = TypeScope.GetVHDLType(eltype);
 
-								var ellength = arc.ElementExpressions.Length;
-								var eltrail = " - 1";
-								if (USE_EXPLICIT_LITERAL_ARRAY_LENGTH)
-								{
-									ellength--;
-									eltrail = "";
-								}
+                                var ellength = arc.ElementExpressions.Length;
+                                var eltrail = " - 1";
+                                if (USE_EXPLICIT_LITERAL_ARRAY_LENGTH)
+                                {
+                                    ellength--;
+                                    eltrail = "";
+                                }
 
-								yield return string.Format("type {0}_type is array (0 to {1}{3}) of {2}", varname, ellength, vhdl_eltype, eltrail);
+                                yield return string.Format("type {0}_type is array (0 to {1}{3}) of {2}", varname, ellength, vhdl_eltype, eltrail);
 
-								string values;
-								if (new[] { typeof(sbyte), typeof(byte), typeof(ushort), typeof(short), typeof(int) }.Select(x => eltype.Module.Import(x).Resolve()).Contains(eltype.Resolve()))
-									values = string.Join(", ", arc.ElementExpressions.Select(x => string.Format("{0}({1})", convm, (x as AST.PrimitiveExpression).Value)));
-								else
-								{
-									if (eltype.Resolve() == eltype.Module.Import(typeof(uint)).Resolve())
-										values = string.Join(", ", arc.ElementExpressions.Select(x => string.Format("\"{1}\"", convm, Convert.ToString((uint)(x as AST.PrimitiveExpression).Value, 2).PadLeft(32, '0'))));
-									else if (eltype.Resolve() == eltype.Module.Import(typeof(long)).Resolve())
-										values = string.Join(", ", arc.ElementExpressions.Select(x => string.Format("\"{1}\"", convm, Convert.ToString((long)(x as AST.PrimitiveExpression).Value, 2).PadLeft(64, '0'))));
-									/*else if (eltype.Resolve() == eltype.Module.Import(typeof(ulong)).Resolve())
+                                string values;
+                                if (new[] { typeof(sbyte), typeof(byte), typeof(ushort), typeof(short), typeof(int) }.Select(x => eltype.Module.Import(x).Resolve()).Contains(eltype.Resolve()))
+                                    values = string.Join(", ", arc.ElementExpressions.Select(x => string.Format("{0}({1})", convm, (x as AST.PrimitiveExpression).Value)));
+                                else
+                                {
+                                    if (eltype.Resolve() == eltype.Module.Import(typeof(uint)).Resolve())
+                                        values = string.Join(", ", arc.ElementExpressions.Select(x => string.Format("\"{1}\"", convm, Convert.ToString((uint)(x as AST.PrimitiveExpression).Value, 2).PadLeft(32, '0'))));
+                                    else if (eltype.Resolve() == eltype.Module.Import(typeof(long)).Resolve())
+                                        values = string.Join(", ", arc.ElementExpressions.Select(x => string.Format("\"{1}\"", convm, Convert.ToString((long)(x as AST.PrimitiveExpression).Value, 2).PadLeft(64, '0'))));
+                                    /*else if (eltype.Resolve() == eltype.Module.Import(typeof(ulong)).Resolve())
 										values = string.Join(", ", arc.Initializer.Elements.Select(x => string.Format("{0}({1})", convm, Convert.ToString((ulong)(x as ICSharpCode.NRefactory.CSharp.PrimitiveExpression).Value, 2).PadLeft(64, '0'))));*/
-									else
-										values = " ??? unsupported type ??? ";
-								}
+                                    else
+                                        values = " ??? unsupported type ??? ";
+                                }
 
-								yield return string.Format("constant {0}: {0}_type := ({1})", varname, values);
-							}
-							else if (nx is AST.EmptyArrayCreateExpression)
-							{
-								var arc = nx as AST.EmptyArrayCreateExpression;
+                                yield return string.Format("constant {0}: {0}_type := ({1})", varname, values);
+                            }
+                            else if (nx is AST.EmptyArrayCreateExpression)
+                            {
+                                var arc = nx as AST.EmptyArrayCreateExpression;
 
-								var varname = Naming.ToValidName(n.Name);
-								var eltype = n.CecilType.GetElementType();
-								var vhdl_eltype = TypeScope.GetVHDLType(eltype);
+                                var varname = Naming.ToValidName(n.Name);
+                                var eltype = n.CecilType.GetElementType();
+                                var vhdl_eltype = TypeScope.GetVHDLType(eltype);
 
-								var ellength = (int)((AST.PrimitiveExpression)arc.SizeExpression).Value;
-								var eltrail = " - 1";
-								if (USE_EXPLICIT_LITERAL_ARRAY_LENGTH)
-								{
-									ellength--;
-									eltrail = "";
-								}
+                                var ellength = (int)((AST.PrimitiveExpression)arc.SizeExpression).Value;
+                                var eltrail = " - 1";
+                                if (USE_EXPLICIT_LITERAL_ARRAY_LENGTH)
+                                {
+                                    ellength--;
+                                    eltrail = "";
+                                }
 
-								yield return string.Format("type {0}_type is array (0 to {1}{3}) of {2}", varname, ellength, vhdl_eltype, eltrail);
-							}
+                                yield return string.Format("type {0}_type is array (0 to {1}{3}) of {2}", varname, ellength, vhdl_eltype, eltrail);
+                            }
+                            else if (nx is Array)
+                            {
+                                var arc = nx as Array;
+
+                                var varname = Naming.ToValidName(n.Name);
+                                var eltype = n.CecilType.GetElementType();
+                                var vhdl_eltype = TypeScope.GetVHDLType(eltype);
+
+                                var ellength = arc.Length;
+                                var eltrail = " - 1";
+                                if (USE_EXPLICIT_LITERAL_ARRAY_LENGTH)
+                                {
+                                    ellength--;
+                                    eltrail = "";
+                                }
+
+                                yield return string.Format("type {0}_type is array (0 to {1}{3}) of {2}", varname, ellength, vhdl_eltype, eltrail);
+
+                                var elements = Enumerable.Range(0, arc.Length).Select(x => arc.GetValue(x));
+
+                                string values;
+                                if (new[] { typeof(sbyte), typeof(byte), typeof(ushort), typeof(short), typeof(int) }.Select(x => eltype.Module.Import(x).Resolve()).Contains(eltype.Resolve()))
+                                    values = string.Join(", ", elements.Select(x => string.Format("{0}({1})", convm, (x as AST.PrimitiveExpression).Value)));
+                                else
+                                {
+                                    if (eltype.Resolve() == eltype.Module.Import(typeof(uint)).Resolve())
+                                        values = string.Join(", ", elements.Select(x => string.Format("\"{1}\"", convm, Convert.ToString((uint)(x as AST.PrimitiveExpression).Value, 2).PadLeft(32, '0'))));
+                                    else if (eltype.Resolve() == eltype.Module.Import(typeof(long)).Resolve())
+                                        values = string.Join(", ", elements.Select(x => string.Format("\"{1}\"", convm, Convert.ToString((long)(x as AST.PrimitiveExpression).Value, 2).PadLeft(64, '0'))));
+                                    /*else if (eltype.Resolve() == eltype.Module.Import(typeof(ulong)).Resolve())
+                                        values = string.Join(", ", arc.Initializer.Elements.Select(x => string.Format("{0}({1})", convm, Convert.ToString((ulong)(x as ICSharpCode.NRefactory.CSharp.PrimitiveExpression).Value, 2).PadLeft(64, '0'))));*/
+                                    else
+                                        values = " ??? unsupported type ??? ";
+                                }
+
+                                yield return string.Format("constant {0}: {0}_type := ({1})", varname, values);                                
+                            }
 							else
 							{
 								yield return string.Format("constant {0}: {1} := {2}({3})", Naming.ToValidName(n.Name), VHDLType(n), convm, nx);
@@ -968,5 +1015,200 @@ namespace SME.VHDL
 				.Where(x => x.Parent == bus)
 				.Distinct();
 		}
+
+        /// <summary>
+        /// Creates a reset statement for the specified data element
+        /// </summary>
+        /// <returns>The statement expressing reset of the date element.</returns>
+        /// <param name="element">The target element</param>
+        public AST.Statement GetResetStatement(DataElement element)
+        {
+            var exp = new AST.AssignmentExpression()
+            {
+                Left = new MemberReferenceExpression()
+                {
+                    Name = element.Name,
+                    Target = element,
+                    SourceResultType = element.CecilType
+                }
+            };
+
+            var tvhdl = VHDLType(exp.Left);
+
+            var res = new AST.ExpressionStatement()
+            {
+                Expression = exp
+            };
+            exp.Parent = res;
+
+            if (element.DefaultValue is AST.ArrayCreateExpression)
+            {
+                var asexp = (AST.ArrayCreateExpression)element.DefaultValue;
+
+                var nae = new ArrayCreateExpression()
+                {
+                    SourceExpression = asexp.SourceExpression,
+                    SourceResultType = asexp.SourceResultType,
+                };
+
+                nae.ElementExpressions = asexp.ElementExpressions
+                    .Select(x => new PrimitiveExpression()
+                    {
+                        SourceExpression = x.SourceExpression,
+                        SourceResultType = x.SourceResultType,
+                        Parent = nae,
+                        Value = ((PrimitiveExpression)x).Value
+                    }).Cast<Expression>().ToArray();
+
+                var elvhdl = TypeScope.GetByName(tvhdl.ElementName);
+
+                for (var i = 0; i < nae.ElementExpressions.Length; i++)
+                    VHDLTypeConversion.ConvertExpression(this, null, nae.ElementExpressions[i], elvhdl, nae.ElementExpressions[i].SourceResultType, false);
+
+                exp.Right = nae;
+                TypeLookup[nae] = tvhdl;
+            }
+            else if (element.DefaultValue is Array)
+            {
+                var asexp = (Array)element.DefaultValue;
+
+                var nae = new ArrayCreateExpression()
+                {
+                    SourceExpression = null,
+                    SourceResultType = element.CecilType
+                };
+
+                nae.ElementExpressions = Enumerable.Range(0, asexp.Length)
+                    .Select(x => new PrimitiveExpression()
+                    {
+                        SourceExpression = null,
+                        SourceResultType = element.CecilType.GetElementType(),
+                        Parent = nae,
+                        Value = asexp.GetValue(x)
+                    }).Cast<Expression>().ToArray();
+
+                var elvhdl = TypeScope.GetByName(tvhdl.ElementName);
+
+                for (var i = 0; i < nae.ElementExpressions.Length; i++)
+                    VHDLTypeConversion.ConvertExpression(this, null, nae.ElementExpressions[i], elvhdl, nae.ElementExpressions[i].SourceResultType, false);
+
+                exp.Right = nae;
+                TypeLookup[nae] = tvhdl;
+            }
+            else if (element.DefaultValue is ICSharpCode.NRefactory.CSharp.AstNode)
+            {
+                var eltype = Type.GetType(element.CecilType.FullName);
+                var defaultvalue = eltype != null && element.CecilType.IsValueType ? Activator.CreateInstance(eltype) : null;
+
+                exp.Right = new AST.PrimitiveExpression()
+                {
+                    Value = defaultvalue,
+                    Parent = exp,
+                    SourceResultType = element.CecilType
+                };
+            }
+            else if (element.DefaultValue is AST.EmptyArrayCreateExpression)
+            {
+                var ese = element.DefaultValue as AST.EmptyArrayCreateExpression;
+                exp.Right = new AST.EmptyArrayCreateExpression()
+                {
+                    Parent = exp,
+                    SizeExpression = ese.SizeExpression.Clone(),
+                    SourceExpression = ese.SourceExpression,
+                    SourceResultType = ese.SourceResultType
+                };
+
+                TypeLookup[exp.Right] = tvhdl;
+            }
+            else if (element.CecilType.IsArrayType() && element.DefaultValue == null)
+            {
+                exp.Right = new EmptyArrayCreateExpression()
+                {
+                    Parent = exp,
+                    SourceExpression = null,
+                    SourceResultType = element.CecilType,
+                    SizeExpression = new MemberReferenceExpression()
+                    {
+                        Name = element.Name,
+                        SourceExpression = null,
+                        SourceResultType = element.CecilType,
+                        Target = element
+                    }
+                };
+
+                if (element.Source is IMemberDefinition)
+                    TypeLookup[exp.Right] = TypeScope.GetVHDLType((IMemberDefinition)element.Source, element.CecilType);
+                else if (element.Source is System.Reflection.PropertyInfo)
+                    TypeLookup[exp.Right] = TypeScope.GetVHDLType((System.Reflection.PropertyInfo)element.Source);
+            }
+            else
+            {
+                exp.Right = new AST.PrimitiveExpression()
+                {
+                    Value = element.DefaultValue,
+                    Parent = exp,
+                    SourceResultType = element.CecilType
+                };
+
+                var n = new[] { typeof(byte), typeof(sbyte), typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong) };
+
+                if (n.Any(x => exp.Right.SourceResultType.IsSameTypeReference(x)))
+                    TypeLookup[exp.Right] = VHDLTypes.INTEGER;
+                else if (element.DefaultValue != null && !element.DefaultValue.GetType().IsEnum && element.DefaultValue.GetType() != typeof(bool))
+                    TypeLookup[exp.Right] = VHDLTypes.INTEGER;
+            }
+
+            res.UpdateParents();
+            if (tvhdl.IsArray && !tvhdl.IsNumeric && !tvhdl.IsStdLogicVector && !tvhdl.IsSystemType && (exp.Right is PrimitiveExpression || exp.Right is EmptyArrayCreateExpression))
+            {
+
+            }
+            else
+            {
+                VHDLTypeConversion.ConvertExpression(this, null, exp.Right, tvhdl, element.CecilType, false);
+            }
+
+            return res;
+        }
+
+        /// <summary>
+        /// Gets the left-hand-side value for a reset expression
+        /// </summary>
+        /// <returns>The reset expression.</returns>
+        /// <param name="element">The element to get the value for.</param>
+        public string GetResetExpression(DataElement element)
+        {
+            var st = GetResetStatement(element) as ExpressionStatement;
+            if (st == null)
+                return string.Empty;
+
+            var ae = st.Expression as AssignmentExpression;
+            if (ae == null)
+                return string.Empty;
+
+            return new RenderHelper(this, null).RenderExpression(ae.Right);
+        }
+
+        /// <summary>
+        /// Returns all type definitions
+        /// </summary>
+        /// <value>The type definitions.</value>
+        public IEnumerable<string> TypeDefinitions
+        {
+            get
+            {
+                var used = new HashSet<Type>();
+
+                foreach (var p in Network.Processes)
+                {
+                    if (used.Contains(p.SourceInstance.Instance.GetType()))
+                        continue;
+
+                    used.Add(p.SourceInstance.Instance.GetType());
+                    foreach (var n in new RenderHelper(this, p).TypeDefinitions)
+                        yield return n;
+                }
+            }
+        }
 	}
 }
