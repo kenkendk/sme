@@ -484,68 +484,86 @@ package CUSTOM_TYPES is
             
             #line 67 ""
             this.Write("\n\n-- User defined types here\n-- #### USER-DATA-TRAILTYPES-START\n-- #### USER-DATA" +
-                    "-TRAILTYPES-END\n\n\nend CUSTOM_TYPES;\n\npackage body CUSTOM_TYPES is\n");
+                    "-TRAILTYPES-END\n\n\nend CUSTOM_TYPES;\n\n");
+            
+            #line default
+            #line hidden
+            
+            #line 76 ""
+ if (RS.EnumTypes.Any()) { 
             
             #line default
             #line hidden
             
             #line 77 ""
+            this.Write("package body CUSTOM_TYPES is\n");
+            
+            #line default
+            #line hidden
+            
+            #line 78 ""
  foreach(var enumtype in RS.EnumTypes) { 
             
             #line default
             #line hidden
             
-            #line 78 ""
+            #line 79 ""
             this.Write("    -- converts ");
             
             #line default
             #line hidden
             
-            #line 78 ""
+            #line 79 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( enumtype ));
             
             #line default
             #line hidden
             
-            #line 78 ""
+            #line 79 ""
             this.Write(" into a string\n    pure function str(b: ");
             
             #line default
             #line hidden
             
-            #line 79 ""
+            #line 80 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( enumtype.ToSafeVHDLName() ));
             
             #line default
             #line hidden
             
-            #line 79 ""
+            #line 80 ""
             this.Write(") return string is\n    begin\n        return ");
             
             #line default
             #line hidden
             
-            #line 81 ""
+            #line 82 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( enumtype.ToSafeVHDLName() ));
             
             #line default
             #line hidden
             
-            #line 81 ""
+            #line 82 ""
             this.Write("\'image(b);\n    end str;\n");
             
             #line default
             #line hidden
             
-            #line 83 ""
+            #line 84 ""
  } 
             
             #line default
             #line hidden
             
-            #line 84 ""
+            #line 85 ""
             this.Write("\n-- User defined bodies here\n-- #### USER-DATA-BODY-START\n-- #### USER-DATA-BODY-" +
-                    "END\n\nend CUSTOM_TYPES;");
+                    "END\n\nend CUSTOM_TYPES;\n");
+            
+            #line default
+            #line hidden
+            
+            #line 91 ""
+ } 
             
             #line default
             #line hidden

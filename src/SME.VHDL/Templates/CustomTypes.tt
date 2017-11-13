@@ -73,6 +73,7 @@ package CUSTOM_TYPES is
 
 end CUSTOM_TYPES;
 
+<# if (RS.EnumTypes.Any()) { #>
 package body CUSTOM_TYPES is
 <# foreach(var enumtype in RS.EnumTypes) { #>
     -- converts <#= enumtype #> into a string
@@ -87,3 +88,4 @@ package body CUSTOM_TYPES is
 -- #### USER-DATA-BODY-END
 
 end CUSTOM_TYPES;
+<# } #>
