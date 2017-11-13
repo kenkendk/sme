@@ -4,6 +4,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 use STD.TEXTIO.all;
 use IEEE.STD_LOGIC_TEXTIO.all;
 use std.textio.all;
+use IEEE.NUMERIC_STD.ALL;
 
 package csv_util is
 
@@ -30,6 +31,12 @@ package csv_util is
 
     -- converts STD_LOGIC_VECTOR into a string
     function str(b: std_logic_vector) return string;
+
+    -- converts UNSIGNED into a string
+    function str(b: unsigned) return string;
+
+    -- converts SIGNED into a string
+    function str(b: signed) return string;
 
     -- Returns the first occurrence of a a given character
     function index_of_chr(ln: string; c: character) return integer;
@@ -232,6 +239,18 @@ package body csv_util is
             
             return res;
         end if;
+    end str;
+
+    -- converts UNSIGNED into a string
+    function str(b: unsigned) return string is
+    begin
+        return str(std_logic_vector(b));
+    end str;
+
+    -- converts SIGNED into a string
+    function str(b: signed) return string is
+    begin
+        return str(std_logic_vector(b));
     end str;
 
  end package body csv_util;
