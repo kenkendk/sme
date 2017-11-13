@@ -114,9 +114,15 @@ begin
             end if;
 <#    } else if (vhdltype.IsStdLogicVector || vhdltype.IsSystemType) { #>
             if are_strings_equal(tmp, "U") then
-            	<#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#> <= (others => 'U');
+                <#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#> <= (others => 'U');
             else
+<#        if (vhdltype.IsSystemType && vhdltype.IsSigned) { #>
+                <#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#> <= signed(to_std_logic_vector(truncate(tmp)));
+<#        } else if (vhdltype.IsSystemType && vhdltype.IsUnsigned) { #>
+                <#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#> <= unsigned(to_std_logic_vector(truncate(tmp)));
+<#        } else { #>
                 <#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#> <= to_std_logic_vector(truncate(tmp));
+<#        } #>
             end if;
 <#    } else { #>
             <#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#> <= <#= vhdltype.ToSafeVHDLName()#>'value(to_safe_name(truncate(tmp)));

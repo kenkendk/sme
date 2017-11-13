@@ -1003,7 +1003,7 @@ namespace SME.VHDL
 		/// </summary>
 		public static readonly VHDLType SYSTEM_UINT8 = new VHDLType()
 		{
-			Name = "STD_LOGIC_VECTOR(7 downto 0)",
+			Name = "UNSIGNED(7 downto 0)",
 			Alias = "T_SYSTEM_UINT8",
 			//SourceType = typeof(byte),
 			IsArray = true,
@@ -1017,7 +1017,7 @@ namespace SME.VHDL
 		/// </summary>
 		public static readonly VHDLType SYSTEM_INT8 = new VHDLType()
 		{
-			Name = "STD_LOGIC_VECTOR(7 downto 0)",
+			Name = "SIGNED(7 downto 0)",
 			Alias = "T_SYSTEM_INT8",
 			//SourceType = typeof(sbyte),
 			IsArray = true,
@@ -1031,7 +1031,7 @@ namespace SME.VHDL
 		/// </summary>
 		public static readonly VHDLType SYSTEM_UINT16 = new VHDLType()
 		{
-			Name = "STD_LOGIC_VECTOR(15 downto 0)",
+            Name = "UNSIGNED(15 downto 0)",
 			Alias = "T_SYSTEM_UINT16",
 			//SourceType = typeof(ushort),
 			IsArray = true,
@@ -1045,7 +1045,7 @@ namespace SME.VHDL
 		/// </summary>
 		public static readonly VHDLType SYSTEM_INT16 = new VHDLType()
 		{
-			Name = "STD_LOGIC_VECTOR(15 downto 0)",
+			Name = "SIGNED(15 downto 0)",
 			Alias = "T_SYSTEM_INT16",
 			//SourceType = typeof(short),
 			IsArray = true,
@@ -1059,7 +1059,7 @@ namespace SME.VHDL
 		/// </summary>
 		public static readonly VHDLType SYSTEM_UINT32 = new VHDLType()
 		{
-			Name = "STD_LOGIC_VECTOR(31 downto 0)",
+            Name = "UNSIGNED(31 downto 0)",
 			Alias = "T_SYSTEM_UINT32",
 			//SourceType = typeof(uint),
 			IsArray = true,
@@ -1073,7 +1073,7 @@ namespace SME.VHDL
 		/// </summary>
 		public static readonly VHDLType SYSTEM_INT32 = new VHDLType()
 		{
-			Name = "STD_LOGIC_VECTOR(31 downto 0)",
+			Name = "SIGNED(31 downto 0)",
 			Alias = "T_SYSTEM_INT32",
 			//SourceType = typeof(int),
 			IsArray = true,
@@ -1087,7 +1087,7 @@ namespace SME.VHDL
 		/// </summary>
 		public static readonly VHDLType SYSTEM_UINT64 = new VHDLType()
 		{
-			Name = "STD_LOGIC_VECTOR(63 downto 0)",
+            Name = "UNSIGNED(63 downto 0)",
 			Alias = "T_SYSTEM_UINT64",
 			//SourceType = typeof(ulong),
 			IsArray = true,
@@ -1101,7 +1101,7 @@ namespace SME.VHDL
 		/// </summary>
 		public static readonly VHDLType SYSTEM_INT64 = new VHDLType()
 		{
-			Name = "STD_LOGIC_VECTOR(63 downto 0)",
+			Name = "SIGNED(63 downto 0)",
 			Alias = "T_SYSTEM_INT64",
 			//SourceType = typeof(long),
 			IsArray = true,

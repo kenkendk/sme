@@ -28,7 +28,7 @@ namespace SME.VHDL
 	}
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(0 downto 0)", "T_UINT1")]
+	[VHDLType("UNSIGNED(0 downto 0)", "T_UINT1")]
 	public struct UInt1 : SME.Tracer.ITracerSerializable {
 
 		private readonly byte Value;
@@ -71,7 +71,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(1 downto 0)", "T_UINT2")]
+	[VHDLType("UNSIGNED(1 downto 0)", "T_UINT2")]
 	public struct UInt2 : SME.Tracer.ITracerSerializable {
 
 		private readonly byte Value;
@@ -114,7 +114,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(2 downto 0)", "T_UINT3")]
+	[VHDLType("UNSIGNED(2 downto 0)", "T_UINT3")]
 	public struct UInt3 : SME.Tracer.ITracerSerializable {
 
 		private readonly byte Value;
@@ -157,7 +157,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(3 downto 0)", "T_UINT4")]
+	[VHDLType("UNSIGNED(3 downto 0)", "T_UINT4")]
 	public struct UInt4 : SME.Tracer.ITracerSerializable {
 
 		private readonly byte Value;
@@ -200,7 +200,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(4 downto 0)", "T_UINT5")]
+	[VHDLType("UNSIGNED(4 downto 0)", "T_UINT5")]
 	public struct UInt5 : SME.Tracer.ITracerSerializable {
 
 		private readonly byte Value;
@@ -243,7 +243,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(5 downto 0)", "T_UINT6")]
+	[VHDLType("UNSIGNED(5 downto 0)", "T_UINT6")]
 	public struct UInt6 : SME.Tracer.ITracerSerializable {
 
 		private readonly byte Value;
@@ -286,7 +286,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(6 downto 0)", "T_UINT7")]
+	[VHDLType("UNSIGNED(6 downto 0)", "T_UINT7")]
 	public struct UInt7 : SME.Tracer.ITracerSerializable {
 
 		private readonly byte Value;
@@ -329,7 +329,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(8 downto 0)", "T_UINT9")]
+	[VHDLType("UNSIGNED(8 downto 0)", "T_UINT9")]
 	public struct UInt9 : SME.Tracer.ITracerSerializable {
 
 		private readonly ushort Value;
@@ -372,7 +372,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(9 downto 0)", "T_UINT10")]
+	[VHDLType("UNSIGNED(9 downto 0)", "T_UINT10")]
 	public struct UInt10 : SME.Tracer.ITracerSerializable {
 
 		private readonly ushort Value;
@@ -415,7 +415,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(10 downto 0)", "T_UINT11")]
+	[VHDLType("UNSIGNED(10 downto 0)", "T_UINT11")]
 	public struct UInt11 : SME.Tracer.ITracerSerializable {
 
 		private readonly ushort Value;
@@ -458,7 +458,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(11 downto 0)", "T_UINT12")]
+	[VHDLType("UNSIGNED(11 downto 0)", "T_UINT12")]
 	public struct UInt12 : SME.Tracer.ITracerSerializable {
 
 		private readonly ushort Value;
@@ -501,7 +501,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(12 downto 0)", "T_UINT13")]
+	[VHDLType("UNSIGNED(12 downto 0)", "T_UINT13")]
 	public struct UInt13 : SME.Tracer.ITracerSerializable {
 
 		private readonly ushort Value;
@@ -544,7 +544,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(13 downto 0)", "T_UINT14")]
+	[VHDLType("UNSIGNED(13 downto 0)", "T_UINT14")]
 	public struct UInt14 : SME.Tracer.ITracerSerializable {
 
 		private readonly ushort Value;
@@ -587,7 +587,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(14 downto 0)", "T_UINT15")]
+	[VHDLType("UNSIGNED(14 downto 0)", "T_UINT15")]
 	public struct UInt15 : SME.Tracer.ITracerSerializable {
 
 		private readonly ushort Value;
@@ -630,7 +630,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(16 downto 0)", "T_UINT17")]
+	[VHDLType("UNSIGNED(16 downto 0)", "T_UINT17")]
 	public struct UInt17 : SME.Tracer.ITracerSerializable {
 
 		private readonly uint Value;
@@ -673,7 +673,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(17 downto 0)", "T_UINT18")]
+	[VHDLType("UNSIGNED(17 downto 0)", "T_UINT18")]
 	public struct UInt18 : SME.Tracer.ITracerSerializable {
 
 		private readonly uint Value;
@@ -716,7 +716,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(18 downto 0)", "T_UINT19")]
+	[VHDLType("UNSIGNED(18 downto 0)", "T_UINT19")]
 	public struct UInt19 : SME.Tracer.ITracerSerializable {
 
 		private readonly uint Value;
@@ -759,7 +759,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(19 downto 0)", "T_UINT20")]
+	[VHDLType("UNSIGNED(19 downto 0)", "T_UINT20")]
 	public struct UInt20 : SME.Tracer.ITracerSerializable {
 
 		private readonly uint Value;
@@ -802,7 +802,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(20 downto 0)", "T_UINT21")]
+	[VHDLType("UNSIGNED(20 downto 0)", "T_UINT21")]
 	public struct UInt21 : SME.Tracer.ITracerSerializable {
 
 		private readonly uint Value;
@@ -845,7 +845,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(21 downto 0)", "T_UINT22")]
+	[VHDLType("UNSIGNED(21 downto 0)", "T_UINT22")]
 	public struct UInt22 : SME.Tracer.ITracerSerializable {
 
 		private readonly uint Value;
@@ -888,7 +888,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(22 downto 0)", "T_UINT23")]
+	[VHDLType("UNSIGNED(22 downto 0)", "T_UINT23")]
 	public struct UInt23 : SME.Tracer.ITracerSerializable {
 
 		private readonly uint Value;
@@ -931,7 +931,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(23 downto 0)", "T_UINT24")]
+	[VHDLType("UNSIGNED(23 downto 0)", "T_UINT24")]
 	public struct UInt24 : SME.Tracer.ITracerSerializable {
 
 		private readonly uint Value;
@@ -974,7 +974,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(24 downto 0)", "T_UINT25")]
+	[VHDLType("UNSIGNED(24 downto 0)", "T_UINT25")]
 	public struct UInt25 : SME.Tracer.ITracerSerializable {
 
 		private readonly uint Value;
@@ -1017,7 +1017,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(25 downto 0)", "T_UINT26")]
+	[VHDLType("UNSIGNED(25 downto 0)", "T_UINT26")]
 	public struct UInt26 : SME.Tracer.ITracerSerializable {
 
 		private readonly uint Value;
@@ -1060,7 +1060,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(26 downto 0)", "T_UINT27")]
+	[VHDLType("UNSIGNED(26 downto 0)", "T_UINT27")]
 	public struct UInt27 : SME.Tracer.ITracerSerializable {
 
 		private readonly uint Value;
@@ -1103,7 +1103,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(27 downto 0)", "T_UINT28")]
+	[VHDLType("UNSIGNED(27 downto 0)", "T_UINT28")]
 	public struct UInt28 : SME.Tracer.ITracerSerializable {
 
 		private readonly uint Value;
@@ -1146,7 +1146,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(28 downto 0)", "T_UINT29")]
+	[VHDLType("UNSIGNED(28 downto 0)", "T_UINT29")]
 	public struct UInt29 : SME.Tracer.ITracerSerializable {
 
 		private readonly uint Value;
@@ -1189,7 +1189,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(29 downto 0)", "T_UINT30")]
+	[VHDLType("UNSIGNED(29 downto 0)", "T_UINT30")]
 	public struct UInt30 : SME.Tracer.ITracerSerializable {
 
 		private readonly uint Value;
@@ -1232,7 +1232,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(30 downto 0)", "T_UINT31")]
+	[VHDLType("UNSIGNED(30 downto 0)", "T_UINT31")]
 	public struct UInt31 : SME.Tracer.ITracerSerializable {
 
 		private readonly uint Value;
@@ -1275,7 +1275,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(32 downto 0)", "T_UINT33")]
+	[VHDLType("UNSIGNED(32 downto 0)", "T_UINT33")]
 	public struct UInt33 : SME.Tracer.ITracerSerializable {
 
 		private readonly ulong Value;
@@ -1318,7 +1318,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(33 downto 0)", "T_UINT34")]
+	[VHDLType("UNSIGNED(33 downto 0)", "T_UINT34")]
 	public struct UInt34 : SME.Tracer.ITracerSerializable {
 
 		private readonly ulong Value;
@@ -1361,7 +1361,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(34 downto 0)", "T_UINT35")]
+	[VHDLType("UNSIGNED(34 downto 0)", "T_UINT35")]
 	public struct UInt35 : SME.Tracer.ITracerSerializable {
 
 		private readonly ulong Value;
@@ -1404,7 +1404,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(35 downto 0)", "T_UINT36")]
+	[VHDLType("UNSIGNED(35 downto 0)", "T_UINT36")]
 	public struct UInt36 : SME.Tracer.ITracerSerializable {
 
 		private readonly ulong Value;
@@ -1447,7 +1447,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(36 downto 0)", "T_UINT37")]
+	[VHDLType("UNSIGNED(36 downto 0)", "T_UINT37")]
 	public struct UInt37 : SME.Tracer.ITracerSerializable {
 
 		private readonly ulong Value;
@@ -1490,7 +1490,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(37 downto 0)", "T_UINT38")]
+	[VHDLType("UNSIGNED(37 downto 0)", "T_UINT38")]
 	public struct UInt38 : SME.Tracer.ITracerSerializable {
 
 		private readonly ulong Value;
@@ -1533,7 +1533,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(38 downto 0)", "T_UINT39")]
+	[VHDLType("UNSIGNED(38 downto 0)", "T_UINT39")]
 	public struct UInt39 : SME.Tracer.ITracerSerializable {
 
 		private readonly ulong Value;
@@ -1576,7 +1576,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(39 downto 0)", "T_UINT40")]
+	[VHDLType("UNSIGNED(39 downto 0)", "T_UINT40")]
 	public struct UInt40 : SME.Tracer.ITracerSerializable {
 
 		private readonly ulong Value;
@@ -1619,7 +1619,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(40 downto 0)", "T_UINT41")]
+	[VHDLType("UNSIGNED(40 downto 0)", "T_UINT41")]
 	public struct UInt41 : SME.Tracer.ITracerSerializable {
 
 		private readonly ulong Value;
@@ -1662,7 +1662,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(41 downto 0)", "T_UINT42")]
+	[VHDLType("UNSIGNED(41 downto 0)", "T_UINT42")]
 	public struct UInt42 : SME.Tracer.ITracerSerializable {
 
 		private readonly ulong Value;
@@ -1705,7 +1705,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(42 downto 0)", "T_UINT43")]
+	[VHDLType("UNSIGNED(42 downto 0)", "T_UINT43")]
 	public struct UInt43 : SME.Tracer.ITracerSerializable {
 
 		private readonly ulong Value;
@@ -1748,7 +1748,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(43 downto 0)", "T_UINT44")]
+	[VHDLType("UNSIGNED(43 downto 0)", "T_UINT44")]
 	public struct UInt44 : SME.Tracer.ITracerSerializable {
 
 		private readonly ulong Value;
@@ -1791,7 +1791,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(44 downto 0)", "T_UINT45")]
+	[VHDLType("UNSIGNED(44 downto 0)", "T_UINT45")]
 	public struct UInt45 : SME.Tracer.ITracerSerializable {
 
 		private readonly ulong Value;
@@ -1834,7 +1834,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(45 downto 0)", "T_UINT46")]
+	[VHDLType("UNSIGNED(45 downto 0)", "T_UINT46")]
 	public struct UInt46 : SME.Tracer.ITracerSerializable {
 
 		private readonly ulong Value;
@@ -1877,7 +1877,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(46 downto 0)", "T_UINT47")]
+	[VHDLType("UNSIGNED(46 downto 0)", "T_UINT47")]
 	public struct UInt47 : SME.Tracer.ITracerSerializable {
 
 		private readonly ulong Value;
@@ -1920,7 +1920,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(47 downto 0)", "T_UINT48")]
+	[VHDLType("UNSIGNED(47 downto 0)", "T_UINT48")]
 	public struct UInt48 : SME.Tracer.ITracerSerializable {
 
 		private readonly ulong Value;
@@ -1963,7 +1963,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(48 downto 0)", "T_UINT49")]
+	[VHDLType("UNSIGNED(48 downto 0)", "T_UINT49")]
 	public struct UInt49 : SME.Tracer.ITracerSerializable {
 
 		private readonly ulong Value;
@@ -2006,7 +2006,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(49 downto 0)", "T_UINT50")]
+	[VHDLType("UNSIGNED(49 downto 0)", "T_UINT50")]
 	public struct UInt50 : SME.Tracer.ITracerSerializable {
 
 		private readonly ulong Value;
@@ -2049,7 +2049,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(50 downto 0)", "T_UINT51")]
+	[VHDLType("UNSIGNED(50 downto 0)", "T_UINT51")]
 	public struct UInt51 : SME.Tracer.ITracerSerializable {
 
 		private readonly ulong Value;
@@ -2092,7 +2092,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(51 downto 0)", "T_UINT52")]
+	[VHDLType("UNSIGNED(51 downto 0)", "T_UINT52")]
 	public struct UInt52 : SME.Tracer.ITracerSerializable {
 
 		private readonly ulong Value;
@@ -2135,7 +2135,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(52 downto 0)", "T_UINT53")]
+	[VHDLType("UNSIGNED(52 downto 0)", "T_UINT53")]
 	public struct UInt53 : SME.Tracer.ITracerSerializable {
 
 		private readonly ulong Value;
@@ -2178,7 +2178,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(53 downto 0)", "T_UINT54")]
+	[VHDLType("UNSIGNED(53 downto 0)", "T_UINT54")]
 	public struct UInt54 : SME.Tracer.ITracerSerializable {
 
 		private readonly ulong Value;
@@ -2221,7 +2221,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(54 downto 0)", "T_UINT55")]
+	[VHDLType("UNSIGNED(54 downto 0)", "T_UINT55")]
 	public struct UInt55 : SME.Tracer.ITracerSerializable {
 
 		private readonly ulong Value;
@@ -2264,7 +2264,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(55 downto 0)", "T_UINT56")]
+	[VHDLType("UNSIGNED(55 downto 0)", "T_UINT56")]
 	public struct UInt56 : SME.Tracer.ITracerSerializable {
 
 		private readonly ulong Value;
@@ -2307,7 +2307,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(56 downto 0)", "T_UINT57")]
+	[VHDLType("UNSIGNED(56 downto 0)", "T_UINT57")]
 	public struct UInt57 : SME.Tracer.ITracerSerializable {
 
 		private readonly ulong Value;
@@ -2350,7 +2350,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(57 downto 0)", "T_UINT58")]
+	[VHDLType("UNSIGNED(57 downto 0)", "T_UINT58")]
 	public struct UInt58 : SME.Tracer.ITracerSerializable {
 
 		private readonly ulong Value;
@@ -2393,7 +2393,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(58 downto 0)", "T_UINT59")]
+	[VHDLType("UNSIGNED(58 downto 0)", "T_UINT59")]
 	public struct UInt59 : SME.Tracer.ITracerSerializable {
 
 		private readonly ulong Value;
@@ -2436,7 +2436,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(59 downto 0)", "T_UINT60")]
+	[VHDLType("UNSIGNED(59 downto 0)", "T_UINT60")]
 	public struct UInt60 : SME.Tracer.ITracerSerializable {
 
 		private readonly ulong Value;
@@ -2479,7 +2479,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(60 downto 0)", "T_UINT61")]
+	[VHDLType("UNSIGNED(60 downto 0)", "T_UINT61")]
 	public struct UInt61 : SME.Tracer.ITracerSerializable {
 
 		private readonly ulong Value;
@@ -2522,7 +2522,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(61 downto 0)", "T_UINT62")]
+	[VHDLType("UNSIGNED(61 downto 0)", "T_UINT62")]
 	public struct UInt62 : SME.Tracer.ITracerSerializable {
 
 		private readonly ulong Value;
@@ -2565,7 +2565,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(62 downto 0)", "T_UINT63")]
+	[VHDLType("UNSIGNED(62 downto 0)", "T_UINT63")]
 	public struct UInt63 : SME.Tracer.ITracerSerializable {
 
 		private readonly ulong Value;
@@ -2609,7 +2609,7 @@ namespace SME.VHDL
 
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(0 downto 0)", "T_INT1")]
+	[VHDLType("SIGNED(0 downto 0)", "T_INT1")]
 	public struct Int1 : SME.Tracer.ITracerSerializable {
 
 		private readonly sbyte Value;
@@ -2652,7 +2652,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(1 downto 0)", "T_INT2")]
+	[VHDLType("SIGNED(1 downto 0)", "T_INT2")]
 	public struct Int2 : SME.Tracer.ITracerSerializable {
 
 		private readonly sbyte Value;
@@ -2695,7 +2695,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(2 downto 0)", "T_INT3")]
+	[VHDLType("SIGNED(2 downto 0)", "T_INT3")]
 	public struct Int3 : SME.Tracer.ITracerSerializable {
 
 		private readonly sbyte Value;
@@ -2738,7 +2738,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(3 downto 0)", "T_INT4")]
+	[VHDLType("SIGNED(3 downto 0)", "T_INT4")]
 	public struct Int4 : SME.Tracer.ITracerSerializable {
 
 		private readonly sbyte Value;
@@ -2781,7 +2781,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(4 downto 0)", "T_INT5")]
+	[VHDLType("SIGNED(4 downto 0)", "T_INT5")]
 	public struct Int5 : SME.Tracer.ITracerSerializable {
 
 		private readonly sbyte Value;
@@ -2824,7 +2824,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(5 downto 0)", "T_INT6")]
+	[VHDLType("SIGNED(5 downto 0)", "T_INT6")]
 	public struct Int6 : SME.Tracer.ITracerSerializable {
 
 		private readonly sbyte Value;
@@ -2867,7 +2867,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(6 downto 0)", "T_INT7")]
+	[VHDLType("SIGNED(6 downto 0)", "T_INT7")]
 	public struct Int7 : SME.Tracer.ITracerSerializable {
 
 		private readonly sbyte Value;
@@ -2910,7 +2910,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(8 downto 0)", "T_INT9")]
+	[VHDLType("SIGNED(8 downto 0)", "T_INT9")]
 	public struct Int9 : SME.Tracer.ITracerSerializable {
 
 		private readonly short Value;
@@ -2953,7 +2953,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(9 downto 0)", "T_INT10")]
+	[VHDLType("SIGNED(9 downto 0)", "T_INT10")]
 	public struct Int10 : SME.Tracer.ITracerSerializable {
 
 		private readonly short Value;
@@ -2996,7 +2996,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(10 downto 0)", "T_INT11")]
+	[VHDLType("SIGNED(10 downto 0)", "T_INT11")]
 	public struct Int11 : SME.Tracer.ITracerSerializable {
 
 		private readonly short Value;
@@ -3039,7 +3039,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(11 downto 0)", "T_INT12")]
+	[VHDLType("SIGNED(11 downto 0)", "T_INT12")]
 	public struct Int12 : SME.Tracer.ITracerSerializable {
 
 		private readonly short Value;
@@ -3082,7 +3082,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(12 downto 0)", "T_INT13")]
+	[VHDLType("SIGNED(12 downto 0)", "T_INT13")]
 	public struct Int13 : SME.Tracer.ITracerSerializable {
 
 		private readonly short Value;
@@ -3125,7 +3125,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(13 downto 0)", "T_INT14")]
+	[VHDLType("SIGNED(13 downto 0)", "T_INT14")]
 	public struct Int14 : SME.Tracer.ITracerSerializable {
 
 		private readonly short Value;
@@ -3168,7 +3168,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(14 downto 0)", "T_INT15")]
+	[VHDLType("SIGNED(14 downto 0)", "T_INT15")]
 	public struct Int15 : SME.Tracer.ITracerSerializable {
 
 		private readonly short Value;
@@ -3211,7 +3211,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(16 downto 0)", "T_INT17")]
+	[VHDLType("SIGNED(16 downto 0)", "T_INT17")]
 	public struct Int17 : SME.Tracer.ITracerSerializable {
 
 		private readonly int Value;
@@ -3254,7 +3254,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(17 downto 0)", "T_INT18")]
+	[VHDLType("SIGNED(17 downto 0)", "T_INT18")]
 	public struct Int18 : SME.Tracer.ITracerSerializable {
 
 		private readonly int Value;
@@ -3297,7 +3297,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(18 downto 0)", "T_INT19")]
+	[VHDLType("SIGNED(18 downto 0)", "T_INT19")]
 	public struct Int19 : SME.Tracer.ITracerSerializable {
 
 		private readonly int Value;
@@ -3340,7 +3340,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(19 downto 0)", "T_INT20")]
+	[VHDLType("SIGNED(19 downto 0)", "T_INT20")]
 	public struct Int20 : SME.Tracer.ITracerSerializable {
 
 		private readonly int Value;
@@ -3383,7 +3383,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(20 downto 0)", "T_INT21")]
+	[VHDLType("SIGNED(20 downto 0)", "T_INT21")]
 	public struct Int21 : SME.Tracer.ITracerSerializable {
 
 		private readonly int Value;
@@ -3426,7 +3426,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(21 downto 0)", "T_INT22")]
+	[VHDLType("SIGNED(21 downto 0)", "T_INT22")]
 	public struct Int22 : SME.Tracer.ITracerSerializable {
 
 		private readonly int Value;
@@ -3469,7 +3469,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(22 downto 0)", "T_INT23")]
+	[VHDLType("SIGNED(22 downto 0)", "T_INT23")]
 	public struct Int23 : SME.Tracer.ITracerSerializable {
 
 		private readonly int Value;
@@ -3512,7 +3512,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(23 downto 0)", "T_INT24")]
+	[VHDLType("SIGNED(23 downto 0)", "T_INT24")]
 	public struct Int24 : SME.Tracer.ITracerSerializable {
 
 		private readonly int Value;
@@ -3555,7 +3555,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(24 downto 0)", "T_INT25")]
+	[VHDLType("SIGNED(24 downto 0)", "T_INT25")]
 	public struct Int25 : SME.Tracer.ITracerSerializable {
 
 		private readonly int Value;
@@ -3598,7 +3598,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(25 downto 0)", "T_INT26")]
+	[VHDLType("SIGNED(25 downto 0)", "T_INT26")]
 	public struct Int26 : SME.Tracer.ITracerSerializable {
 
 		private readonly int Value;
@@ -3641,7 +3641,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(26 downto 0)", "T_INT27")]
+	[VHDLType("SIGNED(26 downto 0)", "T_INT27")]
 	public struct Int27 : SME.Tracer.ITracerSerializable {
 
 		private readonly int Value;
@@ -3684,7 +3684,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(27 downto 0)", "T_INT28")]
+	[VHDLType("SIGNED(27 downto 0)", "T_INT28")]
 	public struct Int28 : SME.Tracer.ITracerSerializable {
 
 		private readonly int Value;
@@ -3727,7 +3727,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(28 downto 0)", "T_INT29")]
+	[VHDLType("SIGNED(28 downto 0)", "T_INT29")]
 	public struct Int29 : SME.Tracer.ITracerSerializable {
 
 		private readonly int Value;
@@ -3770,7 +3770,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(29 downto 0)", "T_INT30")]
+	[VHDLType("SIGNED(29 downto 0)", "T_INT30")]
 	public struct Int30 : SME.Tracer.ITracerSerializable {
 
 		private readonly int Value;
@@ -3813,7 +3813,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(30 downto 0)", "T_INT31")]
+	[VHDLType("SIGNED(30 downto 0)", "T_INT31")]
 	public struct Int31 : SME.Tracer.ITracerSerializable {
 
 		private readonly int Value;
@@ -3856,7 +3856,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(32 downto 0)", "T_INT33")]
+	[VHDLType("SIGNED(32 downto 0)", "T_INT33")]
 	public struct Int33 : SME.Tracer.ITracerSerializable {
 
 		private readonly long Value;
@@ -3899,7 +3899,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(33 downto 0)", "T_INT34")]
+	[VHDLType("SIGNED(33 downto 0)", "T_INT34")]
 	public struct Int34 : SME.Tracer.ITracerSerializable {
 
 		private readonly long Value;
@@ -3942,7 +3942,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(34 downto 0)", "T_INT35")]
+	[VHDLType("SIGNED(34 downto 0)", "T_INT35")]
 	public struct Int35 : SME.Tracer.ITracerSerializable {
 
 		private readonly long Value;
@@ -3985,7 +3985,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(35 downto 0)", "T_INT36")]
+	[VHDLType("SIGNED(35 downto 0)", "T_INT36")]
 	public struct Int36 : SME.Tracer.ITracerSerializable {
 
 		private readonly long Value;
@@ -4028,7 +4028,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(36 downto 0)", "T_INT37")]
+	[VHDLType("SIGNED(36 downto 0)", "T_INT37")]
 	public struct Int37 : SME.Tracer.ITracerSerializable {
 
 		private readonly long Value;
@@ -4071,7 +4071,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(37 downto 0)", "T_INT38")]
+	[VHDLType("SIGNED(37 downto 0)", "T_INT38")]
 	public struct Int38 : SME.Tracer.ITracerSerializable {
 
 		private readonly long Value;
@@ -4114,7 +4114,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(38 downto 0)", "T_INT39")]
+	[VHDLType("SIGNED(38 downto 0)", "T_INT39")]
 	public struct Int39 : SME.Tracer.ITracerSerializable {
 
 		private readonly long Value;
@@ -4157,7 +4157,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(39 downto 0)", "T_INT40")]
+	[VHDLType("SIGNED(39 downto 0)", "T_INT40")]
 	public struct Int40 : SME.Tracer.ITracerSerializable {
 
 		private readonly long Value;
@@ -4200,7 +4200,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(40 downto 0)", "T_INT41")]
+	[VHDLType("SIGNED(40 downto 0)", "T_INT41")]
 	public struct Int41 : SME.Tracer.ITracerSerializable {
 
 		private readonly long Value;
@@ -4243,7 +4243,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(41 downto 0)", "T_INT42")]
+	[VHDLType("SIGNED(41 downto 0)", "T_INT42")]
 	public struct Int42 : SME.Tracer.ITracerSerializable {
 
 		private readonly long Value;
@@ -4286,7 +4286,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(42 downto 0)", "T_INT43")]
+	[VHDLType("SIGNED(42 downto 0)", "T_INT43")]
 	public struct Int43 : SME.Tracer.ITracerSerializable {
 
 		private readonly long Value;
@@ -4329,7 +4329,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(43 downto 0)", "T_INT44")]
+	[VHDLType("SIGNED(43 downto 0)", "T_INT44")]
 	public struct Int44 : SME.Tracer.ITracerSerializable {
 
 		private readonly long Value;
@@ -4372,7 +4372,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(44 downto 0)", "T_INT45")]
+	[VHDLType("SIGNED(44 downto 0)", "T_INT45")]
 	public struct Int45 : SME.Tracer.ITracerSerializable {
 
 		private readonly long Value;
@@ -4415,7 +4415,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(45 downto 0)", "T_INT46")]
+	[VHDLType("SIGNED(45 downto 0)", "T_INT46")]
 	public struct Int46 : SME.Tracer.ITracerSerializable {
 
 		private readonly long Value;
@@ -4458,7 +4458,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(46 downto 0)", "T_INT47")]
+	[VHDLType("SIGNED(46 downto 0)", "T_INT47")]
 	public struct Int47 : SME.Tracer.ITracerSerializable {
 
 		private readonly long Value;
@@ -4501,7 +4501,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(47 downto 0)", "T_INT48")]
+	[VHDLType("SIGNED(47 downto 0)", "T_INT48")]
 	public struct Int48 : SME.Tracer.ITracerSerializable {
 
 		private readonly long Value;
@@ -4544,7 +4544,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(48 downto 0)", "T_INT49")]
+	[VHDLType("SIGNED(48 downto 0)", "T_INT49")]
 	public struct Int49 : SME.Tracer.ITracerSerializable {
 
 		private readonly long Value;
@@ -4587,7 +4587,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(49 downto 0)", "T_INT50")]
+	[VHDLType("SIGNED(49 downto 0)", "T_INT50")]
 	public struct Int50 : SME.Tracer.ITracerSerializable {
 
 		private readonly long Value;
@@ -4630,7 +4630,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(50 downto 0)", "T_INT51")]
+	[VHDLType("SIGNED(50 downto 0)", "T_INT51")]
 	public struct Int51 : SME.Tracer.ITracerSerializable {
 
 		private readonly long Value;
@@ -4673,7 +4673,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(51 downto 0)", "T_INT52")]
+	[VHDLType("SIGNED(51 downto 0)", "T_INT52")]
 	public struct Int52 : SME.Tracer.ITracerSerializable {
 
 		private readonly long Value;
@@ -4716,7 +4716,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(52 downto 0)", "T_INT53")]
+	[VHDLType("SIGNED(52 downto 0)", "T_INT53")]
 	public struct Int53 : SME.Tracer.ITracerSerializable {
 
 		private readonly long Value;
@@ -4759,7 +4759,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(53 downto 0)", "T_INT54")]
+	[VHDLType("SIGNED(53 downto 0)", "T_INT54")]
 	public struct Int54 : SME.Tracer.ITracerSerializable {
 
 		private readonly long Value;
@@ -4802,7 +4802,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(54 downto 0)", "T_INT55")]
+	[VHDLType("SIGNED(54 downto 0)", "T_INT55")]
 	public struct Int55 : SME.Tracer.ITracerSerializable {
 
 		private readonly long Value;
@@ -4845,7 +4845,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(55 downto 0)", "T_INT56")]
+	[VHDLType("SIGNED(55 downto 0)", "T_INT56")]
 	public struct Int56 : SME.Tracer.ITracerSerializable {
 
 		private readonly long Value;
@@ -4888,7 +4888,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(56 downto 0)", "T_INT57")]
+	[VHDLType("SIGNED(56 downto 0)", "T_INT57")]
 	public struct Int57 : SME.Tracer.ITracerSerializable {
 
 		private readonly long Value;
@@ -4931,7 +4931,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(57 downto 0)", "T_INT58")]
+	[VHDLType("SIGNED(57 downto 0)", "T_INT58")]
 	public struct Int58 : SME.Tracer.ITracerSerializable {
 
 		private readonly long Value;
@@ -4974,7 +4974,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(58 downto 0)", "T_INT59")]
+	[VHDLType("SIGNED(58 downto 0)", "T_INT59")]
 	public struct Int59 : SME.Tracer.ITracerSerializable {
 
 		private readonly long Value;
@@ -5017,7 +5017,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(59 downto 0)", "T_INT60")]
+	[VHDLType("SIGNED(59 downto 0)", "T_INT60")]
 	public struct Int60 : SME.Tracer.ITracerSerializable {
 
 		private readonly long Value;
@@ -5060,7 +5060,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(60 downto 0)", "T_INT61")]
+	[VHDLType("SIGNED(60 downto 0)", "T_INT61")]
 	public struct Int61 : SME.Tracer.ITracerSerializable {
 
 		private readonly long Value;
@@ -5103,7 +5103,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(61 downto 0)", "T_INT62")]
+	[VHDLType("SIGNED(61 downto 0)", "T_INT62")]
 	public struct Int62 : SME.Tracer.ITracerSerializable {
 
 		private readonly long Value;
@@ -5146,7 +5146,7 @@ namespace SME.VHDL
 	};
 
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(62 downto 0)", "T_INT63")]
+	[VHDLType("SIGNED(62 downto 0)", "T_INT63")]
 	public struct Int63 : SME.Tracer.ITracerSerializable {
 
 		private readonly long Value;

@@ -38,7 +38,7 @@ namespace SME.VHDL
 <# for(var i = 1; i < 64; i++) { #>
 <# if (i == 8 || i == 16 || i == 32 || i == 64) continue; #>
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(<#= i-1 #> downto 0)", "T_UINT<#=i #>")]
+	[VHDLType("UNSIGNED(<#= i-1 #> downto 0)", "T_UINT<#=i #>")]
 	public struct UInt<#=i #> : SME.Tracer.ITracerSerializable {
 <# 
 	string dtype;
@@ -98,7 +98,7 @@ namespace SME.VHDL
 <# for(var i = 1; i < 64; i++) { #>
 <# if (i == 8 || i == 16 || i == 32 || i == 64) continue; #>
 	[DebuggerDisplay("{Value}")]
-	[VHDLType("STD_LOGIC_VECTOR(<#= i-1 #> downto 0)", "T_INT<#=i #>")]
+	[VHDLType("SIGNED(<#= i-1 #> downto 0)", "T_INT<#=i #>")]
 	public struct Int<#=i #> : SME.Tracer.ITracerSerializable {
 <# 
 	string dtype;
