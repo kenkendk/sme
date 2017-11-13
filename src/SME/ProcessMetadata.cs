@@ -12,7 +12,7 @@ namespace SME
         /// <summary>
         /// The definition for the fields to read
         /// </summary>
-        private const System.Reflection.BindingFlags FIELD_FLAGS = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic;
+        private const System.Reflection.BindingFlags FIELD_FLAGS = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic;
 
         /// <summary>
         /// Gets or sets the name of the instance.

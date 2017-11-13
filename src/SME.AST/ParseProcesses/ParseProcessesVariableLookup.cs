@@ -448,12 +448,16 @@ namespace SME.AST
 			DataElement res;
 
             var ceciltype = proc.ResolveGenericType(field.FieldType);
+            object defaultvalue = null;
+            proc.SourceInstance.Initialization.TryGetValue(field.Name, out defaultvalue);
+            defaultvalue = field.Constant ?? defaultvalue;
+
 
 			if (field.IsLiteral)
 			{
 				var c = new Constant() {
                     CecilType = ceciltype,
-					DefaultValue = field.Constant,
+                    DefaultValue = defaultvalue,
 					Name = field.Name,
 					Source = field,
 					Parent = proc
@@ -466,7 +470,7 @@ namespace SME.AST
 				var c = new Constant()
 				{
                     CecilType = ceciltype,
-					DefaultValue = field.Constant,
+                    DefaultValue = defaultvalue,
 					Name = field.Name,
 					Source = field,
 					Parent = proc
@@ -484,7 +488,7 @@ namespace SME.AST
 				var c = new Variable()
 				{
                     CecilType = ceciltype,
-					DefaultValue = null,
+                    DefaultValue = defaultvalue,
 					Name = field.Name,
 					Source = field,
 					Type = null,
@@ -498,7 +502,7 @@ namespace SME.AST
 				var c = new Signal()
 				{
                     CecilType = ceciltype,
-					DefaultValue = null,
+                    DefaultValue = defaultvalue,
 					Name = field.Name,
 					Source = field,
 					Type = null,
