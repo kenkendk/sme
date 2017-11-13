@@ -822,7 +822,7 @@ namespace SME.VHDL
 
                                 string values;
                                 if (new[] { typeof(sbyte), typeof(byte), typeof(ushort), typeof(short), typeof(int) }.Select(x => eltype.Module.Import(x).Resolve()).Contains(eltype.Resolve()))
-                                    values = string.Join(", ", elements.Select(x => string.Format("{0}({1})", convm, (x as AST.PrimitiveExpression).Value)));
+                                    values = string.Join(", ", elements.Select(x => string.Format("{0}({1})", convm, x)));
                                 else
                                 {
                                     if (eltype.Resolve() == eltype.Module.Import(typeof(uint)).Resolve())
