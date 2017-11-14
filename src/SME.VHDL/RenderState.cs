@@ -1238,5 +1238,22 @@ namespace SME.VHDL
                 }
             }
         }
+
+        /// <summary>
+        /// Performs a reverse lookup into the dependency graph to find the processes that this process depends on
+        /// </summary>
+        /// <returns>The processes that the given instance depends on.</returns>
+        /// <param name="p">The process to find the dependencies for.</param>
+        public IEnumerable<AST.Process> DependsOn(AST.Process p)
+        {
+            var self = Simulation.Graph.ExecutionPlan.FirstOrDefault(x => x.Item == p.SourceInstance.Instance);
+            if (self != null)
+                foreach (var mp in self.Parents)
+                {
+                    var e = Network.Processes.FirstOrDefault(x => x.SourceInstance.Instance == mp.Item);
+                    if (e != null)
+                        yield return e;
+                }
+        }
 	}
 }

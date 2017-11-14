@@ -46,6 +46,7 @@ begin
     <#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#> => <#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#>,
 <# } #>
 
+    ENB => '1',
     RST => RESET,
     CLK => CLOCK
   );

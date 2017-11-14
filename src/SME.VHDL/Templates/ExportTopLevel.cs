@@ -165,26 +165,39 @@ entity ");
             #line hidden
             
             #line 40 ""
-            this.Write("\n    -- User defined signals here\n    -- #### USER-DATA-ENTITYSIGNALS-START\n    -" +
-                    "- #### USER-DATA-ENTITYSIGNALS-END\n\n\t-- Reset signal\n    RST : in STD_LOGIC;\n\n  " +
-                    "  -- Clock signal\n    CLK : in STD_LOGIC\n  );\nend ");
+            this.Write(@"
+    -- User defined signals here
+    -- #### USER-DATA-ENTITYSIGNALS-START
+    -- #### USER-DATA-ENTITYSIGNALS-END
+
+
+    -- Enable signal
+    ENB : in STD_LOGIC;
+
+	-- Reset signal
+    RST : in STD_LOGIC;
+
+    -- Clock signal
+    CLK : in STD_LOGIC
+  );
+end ");
             
             #line default
             #line hidden
             
-            #line 51 ""
+            #line 55 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( Network.Name ));
             
             #line default
             #line hidden
             
-            #line 51 ""
+            #line 55 ""
             this.Write("_export;\n\n\n");
             
             #line default
             #line hidden
             
-            #line 54 ""
+            #line 58 ""
 
 var converted_outputs = new HashSet<AST.Signal>();
 
@@ -204,230 +217,230 @@ foreach (var bus in Network.Busses.Where(x => x.IsTopLevelOutput && !x.IsTopLeve
             #line default
             #line hidden
             
-            #line 69 ""
+            #line 73 ""
             this.Write("\narchitecture RTL of ");
             
             #line default
             #line hidden
             
-            #line 70 ""
+            #line 74 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( Network.Name ));
             
             #line default
             #line hidden
             
-            #line 70 ""
+            #line 74 ""
             this.Write("_export is  \n  -- User defined signals here\n  -- #### USER-DATA-SIGNALS-START\n  -" +
                     "- #### USER-DATA-SIGNALS-END\n\n");
             
             #line default
             #line hidden
             
-            #line 75 ""
- if (converted_outputs.Count > 0) { 
-            
-            #line default
-            #line hidden
-            
-            #line 76 ""
-            this.Write("  -- Intermediate conversion signal to convert internal types to external ones\n");
-            
-            #line default
-            #line hidden
-            
-            #line 77 ""
-     foreach(var signal in converted_outputs) { 
-            
-            #line default
-            #line hidden
-            
-            #line 78 ""
-            this.Write("  signal tmp_");
-            
-            #line default
-            #line hidden
-            
-            #line 78 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( ((AST.Bus)signal.Parent).InstanceName ));
-            
-            #line default
-            #line hidden
-            
-            #line 78 ""
-            this.Write("_");
-            
-            #line default
-            #line hidden
-            
-            #line 78 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 78 ""
-            this.Write(" : ");
-            
-            #line default
-            #line hidden
-            
-            #line 78 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( RS.VHDLWrappedTypeName(signal) ));
-            
-            #line default
-            #line hidden
-            
-            #line 78 ""
-            this.Write(";\n");
-            
-            #line default
-            #line hidden
-            
             #line 79 ""
-     } 
+ if (converted_outputs.Count > 0) { 
             
             #line default
             #line hidden
             
             #line 80 ""
- } 
+            this.Write("  -- Intermediate conversion signal to convert internal types to external ones\n");
             
             #line default
             #line hidden
             
             #line 81 ""
-            this.Write("\nbegin\n");
-            
-            #line default
-            #line hidden
-            
-            #line 83 ""
- if (converted_outputs.Count > 0) { 
-            
-            #line default
-            #line hidden
-            
-            #line 84 ""
-            this.Write("\n    -- Carry converted signals from entity to wrapped outputs\n");
-            
-            #line default
-            #line hidden
-            
-            #line 86 ""
      foreach(var signal in converted_outputs) { 
             
             #line default
             #line hidden
             
-            #line 87 ""
-            this.Write("  ");
+            #line 82 ""
+            this.Write("  signal tmp_");
             
             #line default
             #line hidden
             
-            #line 87 ""
+            #line 82 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( ((AST.Bus)signal.Parent).InstanceName ));
             
             #line default
             #line hidden
             
-            #line 87 ""
+            #line 82 ""
             this.Write("_");
             
             #line default
             #line hidden
             
-            #line 87 ""
+            #line 82 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 87 ""
-            this.Write(" <= std_logic_vector(tmp_");
+            #line 82 ""
+            this.Write(" : ");
             
             #line default
             #line hidden
             
-            #line 87 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( ((AST.Bus)signal.Parent).InstanceName ));
+            #line 82 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( RS.VHDLWrappedTypeName(signal) ));
             
             #line default
             #line hidden
             
-            #line 87 ""
-            this.Write("_");
+            #line 82 ""
+            this.Write(";\n");
             
             #line default
             #line hidden
             
-            #line 87 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 87 ""
-            this.Write(");\n");
-            
-            #line default
-            #line hidden
-            
-            #line 88 ""
+            #line 83 ""
      } 
             
             #line default
             #line hidden
             
-            #line 89 ""
+            #line 84 ""
  } 
             
             #line default
             #line hidden
             
+            #line 85 ""
+            this.Write("\nbegin\n");
+            
+            #line default
+            #line hidden
+            
+            #line 87 ""
+ if (converted_outputs.Count > 0) { 
+            
+            #line default
+            #line hidden
+            
+            #line 88 ""
+            this.Write("\n    -- Carry converted signals from entity to wrapped outputs\n");
+            
+            #line default
+            #line hidden
+            
             #line 90 ""
-            this.Write("\n    -- Entity ");
+     foreach(var signal in converted_outputs) { 
             
             #line default
             #line hidden
             
             #line 91 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Network.Name ));
+            this.Write("  ");
             
             #line default
             #line hidden
             
             #line 91 ""
-            this.Write(" signals\n    ");
+            this.Write(this.ToStringHelper.ToStringWithCulture( ((AST.Bus)signal.Parent).InstanceName ));
+            
+            #line default
+            #line hidden
+            
+            #line 91 ""
+            this.Write("_");
+            
+            #line default
+            #line hidden
+            
+            #line 91 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 91 ""
+            this.Write(" <= std_logic_vector(tmp_");
+            
+            #line default
+            #line hidden
+            
+            #line 91 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( ((AST.Bus)signal.Parent).InstanceName ));
+            
+            #line default
+            #line hidden
+            
+            #line 91 ""
+            this.Write("_");
+            
+            #line default
+            #line hidden
+            
+            #line 91 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 91 ""
+            this.Write(");\n");
             
             #line default
             #line hidden
             
             #line 92 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Network.Name ));
+     } 
             
             #line default
             #line hidden
             
-            #line 92 ""
-            this.Write(": entity work.");
-            
-            #line default
-            #line hidden
-            
-            #line 92 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Network.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 92 ""
-            this.Write("\n    port map (\n");
+            #line 93 ""
+ } 
             
             #line default
             #line hidden
             
             #line 94 ""
+            this.Write("\n    -- Entity ");
+            
+            #line default
+            #line hidden
+            
+            #line 95 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Network.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 95 ""
+            this.Write(" signals\n    ");
+            
+            #line default
+            #line hidden
+            
+            #line 96 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Network.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 96 ""
+            this.Write(": entity work.");
+            
+            #line default
+            #line hidden
+            
+            #line 96 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Network.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 96 ""
+            this.Write("\n    port map (\n");
+            
+            #line default
+            #line hidden
+            
+            #line 98 ""
     foreach (var bus in Network.Busses.Where(x => x.IsTopLevelInput || x.IsTopLevelOutput)) { 
 	      var type = "Input/Output"; 
 
@@ -440,37 +453,37 @@ foreach (var bus in Network.Busses.Where(x => x.IsTopLevelOutput && !x.IsTopLeve
             #line default
             #line hidden
             
-            #line 102 ""
+            #line 106 ""
             this.Write("        -- ");
             
             #line default
             #line hidden
             
-            #line 102 ""
+            #line 106 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( type ));
             
             #line default
             #line hidden
             
-            #line 102 ""
+            #line 106 ""
             this.Write(" bus ");
             
             #line default
             #line hidden
             
-            #line 102 ""
+            #line 106 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
             
             #line default
             #line hidden
             
-            #line 102 ""
+            #line 106 ""
             this.Write("\n");
             
             #line default
             #line hidden
             
-            #line 103 ""
+            #line 107 ""
 		  foreach(var signal in bus.Signals) {
               var vt = RS.VHDLType(signal);
 
@@ -478,188 +491,68 @@ foreach (var bus in Network.Busses.Where(x => x.IsTopLevelOutput && !x.IsTopLeve
             #line default
             #line hidden
             
-            #line 106 ""
+            #line 110 ""
             if (converted_outputs.Contains(signal)) { 
             
             #line default
             #line hidden
             
-            #line 107 ""
+            #line 111 ""
             this.Write("        ");
             
             #line default
             #line hidden
             
-            #line 107 ""
+            #line 111 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( bus.InstanceName ));
             
             #line default
             #line hidden
             
-            #line 107 ""
+            #line 111 ""
             this.Write("_");
             
             #line default
             #line hidden
             
-            #line 107 ""
+            #line 111 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 107 ""
+            #line 111 ""
             this.Write(" => tmp_");
             
             #line default
             #line hidden
             
-            #line 107 ""
+            #line 111 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( bus.InstanceName ));
             
             #line default
             #line hidden
             
-            #line 107 ""
+            #line 111 ""
             this.Write("_");
             
             #line default
             #line hidden
             
-            #line 107 ""
+            #line 111 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 107 ""
+            #line 111 ""
             this.Write(",\n");
-            
-            #line default
-            #line hidden
-            
-            #line 108 ""
-            } else if (vt.IsSystemType && vt.IsUnsigned) { 
-            
-            #line default
-            #line hidden
-            
-            #line 109 ""
-            this.Write("        ");
-            
-            #line default
-            #line hidden
-            
-            #line 109 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( bus.InstanceName ));
-            
-            #line default
-            #line hidden
-            
-            #line 109 ""
-            this.Write("_");
-            
-            #line default
-            #line hidden
-            
-            #line 109 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 109 ""
-            this.Write(" => unsigned(");
-            
-            #line default
-            #line hidden
-            
-            #line 109 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( bus.InstanceName ));
-            
-            #line default
-            #line hidden
-            
-            #line 109 ""
-            this.Write("_");
-            
-            #line default
-            #line hidden
-            
-            #line 109 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 109 ""
-            this.Write("),\n");
-            
-            #line default
-            #line hidden
-            
-            #line 110 ""
-            } else if (vt.IsSystemType && vt.IsSigned) { 
-            
-            #line default
-            #line hidden
-            
-            #line 111 ""
-            this.Write("        ");
-            
-            #line default
-            #line hidden
-            
-            #line 111 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( bus.InstanceName ));
-            
-            #line default
-            #line hidden
-            
-            #line 111 ""
-            this.Write("_");
-            
-            #line default
-            #line hidden
-            
-            #line 111 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 111 ""
-            this.Write(" => signed(");
-            
-            #line default
-            #line hidden
-            
-            #line 111 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( bus.InstanceName ));
-            
-            #line default
-            #line hidden
-            
-            #line 111 ""
-            this.Write("_");
-            
-            #line default
-            #line hidden
-            
-            #line 111 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 111 ""
-            this.Write("),\n");
             
             #line default
             #line hidden
             
             #line 112 ""
-            } else { 
+            } else if (vt.IsSystemType && vt.IsUnsigned) { 
             
             #line default
             #line hidden
@@ -689,7 +582,7 @@ foreach (var bus in Network.Busses.Where(x => x.IsTopLevelOutput && !x.IsTopLeve
             #line hidden
             
             #line 113 ""
-            this.Write(" => ");
+            this.Write(" => unsigned(");
             
             #line default
             #line hidden
@@ -713,38 +606,159 @@ foreach (var bus in Network.Busses.Where(x => x.IsTopLevelOutput && !x.IsTopLeve
             #line hidden
             
             #line 113 ""
-            this.Write(",\n");
+            this.Write("),\n");
             
             #line default
             #line hidden
             
             #line 114 ""
-            } 
+            } else if (vt.IsSystemType && vt.IsSigned) { 
             
             #line default
             #line hidden
             
             #line 115 ""
-        } 
+            this.Write("        ");
+            
+            #line default
+            #line hidden
+            
+            #line 115 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( bus.InstanceName ));
+            
+            #line default
+            #line hidden
+            
+            #line 115 ""
+            this.Write("_");
+            
+            #line default
+            #line hidden
+            
+            #line 115 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 115 ""
+            this.Write(" => signed(");
+            
+            #line default
+            #line hidden
+            
+            #line 115 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( bus.InstanceName ));
+            
+            #line default
+            #line hidden
+            
+            #line 115 ""
+            this.Write("_");
+            
+            #line default
+            #line hidden
+            
+            #line 115 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 115 ""
+            this.Write("),\n");
             
             #line default
             #line hidden
             
             #line 116 ""
-            this.Write("\n");
+            } else { 
             
             #line default
             #line hidden
             
             #line 117 ""
-    } 
+            this.Write("        ");
+            
+            #line default
+            #line hidden
+            
+            #line 117 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( bus.InstanceName ));
+            
+            #line default
+            #line hidden
+            
+            #line 117 ""
+            this.Write("_");
+            
+            #line default
+            #line hidden
+            
+            #line 117 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 117 ""
+            this.Write(" => ");
+            
+            #line default
+            #line hidden
+            
+            #line 117 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( bus.InstanceName ));
+            
+            #line default
+            #line hidden
+            
+            #line 117 ""
+            this.Write("_");
+            
+            #line default
+            #line hidden
+            
+            #line 117 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 117 ""
+            this.Write(",\n");
             
             #line default
             #line hidden
             
             #line 118 ""
-            this.Write("        RST => RST,\n        CLK => CLK\n    );\n\n-- User defined processes here\n-- " +
-                    "#### USER-DATA-CODE-START\n-- #### USER-DATA-CODE-END\n\nend RTL;");
+            } 
+            
+            #line default
+            #line hidden
+            
+            #line 119 ""
+        } 
+            
+            #line default
+            #line hidden
+            
+            #line 120 ""
+            this.Write("\n");
+            
+            #line default
+            #line hidden
+            
+            #line 121 ""
+    } 
+            
+            #line default
+            #line hidden
+            
+            #line 122 ""
+            this.Write("        ENB => ENB,\n        RST => RST,\n        CLK => CLK\n    );\n\n-- User define" +
+                    "d processes here\n-- #### USER-DATA-CODE-START\n-- #### USER-DATA-CODE-END\n\nend RT" +
+                    "L;");
             
             #line default
             #line hidden

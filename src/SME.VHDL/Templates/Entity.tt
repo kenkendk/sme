@@ -56,11 +56,14 @@ entity <#= Process.Name #> is
     <#= variable.Name #>_reset_value: in <#= RS.VHDLWrappedTypeName(variable) #>;
 <# } #>
 
-    -- Reset signal
-    RST : Std_logic;
+    -- Ready signal
+    RDY : in Std_logic;
 
-    -- Clock signal
-    CLK : Std_logic
+    -- Finished signal
+    FIN : out Std_logic;
+
+    -- Reset signal
+    RST : in Std_logic
  );
 end <#= Process.Name #>;
 
@@ -68,20 +71,16 @@ architecture RTL of <#= Process.Name #> is
 <# foreach (var bus in Process.InternalBusses) { #>
   -- Internal bus <#= bus.Name #> signals
 <#     foreach (var signal in bus.Signals) { #>
-<#         if (Process.IsClocked) { #>
   signal <#= bus.Name #>_<#= signal.Name #>: <#= RS.VHDLWrappedTypeName(signal) #>;
-<#         } else { #>
-  signal <#= bus.Name #>_<#= signal.Name #>, next_<#= bus.Name #>_<#= signal.Name #>: <#= RS.VHDLWrappedTypeName(signal) #>;
-<#         } #>
 <#     } #>
 
 <# } #>
 
 <# if (Process.SharedSignals.Any()) { #>
   -- Internal signals
-<# } #>
-<# foreach (var s in Process.SharedSignals) { #>
+<#     foreach (var s in Process.SharedSignals) { #>
   signal <#= s.Name #> : <#= RS.VHDLWrappedTypeName(s) #>;
+<#     } #>
 <# } #>
 
 <# if (RSP.IsComponent) { #>
@@ -106,6 +105,7 @@ architecture RTL of <#= Process.Name #> is
 
 begin
 
+    -- Custom processes go here
     -- #### USER-DATA-PROCESSES-START
     -- #### USER-DATA-PROCESSES-END
 
@@ -115,99 +115,10 @@ begin
 <# } else { #>
 
     process(
-<#     if (Process.IsClocked) { #>
+        -- Custom sensitivity signals here
         -- #### USER-DATA-SENSITIVITY-START
         -- #### USER-DATA-SENSITIVITY-END
-<#     } #>
-        CLK, 
-        RST
-    )
-
-<#     if (Process.IsClocked) { #>
-<#         if (RSP.Variables.Count() > 0) { #>
-    -- Internal variables
-<#             foreach(var s in RSP.Variables) { #>
-    variable <#= s.Name #> : <#= RS.VHDLWrappedTypeName(s) #>;
-<#             } #>
-<#         } #>
-<#     } #>
-
-    -- #### USER-DATA-CLOCKEDVARIABLES-START
-    -- #### USER-DATA-CLOCKEDVARIABLES-END
-    begin
-
-        -- Shared initialize code here
-        -- #### USER-DATA-CLOCKEDSHAREDINITIALIZECODE-START
-        -- #### USER-DATA-CLOCKEDSHAREDINITIALIZECODE-END
-
-        if RST = '1' then
-<#     if (Process.IsClocked) { #>
-<#         foreach(var s in RSP.ProcessResetStaments) { #>
-            <#= s #>
-<#         } #>
-
-<#         foreach(var variable in Process.SharedVariables) { #>
-            <#= variable.Name #> := <#= variable.Name #>_reset_value;
-<#         } #>
-<#         foreach(var variable in Process.SharedSignals) { #>
-            <#= variable.Name #> <= <#= variable.Name #>_reset_value;
-<#         } #>
-
-
-<#     } else { #>
-<#          foreach(var s in RSP.ClockResetStaments) { #>
-            <#= s.Substring("next_".Length) #>
-<#          } #>
-<#     } #>
-            -- Reset code here
-            -- #### USER-DATA-RESETCODE-START
-            -- #### USER-DATA-RESETCODE-END
-
-        elsif rising_edge(CLK) then
-
-            -- Initialize code here
-            -- #### USER-DATA-CLOCKEDINITIALIZECODE-START
-            -- #### USER-DATA-CLOCKEDINITIALIZECODE-END
-
-<#     if (!Process.IsClocked) { #>
-<#         foreach (var bus in Process.InternalBusses) { #>
-            -- Propagate internal bus <#= bus.Name #>
-<#             foreach (var signal in bus.Signals) { #>
-            <#= bus.Name#>_<#= signal.Name #> <= next_<#= bus.Name #>_<#= signal.Name #>;
-<#             } #>
-<#         } #>
-
-<#     } #>
-<#     if (Process.IsClocked) { #>
-
-<#     foreach(var line in RSP.Helper.RenderMethod(Process.MainMethod)) { #>
-            <#= line #>
-<#     } #>
-
-            -- #### USER-DATA-CODE-START
-            -- #### USER-DATA-CODE-END
-
-<#     } else { #>
-
-            -- #### USER-DATA-ONRISE-START
-            -- #### USER-DATA-ONRISE-END
-
-<#     } #>
-        end if;
-    end process;
-
-<#     if (!Process.IsClocked) { #>
-
-    process(
-        -- #### USER-DATA-SENSITIVITY-START
-        -- #### USER-DATA-SENSITIVITY-END
-<#         foreach(var signal in Process.InputBusses.Union(Process.InternalBusses).Where(x => !Process.OutputBusses.Contains(x)).SelectMany(x => x.Signals)) { #>
-        <#= signal.Parent.Name #>_<#= signal.Name #>,
-<#         } #>
-<#         foreach(var signal in Process.SharedSignals) { #>
-        <#= signal.Name #>,
-<#         } #>
-        CLK,
+        RDY,
         RST
     )
 <#         if (RSP.Variables.Count() > 0) { #>
@@ -216,6 +127,8 @@ begin
 <#         foreach(var s in RSP.Variables) { #>
     variable <#= s.Name #> : <#= RS.VHDLWrappedTypeName(s) #>;
 <#         } #>
+
+    variable reentry_guard : Std_logic;
 
     -- #### USER-DATA-NONCLOCKEDVARIABLES-START
     -- #### USER-DATA-NONCLOCKEDVARIABLES-END
@@ -235,29 +148,30 @@ begin
             <#= variable.Name #> <= <#= variable.Name #>_reset_value;
 <#     } #>
 
+            reentry_guard := '1';
+            FIN <= '0';
+
             -- Initialize code here
             -- #### USER-DATA-NONCLOCKEDRESETCODE-START
             -- #### USER-DATA-NONCLOCKEDRESETCODE-END
         else
 
-<#     if (!Process.IsClocked) { #>
-<#         foreach (var bus in Process.InternalBusses) { #>
-            -- Initialize internal bus <#= bus.Name #>
-<#             foreach (var signal in bus.Signals) { #>
-            next_<#= bus.Name #>_<#= signal.Name #> <= <#= bus.Name #>_<#= signal.Name #>;
-<#             } #>
-<#         } #>
-<#     } #>
+            if RDY /= reentry_guard then
 
-            -- Initialize code here
-            -- #### USER-DATA-NONCLOCKEDINITIALIZECODE-START
-            -- #### USER-DATA-NONCLOCKEDINITIALIZECODE-END
+                reentry_guard := RDY;
+
+                -- Initialize code here
+                -- #### USER-DATA-NONCLOCKEDINITIALIZECODE-START
+                -- #### USER-DATA-NONCLOCKEDINITIALIZECODE-END
 
 
 <#     foreach(var line in RSP.Helper.RenderMethod(Process.MainMethod)) { #>
-            <#= line #>
+                <#= line #>
 <#     } #>
 
+                FIN <= RDY;
+
+            end if;
         end if;
 
         -- Non-clocked process actions here
@@ -266,9 +180,8 @@ begin
         -- #### USER-DATA-CODE-END
 
     end process;
-
-<#     } #>
 <# } #>
+
 end RTL;
 
 -- User defined architectures here

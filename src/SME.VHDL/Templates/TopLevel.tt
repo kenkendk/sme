@@ -25,6 +25,7 @@ entity <#= Network.Name #> is
 
 <#
 var feedbacks = RS.FeedbackBusses.ToArray();
+var processes = Network.Processes.Where(x => !x.IsSimulation).ToArray();
 #>
 
 <# foreach (var bus in Network.Busses.Where(x => !x.IsInternal)) { 
@@ -45,6 +46,12 @@ var feedbacks = RS.FeedbackBusses.ToArray();
     -- User defined signals here
     -- #### USER-DATA-ENTITYSIGNALS-START
     -- #### USER-DATA-ENTITYSIGNALS-END
+
+    -- Enable signal
+    ENB : in Std_logic;
+
+    -- Finished signal
+    FIN : out Std_logic;
 
 	-- Reset signal
     RST : in Std_logic;
@@ -75,9 +82,22 @@ architecture RTL of <#= Network.Name #> is
 <#     } #>
 <# } #>
 
+  -- Process ready triggers
+<# foreach (var p in processes) { #>
+  signal RDY_<#= p.InstanceName #>, FIN_<#= p.InstanceName #> : std_logic;
+<# } #>
+
+  -- The primary ready driver signal
+  signal RDY : std_logic;
+
 begin
 
-<# foreach (var p in Network.Processes.Where(x => !x.IsSimulation)) { #>
+  -- Propagate all clocked processes
+<# foreach (var p in processes.Where(x => x.IsClocked)) { #>
+  RDY_<#= p.InstanceName #> <= CLK;
+<# } #>
+
+<# foreach (var p in processes) { #>
 
     -- Entity  <#= p.InstanceName #> signals
     <#= p.InstanceName #>: entity work.<#= p.Name #>
@@ -129,10 +149,47 @@ begin
         <#= variable.Name #>_reset_value => <#= RS.GetResetExpression(variable) #>,
 <#     } #>
 
-        RST => RST,
-        CLK => CLK
+        RDY => RDY_<#= p.InstanceName #>,
+        FIN => FIN_<#= p.InstanceName #>,
+        RST => RST
     );
 
+<# } #>
+
+    -- Connect ready signals
+<# foreach (var p in processes) { 
+       var parents = RS.DependsOn(p).ToArray();
+       if (parents.Length == 0) { #>
+    RDY_<#= p.InstanceName #> <= RDY;
+<#     } else if (parents.Length == 1) { #>
+    RDY_<#= p.InstanceName #> <= RDY_<#= parents.First().InstanceName #>;
+<#     } else { #>
+    -- Setup the RDY signal for <#= p.InstanceName #>
+    process(
+      <#= string.Join(", " + Environment.NewLine + "      ", processes.Select(x => string.Format("FIN_{0}", x.InstanceName))) #>
+    )
+    begin
+      if <#= string.Join(" AND ", parents.Skip(1).Select(x => string.Format("FIN_{0} = FIN_{1}", parents.First().InstanceName, x.InstanceName))) #> then
+        RDY_<#= p.InstanceName #> <= RDY_<#= parents.First().InstanceName #>;
+      end if;
+    end process;
+
+    RDY_<#= p.InstanceName #> <= <#= string.Join(" AND ", parents.Select(x => string.Format("RDY_{0}", x.InstanceName))) #>;
+<#     } #>
+<# } #>
+
+    -- Setup the FIN feedback signal
+<# if (processes.Length == 1) { #>
+        FIN <= FIN_<#= processes.First().InstanceName #>;
+<# } else { #>
+    process(
+      <#= string.Join(", " + Environment.NewLine + "      ", processes.Select(x => string.Format("FIN_{0}", x.InstanceName))) #>
+    )
+    begin
+      if <#= string.Join(" AND ", processes.Skip(1).Select(x => string.Format("FIN_{0} = FIN_{1}", processes.First().InstanceName, x.InstanceName))) #> then
+        FIN <= FIN_<#= processes.First().InstanceName #>;
+      end if;
+    end process;
 <# } #>
 
     -- Propagate all feedback signals immediately
@@ -159,12 +216,12 @@ begin
 <#     } #>
 
 <# } #>
-        elsif rising_edge(CLK) then
+            RDY <= '0';
+        elsif rising_edge(CLK) and ENB = '1' then
 <# foreach(var bus in Network.Busses.Where(x => !x.IsInternal && x.IsClocked && !feedbacks.Contains(x))) { #>
 <#     foreach (var signal in bus.Signals) { #>
             <#= bus.InstanceName #>_<#= signal.Name #> <= <#= bus.InstanceName #>_<#= signal.Name #>_next;
 <#     } #>
-
 <# } #>
 
 <# foreach(var bus in feedbacks) { #>
@@ -173,6 +230,8 @@ begin
 <#     } #>
 
 <# } #>
+
+            RDY <= not RDY;
 
         end if;
     end process;

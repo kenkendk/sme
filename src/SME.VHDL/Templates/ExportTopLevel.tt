@@ -42,6 +42,10 @@ entity <#= Network.Name #>_export is
     -- #### USER-DATA-ENTITYSIGNALS-START
     -- #### USER-DATA-ENTITYSIGNALS-END
 
+
+    -- Enable signal
+    ENB : in STD_LOGIC;
+
 	-- Reset signal
     RST : in STD_LOGIC;
 
@@ -115,6 +119,7 @@ begin
 <#        } #>
 
 <#    } #>
+        ENB => ENB,
         RST => RST,
         CLK => CLK
     );
