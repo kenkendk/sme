@@ -61,7 +61,7 @@ namespace SimpleComponents
 			if (!Data.Valid)
 				throw new Exception("Expected the output to be ready after write");
 			if (Data.Value != m_index)
-				throw new Exception($"Expected the output value to be {m_index}");
+                throw new Exception($"Expected the output value to be {m_index} but it was {Data.Value}");
 
 			Control.Read = true;
 
@@ -72,7 +72,7 @@ namespace SimpleComponents
 			if (!Data.Valid)
 				throw new Exception("Expected the output to be ready after write");
 			if (Data.Value != m_index + 1)
-				throw new Exception($"Expected the output value to be {m_index + 1}");
+                throw new Exception($"Expected the output value to be {m_index + 1} but it was {Data.Value}");
 
 			await ClockAsync();
 
