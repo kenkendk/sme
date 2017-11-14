@@ -54,6 +54,12 @@ namespace SimpleComponents
             /// </summary>
             [InitialValue]
 			bool Filled { get; set; }
+
+            /// <summary>
+            /// Gets or sets the buffer index, used for debugging the AST 
+            /// </summary>
+            /// <value>The index.</value>
+            byte Index { get; set; }
 		}
 
         /// <summary>
@@ -72,6 +78,25 @@ namespace SimpleComponents
         /// Test element for the AST parser, not used in code
         /// </summary>
         private T m_test;
+        /// <summary>
+        /// The index value
+        /// </summary>
+        private readonly byte m_index;
+
+        /// <summary>
+        /// A dummy static variable for testing statically initialized variables in the AST and code generator
+        /// </summary>
+        private static readonly int m_dummy_static = 4;
+
+        /// <summary>
+        /// A dummy static array for testing statically initialized arrays in the AST and code generator
+        /// </summary>
+        private static readonly byte[] m_dummy_static_const_array = new byte[] { 1, 2 };
+
+        /// <summary>
+        /// An instance counter ofr debugging with multiple components
+        /// </summary>
+        private static byte __instance_number = 0;
 
         /// <summary>
         /// The input bus.
@@ -93,6 +118,7 @@ namespace SimpleComponents
         public SimpleFifoBuffer(int depth, string inputbusname = null, string outputbusname = null)
         {
             m_buffer = new T[depth];
+            m_index = __instance_number++;
             Input = Scope.CreateOrLoadBus<IInputBus>(inputbusname, forceCreate: inputbusname == null);
             Output = Scope.CreateOrLoadBus<IOutputBus>(outputbusname, forceCreate: outputbusname == null);
         }
@@ -102,6 +128,9 @@ namespace SimpleComponents
         /// </summary>
         protected override void OnTick()
         {
+            // Output the index to signal which instance this is (for debugging multiple components)
+            Output.Index = m_index;
+
             if (Input.Read && m_count > 0)
             {
                 m_count--;
