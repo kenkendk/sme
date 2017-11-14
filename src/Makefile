@@ -3,7 +3,7 @@ all: build
 DEPENDS_CS=$(find . -type f -name *.cs | xargs echo)
 
 build: SME.sln ${DEPENDS_CS}
-	xbuild /p:Configuration=Release SME.sln
+	msbuild /p:Configuration=Release SME.sln
 
 nupkg: build
 	if [ -d nupkg ]; then rm -rf nupkg; fi
@@ -37,7 +37,7 @@ deploy:
 
 
 clean:
-	xbuild /p:Configuration=Clean SME.sln
+	msbuild /p:Configuration=Clean SME.sln
 	find . -type d -name obj | xargs rm
 	find . -type d -name bin | xargs rm
 
