@@ -558,7 +558,7 @@ namespace SME.VHDL
 		/// <param name="type">The type to get an equivalent for.</param>
 		public VHDLType StdLogicVectorEquivalent(VHDLType type)
 		{
-			if (!type.IsStdLogicVector)
+            if (!type.IsStdLogicVector && !(type.IsSystemSigned || type.IsSystemUnsigned))
 				throw new Exception(string.Format("Unable to find suitable std_logic_vector type for {0}", type.Alias ?? type.Name));
 
 			return GetStdLogicVector(type.Length);

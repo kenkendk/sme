@@ -396,6 +396,34 @@ namespace SME.VHDL
 			return vt.ToSafeVHDLName();
 		}
 
+        public string VHDLExportTypeName(AST.DataElement element)
+        {
+            var vt = VHDLType(element);
+            if (vt == VHDLTypes.BOOL || vt == VHDLTypes.SYSTEM_BOOL)
+                return "STD_LOGIC";
+
+            if (vt.IsSystemType)
+                return TypeScope.StdLogicVectorEquivalent(vt).ToSafeVHDLName();
+                
+            // TODO: Figure out how to best export array types
+            if (element.CecilType.IsArrayType())
+            {
+                if (element.Parent is AST.Bus)
+                    return element.Parent.Name + "_" + element.Name + "_type";
+
+                var p = element.Parent;
+                while (p != null && !(p is AST.Process))
+                    p = p.Parent;
+
+                if (p is AST.Process)
+                    return p.Name + "_" + element.Name + "_type";
+
+                return element.Name + "_type";
+            }
+
+            return vt.ToSafeVHDLName();
+        }
+
 		/// <summary>
 		/// Wraps the VHDL typename if the type is an array type
 		/// </summary>

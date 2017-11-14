@@ -33,7 +33,7 @@ entity <#= Network.Name #>_export is
 	#>
     -- Top-level bus <#= bus.Name #> signals
 <#     foreach (var signal in bus.Signals) { #>
-    <#= bus.InstanceName #>_<#= signal.Name #>: <#= signaltype #> <#= RS.VHDLWrappedTypeName(signal) #>;
+    <#= bus.InstanceName #>_<#= signal.Name #>: <#= signaltype #> <#= RS.VHDLExportTypeName(signal) #>;
 <#     } #>
 
 <# } #>
@@ -43,19 +43,50 @@ entity <#= Network.Name #>_export is
     -- #### USER-DATA-ENTITYSIGNALS-END
 
 	-- Reset signal
-    RST : in Std_logic;
+    RST : in STD_LOGIC;
 
-	-- Clock signal
-	CLK : in Std_logic
+    -- Clock signal
+    CLK : in STD_LOGIC
   );
 end <#= Network.Name #>_export;
+
+
+<#
+var converted_outputs = new HashSet<AST.Signal>();
+
+foreach (var bus in Network.Busses.Where(x => x.IsTopLevelOutput && !x.IsTopLevelInput)) 
+{ 
+    foreach(var signal in bus.Signals) 
+    {
+        var vt = RS.VHDLType(signal);
+        if (vt.IsSystemSigned || vt.IsSystemUnsigned) 
+        {
+            converted_outputs.Add(signal);
+        }
+    }
+}
+#>
 
 architecture RTL of <#= Network.Name #>_export is  
   -- User defined signals here
   -- #### USER-DATA-SIGNALS-START
   -- #### USER-DATA-SIGNALS-END
 
+<# if (converted_outputs.Count > 0) { #>
+  -- Intermediate conversion signal to convert internal types to external ones
+<#     foreach(var signal in converted_outputs) { #>
+  signal tmp_<#= ((AST.Bus)signal.Parent).InstanceName #>_<#= signal.Name #> : <#= RS.VHDLWrappedTypeName(signal) #>;
+<#     } #>
+<# } #>
+
 begin
+<# if (converted_outputs.Count > 0) { #>
+
+    -- Carry converted signals from entity to wrapped outputs
+<#     foreach(var signal in converted_outputs) { #>
+  <#= ((AST.Bus)signal.Parent).InstanceName #>_<#= signal.Name #> <= std_logic_vector(tmp_<#= ((AST.Bus)signal.Parent).InstanceName #>_<#= signal.Name #>);
+<#     } #>
+<# } #>
 
     -- Entity <#= Network.Name #> signals
     <#= Network.Name #>: entity work.<#= Network.Name #>
@@ -69,8 +100,18 @@ begin
 		      type = "Output";
 	#>
         -- <#= type #> bus <#= bus.Name #>
-<#		  foreach(var signal in bus.Signals) { #>
+<#		  foreach(var signal in bus.Signals) {
+              var vt = RS.VHDLType(signal);
+#>
+<#            if (converted_outputs.Contains(signal)) { #>
+        <#= bus.InstanceName #>_<#= signal.Name #> => tmp_<#= bus.InstanceName #>_<#= signal.Name #>,
+<#            } else if (vt.IsSystemType && vt.IsUnsigned) { #>
+        <#= bus.InstanceName #>_<#= signal.Name #> => unsigned(<#= bus.InstanceName #>_<#= signal.Name #>),
+<#            } else if (vt.IsSystemType && vt.IsSigned) { #>
+        <#= bus.InstanceName #>_<#= signal.Name #> => signed(<#= bus.InstanceName #>_<#= signal.Name #>),
+<#            } else { #>
         <#= bus.InstanceName #>_<#= signal.Name #> => <#= bus.InstanceName #>_<#= signal.Name #>,
+<#            } #>
 <#        } #>
 
 <#    } #>
