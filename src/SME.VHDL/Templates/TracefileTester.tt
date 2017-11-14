@@ -71,6 +71,7 @@ TraceFileTester: process
     variable tmp : CSV_LINE_T;
     variable readOK : boolean;
     variable fieldno : integer := 0;
+    variable failures : integer := 0;
 
 begin
 
@@ -139,9 +140,15 @@ begin
 	        read_csv_field(L, tmp);
 	        if not are_strings_equal(tmp, "U") then
 <#    if (vhdltype.IsStdLogicVector || vhdltype.IsSystemType) { #>
-            	assert are_strings_equal(str(<#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#>), tmp) report "Value for <#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#> in cycle " & integer'image(clockcycle) & " was: " & str(<#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#>) & " but should have been: " & truncate(tmp) severity Error;
+            	if not are_strings_equal(str(<#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#>), tmp) then
+                    failures := failures + 1;
+                    report "Value for <#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#> in cycle " & integer'image(clockcycle) & " was: " & str(<#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#>) & " but should have been: " & truncate(tmp) severity Error;
+                end if;
 <#    } else { #>
-            	assert are_strings_equal(<#= vhdltype.ToSafeVHDLName()#>'image(<#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#>), to_safe_name(tmp)) report "Value for <#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#> in cycle " & integer'image(clockcycle) & " was: " & <#= vhdltype.ToSafeVHDLName()#>'image(<#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#>) & " but should have been: " & to_safe_name(truncate(tmp)) severity Error;
+            	if not are_strings_equal(<#= vhdltype.ToSafeVHDLName()#>'image(<#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#>), to_safe_name(tmp)) then
+                    failures := failures + 1;
+                    report "Value for <#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#> in cycle " & integer'image(clockcycle) & " was: " & <#= vhdltype.ToSafeVHDLName()#>'image(<#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#>) & " but should have been: " & to_safe_name(truncate(tmp)) severity Error;
+                 end if;
 <#    } #>
             end if;
             fieldno := fieldno + 1;
@@ -154,7 +161,11 @@ begin
         FILE_CLOSE(F);
     end if;
 
-	report "completed after " & integer'image(clockcycle) & " clockcycles";
+    if failures = 0 then
+        report "completed successfully after " & integer'image(clockcycle) & " clockcycles";
+    else
+        report "completed with " & integer'image(failures) & " error(s) after " & integer'image(clockcycle) & " clockcycle(s)";
+    end if;
     StopClock <= true;
 
     wait;
