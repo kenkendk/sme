@@ -1,8 +1,10 @@
 all: build
 
-DEPENDS_CS=$(find . -type f -name *.cs | xargs echo)
+DEPENDS_CS=$(find . -type f -name "*.cs" | xargs echo)
+DEPENDS_TT=$(find . -type f -name "*.tt" | xargs echo)
+DEPENDS_CSPROJ=$(find . -type f -name "*.csproj" | xargs echo)
 
-build: SME.sln ${DEPENDS_CS}
+build: SME.sln ${DEPENDS_CS} ${DEPENDS_TT} ${DEPENDS_CSPROJ}
 	msbuild /p:Configuration=Release SME.sln
 
 nupkg: build
