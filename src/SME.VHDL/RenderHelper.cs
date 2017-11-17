@@ -566,7 +566,7 @@ namespace SME.VHDL
             }
             else
             {
-                return e.Value.ToString();
+                return VHDLTypeConversion.GetPrimitiveLiteral(e, tvhdl);
             }
         }
 
@@ -597,61 +597,12 @@ namespace SME.VHDL
         /// <param name="e">The expression to render</param>
         private string RenderExpression(SME.VHDL.CustomNodes.ConversionExpression e)
         {
+            string innerexp;
             if (e.Expression is PrimitiveExpression)
-            {
-                var tvhdl = Parent.VHDLType(e);
-                if (tvhdl.IsStdLogicVector)
-                {
-                    var pe = e.Expression as PrimitiveExpression;
-                    string binstr = null;
-                    if (pe.Value is ulong)
-                    {
-                        var uvalue = (ulong)pe.Value;
-                        if (uvalue > int.MaxValue)
-                        {
-                            binstr =
-                                Convert.ToString((int)((uvalue >> 32) & 0xffffffff), 2).PadLeft(32, '0') +
-                                Convert.ToString((int)(uvalue & 0xffffffff), 2).PadLeft(32, '0');
-                        }
-                    }
-                    else if (pe.Value is long)
-                    {
-                        var lvalue = (long)pe.Value;
-                        if (lvalue > int.MaxValue || lvalue < int.MinValue)
-                        {
-                            binstr =
-                                Convert.ToString((int)((lvalue >> 32) & 0xffffffff), 2).PadLeft(32, '0') +
-                                Convert.ToString((int)(lvalue & 0xffffffff), 2).PadLeft(32, '0');
-                        }
-                    }
-                    else if (pe.Value is uint)
-                    {
-                        var uvalue = (uint)pe.Value;
-                        if (uvalue > int.MaxValue)
-                        {
-                            binstr = Convert.ToString((uint)(uvalue & 0xffffffff), 2).PadLeft(32, '0');
-                        }
-                    }
-                    else if (pe.Value is int)
-                    {
-                        var ivalue = (int)pe.Value;
-                        if (tvhdl.IsUnsigned && ivalue < 0)
-                        {
-                            binstr = Convert.ToString((int)(ivalue & 0xffffffff), 2).PadLeft(32, '0');
-                        }
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(binstr))
-                    {
-                        if (tvhdl.Length > 0)
-                            binstr = binstr.PadLeft(tvhdl.Length, '0');
-
-                        return string.Format("STD_LOGIC_VECTOR'(\"{0}\")", binstr);
-                    }
-                }
-            }
-
-            return string.Format(e.WrappingTemplate, RenderExpression(e.Expression));
+                innerexp = VHDLTypeConversion.GetPrimitiveLiteral(e.Expression, Parent.TypeLookup[e]);
+            else
+                innerexp = RenderExpression(e.Expression);
+            return string.Format(e.WrappingTemplate, innerexp);
         }
 
         /// <summary>

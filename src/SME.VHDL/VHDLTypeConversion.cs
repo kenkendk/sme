@@ -10,6 +10,10 @@ namespace SME.VHDL
 		{
 			var svhdl = render.VHDLType(s);
 
+            // Deal with pesky integers that overflow the 32bit VHDL specs
+            if (IsTooLargeIntegerLiteral(s, target))
+                svhdl = render.TypeScope.StdLogicVectorEquivalent(target);
+
 			// Already the real target type, just return it
 			if (svhdl == target)
 				return s;
@@ -439,5 +443,82 @@ namespace SME.VHDL
 
 			return self;
 		}
+
+        /// <summary>
+        /// Evaluates if the given expression is an integer literal that is too large to be represented as a VHDL integer literal
+        /// </summary>
+        /// <returns><c>true</c>, if the expression is an integer that is too larget, <c>false</c> otherwise.</returns>
+        /// <param name="e">The expression to evaluate.</param>
+        /// <param name="tvhdl">The target VHDL type.</param>
+        public static bool IsTooLargeIntegerLiteral(Expression e, VHDLType tvhdl)
+        {
+            return (GetPrimitiveLiteral(e as PrimitiveExpression, tvhdl) ?? string.Empty).StartsWith("STD_LOGIC_VECTOR'(\"", StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Gets the VHDL primitive literal representation for the given expression
+        /// </summary>
+        /// <returns>The integer literal expression.</returns>
+        /// <param name="e">The expression to evaluate.</param>
+        /// <param name="tvhdl">The target VHDL type.</param>
+        public static string GetPrimitiveLiteral(object e, VHDLType tvhdl)
+        {
+            if (e is PrimitiveExpression)
+                e = (e as PrimitiveExpression).Value;
+            if (e is ICSharpCode.NRefactory.CSharp.PrimitiveExpression)
+                e = (e as ICSharpCode.NRefactory.CSharp.PrimitiveExpression).Value;
+
+            if (e == null)
+                return null;
+
+            string binstr = null;
+            if (e is ulong)
+            {
+                var uvalue = (ulong)e;
+                if (uvalue > int.MaxValue)
+                {
+                    binstr =
+                        Convert.ToString((int)((uvalue >> 32) & 0xffffffff), 2).PadLeft(32, '0') +
+                        Convert.ToString((int)(uvalue & 0xffffffff), 2).PadLeft(32, '0');
+                }
+            }
+            else if (e is long)
+            {
+                var lvalue = (long)e;
+                if (lvalue >= int.MaxValue || lvalue <= int.MinValue)
+                {
+                    binstr =
+                        Convert.ToString((int)((lvalue >> 32) & 0xffffffff), 2).PadLeft(32, '0') +
+                        Convert.ToString((int)(lvalue & 0xffffffff), 2).PadLeft(32, '0');
+                }
+            }
+            else if (e is uint)
+            {
+                var uvalue = (uint)e;
+                if (uvalue >= int.MaxValue)
+                {
+                    binstr = Convert.ToString((uint)(uvalue & 0xffffffff), 2).PadLeft(32, '0');
+                }
+            }
+            else if (e is int)
+            {
+                var ivalue = (int)e;
+                if (tvhdl.IsUnsigned && ivalue < 0 || ivalue <= int.MinValue)
+                {
+                    binstr = Convert.ToString((int)(ivalue & 0xffffffff), 2).PadLeft(32, '0');
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(binstr))
+            {
+                if (tvhdl.Length > 0)
+                    binstr = binstr.PadLeft(tvhdl.Length, '0');
+
+                return string.Format("STD_LOGIC_VECTOR'(\"{0}\")", binstr);
+            }
+
+            return e.ToString();
+
+        }
 	}
 }
