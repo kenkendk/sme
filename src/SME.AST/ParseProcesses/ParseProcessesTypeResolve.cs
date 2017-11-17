@@ -60,11 +60,52 @@ namespace SME.AST
 				if (op.IsCompareOperator() || op.IsLogicalOperator())
 					return LoadType(typeof(bool));
 
-				var lefttype = ResolveExpressionType(network, proc, method, statement, e.Left);
-				//var righttype = ResolveExpressionType(network, proc, method, statement, e.Right);
 
-				if (op == ICSharpCode.NRefactory.CSharp.BinaryOperatorType.Multiply)
+
+				var lefttype = ResolveExpressionType(network, proc, method, statement, e.Left);
+                //var righttype = ResolveExpressionType(network, proc, method, statement, e.Right);
+
+                if (op.IsArithmeticOperator())
 				{
+                    var righttype = ResolveExpressionType(network, proc, method, statement, e.Right);
+
+                    // Custom resolve of the resulting type as dictated by the .Net rules
+                    if (righttype.IsSameTypeReference<double>() || lefttype.IsSameTypeReference<double>())
+                        return lefttype.LoadType(typeof(double));
+                    if (righttype.IsSameTypeReference<float>() || lefttype.IsSameTypeReference<float>())
+                        return lefttype.LoadType(typeof(float));
+                    if (righttype.IsSameTypeReference<ulong>() || lefttype.IsSameTypeReference<ulong>())
+                        return lefttype.LoadType(typeof(ulong));
+                    if (righttype.IsSameTypeReference<long>() || lefttype.IsSameTypeReference<long>())
+                        return lefttype.LoadType(typeof(long));
+
+                    if (righttype.IsSameTypeReference<uint>() || lefttype.IsSameTypeReference<uint>())
+                    {
+                        if (lefttype.IsSameTypeReference<sbyte>() || lefttype.IsSameTypeReference<short>() || righttype.IsSameTypeReference<sbyte>() || righttype.IsSameTypeReference<short>())
+                            return lefttype.LoadType(typeof(long));
+                        else
+                            return lefttype.LoadType(typeof(uint));
+                    }
+
+                    if (righttype.IsSameTypeReference<int>() || lefttype.IsSameTypeReference<int>())
+                    {
+                        if (righttype.IsSameTypeReference<uint>() || lefttype.IsSameTypeReference<uint>())
+                            return lefttype.LoadType(typeof(uint));
+                        else
+                            return lefttype.LoadType(typeof(int));
+                    }
+
+                    if(righttype.IsSameTypeReference<ushort>() || lefttype.IsSameTypeReference<ushort>())
+                        return lefttype.LoadType(typeof(int));
+                    if (righttype.IsSameTypeReference<short>() || lefttype.IsSameTypeReference<short>())
+                        return lefttype.LoadType(typeof(int));
+                    if (righttype.IsSameTypeReference<sbyte>() || lefttype.IsSameTypeReference<sbyte>())
+                        return lefttype.LoadType(typeof(int));
+                    if (righttype.IsSameTypeReference<byte>() || lefttype.IsSameTypeReference<byte>())
+                        return lefttype.LoadType(typeof(int));
+
+
+                    Console.WriteLine("Warning: unable to determine result type for operation {0} on types {1} and {2}", op, lefttype, righttype);
 					//TODO: Return a larger type, double the bits?
 					return lefttype;
 				}
