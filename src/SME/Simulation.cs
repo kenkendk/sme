@@ -267,7 +267,8 @@ namespace SME
         {
             if (p == null)
                 throw new ArgumentNullException(nameof(p));
-            m_processes.Add(p, new ProcessMetadata(p));
+            if (!m_processes.ContainsKey(p))
+                m_processes.Add(p, new ProcessMetadata(p));
         }
 
 		/// <summary>
