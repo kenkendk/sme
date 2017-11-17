@@ -482,9 +482,6 @@ namespace SME.VHDL
 				var vleft = VHDLType(boe.Left);
 				var vright = VHDLType(boe.Right);
 
-				if (vleft == vright)
-					return vleft;
-
 				return TypeLookup[element] = TypeScope.GetVHDLType(element.SourceResultType);
 			}
 			else if (element is UnaryOperatorExpression)
@@ -557,7 +554,7 @@ namespace SME.VHDL
 
 			var tvhdl = VHDLType(element);
 			var elvhdl = tvhdl;
-			while (elvhdl.IsArray && !elvhdl.IsStdLogicVector)
+            while (elvhdl.IsArray && !elvhdl.IsStdLogicVector && !elvhdl.IsVHDLSigned && !elvhdl.IsVHDLUnsigned)
 				elvhdl = TypeScope.GetByName(elvhdl.ElementName);
 
 			if (pval != null)
@@ -757,21 +754,7 @@ namespace SME.VHDL
 
                                 yield return string.Format("type {0}_type is array (0 to {1}{3}) of {2}", varname, ellength, vhdl_eltype, eltrail);
 
-                                string values;
-                                if (new[] { typeof(sbyte), typeof(byte), typeof(ushort), typeof(short), typeof(int) }.Select(x => eltype.Module.Import(x).Resolve()).Contains(eltype.Resolve()))
-                                    values = string.Join(", ", arc.Initializer.Elements.Select(x => string.Format("{0}({1})", convm, x)));
-                                else
-                                {
-                                    if (eltype.Resolve() == eltype.Module.Import(typeof(uint)).Resolve())
-                                        values = string.Join(", ", arc.Initializer.Elements.Select(x => string.Format("\"{1}\"", convm, Convert.ToString((uint)(x as ICSharpCode.NRefactory.CSharp.PrimitiveExpression).Value, 2).PadLeft(32, '0'))));
-                                    else if (eltype.Resolve() == eltype.Module.Import(typeof(long)).Resolve())
-                                        values = string.Join(", ", arc.Initializer.Elements.Select(x => string.Format("\"{1}\"", convm, Convert.ToString((long)(x as ICSharpCode.NRefactory.CSharp.PrimitiveExpression).Value, 2).PadLeft(64, '0'))));
-                                    /*else if (eltype.Resolve() == eltype.Module.Import(typeof(ulong)).Resolve())
-										values = string.Join(", ", arc.Initializer.Elements.Select(x => string.Format("{0}({1})", convm, Convert.ToString((ulong)(x as ICSharpCode.NRefactory.CSharp.PrimitiveExpression).Value, 2).PadLeft(64, '0'))));*/
-                                    else
-                                        values = " ??? unsupported type ??? ";
-                                }
-
+                                var values = string.Join(", ", arc.Initializer.Elements.Select(x => string.Format("{0}({1})", convm, VHDLTypeConversion.GetPrimitiveLiteral(x, vhdl_eltype))));
                                 yield return string.Format("constant {0}: {0}_type := ({1})", varname, values);
 
                             }
@@ -793,20 +776,7 @@ namespace SME.VHDL
 
                                 yield return string.Format("type {0}_type is array (0 to {1}{3}) of {2}", varname, ellength, vhdl_eltype, eltrail);
 
-                                string values;
-                                if (new[] { typeof(sbyte), typeof(byte), typeof(ushort), typeof(short), typeof(int) }.Select(x => eltype.Module.Import(x).Resolve()).Contains(eltype.Resolve()))
-                                    values = string.Join(", ", arc.ElementExpressions.Select(x => string.Format("{0}({1})", convm, (x as AST.PrimitiveExpression).Value)));
-                                else
-                                {
-                                    if (eltype.Resolve() == eltype.Module.Import(typeof(uint)).Resolve())
-                                        values = string.Join(", ", arc.ElementExpressions.Select(x => string.Format("\"{1}\"", convm, Convert.ToString((uint)(x as AST.PrimitiveExpression).Value, 2).PadLeft(32, '0'))));
-                                    else if (eltype.Resolve() == eltype.Module.Import(typeof(long)).Resolve())
-                                        values = string.Join(", ", arc.ElementExpressions.Select(x => string.Format("\"{1}\"", convm, Convert.ToString((long)(x as AST.PrimitiveExpression).Value, 2).PadLeft(64, '0'))));
-                                    /*else if (eltype.Resolve() == eltype.Module.Import(typeof(ulong)).Resolve())
-										values = string.Join(", ", arc.Initializer.Elements.Select(x => string.Format("{0}({1})", convm, Convert.ToString((ulong)(x as ICSharpCode.NRefactory.CSharp.PrimitiveExpression).Value, 2).PadLeft(64, '0'))));*/
-                                    else
-                                        values = " ??? unsupported type ??? ";
-                                }
+                                var values = string.Join(", ", arc.ElementExpressions.Select(x => string.Format("{0}({1})", convm, VHDLTypeConversion.GetPrimitiveLiteral(x as AST.PrimitiveExpression, vhdl_eltype))));
 
                                 yield return string.Format("constant {0}: {0}_type := ({1})", varname, values);
                             }
@@ -848,21 +818,7 @@ namespace SME.VHDL
 
                                 var elements = Enumerable.Range(0, arc.Length).Select(x => arc.GetValue(x));
 
-                                string values;
-                                if (new[] { typeof(sbyte), typeof(byte), typeof(ushort), typeof(short), typeof(int) }.Select(x => eltype.Module.Import(x).Resolve()).Contains(eltype.Resolve()))
-                                    values = string.Join(", ", elements.Select(x => string.Format("{0}({1})", convm, x)));
-                                else
-                                {
-                                    if (eltype.Resolve() == eltype.Module.Import(typeof(uint)).Resolve())
-                                        values = string.Join(", ", elements.Select(x => string.Format("\"{1}\"", convm, Convert.ToString((uint)(x as AST.PrimitiveExpression).Value, 2).PadLeft(32, '0'))));
-                                    else if (eltype.Resolve() == eltype.Module.Import(typeof(long)).Resolve())
-                                        values = string.Join(", ", elements.Select(x => string.Format("\"{1}\"", convm, Convert.ToString((long)(x as AST.PrimitiveExpression).Value, 2).PadLeft(64, '0'))));
-                                    /*else if (eltype.Resolve() == eltype.Module.Import(typeof(ulong)).Resolve())
-                                        values = string.Join(", ", arc.Initializer.Elements.Select(x => string.Format("{0}({1})", convm, Convert.ToString((ulong)(x as ICSharpCode.NRefactory.CSharp.PrimitiveExpression).Value, 2).PadLeft(64, '0'))));*/
-                                    else
-                                        values = " ??? unsupported type ??? ";
-                                }
-
+                                var values = string.Join(", ", elements.Select(x => string.Format("{0}({1})", convm,  VHDLTypeConversion.GetPrimitiveLiteral(x, vhdl_eltype))));
                                 yield return string.Format("constant {0}: {0}_type := ({1})", varname, values);                                
                             }
 							else

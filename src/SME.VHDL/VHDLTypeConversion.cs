@@ -115,7 +115,18 @@ namespace SME.VHDL
                     Variable tmpvar = null;
                     if (target.Length != svhdl.Length)
                     {
-                        if (svhdl.IsSystemSigned)
+                        if (svhdl.IsVHDLSigned)
+                        {
+                            // Resizing with signed is bad because we may chop the upper bit
+                            resized = true;
+                            str = string.Format("SIGNED(resize(UNSIGNED({0}), {1}))", str, targetlengthstr);
+                        }
+                        else if (svhdl.IsVHDLUnsigned)
+                        {
+                            resized = true;
+                            str = string.Format("resize({0}, {1})", str, targetlengthstr);
+                        }
+                        else if (svhdl.IsSystemSigned)
                         {
                             // Resizing with signed is bad because we may chop the upper bit
                             str = string.Format("SIGNED(resize(UNSIGNED({0}), {1}))", str, targetlengthstr);
@@ -128,17 +139,7 @@ namespace SME.VHDL
                             svhdl = render.TypeScope.NumericEquivalent(svhdl);
                             resized = true;
                         }
-                        else if (svhdl.IsVHDLSigned)
-                        {
-                            // Resizing with signed is bad because we may chop the upper bit
-                            resized = true;
-                            str = string.Format("SIGNED(resize(UNSIGNED({0}), {1}))", str, targetlengthstr);
-                        }
-                        else if (svhdl.IsVHDLUnsigned)
-                        {
-                            resized = true;
-                            str = string.Format("resize({0}, {1})", str, targetlengthstr);
-                        }
+
                         else if (target.Length > svhdl.Length)
                         {
                             // This must be a variable as bit concatenation is only allowed in assignment statements:
@@ -398,13 +399,22 @@ namespace SME.VHDL
                 else
                     throw new Exception("Unexpected case");
             }
-            else if (svhdl.IsNumericSigned && target.IsSystemSigned && svhdl.Length == target.Length)
+            else if ((svhdl.IsSigned || svhdl.IsUnsigned) && (target.IsSigned || target.IsUnsigned))
             {
-                return s;
-            }
-            else if (svhdl.IsNumericUnsigned && target.IsSystemUnsigned && svhdl.Length == target.Length)
-            {
-                return s;
+                if (target.Length == svhdl.Length)
+                {
+                    if (svhdl.IsSigned == target.IsSigned)
+                        return s;
+                    else
+                        return WrapExpression(render, s, string.Format("{1}({0})", "{0}", target.IsSigned ? "SIGNED" : "UNSIGNED"), target);
+                }
+                else
+                {
+                    if (svhdl.IsSigned == target.IsSigned)
+                        return WrapExpression(render, s, string.Format("resize({0}, {1})", "{0}", targetlengthstr), target);
+                    else
+                        return WrapExpression(render, s, string.Format("{2}((resize({0}, {1})))", "{0}", targetlengthstr, target.IsSigned ? "SIGNED" : "UNSIGNED"), target);
+                }
             }
 			else
 				throw new Exception(string.Format("Unexpected target type: {0} for source: {1}", target, svhdl));

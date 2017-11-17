@@ -84,7 +84,7 @@ namespace SME.VHDL.Transformations
 					// because we loose precision with that
 					// The cast expression will cut the precision for us later, if needed
 					var xt = State.TypeScope.GetVHDLType(((AST.CastExpression)tp).SourceResultType);
-					if ((xt.IsNumeric || xt.IsStdLogicVector) && (tvhdl.IsNumeric || tvhdl.IsStdLogicVector) && xt.Length > tvhdl.Length)
+                    if ((xt.IsSigned || xt.IsUnsigned || xt.IsStdLogicVector) && (tvhdl.IsSigned || tvhdl.IsUnsigned || tvhdl.IsStdLogicVector) && xt.Length > tvhdl.Length)
 					{
 						tvhdl = xt;
 						tvhdlsource = ((AST.CastExpression)tp).SourceResultType;
