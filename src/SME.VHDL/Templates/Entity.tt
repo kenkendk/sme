@@ -48,13 +48,18 @@ entity <#= Process.Name #> is
 <#     } #>
 <# } #>
 
+<# if (Process.SharedVariables.Any() || Process.SharedSignals.Any()) { #>
     -- Initialization values
-<# foreach (var variable in Process.SharedVariables) { #>
+<#     foreach (var variable in Process.SharedVariables) { #>
     <#= variable.Name #>_reset_value: in <#= RS.VHDLWrappedTypeName(variable) #>;
-<# } #>
-<# foreach (var variable in Process.SharedSignals) { #>
+<#     } #>
+<#     foreach (var variable in Process.SharedSignals) { #>
     <#= variable.Name #>_reset_value: in <#= RS.VHDLWrappedTypeName(variable) #>;
+<#     } #>
 <# } #>
+
+    -- Clock signal
+    CLK : in Std_logic;
 
     -- Ready signal
     RDY : in Std_logic;
@@ -119,6 +124,7 @@ begin
         -- #### USER-DATA-SENSITIVITY-START
         -- #### USER-DATA-SENSITIVITY-END
         RDY,
+        <#= Process.IsClocked ? "CLK," : "" #>
         RST
     )
 <#         if (RSP.Variables.Count() > 0) { #>
@@ -154,7 +160,12 @@ begin
             -- Initialize code here
             -- #### USER-DATA-NONCLOCKEDRESETCODE-START
             -- #### USER-DATA-NONCLOCKEDRESETCODE-END
+
+        <# if (Process.IsClocked) { #>
+        elsif rising_edge(CLK) then
+        <# } else  { #>
         else
+        <# } #>
 
             if RDY /= reentry_guard then
 

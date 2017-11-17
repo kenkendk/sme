@@ -92,11 +92,6 @@ architecture RTL of <#= Network.Name #> is
 
 begin
 
-  -- Propagate all clocked processes
-<# foreach (var p in processes.Where(x => x.IsClocked)) { #>
-  RDY_<#= p.InstanceName #> <= CLK;
-<# } #>
-
 <# foreach (var p in processes) { #>
 
     -- Entity  <#= p.InstanceName #> signals
@@ -149,6 +144,7 @@ begin
         <#= variable.Name #>_reset_value => <#= RS.GetResetExpression(variable) #>,
 <#     } #>
 
+        CLK => CLK,
         RDY => RDY_<#= p.InstanceName #>,
         FIN => FIN_<#= p.InstanceName #>,
         RST => RST
@@ -180,7 +176,7 @@ begin
 
     -- Setup the FIN feedback signal
 <# if (processes.Length == 1) { #>
-        FIN <= FIN_<#= processes.First().InstanceName #>;
+    FIN <= FIN_<#= processes.First().InstanceName #>;
 <# } else { #>
     process(
       <#= string.Join(", " + Environment.NewLine + "      ", processes.Select(x => string.Format("FIN_{0}", x.InstanceName))) #>
