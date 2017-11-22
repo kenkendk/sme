@@ -379,8 +379,8 @@ namespace SME.VHDL
                 var pbus = target.Parent as AST.Bus;
                 if (Process.InputBusses.Contains(pbus) && Process.OutputBusses.Contains(pbus))
                     prefix = "out_";
-                else if (!Process.IsClocked && (pbus.IsClocked || pbus.IsInternal))
-                    prefix = "next_";
+                //else if (!Process.IsClocked && (pbus.IsClocked || pbus.IsInternal))
+                //    prefix = "next_";
             }
 
             if (e.Right is PrimitiveExpression && ((PrimitiveExpression)e.Right).Value == null)
