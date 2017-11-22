@@ -883,6 +883,10 @@ begin
                     report ""Stopping simulation due to five consecutive failed cycles"" severity error;
                     StopClock <= true;
                 end if;
+                if failures > 20 then
+                    report ""Stopping simulation after 20 failures"" severity error;
+                    StopClock <= true;
+                end if;
             end if;
 
             clockcycle := clockcycle + 1;
