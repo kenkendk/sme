@@ -881,6 +881,7 @@ begin
             else
                 if clockcycle - first_failure_tick >= 5 then
                     report ""Stopping simulation due to five consecutive failed cycles"" severity error;
+                    StopClock <= true;
                 end if;
             end if;
 
