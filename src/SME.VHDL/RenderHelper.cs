@@ -317,12 +317,41 @@ namespace SME.VHDL
         }
 
         /// <summary>
+        /// Helper function that digs out the primitive expression underneath casting and formatting expressions
+        /// </summary>
+        /// <returns>The primitive expression or null.</returns>
+        /// <param name="e">The expression to unwrap.</param>
+        private static AST.PrimitiveExpression UnwrapPrimitive(AST.Expression e)
+        {
+            if (e is CustomNodes.ConversionExpression)
+                e = ((CustomNodes.ConversionExpression)e).Expression;
+            if (e is AST.PrimitiveExpression)
+                return (AST.PrimitiveExpression)e;
+
+            return null;                
+        }
+
+        /// <summary>
         /// Renders a single ArrayCreateExpression to VHDL
         /// </summary>
         /// <returns>The VHDL equivalent of the expression.</returns>
         /// <param name="e">The expression to render</param>
         private string RenderExpression(AST.ArrayCreateExpression e)
         {
+            var last = UnwrapPrimitive(e.ElementExpressions.LastOrDefault());
+            if (last != null && last.Value != null)
+            {
+                var trailing_defaults = e.ElementExpressions.Reverse().TakeWhile(x => last.Value.Equals(UnwrapPrimitive(x)?.Value)).Count();
+                if (trailing_defaults != 0)
+                    return "(" + string.Join(", ", 
+                                             e.ElementExpressions
+                                             .Take(e.ElementExpressions.Length - trailing_defaults)
+                                             .Select(x => RenderExpression(x))
+                                             .Union(new[] { "others => " + RenderExpression(e.ElementExpressions.Last()) })
+                                            )+ ")";
+
+            }
+
             return "(" + string.Join(", ", e.ElementExpressions.Select(x => RenderExpression(x))) + ")";
         }
 
