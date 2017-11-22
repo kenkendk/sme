@@ -68,23 +68,31 @@ namespace SME.VHDL.Transformations
                     return item;
                 }
 
-                var blockparent = parentif.Parent as AST.Method;
-                if (blockparent == null)
+                Statement[] blocksource;
+                if (parentif.Parent is AST.Method)
+                {
+                    blocksource = (parentif.Parent as AST.Method).Statements;
+                }
+                else if (parentif.Parent is AST.BlockStatement)
+                {
+                    blocksource = (parentif.Parent as AST.BlockStatement).Statements;
+                }
+                else
                 {
                     Console.WriteLine("Unable to transform return statement in main method, try building the source program in Debug mode. Statement location is: {0}", pos);
                     return item;
                 }
 
-                var ix = Array.IndexOf(blockparent.Statements, parentif);
+                var ix = Array.IndexOf(blocksource, parentif);
                 if (ix < 0)
                 {
                     Console.WriteLine("Unable to transform return statement in main method, try building the source program in Debug mode. Statement location is: {0}", pos);
                     return item;
                 }
 
-                var remain = blockparent.Statements.Skip(ix + 1).ToArray();
+                var remain = blocksource.Skip(ix + 1).ToArray();
 
-                ((ReturnStatement)item).ReplaceWith(new EmptyStatement());
+                ((ReturnStatement)item).ReplaceWith(new EmptyStatement() { Parent = item.Parent });
 
                 // If there are no other statements, we are good, but this should not happen
                 if (remain.Length == 0)
@@ -93,7 +101,14 @@ namespace SME.VHDL.Transformations
                 }
                 else
                 {
-                    blockparent.Statements = blockparent.Statements.Take(ix + 1).ToArray();
+                    if (parentif.Parent is AST.Method)
+                    {
+                        (parentif.Parent as AST.Method).Statements = blocksource.Take(ix + 1).ToArray();
+                    }
+                    else // if (parentif.Parent is AST.BlockStatement)
+                    {
+                        (parentif.Parent as AST.BlockStatement).Statements = blocksource.Take(ix + 1).ToArray();
+                    }
 
                     // One left, then skip the block construct
                     if (remain.Length == 1)
