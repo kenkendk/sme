@@ -453,32 +453,44 @@ namespace SME.CPP
         /// Finds the length of an array type-signal
         /// </summary>
         /// <returns>The array length.</returns>
-        /// <param name="signal">The signal to get the length for.</param>
-        public AST.Constant GetArrayLength(AST.Signal signal)
-		{
-			if (signal.CecilType.IsFixedArrayType())
-			{
-				if (signal.Source is IMemberDefinition)
-				{
-					return new Constant
-					{
-						Source = signal,
-                        DefaultValue = ((IMemberDefinition)signal.Source).GetFixedArrayLength(),
-                        CecilType = signal.CecilType.LoadType(typeof(uint))
-					};
-				}
-				else if (signal.Source is System.Reflection.MemberInfo)
-				{
-					return new Constant
-					{
-						Source = signal,
-						DefaultValue = ((System.Reflection.MemberInfo)signal.Source).GetFixedArrayLength(),
-						CecilType = signal.CecilType.LoadType(typeof(uint))
-					};
-				}
-			}
+        /// <param name="element">The element to get the length for.</param>
+        public AST.Constant GetArrayLength(AST.DataElement element)
+        {
+            if (element.CecilType.IsFixedArrayType())
+            {
+                if (element.Source is IMemberDefinition)
+                {
+                    return new Constant
+                    {
+                        Source = element,
+                        DefaultValue = ((IMemberDefinition)element.Source).GetFixedArrayLength(),
+                        CecilType = element.CecilType.LoadType(typeof(uint))
+                    };
+                }
+                else if (element.Source is System.Reflection.MemberInfo)
+                {
+                    return new Constant
+                    {
+                        Source = element,
+                        DefaultValue = ((System.Reflection.MemberInfo)element.Source).GetFixedArrayLength(),
+                        CecilType = element.CecilType.LoadType(typeof(uint))
+                    };
+                }
+            }
 
-            throw new Exception($"Unable to guess length for signal: {signal.Name}");
-		}
+            if (element.DefaultValue is Array)
+            {
+                return new Constant()
+                {
+                    Source = element,
+                    DefaultValue = (element.DefaultValue as Array).Length,
+                    CecilType = element.CecilType.LoadType(typeof(uint))
+                };
+            }
+
+            throw new Exception($"Unable to guess length for signal: {element.Name}");
+
+        }
+
 	}
 }

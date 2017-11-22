@@ -34,10 +34,7 @@ var busses = RSP.Process.InputBusses.Union(RSP.Process.OutputBusses).Union(RSP.P
            if (rt.IsArray) {
                var eltype = rt.ElementName;
 
-               var arraylen =
-                   (v.DefaultValue is SME.AST.ArrayCreateExpression)
-                   ? (v.DefaultValue as SME.AST.ArrayCreateExpression).ElementExpressions.Length.ToString()
-                   : RS.Renderer.RenderExpression((v.DefaultValue as SME.AST.EmptyArrayCreateExpression).SizeExpression);
+               var arraylen = RS.GetArrayLength(v).DefaultValue;
 
                if ((v.DefaultValue is SME.AST.ArrayCreateExpression)) { #>
     <#= v.Name #> = new <#= eltype #>[<#= arraylen #>];
