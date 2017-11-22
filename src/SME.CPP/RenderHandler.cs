@@ -512,7 +512,7 @@ namespace SME.CPP
             }
             else if (e.SourceResultType.IsSameTypeReference(typeof(long)))
             {
-                var lv = (long)e.Value;
+                var lv = (long)Convert.ChangeType(e.Value, typeof(long));
                 if (lv > int.MaxValue || lv < int.MinValue)
                     return lv + "ll";
                 else
@@ -520,7 +520,7 @@ namespace SME.CPP
             }
 			else if (e.SourceResultType.IsSameTypeReference(typeof(ulong)))
 			{
-				var lv = (ulong)e.Value;
+                var lv = (ulong)Convert.ChangeType(e.Value, typeof(ulong));
 				if (lv > int.MaxValue)
 					return lv + "ull";
 				else
