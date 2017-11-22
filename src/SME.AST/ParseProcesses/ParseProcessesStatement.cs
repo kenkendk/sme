@@ -369,6 +369,14 @@ namespace SME.AST
 					Parent = method
 				};
 
+            if (value is Array)
+                return new Constant()
+                {
+                    DefaultValue = ((Array)value).Length,
+                    Source = value,
+                    CecilType = LoadType(typeof(int))
+                };
+
 			if (value is IMemberDefinition)
 			{
 				try
