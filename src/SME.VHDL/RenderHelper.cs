@@ -348,8 +348,8 @@ namespace SME.VHDL
 
             if (tvhdl.IsStdLogic)
                 res = string.Format(res, "'0'");
-            else if (tvhdl.IsNumeric)
-                res = string.Format(res, "0");
+            else if (tvhdl.IsSigned || tvhdl.IsUnsigned)
+                res = string.Format(res, tvhdl.ToSafeVHDLName().Substring("T_".Length) + "(0)");
 
             return res;
         }
