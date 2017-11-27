@@ -32,17 +32,21 @@ namespace SME
 		/// </summary>
 		/// <returns>The object with the busses loaded.</returns>
 		/// <param name="o">The object instance to load busses for.</param>
-		public static object AutoloadBusses(object o)
+        /// <param name="forceautoload">Forces automatic bus loading, even if the <see cref="AutoloadBusAttribute"/> is not set</param>
+		public static object AutoloadBusses(object o, bool forceautoload = false)
 		{
 			if (DebugBusAssignments)
 				Console.WriteLine("Autoloading busses for {0}", o.GetType().FullName);
+
+            // Autoload if the process is marked as Autoload
+            forceautoload |= (o.GetType().GetCustomAttributes(typeof(AutoloadBusAttribute)).FirstOrDefault() as AutoloadBusAttribute != null);
 
 			foreach (var f in GetBusFields(o.GetType()))
 				if (f.GetValue(o) == null)
 				{
 					var internalBus = (f.GetCustomAttributes(typeof(InternalBusAttribute)).FirstOrDefault() as InternalBusAttribute != null);
 					var componentBus = (f.GetCustomAttributes(typeof(ComponentBusAttribute)).FirstOrDefault() as ComponentBusAttribute != null);
-					var autoloadbus = (f.GetCustomAttributes(typeof(AutoloadBusAttribute)).FirstOrDefault() as AutoloadBusAttribute != null);
+                    var autoloadbus = forceautoload || (f.GetCustomAttributes(typeof(AutoloadBusAttribute)).FirstOrDefault() as AutoloadBusAttribute != null);
 
 					if (autoloadbus || typeof(ISingletonBus).IsAssignableFrom(f.FieldType))
                     {
@@ -56,6 +60,25 @@ namespace SME
 
 			return o;
 		}
+
+        /// <summary>
+        /// Creates a single process for each class that implements <see cref="IProcess"/> and runs the simulation on that
+        /// </summary>
+        /// <param name="asm">The assembly to load.</param>
+        /// <param name="autoloadbusses">Forces automatic bus loading on the processes, even if the <see cref="AutoloadBusAttribute"/> is not set</param>
+        public static IProcess[] StartProcesses(Assembly asm, bool autoloadbusses)
+        {
+            var procs = asm
+                .GetTypes()
+                .Where(x => typeof(IProcess).IsAssignableFrom(x) && x.GetConstructor(new Type[0]) != null)
+                .Select(x => (IProcess)Activator.CreateInstance(x))
+                .ToArray();
+
+            foreach (var p in procs)
+                AutoloadBusses(p, autoloadbusses);
+
+            return procs;
+        }
 	}
 }
 

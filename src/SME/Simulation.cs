@@ -115,6 +115,16 @@ namespace SME
 		}
 
         /// <summary>
+        /// Creates a single process for each class that implements <see cref="IProcess"/> and runs the simulation on that
+        /// </summary>
+        /// <param name="asm">The assembly to load.</param>
+        [System.Obsolete("This method is for supporting older versions that did static exploration only. Please change your code to use Run(Loader.StartProcesses(asm, true)).")]
+        public void Run(Assembly asm)
+        {
+            Run(Loader.StartProcesses(asm, true));
+        }
+
+        /// <summary>
         /// Run the specified processes.
         /// </summary>
         /// <returns>The awaitable task.</returns>
@@ -159,6 +169,9 @@ namespace SME
             var busmap = new Dictionary<Type, List<IBus>>();
             foreach (var b in m_processes.Values.SelectMany(x => x.Instance.InputBusses.Union(x.Instance.OutputBusses).Union(x.Instance.InternalBusses)).Distinct())
             {
+                if (b == null)
+                    continue;
+                
                 List<IBus> lp;
                 if (!busmap.TryGetValue(b.BusType, out lp))
                     busmap[b.BusType] = lp = new List<IBus>();
