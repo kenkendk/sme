@@ -149,6 +149,7 @@ namespace SME
                 .SelectMany(x =>
                             x.InputBusses.Union(x.OutputBusses).Union(x.InternalBusses)
                            )
+                .Where(x => x != null)
                 .Distinct()
                 .ToArray();
 
