@@ -106,7 +106,7 @@ namespace SME.VHDL
                 else
                     throw new Exception(string.Format("Unexpected conversion from {0} to {1}", svhdl, target));
             }
-            else if (target.IsNumeric)
+            else if (target.IsNumeric && !svhdl.IsEnum)
             {
                 if (svhdl.IsStdLogicVector || svhdl.IsSigned || svhdl.IsUnsigned)
                 {
@@ -424,7 +424,21 @@ namespace SME.VHDL
                     return WrapExpression(render, s, string.Format("fromValue_{1}({0})", svhdl == VHDLTypes.INTEGER ? "{0}" : "TO_INTEGER({0})", target.ToSafeVHDLName()), target);
                 else
                     return WrapExpression(render, s, string.Format("{1}'VAL({0})", svhdl == VHDLTypes.INTEGER ? "{0}" : "TO_INTEGER({0})", target.ToSafeVHDLName()), target);
+            }
+            else if (svhdl.IsEnum && (target.IsSigned || target.IsUnsigned || target == VHDLTypes.INTEGER))
+            {
+                Expression wrapped;
+                if (target.IsIrregularEnum)
+                    wrapped = WrapExpression(render, s, string.Format("toValue_{1}({0})", "{0}", svhdl.ToSafeVHDLName()), target);
+                else
+                    wrapped = WrapExpression(render, s, string.Format("{1}'POS({0})", "{0}", svhdl.ToSafeVHDLName()), target);
 
+                render.TypeLookup[wrapped] = VHDLTypes.INTEGER;
+
+                if (target != VHDLTypes.INTEGER)
+                    wrapped = ConvertExpression(render, method, wrapped, target, targetsource, false);
+                
+                return wrapped;
             }
 			else
 				throw new Exception(string.Format("Unexpected target type: {0} for source: {1}", target, svhdl));
