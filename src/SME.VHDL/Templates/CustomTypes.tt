@@ -28,11 +28,19 @@ package CUSTOM_TYPES is
 <#     foreach(var f in RS.ListMembers(t)) { #>
     <#= f #>
 <#     } #>
+
 <# } #>
 
 <# } #>
 <# foreach (var t in RS.TypeDefinitions) { #>
     <#= t #>;
+<# } #>
+
+<# foreach(var enumtype in RS.EnumTypes.Where(x => x.IsIrregularEnum)) { #>
+    -- Converts an integer to <#= enumtype.ToSafeVHDLName() #>
+    pure function fromValue_<#= enumtype.ToSafeVHDLName() #>(v: INTEGER) return <#= enumtype.ToSafeVHDLName() #>;
+    -- Converts a <#= enumtype.ToSafeVHDLName() #> to an integer
+    pure function toValue_<#= enumtype.ToSafeVHDLName() #>(v: <#= enumtype.ToSafeVHDLName() #>) return INTEGER;
 <# } #>
 
 <# if (RS.BusArrays.Any()) { #>
@@ -81,7 +89,37 @@ package body CUSTOM_TYPES is
     begin
         return <#= enumtype.ToSafeVHDLName() #>'image(b);
     end str;
+
+<#     if (enumtype.IsIrregularEnum) { #>
+    -- Converts an integer to <#= enumtype.ToSafeVHDLName() #>
+    pure function fromValue_<#= enumtype.ToSafeVHDLName() #>(v: INTEGER) return <#= enumtype.ToSafeVHDLName() #> is
+    begin
+        case v is
+<#         foreach(var f in RS.GetEnumValues(enumtype)) { #>
+            when <#= f.Value #> =>
+                return <#= f.Key #>;
+<#         } #>
+           when others =>
+               return <#= RS.GetEnumValues(enumtype).First().Key #>;
+        end case;
+    end fromValue_<#= enumtype.ToSafeVHDLName() #>;
+
+    -- Converts a <#= enumtype.ToSafeVHDLName() #> to an integer
+    pure function toValue_<#= enumtype.ToSafeVHDLName() #>(v: <#= enumtype.ToSafeVHDLName() #>) return INTEGER is
+    begin
+        case v is
+<#         foreach(var f in RS.GetEnumValues(enumtype)) { #>
+            when <#= f.Key #> =>
+                return <#= f.Value #>;
+<#         } #>
+           when others =>
+               return <#= RS.GetEnumValues(enumtype).First().Value #>;
+        end case;
+    end toValue_<#= enumtype.ToSafeVHDLName() #>;
+
+<#     } #>
 <# } #>
+
 
 -- User defined bodies here
 -- #### USER-DATA-BODY-START

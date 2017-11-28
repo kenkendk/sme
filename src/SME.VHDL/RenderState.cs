@@ -654,6 +654,27 @@ namespace SME.VHDL
 			throw new Exception($"Unable to find the array length for {signal.Parent.Name}_{signal.Name}");
 		}
 
+        /// <summary>
+        /// Returns a map of key/value pairs from an enum type
+        /// </summary>
+        /// <returns>The enum values.</returns>
+        /// <param name="t">T.</param>
+        public IEnumerable<KeyValuePair<string, object>> GetEnumValues(VHDLType t)
+        {
+            var td = t.SourceType.Resolve();
+            if (!td.IsEnum)
+                throw new InvalidOperationException("Cannot list enum values from a non-enum type");
+
+            return td.Fields
+                    .Where(x => !(x.IsSpecialName || x.IsRuntimeSpecialName))
+                    .Select(m => 
+                            new KeyValuePair<string, object>(
+                              Naming.ToValidName(td.FullName + "_" + m.Name),
+                              m.Constant
+                            ))
+                    .ToArray();
+        }
+
 		/// <summary>
 		/// Lists all members for a given value type
 		/// </summary>
@@ -663,12 +684,12 @@ namespace SME.VHDL
 		{
 			var td = type.SourceType.Resolve();
 
-			if (td.IsEnum)
+            if (type.IsEnum)
 			{
 				yield return string.Format(
 					"({0});",
 					string.Join("," + Environment.NewLine + "     ",
-						td.Fields.Where(x => x.Name != "value__").Select(m => Naming.ToValidName(td.FullName + "_" + m.Name)))
+                        td.Fields.Where(x => !(x.IsSpecialName || x.IsRuntimeSpecialName)).Select(m => Naming.ToValidName(td.FullName + "_" + m.Name)))
 				);
 			}
 			else if (td.IsValueType && !td.IsPrimitive)

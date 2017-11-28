@@ -375,7 +375,7 @@ namespace SME.VHDL
                 else
                     return WrapExpression(render, s, "TO_INTEGER(UNSIGNED({0}))", target);
             }
-            else if (target == VHDLTypes.INTEGER && (svhdl.IsSystemSigned|| svhdl.IsSystemUnsigned))
+            else if (target == VHDLTypes.INTEGER && (svhdl.IsSystemSigned || svhdl.IsSystemUnsigned))
             {
                 return WrapExpression(render, s, "TO_INTEGER({0})", target);
             }
@@ -417,6 +417,14 @@ namespace SME.VHDL
                     else
                         return WrapExpression(render, s, string.Format("{2}((resize({0}, {1})))", "{0}", targetlengthstr, target.IsSigned ? "SIGNED" : "UNSIGNED"), target);
                 }
+            }
+            else if (target.IsEnum && (svhdl.IsSigned || svhdl.IsUnsigned || svhdl == VHDLTypes.INTEGER))
+            {
+                if (target.IsIrregularEnum)
+                    return WrapExpression(render, s, string.Format("fromValue_{1}({0})", svhdl == VHDLTypes.INTEGER ? "{0}" : "TO_INTEGER({0})", target.ToSafeVHDLName()), target);
+                else
+                    return WrapExpression(render, s, string.Format("{1}'VAL({0})", svhdl == VHDLTypes.INTEGER ? "{0}" : "TO_INTEGER({0})", target.ToSafeVHDLName()), target);
+
             }
 			else
 				throw new Exception(string.Format("Unexpected target type: {0} for source: {1}", target, svhdl));

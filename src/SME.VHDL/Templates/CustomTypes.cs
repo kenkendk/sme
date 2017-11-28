@@ -111,72 +111,174 @@ package CUSTOM_TYPES is
             #line hidden
             
             #line 31 ""
- } 
+            this.Write("\n");
             
             #line default
             #line hidden
             
             #line 32 ""
-            this.Write("\n");
+ } 
             
             #line default
             #line hidden
             
             #line 33 ""
- } 
-            
-            #line default
-            #line hidden
-            
-            #line 34 ""
- foreach (var t in RS.TypeDefinitions) { 
-            
-            #line default
-            #line hidden
-            
-            #line 35 ""
-            this.Write("    ");
-            
-            #line default
-            #line hidden
-            
-            #line 35 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( t ));
-            
-            #line default
-            #line hidden
-            
-            #line 35 ""
-            this.Write(";\n");
-            
-            #line default
-            #line hidden
-            
-            #line 36 ""
- } 
-            
-            #line default
-            #line hidden
-            
-            #line 37 ""
             this.Write("\n");
             
             #line default
             #line hidden
             
+            #line 34 ""
+ } 
+            
+            #line default
+            #line hidden
+            
+            #line 35 ""
+ foreach (var t in RS.TypeDefinitions) { 
+            
+            #line default
+            #line hidden
+            
+            #line 36 ""
+            this.Write("    ");
+            
+            #line default
+            #line hidden
+            
+            #line 36 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( t ));
+            
+            #line default
+            #line hidden
+            
+            #line 36 ""
+            this.Write(";\n");
+            
+            #line default
+            #line hidden
+            
+            #line 37 ""
+ } 
+            
+            #line default
+            #line hidden
+            
             #line 38 ""
- if (RS.BusArrays.Any()) { 
+            this.Write("\n");
             
             #line default
             #line hidden
             
             #line 39 ""
-            this.Write("    -- Bus array definitions\n");
+ foreach(var enumtype in RS.EnumTypes.Where(x => x.IsIrregularEnum)) { 
             
             #line default
             #line hidden
             
             #line 40 ""
+            this.Write("    -- Converts an integer to ");
+            
+            #line default
+            #line hidden
+            
+            #line 40 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( enumtype.ToSafeVHDLName() ));
+            
+            #line default
+            #line hidden
+            
+            #line 40 ""
+            this.Write("\n    pure function fromValue_");
+            
+            #line default
+            #line hidden
+            
+            #line 41 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( enumtype.ToSafeVHDLName() ));
+            
+            #line default
+            #line hidden
+            
+            #line 41 ""
+            this.Write("(v: INTEGER) return ");
+            
+            #line default
+            #line hidden
+            
+            #line 41 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( enumtype.ToSafeVHDLName() ));
+            
+            #line default
+            #line hidden
+            
+            #line 41 ""
+            this.Write(";\n    -- Converts a ");
+            
+            #line default
+            #line hidden
+            
+            #line 42 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( enumtype.ToSafeVHDLName() ));
+            
+            #line default
+            #line hidden
+            
+            #line 42 ""
+            this.Write(" to an integer\n    pure function toValue_");
+            
+            #line default
+            #line hidden
+            
+            #line 43 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( enumtype.ToSafeVHDLName() ));
+            
+            #line default
+            #line hidden
+            
+            #line 43 ""
+            this.Write("(v: ");
+            
+            #line default
+            #line hidden
+            
+            #line 43 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( enumtype.ToSafeVHDLName() ));
+            
+            #line default
+            #line hidden
+            
+            #line 43 ""
+            this.Write(") return INTEGER;\n");
+            
+            #line default
+            #line hidden
+            
+            #line 44 ""
+ } 
+            
+            #line default
+            #line hidden
+            
+            #line 45 ""
+            this.Write("\n");
+            
+            #line default
+            #line hidden
+            
+            #line 46 ""
+ if (RS.BusArrays.Any()) { 
+            
+            #line default
+            #line hidden
+            
+            #line 47 ""
+            this.Write("    -- Bus array definitions\n");
+            
+            #line default
+            #line hidden
+            
+            #line 48 ""
      foreach(var signal in RS.BusArrays) {
          var vhdltype = RS.VHDLType(signal);
          var elementtype = RS.TypeScope.GetByName(vhdltype.ElementName);
@@ -188,381 +290,615 @@ package CUSTOM_TYPES is
             #line default
             #line hidden
             
-            #line 47 ""
+            #line 55 ""
             this.Write("    subtype ");
             
             #line default
             #line hidden
             
-            #line 47 ""
+            #line 55 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name));
-            
-            #line default
-            #line hidden
-            
-            #line 47 ""
-            this.Write("_");
-            
-            #line default
-            #line hidden
-            
-            #line 47 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name));
-            
-            #line default
-            #line hidden
-            
-            #line 47 ""
-            this.Write("_type is ");
-            
-            #line default
-            #line hidden
-            
-            #line 47 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( elementtype.ToSafeVHDLName()));
-            
-            #line default
-            #line hidden
-            
-            #line 47 ""
-            this.Write("_ARRAY(0 to ");
-            
-            #line default
-            #line hidden
-            
-            #line 47 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( arraylength));
-            
-            #line default
-            #line hidden
-            
-            #line 47 ""
-            this.Write(" - 1);\n");
-            
-            #line default
-            #line hidden
-            
-            #line 48 ""
-         } else if (RS.USE_EXPLICIT_LITERAL_ARRAY_LENGTH) { 
-            
-            #line default
-            #line hidden
-            
-            #line 49 ""
-            this.Write("    type ");
-            
-            #line default
-            #line hidden
-            
-            #line 49 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name));
-            
-            #line default
-            #line hidden
-            
-            #line 49 ""
-            this.Write("_");
-            
-            #line default
-            #line hidden
-            
-            #line 49 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name));
-            
-            #line default
-            #line hidden
-            
-            #line 49 ""
-            this.Write("_type is array (0 to ");
-            
-            #line default
-            #line hidden
-            
-            #line 49 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( arraylength - 1 ));
-            
-            #line default
-            #line hidden
-            
-            #line 49 ""
-            this.Write(") of ");
-            
-            #line default
-            #line hidden
-            
-            #line 49 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( elementtype.ToSafeVHDLName()));
-            
-            #line default
-            #line hidden
-            
-            #line 49 ""
-            this.Write(";\n");
-            
-            #line default
-            #line hidden
-            
-            #line 50 ""
-         } else { 
-            
-            #line default
-            #line hidden
-            
-            #line 51 ""
-            this.Write("    type ");
-            
-            #line default
-            #line hidden
-            
-            #line 51 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name));
-            
-            #line default
-            #line hidden
-            
-            #line 51 ""
-            this.Write("_");
-            
-            #line default
-            #line hidden
-            
-            #line 51 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name));
-            
-            #line default
-            #line hidden
-            
-            #line 51 ""
-            this.Write("_type is array (0 to ");
-            
-            #line default
-            #line hidden
-            
-            #line 51 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( arraylength));
-            
-            #line default
-            #line hidden
-            
-            #line 51 ""
-            this.Write(" - 1) of ");
-            
-            #line default
-            #line hidden
-            
-            #line 51 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( elementtype.ToSafeVHDLName()));
-            
-            #line default
-            #line hidden
-            
-            #line 51 ""
-            this.Write(";\n");
-            
-            #line default
-            #line hidden
-            
-            #line 52 ""
-         } 
-            
-            #line default
-            #line hidden
-            
-            #line 53 ""
-     } 
-            
-            #line default
-            #line hidden
-            
-            #line 54 ""
- } 
             
             #line default
             #line hidden
             
             #line 55 ""
-            this.Write("\n");
+            this.Write("_");
+            
+            #line default
+            #line hidden
+            
+            #line 55 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name));
+            
+            #line default
+            #line hidden
+            
+            #line 55 ""
+            this.Write("_type is ");
+            
+            #line default
+            #line hidden
+            
+            #line 55 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( elementtype.ToSafeVHDLName()));
+            
+            #line default
+            #line hidden
+            
+            #line 55 ""
+            this.Write("_ARRAY(0 to ");
+            
+            #line default
+            #line hidden
+            
+            #line 55 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( arraylength));
+            
+            #line default
+            #line hidden
+            
+            #line 55 ""
+            this.Write(" - 1);\n");
             
             #line default
             #line hidden
             
             #line 56 ""
- foreach(var enumtype in RS.EnumTypes) { 
+         } else if (RS.USE_EXPLICIT_LITERAL_ARRAY_LENGTH) { 
             
             #line default
             #line hidden
             
             #line 57 ""
-            this.Write("    -- converts ");
+            this.Write("    type ");
             
             #line default
             #line hidden
             
             #line 57 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( enumtype.Name ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name));
             
             #line default
             #line hidden
             
             #line 57 ""
-            this.Write(" into a string\n    pure function str(b: ");
+            this.Write("_");
             
             #line default
             #line hidden
             
-            #line 58 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( enumtype.ToSafeVHDLName() ));
+            #line 57 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name));
             
             #line default
             #line hidden
             
-            #line 58 ""
-            this.Write(") return string;\n");
+            #line 57 ""
+            this.Write("_type is array (0 to ");
             
             #line default
             #line hidden
             
-            #line 59 ""
- } 
+            #line 57 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( arraylength - 1 ));
             
             #line default
             #line hidden
             
-            #line 60 ""
-            this.Write("\n");
+            #line 57 ""
+            this.Write(") of ");
             
             #line default
             #line hidden
             
-            #line 61 ""
- if (RS.Constants.Any()) { 
+            #line 57 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( elementtype.ToSafeVHDLName()));
             
             #line default
             #line hidden
             
-            #line 62 ""
-            this.Write("    -- Constant definitions\n");
-            
-            #line default
-            #line hidden
-            
-            #line 63 ""
- } 
-            
-            #line default
-            #line hidden
-            
-            #line 64 ""
- foreach(var c in RS.Constants) { 
-            
-            #line default
-            #line hidden
-            
-            #line 65 ""
-            this.Write("    ");
-            
-            #line default
-            #line hidden
-            
-            #line 65 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( c ));
-            
-            #line default
-            #line hidden
-            
-            #line 65 ""
+            #line 57 ""
             this.Write(";\n");
             
             #line default
             #line hidden
             
-            #line 66 ""
+            #line 58 ""
+         } else { 
+            
+            #line default
+            #line hidden
+            
+            #line 59 ""
+            this.Write("    type ");
+            
+            #line default
+            #line hidden
+            
+            #line 59 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name));
+            
+            #line default
+            #line hidden
+            
+            #line 59 ""
+            this.Write("_");
+            
+            #line default
+            #line hidden
+            
+            #line 59 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name));
+            
+            #line default
+            #line hidden
+            
+            #line 59 ""
+            this.Write("_type is array (0 to ");
+            
+            #line default
+            #line hidden
+            
+            #line 59 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( arraylength));
+            
+            #line default
+            #line hidden
+            
+            #line 59 ""
+            this.Write(" - 1) of ");
+            
+            #line default
+            #line hidden
+            
+            #line 59 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( elementtype.ToSafeVHDLName()));
+            
+            #line default
+            #line hidden
+            
+            #line 59 ""
+            this.Write(";\n");
+            
+            #line default
+            #line hidden
+            
+            #line 60 ""
+         } 
+            
+            #line default
+            #line hidden
+            
+            #line 61 ""
+     } 
+            
+            #line default
+            #line hidden
+            
+            #line 62 ""
  } 
             
             #line default
             #line hidden
             
+            #line 63 ""
+            this.Write("\n");
+            
+            #line default
+            #line hidden
+            
+            #line 64 ""
+ foreach(var enumtype in RS.EnumTypes) { 
+            
+            #line default
+            #line hidden
+            
+            #line 65 ""
+            this.Write("    -- converts ");
+            
+            #line default
+            #line hidden
+            
+            #line 65 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( enumtype.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 65 ""
+            this.Write(" into a string\n    pure function str(b: ");
+            
+            #line default
+            #line hidden
+            
+            #line 66 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( enumtype.ToSafeVHDLName() ));
+            
+            #line default
+            #line hidden
+            
+            #line 66 ""
+            this.Write(") return string;\n");
+            
+            #line default
+            #line hidden
+            
             #line 67 ""
+ } 
+            
+            #line default
+            #line hidden
+            
+            #line 68 ""
+            this.Write("\n");
+            
+            #line default
+            #line hidden
+            
+            #line 69 ""
+ if (RS.Constants.Any()) { 
+            
+            #line default
+            #line hidden
+            
+            #line 70 ""
+            this.Write("    -- Constant definitions\n");
+            
+            #line default
+            #line hidden
+            
+            #line 71 ""
+ } 
+            
+            #line default
+            #line hidden
+            
+            #line 72 ""
+ foreach(var c in RS.Constants) { 
+            
+            #line default
+            #line hidden
+            
+            #line 73 ""
+            this.Write("    ");
+            
+            #line default
+            #line hidden
+            
+            #line 73 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( c ));
+            
+            #line default
+            #line hidden
+            
+            #line 73 ""
+            this.Write(";\n");
+            
+            #line default
+            #line hidden
+            
+            #line 74 ""
+ } 
+            
+            #line default
+            #line hidden
+            
+            #line 75 ""
             this.Write("\n\n-- User defined types here\n-- #### USER-DATA-TRAILTYPES-START\n-- #### USER-DATA" +
                     "-TRAILTYPES-END\n\n\nend CUSTOM_TYPES;\n\n");
             
             #line default
             #line hidden
             
-            #line 76 ""
+            #line 84 ""
  if (RS.EnumTypes.Any()) { 
             
             #line default
             #line hidden
             
-            #line 77 ""
+            #line 85 ""
             this.Write("package body CUSTOM_TYPES is\n");
             
             #line default
             #line hidden
             
-            #line 78 ""
+            #line 86 ""
  foreach(var enumtype in RS.EnumTypes) { 
             
             #line default
             #line hidden
             
-            #line 79 ""
+            #line 87 ""
             this.Write("    -- converts ");
             
             #line default
             #line hidden
             
-            #line 79 ""
+            #line 87 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( enumtype ));
             
             #line default
             #line hidden
             
-            #line 79 ""
+            #line 87 ""
             this.Write(" into a string\n    pure function str(b: ");
             
             #line default
             #line hidden
             
-            #line 80 ""
+            #line 88 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( enumtype.ToSafeVHDLName() ));
             
             #line default
             #line hidden
             
-            #line 80 ""
+            #line 88 ""
             this.Write(") return string is\n    begin\n        return ");
             
             #line default
             #line hidden
             
-            #line 82 ""
+            #line 90 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( enumtype.ToSafeVHDLName() ));
             
             #line default
             #line hidden
             
-            #line 82 ""
-            this.Write("\'image(b);\n    end str;\n");
+            #line 90 ""
+            this.Write("\'image(b);\n    end str;\n\n");
             
             #line default
             #line hidden
             
-            #line 84 ""
+            #line 93 ""
+     if (enumtype.IsIrregularEnum) { 
+            
+            #line default
+            #line hidden
+            
+            #line 94 ""
+            this.Write("    -- Converts an integer to ");
+            
+            #line default
+            #line hidden
+            
+            #line 94 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( enumtype.ToSafeVHDLName() ));
+            
+            #line default
+            #line hidden
+            
+            #line 94 ""
+            this.Write("\n    pure function fromValue_");
+            
+            #line default
+            #line hidden
+            
+            #line 95 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( enumtype.ToSafeVHDLName() ));
+            
+            #line default
+            #line hidden
+            
+            #line 95 ""
+            this.Write("(v: INTEGER) return ");
+            
+            #line default
+            #line hidden
+            
+            #line 95 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( enumtype.ToSafeVHDLName() ));
+            
+            #line default
+            #line hidden
+            
+            #line 95 ""
+            this.Write(" is\n    begin\n        case v is\n");
+            
+            #line default
+            #line hidden
+            
+            #line 98 ""
+         foreach(var f in RS.GetEnumValues(enumtype)) { 
+            
+            #line default
+            #line hidden
+            
+            #line 99 ""
+            this.Write("            when ");
+            
+            #line default
+            #line hidden
+            
+            #line 99 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( f.Value ));
+            
+            #line default
+            #line hidden
+            
+            #line 99 ""
+            this.Write(" =>\n                return ");
+            
+            #line default
+            #line hidden
+            
+            #line 100 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( f.Key ));
+            
+            #line default
+            #line hidden
+            
+            #line 100 ""
+            this.Write(";\n");
+            
+            #line default
+            #line hidden
+            
+            #line 101 ""
+         } 
+            
+            #line default
+            #line hidden
+            
+            #line 102 ""
+            this.Write("           when others =>\n               return ");
+            
+            #line default
+            #line hidden
+            
+            #line 103 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( RS.GetEnumValues(enumtype).First().Key ));
+            
+            #line default
+            #line hidden
+            
+            #line 103 ""
+            this.Write(";\n        end case;\n    end fromValue_");
+            
+            #line default
+            #line hidden
+            
+            #line 105 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( enumtype.ToSafeVHDLName() ));
+            
+            #line default
+            #line hidden
+            
+            #line 105 ""
+            this.Write(";\n\n    -- Converts a ");
+            
+            #line default
+            #line hidden
+            
+            #line 107 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( enumtype.ToSafeVHDLName() ));
+            
+            #line default
+            #line hidden
+            
+            #line 107 ""
+            this.Write(" to an integer\n    pure function toValue_");
+            
+            #line default
+            #line hidden
+            
+            #line 108 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( enumtype.ToSafeVHDLName() ));
+            
+            #line default
+            #line hidden
+            
+            #line 108 ""
+            this.Write("(v: ");
+            
+            #line default
+            #line hidden
+            
+            #line 108 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( enumtype.ToSafeVHDLName() ));
+            
+            #line default
+            #line hidden
+            
+            #line 108 ""
+            this.Write(") return INTEGER is\n    begin\n        case v is\n");
+            
+            #line default
+            #line hidden
+            
+            #line 111 ""
+         foreach(var f in RS.GetEnumValues(enumtype)) { 
+            
+            #line default
+            #line hidden
+            
+            #line 112 ""
+            this.Write("            when ");
+            
+            #line default
+            #line hidden
+            
+            #line 112 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( f.Key ));
+            
+            #line default
+            #line hidden
+            
+            #line 112 ""
+            this.Write(" =>\n                return ");
+            
+            #line default
+            #line hidden
+            
+            #line 113 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( f.Value ));
+            
+            #line default
+            #line hidden
+            
+            #line 113 ""
+            this.Write(";\n");
+            
+            #line default
+            #line hidden
+            
+            #line 114 ""
+         } 
+            
+            #line default
+            #line hidden
+            
+            #line 115 ""
+            this.Write("           when others =>\n               return ");
+            
+            #line default
+            #line hidden
+            
+            #line 116 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( RS.GetEnumValues(enumtype).First().Value ));
+            
+            #line default
+            #line hidden
+            
+            #line 116 ""
+            this.Write(";\n        end case;\n    end toValue_");
+            
+            #line default
+            #line hidden
+            
+            #line 118 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( enumtype.ToSafeVHDLName() ));
+            
+            #line default
+            #line hidden
+            
+            #line 118 ""
+            this.Write(";\n\n");
+            
+            #line default
+            #line hidden
+            
+            #line 120 ""
+     } 
+            
+            #line default
+            #line hidden
+            
+            #line 121 ""
  } 
             
             #line default
             #line hidden
             
-            #line 85 ""
-            this.Write("\n-- User defined bodies here\n-- #### USER-DATA-BODY-START\n-- #### USER-DATA-BODY-" +
-                    "END\n\nend CUSTOM_TYPES;\n");
+            #line 122 ""
+            this.Write("\n\n-- User defined bodies here\n-- #### USER-DATA-BODY-START\n-- #### USER-DATA-BODY" +
+                    "-END\n\nend CUSTOM_TYPES;\n");
             
             #line default
             #line hidden
             
-            #line 91 ""
+            #line 129 ""
  } 
             
             #line default

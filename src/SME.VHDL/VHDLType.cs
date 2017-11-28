@@ -19,12 +19,20 @@ namespace SME.VHDL
 		/// Gets or sets a value indicating if the type is an array
 		/// </summary>
 		public bool IsArray { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating if the type is an enum
+        /// </summary>
+        public bool IsEnum { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating if the type is an irregular enum
+        /// </summary>
+        public bool IsIrregularEnum { get; set; }
 		/// <summary>
 		/// Gets or sets the primary VHDL name
 		/// </summary>
 		public string Name { get; set; }
 		/// <summary>
-		/// Gets or sets the name of the elements in the array
+		/// Gets or sets the name of the elements in the array or enum
 		/// </summary>
 		public string ElementName { get; set; }
 		/// <summary>
@@ -398,13 +406,19 @@ namespace SME.VHDL
 			}
 			else
 			{
+                var tr = type.Resolve();
 				res = new VHDLType()
 				{
 					Name = typename,
 					Alias = alias,
 					SourceType = type,
-					IsArray = false
+					IsArray = false,
+                    IsEnum = tr.IsEnum,
+                    IsIrregularEnum = IsEnumIrregular(tr)
 				};
+
+                if (res.IsEnum)
+                    res.ElementName = GetVHDLType(tr.Fields.First(x => x.IsSpecialName && x.Name == "value__")).ToString();
 			}
 
 			if (!m_stringTypes.ContainsKey(res.Name))
@@ -414,6 +428,35 @@ namespace SME.VHDL
 			return res;
 
 		}
+
+        /// <summary>
+        /// Examines an enum and determines if it can be expressed as a seqeunce of consecutive integers starting with zero
+        /// </summary>
+        /// <returns><c>true</c>, if the enum is irregular, <c>false</c> otherwise.</returns>
+        /// <param name="type">The type to evaluate.</param>
+        private bool IsEnumIrregular(TypeDefinition type)
+        {
+            if (!type.IsEnum)
+                return false;
+
+            var fields = type.Fields
+                .Where(x => !(x.IsSpecialName || x.IsRuntimeSpecialName));
+
+            // Something weird, but certainly not regular
+            if (fields.Any(x => !x.HasConstant || !(x.Constant is int)))
+                return true;
+
+            var names = fields
+                .Select(x => new Tuple<int, string>((int)x.Constant, x.Name))
+                .OrderBy(x => x.Item1)
+                .ToArray();
+
+            for (var i = 0; i < names.Length; i++)
+                if (names[i].Item1 != i)
+                    return true;
+
+            return false;
+        }
 
 		/// <summary>
 		/// Gets a numeric equivalent type for a VHDL type
