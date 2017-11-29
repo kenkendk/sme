@@ -191,13 +191,13 @@ namespace SME.VHDL
 
             yield return $"{indent}case {RenderExpression(s.SwitchExpression)} is";
 
-            var hasOthers = false;
+            var others = new Statement[0];
             foreach (var c in s.Cases)
             {
                 if (c.Item1.Length == 1 && c.Item1.First() is EmptyExpression)
                 {
-                    hasOthers = true;
-                    yield return $"{indent2}when others =>";
+                    others = c.Item2;
+                    continue;
                 }
                 else
                 {
@@ -208,8 +208,9 @@ namespace SME.VHDL
                     yield return ss;
             }
 
-            if (!hasOthers)
-                yield return $"{indent2}when others =>";
+            yield return $"{indent2}when others =>";
+            foreach (var ss in others.SelectMany(x => RenderStatement(method, x, indentation)))
+                yield return ss;
 
             yield return $"{indent}end case;";
         }
