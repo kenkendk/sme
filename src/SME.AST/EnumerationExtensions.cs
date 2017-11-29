@@ -406,7 +406,7 @@ namespace SME.AST
 				foreach (var p in e.LoopBody.All(visitor))
 					yield return p;
 			}
-			else if (statement is CommentStatement || statement is BreakStatement)
+            else if (statement is CommentStatement || statement is BreakStatement || statement is GotoStatement || statement is LabelStatement)
 			{
 			}
 			else
@@ -857,10 +857,10 @@ namespace SME.AST
 			throw new Exception("Item not found in parent");
 		}
 
-		/// <summary>
-		/// Helper method that updates all child expressions or statements
-		/// by setting their parent to the immediate parent
-		/// </summary>
+        /// <summary>
+        /// Helper method that updates all child expressions or statements
+        /// by setting their parent to the immediate parent
+        /// </summary>
         /// <param name="self">The items to update.</param>
         public static void UpdateParents(this IEnumerable<Statement> self)
         {

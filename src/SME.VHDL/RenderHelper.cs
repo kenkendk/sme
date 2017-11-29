@@ -106,7 +106,7 @@ namespace SME.VHDL
                 return RenderStatement(method, statement as AST.ExpressionStatement, indentation);
             else if (statement is AST.CommentStatement)
                 return RenderStatement(method, statement as AST.CommentStatement, indentation);
-            else if (statement is AST.EmptyStatement)
+            else if (statement is AST.EmptyStatement || statement is AST.LabelStatement)
                 return new string[0];
             else
                 throw new Exception($"Unuspported statement type: {statement.GetType().FullName}");

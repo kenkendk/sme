@@ -129,6 +129,28 @@ namespace SME.AST
 	{
 	}
 
+    /// <summary>
+    /// A goto statement
+    /// </summary>
+    public class GotoStatement : Statement
+    {
+        /// <summary>
+        /// The target label
+        /// </summary>
+        public string Label;
+    }
+
+    /// <summary>
+    /// A label statement
+    /// </summary>
+    public class LabelStatement : Statement
+    {
+        /// <summary>
+        /// The label
+        /// </summary>
+        public string Label;
+    }
+
 	/// <summary>
 	/// A statement used to output a comment
 	/// </summary>

@@ -20,31 +20,35 @@ namespace SME.AST
 		/// <param name="statement">The decompiler statement to process.</param>
 		protected virtual Statement Decompile(NetworkState network, ProcessState proc, MethodState method, AstNode statement)
 		{
-			if (statement is ICSharpCode.NRefactory.CSharp.ExpressionStatement)
-				return Decompile(network, proc, method, statement as ICSharpCode.NRefactory.CSharp.ExpressionStatement);
-			else if (statement is ICSharpCode.NRefactory.CSharp.IfElseStatement)
-				return Decompile(network, proc, method, statement as ICSharpCode.NRefactory.CSharp.IfElseStatement);
-			else if (statement is ICSharpCode.NRefactory.CSharp.BlockStatement)
-				return Decompile(network, proc, method, statement as ICSharpCode.NRefactory.CSharp.BlockStatement);
-			else if (statement is ICSharpCode.NRefactory.CSharp.VariableDeclarationStatement)
-				return Decompile(network, proc, method, statement as ICSharpCode.NRefactory.CSharp.VariableDeclarationStatement);
-			else if (statement is ICSharpCode.NRefactory.CSharp.SwitchStatement)
-				return Decompile(network, proc, method, statement as ICSharpCode.NRefactory.CSharp.SwitchStatement);
-			else if (statement is ICSharpCode.NRefactory.CSharp.ReturnStatement)
-				return Decompile(network, proc, method, statement as ICSharpCode.NRefactory.CSharp.ReturnStatement);
-			else if (statement is ICSharpCode.NRefactory.CSharp.ForStatement)
-				return Decompile(network, proc, method, statement as ICSharpCode.NRefactory.CSharp.ForStatement);
-			else if (statement is ICSharpCode.NRefactory.CSharp.BreakStatement)
-				return Decompile(network, proc, method, statement as ICSharpCode.NRefactory.CSharp.BreakStatement);
-			else if (statement is ICSharpCode.NRefactory.CSharp.CheckedStatement)
-			{
-				Console.WriteLine("Warning: \"checked\" is not supported and will be ignored for statement: {0}", statement);
-				return Decompile(network, proc, method, (statement as ICSharpCode.NRefactory.CSharp.CheckedStatement).Body);
-			}
-			else if (statement is ICSharpCode.NRefactory.CSharp.UncheckedStatement)
-				return Decompile(network, proc, method, (statement as ICSharpCode.NRefactory.CSharp.UncheckedStatement).Body);
-			else if (statement.IsNull)
-				return new EmptyStatement() { Parent = method };
+            if (statement is ICSharpCode.NRefactory.CSharp.ExpressionStatement)
+                return Decompile(network, proc, method, statement as ICSharpCode.NRefactory.CSharp.ExpressionStatement);
+            else if (statement is ICSharpCode.NRefactory.CSharp.IfElseStatement)
+                return Decompile(network, proc, method, statement as ICSharpCode.NRefactory.CSharp.IfElseStatement);
+            else if (statement is ICSharpCode.NRefactory.CSharp.BlockStatement)
+                return Decompile(network, proc, method, statement as ICSharpCode.NRefactory.CSharp.BlockStatement);
+            else if (statement is ICSharpCode.NRefactory.CSharp.VariableDeclarationStatement)
+                return Decompile(network, proc, method, statement as ICSharpCode.NRefactory.CSharp.VariableDeclarationStatement);
+            else if (statement is ICSharpCode.NRefactory.CSharp.SwitchStatement)
+                return Decompile(network, proc, method, statement as ICSharpCode.NRefactory.CSharp.SwitchStatement);
+            else if (statement is ICSharpCode.NRefactory.CSharp.ReturnStatement)
+                return Decompile(network, proc, method, statement as ICSharpCode.NRefactory.CSharp.ReturnStatement);
+            else if (statement is ICSharpCode.NRefactory.CSharp.ForStatement)
+                return Decompile(network, proc, method, statement as ICSharpCode.NRefactory.CSharp.ForStatement);
+            else if (statement is ICSharpCode.NRefactory.CSharp.BreakStatement)
+                return Decompile(network, proc, method, statement as ICSharpCode.NRefactory.CSharp.BreakStatement);
+            else if (statement is ICSharpCode.NRefactory.CSharp.CheckedStatement)
+            {
+                Console.WriteLine("Warning: \"checked\" is not supported and will be ignored for statement: {0}", statement);
+                return Decompile(network, proc, method, (statement as ICSharpCode.NRefactory.CSharp.CheckedStatement).Body);
+            }
+            else if (statement is ICSharpCode.NRefactory.CSharp.UncheckedStatement)
+                return Decompile(network, proc, method, (statement as ICSharpCode.NRefactory.CSharp.UncheckedStatement).Body);
+            else if (statement.IsNull)
+                return new EmptyStatement() { Parent = method };
+            else if (statement is ICSharpCode.NRefactory.CSharp.GotoStatement)
+                return Decompile(network, proc, method, statement as ICSharpCode.NRefactory.CSharp.GotoStatement);
+            else if (statement is ICSharpCode.NRefactory.CSharp.LabelStatement)
+                return Decompile(network, proc, method, statement as ICSharpCode.NRefactory.CSharp.LabelStatement);
 			else
 				throw new Exception(string.Format("Unsupported statement: {0} ({1})", statement, statement.GetType().FullName));
 		}
@@ -417,10 +421,43 @@ namespace SME.AST
 			return new BreakStatement()
 			{
 				Parent = method,
-				SourceStatement =statement
+				SourceStatement = statement
 			};
 		}
 
+        /// <summary>
+        /// Processes a single statement from the decompiler and returns an AST entry for it
+        /// </summary>
+        /// <param name="network">The top-level network.</param>
+        /// <param name="proc">The process where the method is located.</param>
+        /// <param name="method">The method where the statement is found.</param>
+        /// <param name="statement">The decompiler statement to process.</param>
+        protected virtual GotoStatement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.NRefactory.CSharp.GotoStatement statement)
+        {
+            return new GotoStatement()
+            {
+                Parent = method,
+                SourceStatement = statement,
+                Label = statement.Label
+            };
+        }
+
+        /// <summary>
+        /// Processes a single statement from the decompiler and returns an AST entry for it
+        /// </summary>
+        /// <param name="network">The top-level network.</param>
+        /// <param name="proc">The process where the method is located.</param>
+        /// <param name="method">The method where the statement is found.</param>
+        /// <param name="statement">The decompiler statement to process.</param>
+        protected virtual LabelStatement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.NRefactory.CSharp.LabelStatement statement)
+        {
+            return new LabelStatement()
+            {
+                Parent = method,
+                SourceStatement = statement,
+                Label = statement.Label
+            };
+        }
 		/// <summary>
 		/// Processes a single statement from the decompiler and returns an AST entry for it
 		/// </summary>
