@@ -861,6 +861,19 @@ namespace SME.AST
 		/// Helper method that updates all child expressions or statements
 		/// by setting their parent to the immediate parent
 		/// </summary>
+        /// <param name="self">The items to update.</param>
+        public static void UpdateParents(this IEnumerable<Statement> self)
+        {
+            if (self == null)
+                return;
+            foreach (var s in self)
+                s.UpdateParents();
+        }
+
+		/// <summary>
+		/// Helper method that updates all child expressions or statements
+		/// by setting their parent to the immediate parent
+		/// </summary>
 		/// <param name="self">The item to update.</param>
 		public static void UpdateParents(this Statement self)
 		{
