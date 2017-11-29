@@ -63,6 +63,7 @@ namespace SME.AST
 		/// <param name="visitor">The visitor method. Return <c>false</c> to prevent entering this node.</param>
 		public static IEnumerable<ASTItem> LeavesOnly(this ASTItem self, Func<ASTItem, VisitorState, bool> visitor = null)
 		{
+            visitor = visitor ?? ((a, b) => true);
 			var work = new List<ASTItem>();
 			ASTItem last = null;
 			foreach (var n in All(self, (el, state) =>
