@@ -88,6 +88,7 @@
     <Compile Include="Transform\RewireCompositeAssignment.cs" />
     <Compile Include="Transform\RemoveExtraParenthesis.cs" />
     <Compile Include="Transform\RenameDuplicateVariables.cs" />
+    <Compile Include="Transform\RecontructSwitchStatement.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SME\SME.csproj">
