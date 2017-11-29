@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using SME;
 using SME.AST;
@@ -10,6 +11,11 @@ namespace SME.AST.Transform
     /// </summary>
 	public class RemoveTrailingBreakStatement : IASTTransform
 	{
+        /// <summary>
+        /// Lookup table of visited statements to speed up the lookup
+        /// </summary>
+        private HashSet<AST.SwitchStatement> m_visited = new HashSet<SwitchStatement>();
+
 		/// <summary>
 		/// Applies the transformation
 		/// </summary>
@@ -17,29 +23,31 @@ namespace SME.AST.Transform
 		/// <param name="item">The item to visit.</param>
 		public virtual ASTItem Transform(ASTItem item)
 		{
-			var bs = item as AST.BreakStatement;
-			if (bs == null)
-				return item;
+            var ss = item as AST.SwitchStatement;
+            if (ss == null)
+                return item;
 
-			if (bs.Parent is SwitchStatement)
-			{
-				var ss = bs.Parent as SwitchStatement;
+            if (m_visited.Contains(ss))
+                return item;
+            m_visited.Add(ss);
 
-				foreach (var cs in ss.Cases)
-					if (cs.Item2[cs.Item2.Length - 1] == bs)
-					{
-						var es = new EmptyStatement()
-						{ 
-							SourceStatement = bs.SourceStatement 
-						};
+            var changed = false;
+            foreach (var cs in ss.Cases)
+            {
+                var last = cs.Item2.SelectMany(x => x.LeavesOnly()).LastOrDefault();
+                if (last is BreakStatement)
+                {
+                    var es = new EmptyStatement()
+                    {
+                        SourceStatement = (last as Statement).SourceStatement
+                    };
 
-						bs.ReplaceWith(es);
+                    (last as Statement).ReplaceWith(es);
+                    changed = true;
+                }
+            }
 
-						return es;
-					}
-			}
-
-			return bs;
+            return changed ? null : ss;
 		}
 	}
 }
