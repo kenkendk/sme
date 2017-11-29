@@ -266,7 +266,8 @@ namespace SME.VHDL
         private IEnumerable<string> RenderStatement(AST.Method method, AST.CommentStatement s, int indentation)
         {
             var indent = new string(' ', indentation);
-            yield return $"{indent}-- {s.Message}";
+            foreach(var m in s.Message.Split(new[] { Environment.NewLine.ToString() }, StringSplitOptions.None))
+                yield return $"{indent}-- {m}";
         }
 
         /// <summary>
