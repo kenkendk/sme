@@ -133,6 +133,9 @@ namespace SME.AST
 								bt = LoadTypeByName(dc.FullName + "." + ecs, method.SourceMethod.Module);
 							if (bt == null)
 								bt = LoadTypeByName(dc.Namespace + "." + ecs, method.SourceMethod.Module);
+                            // In some cases dc.Namespace is empty ... 
+                            if (bt == null && proc != null && proc.SourceType != null)
+                                bt = LoadTypeByName(proc.SourceType.Namespace + "." + ecs, method.SourceMethod.Module);
 
 							if (bt != null && parts.Count == 1)
 							{

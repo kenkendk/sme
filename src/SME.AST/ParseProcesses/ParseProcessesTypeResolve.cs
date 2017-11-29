@@ -317,6 +317,14 @@ namespace SME.AST
 					t1 = LoadTypeByName(sourcemethod.SourceMethod.DeclaringType.Namespace + "." + typename, sourcemethod.SourceMethod.Module);
 					if (t1 != null)
 						return t1;
+
+                    if (sourcemethod.Parent as Process != null)
+                    {
+                        // In some cases the namespace is empty
+                        t1 = LoadTypeByName((sourcemethod.Parent as Process).SourceType.Namespace + "." + typename, sourcemethod.SourceMethod.Module);
+                        if (t1 != null)
+                            return t1;
+                    }
 				}
 			}
 
