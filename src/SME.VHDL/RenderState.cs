@@ -588,21 +588,7 @@ namespace SME.VHDL
 
 				return Network
 					.All()
-					.OfType<BusSignal>()
-					.Cast<DataElement>()
-					.Union(Network
-						   .All()
-						   .OfType<AST.Process>()
-						   .SelectMany(x =>
-									   x
-									   .SharedSignals
-									   .Cast<DataElement>()
-									   .Union(x
-											  .SharedVariables
-											  .Cast<DataElement>()
-											 )
-									  )
-						  )
+                    .OfType<DataElement>()
 					.Where(x =>
 					{
 						var rd = x.CecilType.Resolve();
