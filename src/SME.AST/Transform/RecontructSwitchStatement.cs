@@ -43,10 +43,7 @@ namespace SME.AST.Transform
                 return item;
 
             // We assume that there is just one label with the given name in the method
-            var mp = item.Parent;
-            while (mp != null && !(mp is Method))
-                mp = mp.Parent;
-            
+            var mp = item.GetNearestParent<Method>();
             if (mp == null)
                 return item;
 

@@ -783,6 +783,35 @@ namespace SME.AST
 
 			throw new Exception($"Unable to set target on item of type {self.GetType().FullName}");
 		}
+
+        /// <summary>
+        /// Reverse walks the tree to find the next parent of the given type or null
+        /// </summary>
+        /// <returns>The nearest parent or null.</returns>
+        /// <param name="self">The item ot get the parent for.</param>
+        /// <typeparam name="T">The data type to look for.</typeparam>
+        public static T GetNearestParent<T>(this ASTItem self)
+            where T : ASTItem
+        {
+            return (T)GetNearestParent(self, typeof(T));
+        }
+
+        /// <summary>
+        /// Reverse walks the tree to find the next parent of the given type or null
+        /// </summary>
+        /// <returns>The nearest parent or null.</returns>
+        /// <param name="self">The item ot get the parent for.</param>
+        /// <param name="parentType">The data type to look for.</param>
+        public static ASTItem GetNearestParent(this ASTItem self, Type parentType)
+        {
+            if (self == null)
+                return null;
+            var p = self.Parent;
+            while (p != null && !parentType.IsAssignableFrom(p.GetType()))
+                p = p.Parent;
+
+            return p;
+        }
 	}
 }
 
