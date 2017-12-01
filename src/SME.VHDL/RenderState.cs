@@ -148,22 +148,23 @@ namespace SME.VHDL
 
             SME.AST.Transform.Apply.Transform(
                 Network,
-                new SME.AST.Transform.IASTTransform[] { 
+                new SME.AST.Transform.IASTTransform[] {
                     new Transformations.AssignNames(),
                     new SME.AST.Transform.RenameDuplicateVariables(),
                 },
                 m => new SME.AST.Transform.IASTTransform[] {
                     new Transformations.RewriteChainedAssignments(this, m),
                 },
-				m => new SME.AST.Transform.IASTTransform[] {
+                m => new SME.AST.Transform.IASTTransform[] {
                     new SME.AST.Transform.RemoveUIntPtrCast(),
-					new SME.AST.Transform.RemoveDoubleCast(),
+                    new SME.AST.Transform.RemoveDoubleCast(),
                     new Transformations.WrapIfComposite(),
                     new Transformations.AssignNames(),
-					new SME.AST.Transform.RemoveSelfAssignments(),
+                    new SME.AST.Transform.RemoveSelfAssignments(),
                     new SME.AST.Transform.RecontructSwitchStatement(),
                     new SME.AST.Transform.RemoveTrailingBreakStatement(),
 					new Transformations.AssignVhdlType(this),
+                    new Transformations.FixSwitchStatementTypes(this),
 					new Transformations.RemoveConditionals(this, m),
 					new Transformations.InsertReturnAssignments(this, m),
 					new Transformations.InjectTypeConversions(this, m),
