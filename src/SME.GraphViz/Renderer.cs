@@ -49,10 +49,10 @@ namespace SME.GraphViz
 
             var r = new NetworkMapper(simulation).ReduceToNames();
 
-			foreach (var b in r.BusDependsOn.Keys.Union(r.DependsOnBus.Keys).Union(r.DependsOnClockedBus.Keys).Distinct())
+            foreach (var b in r.BusDependsOn.Keys.Concat(r.DependsOnBus.Keys).Concat(r.DependsOnClockedBus.Keys).Distinct())
 				sb.AppendFormat("\"{0}\" [shape=oval];{1}", b, Environment.NewLine);
 
-			foreach (var p in r.BusDependsOn.Values.Union(r.DependsOnBus.Values).Union(r.DependsOnClockedBus.Values).SelectMany(x => x).Select(n => n).Distinct())
+            foreach (var p in r.BusDependsOn.Values.Concat(r.DependsOnBus.Values).Concat(r.DependsOnClockedBus.Values).SelectMany(x => x).Select(n => n).Distinct())
 				sb.AppendFormat("\"{0}\" [shape=box];{1}", p, Environment.NewLine);
 
 			foreach (var b in r.BusDependsOn)

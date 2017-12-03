@@ -147,7 +147,7 @@ namespace SME
 
             AllBusses = components
                 .SelectMany(x =>
-                            x.InputBusses.Union(x.OutputBusses).Union(x.InternalBusses)
+                            x.InputBusses.Concat(x.OutputBusses).Concat(x.InternalBusses)
                            )
                 .Where(x => x != null)
                 .Distinct()

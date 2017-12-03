@@ -796,7 +796,7 @@ namespace SME.VHDL
 			if (m_arrays.ContainsKey(name))
 				return m_arrays[name];
 
-			return m_builtins.Values.Union(m_stringTypes.Values).Union(m_arrays.Values).Union(m_vectorTypes.Values).Where(x => string.Equals(x.Alias, name, StringComparison.OrdinalIgnoreCase) || string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+            return m_builtins.Values.Concat(m_stringTypes.Values).Concat(m_arrays.Values).Concat(m_vectorTypes.Values).Where(x => string.Equals(x.Alias, name, StringComparison.OrdinalIgnoreCase) || string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
 		}
 
 		/// <summary>

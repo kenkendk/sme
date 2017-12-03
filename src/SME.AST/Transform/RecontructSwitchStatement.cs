@@ -153,7 +153,7 @@ namespace SME.AST.Transform
 
             // Extract the items between the switch and the label target and use as the default case
             var defaultstatements = ps.Skip(switchindex + 1).Take(labelindex - switchindex - 1).Where(x => !(x is EmptyStatement)).ToList();
-            var remainingstatements = ps.Take(switchindex + 1).Union(ps.Skip(labelindex + 1)).ToArray();
+            var remainingstatements = ps.Take(switchindex + 1).Concat(ps.Skip(labelindex + 1)).ToArray();
 
 
             // We can get an empty case due to the transformations above

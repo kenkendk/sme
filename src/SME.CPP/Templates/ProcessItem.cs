@@ -48,7 +48,7 @@ namespace SME.CPP.Templates {
             
             #line 17 ""
 
-var busses = RSP.Process.InputBusses.Union(RSP.Process.OutputBusses).Union(RSP.Process.InternalBusses).Distinct().OrderBy(x => x.Name).ToArray();
+var busses = RSP.Process.InputBusses.Concat(RSP.Process.OutputBusses).Concat(RSP.Process.InternalBusses).Distinct().OrderBy(x => x.Name).ToArray();
 
             
             #line default
@@ -187,7 +187,7 @@ var busses = RSP.Process.InputBusses.Union(RSP.Process.OutputBusses).Union(RSP.P
             #line hidden
             
             #line 30 ""
- foreach(var v in RSP.Process.SharedVariables.Cast<DataElement>().Union(RSP.Process.SharedSignals)) { 
+ foreach(var v in RSP.Process.SharedVariables.Cast<DataElement>().Concat(RSP.Process.SharedSignals)) { 
        var initializer = RS.Renderer.GetInitializer(v);
        if (!string.IsNullOrWhiteSpace(initializer)) { 
            var rt = RS.TypeScope.GetType(v);

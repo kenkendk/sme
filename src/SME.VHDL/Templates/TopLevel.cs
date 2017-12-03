@@ -504,7 +504,7 @@ end ");
             #line hidden
             
             #line 100 ""
-    foreach (var bus in p.InputBusses.Union(p.OutputBusses).Distinct()) { 
+    foreach (var bus in p.InputBusses.Concat(p.OutputBusses).Distinct()) { 
 	      var isInput = p.InputBusses.Contains(bus);
 	      var isOutput = p.OutputBusses.Contains(bus);
 	      var isBoth = isInput && isOutput;

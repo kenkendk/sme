@@ -89,7 +89,7 @@ begin
         READLINE(F, L);
 
         fieldno := 0;
-<# foreach (var signal in RS.DriverSignals.Union(RS.VerifySignals)) { #>
+<# foreach (var signal in RS.DriverSignals.Concat(RS.VerifySignals)) { #>
         read_csv_field(L, tmp);
         assert are_strings_equal(tmp, "<#= RS.TestBenchSignalName(signal) #>") report "Field #" & integer'image(fieldno) & " is not correctly named: " & truncate(tmp) & ", expected <#= RS.TestBenchSignalName(signal) #>" severity Failure;
         fieldno := fieldno + 1;

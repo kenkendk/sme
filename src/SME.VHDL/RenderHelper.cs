@@ -345,12 +345,12 @@ namespace SME.VHDL
             {
                 var trailing_defaults = e.ElementExpressions.Reverse().TakeWhile(x => last.Value.Equals(UnwrapPrimitive(x)?.Value)).Count();
                 if (trailing_defaults != 0)
-                    return "(" + string.Join(", ", 
+                    return "(" + string.Join(", ",
                                              e.ElementExpressions
                                              .Take(e.ElementExpressions.Length - trailing_defaults)
                                              .Select(x => RenderExpression(x))
-                                             .Union(new[] { "others => " + RenderExpression(e.ElementExpressions.Last()) })
-                                            )+ ")";
+                                             .Concat(new[] { "others => " + RenderExpression(e.ElementExpressions.Last()) })
+                                            ) + ")";                    
 
             }
 
@@ -648,22 +648,22 @@ namespace SME.VHDL
                 var allitems = Process
                     .SharedSignals
                     .OfType<DataElement>()
-                    .Union(
+                    .Concat(
                         Process
                         .SharedVariables
                         .OfType<DataElement>()
                     )
-                    .Union(
+                    .Concat(
                         methods
                         .SelectMany(x => x
                                     .Parameters
                                     .OfType<DataElement>()
-                                    .Union(
+                                    .Concat(
                                         x
                                         .AllVariables
                                         .OfType<DataElement>()
                                        )
-                                    .Union(
+                                    .Concat(
                                         new DataElement[] { x.ReturnVariable }.Where(y => y != null)
                                        )
                                    )

@@ -233,7 +233,7 @@ namespace SME.AST
 			if (network.Processes.Length == 0)
 				throw new Exception("No processes were found in the list");
 			
-			network.Busses = network.Processes.SelectMany(x => x.InternalBusses.Union(x.InputBusses).Union(x.OutputBusses)).Distinct().ToArray();
+            network.Busses = network.Processes.SelectMany(x => x.InternalBusses.Concat(x.InputBusses).Concat(x.OutputBusses)).Distinct().ToArray();
 			network.Constants = network.ConstantLookup.Values.ToArray();
 
 			if (decompile)
@@ -303,7 +303,7 @@ namespace SME.AST
 		{
             var st = process.Instance.GetType();
 
-            var inputbusses = process.Instance.InputBusses.Union(process.Instance.ClockedInputBusses).Distinct().ToArray();
+            var inputbusses = process.Instance.InputBusses.Concat(process.Instance.ClockedInputBusses).Distinct().ToArray();
             var outputbusses = process.Instance.OutputBusses.Distinct().ToArray();
 
 			var res = new ProcessState()

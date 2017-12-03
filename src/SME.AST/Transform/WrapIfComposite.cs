@@ -45,7 +45,7 @@ namespace SME.AST.Transform
         /// <param name="replace">If set to <c>true</c> the given list replaces the basic types, if set to <c>false</c> the given types are appended to the basic types.</param>
         public WrapIfComposite(Type[] additionaltypes, bool replace = false)
         {
-            SIMPLE_TYPES = (replace ? new Type[0] : CORE_TYPES).Union(additionaltypes).ToArray();
+            SIMPLE_TYPES = (replace ? new Type[0] : CORE_TYPES).Concat(additionaltypes).ToArray();
         }
 
 		/// <summary>

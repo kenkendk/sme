@@ -167,7 +167,7 @@ namespace SME
 
             // Assign unique names to processes if there are multiple instances
             var busmap = new Dictionary<Type, List<IBus>>();
-            foreach (var b in m_processes.Values.SelectMany(x => x.Instance.InputBusses.Union(x.Instance.OutputBusses).Union(x.Instance.InternalBusses)).Distinct())
+            foreach (var b in m_processes.Values.SelectMany(x => x.Instance.InputBusses.Concat(x.Instance.OutputBusses).Concat(x.Instance.InternalBusses)).Distinct())
             {
                 if (b == null)
                     continue;

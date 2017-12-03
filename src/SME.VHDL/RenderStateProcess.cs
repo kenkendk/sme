@@ -135,7 +135,7 @@ namespace SME.VHDL
 		{
 			get
 			{
-				foreach (var bus in Process.OutputBusses.Union(Process.InternalBusses))
+                foreach (var bus in Process.OutputBusses.Concat(Process.InternalBusses).Distinct())
 					foreach (var signal in WrittenSignals(bus))
 						foreach (var s in Helper.RenderStatement(null, Parent.GetResetStatement(signal), 0))
 							yield return s;

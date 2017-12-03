@@ -671,7 +671,7 @@ namespace SME.VHDL
             CustomEnumValues.TryGetValue(t, out customs);
 
             if (customs != null)
-                fields = fields.Union(customs);
+                fields = fields.Concat(customs);
                     
             return fields.ToArray();
         }
@@ -697,7 +697,7 @@ namespace SME.VHDL
                         td
                         .Fields
                         .Where(x => !(x.IsSpecialName || x.IsRuntimeSpecialName)).Select(m => Naming.ToValidName(td.FullName + "_" + m.Name))
-                        .Union(customs.Keys)
+                        .Concat(customs.Keys)
                     )
 				);
 			}

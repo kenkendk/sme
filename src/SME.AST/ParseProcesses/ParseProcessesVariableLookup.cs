@@ -430,7 +430,7 @@ namespace SME.AST
             if (businstance == null)
                 return null;
 
-            var bus = proc.InputBusses.Union(proc.OutputBusses).Union(proc.InternalBusses).FirstOrDefault(x => x.SourceInstance == businstance);
+            var bus = proc.InputBusses.Concat(proc.OutputBusses).Concat(proc.InternalBusses).FirstOrDefault(x => x.SourceInstance == businstance);
 			if (bus == null)
 				throw new Exception($"No such bus: {field.FieldType.FullName}");
 

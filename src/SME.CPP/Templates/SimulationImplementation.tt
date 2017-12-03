@@ -7,7 +7,7 @@
 
 // The names of all signals
 std::string <#= Naming.AssemblyNameToFileName(Network) #>_SIGNAL_NAMES[] = {
-<# foreach (var signal in RS.DriverSignals.Union(RS.VerifySignals)) { 
+<# foreach (var signal in RS.DriverSignals.Concat(RS.VerifySignals)) { 
        var cpptype = RS.TypeScope.GetType(signal);
        if (cpptype.IsArray) {
            var eltype = cpptype.ElementName;
@@ -30,7 +30,7 @@ std::string <#= Naming.AssemblyNameToFileName(Network) #>_SIGNAL_NAMES[] = {
 <# } #>
 <# foreach(var process in Network.Processes) {
 
-       var busses = process.InputBusses.Union(process.OutputBusses).Union(process.InternalBusses).Distinct().OrderBy(x => x.Name).ToArray();
+       var busses = process.InputBusses.Concat(process.OutputBusses).Concat(process.InternalBusses).Distinct().OrderBy(x => x.Name).ToArray();
 #>
         proc_<#= process.Name #>(<# foreach(var bus in busses) { #>&bus_<#= bus.Name #><#= bus == busses.Last() ? "" : ", " #><# } #>),
 <# } #>
@@ -166,7 +166,7 @@ void <#= Naming.AssemblyNameToFileName(Network) #>::OnTick()
 #>
     proc_<#= pn.Name #>.onTick();
 <#     } #>
-<#     foreach(var b in n.Item.OutputBusses.Union(n.Item.InternalBusses)) { #>
+<#     foreach(var b in n.Item.OutputBusses.Concat(n.Item.InternalBusses).Distinct()) { #>
     bus_<#= GetBus(b).Name #>.forward_signals();
 <#     } #>
 <#     foreach(var b in n.PropagateAfter) { #>

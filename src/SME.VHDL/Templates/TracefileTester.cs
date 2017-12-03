@@ -278,7 +278,7 @@ begin
             #line hidden
             
             #line 92 ""
- foreach (var signal in RS.DriverSignals.Union(RS.VerifySignals)) { 
+ foreach (var signal in RS.DriverSignals.Concat(RS.VerifySignals)) { 
             
             #line default
             #line hidden

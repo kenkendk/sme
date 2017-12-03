@@ -51,7 +51,7 @@ namespace SME.VHDL.Transformations
 				return item;
 
 			var last = ase.Right.All().LastOrDefault(x => x is AssignmentExpression) as AssignmentExpression;
-			var targets = new[] { ase.Left }.Union(ase.Right.All().OfType<AssignmentExpression>().Select(x => x.Left)).ToArray();
+            var targets = new[] { ase.Left }.Concat(ase.Right.All().OfType<AssignmentExpression>().Select(x => x.Left)).ToArray();
 			if (last == null)
 				return item;
 

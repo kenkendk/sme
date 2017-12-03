@@ -105,7 +105,7 @@ namespace SME
             IsClocked = isClocked;
             IsInternal = isInternal;
 
-			var props = t.GetProperties().Union(t.GetInterfaces().Where(x => x != typeof(IBus)).SelectMany(x => x.GetProperties())).Distinct();
+			var props = t.GetProperties().Concat(t.GetInterfaces().Where(x => x != typeof(IBus)).SelectMany(x => x.GetProperties())).Distinct();
 			foreach (var n in props)
 			{
 				if (n.PropertyType.IsArray)
