@@ -112,6 +112,7 @@
     <Compile Include="Transformations\UntangleElseStatements.cs" />
     <Compile Include="RenderHelper.cs" />
     <Compile Include="Transformations\FixSwitchStatementTypes.cs" />
+    <Compile Include="Transformations\RemoveNonstaticSwitchLabels.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

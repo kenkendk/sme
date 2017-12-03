@@ -100,6 +100,11 @@ namespace SME.VHDL
 		/// </summary>
 		public readonly Dictionary<Method, Dictionary<string, Variable>> TemporaryVariables = new Dictionary<Method, Dictionary<string, Variable>>();
 
+        /// <summary>
+        /// The table with all custom defined enums
+        /// </summary>
+        public readonly Dictionary<VHDLType, Dictionary<string, object>> CustomEnumValues = new Dictionary<VHDL.VHDLType, Dictionary<string, object>>();
+
 		/// <summary>
 		/// The type scope used to resolve VHDL types
 		/// </summary>
@@ -165,6 +170,7 @@ namespace SME.VHDL
                     new SME.AST.Transform.RemoveTrailingBreakStatement(),
 					new Transformations.AssignVhdlType(this),
                     new Transformations.FixSwitchStatementTypes(this),
+                    new Transformations.RemoveNonstaticSwitchLabels(this),
 					new Transformations.RemoveConditionals(this, m),
 					new Transformations.InsertReturnAssignments(this, m),
 					new Transformations.InjectTypeConversions(this, m),
@@ -653,14 +659,21 @@ namespace SME.VHDL
             if (!td.IsEnum)
                 throw new InvalidOperationException("Cannot list enum values from a non-enum type");
 
-            return td.Fields
+            var fields = td.Fields
                     .Where(x => !(x.IsSpecialName || x.IsRuntimeSpecialName))
-                    .Select(m => 
+                    .Select(m =>
                             new KeyValuePair<string, object>(
                               Naming.ToValidName(td.FullName + "_" + m.Name),
                               m.Constant
-                            ))
-                    .ToArray();
+                    ));
+
+            Dictionary<string, object> customs;
+            CustomEnumValues.TryGetValue(t, out customs);
+
+            if (customs != null)
+                fields = fields.Union(customs);
+                    
+            return fields.ToArray();
         }
 
 		/// <summary>
@@ -674,10 +687,18 @@ namespace SME.VHDL
 
             if (type.IsEnum)
 			{
+                Dictionary<string, object> customs;
+                CustomEnumValues.TryGetValue(type, out customs);
+                customs = customs ?? new Dictionary<string, object>();
+
 				yield return string.Format(
 					"({0});",
 					string.Join("," + Environment.NewLine + "     ",
-                        td.Fields.Where(x => !(x.IsSpecialName || x.IsRuntimeSpecialName)).Select(m => Naming.ToValidName(td.FullName + "_" + m.Name)))
+                        td
+                        .Fields
+                        .Where(x => !(x.IsSpecialName || x.IsRuntimeSpecialName)).Select(m => Naming.ToValidName(td.FullName + "_" + m.Name))
+                        .Union(customs.Keys)
+                    )
 				);
 			}
 			else if (td.IsValueType && !td.IsPrimitive)
@@ -1219,6 +1240,18 @@ namespace SME.VHDL
                     if (e != null)
                         yield return e;
                 }
+        }
+
+
+        public string RegisterCustomEnum(Mono.Cecil.TypeReference sourcetype, VHDLType enumtype, object value)
+        {
+            Dictionary<string, object> v;
+            if (!CustomEnumValues.TryGetValue(enumtype, out v))
+                CustomEnumValues[enumtype] = v = new Dictionary<string, object>();
+
+            var name = Naming.ToValidName(string.Format("{0}_sme_extra_{1}", sourcetype.Resolve().FullName, 1));
+            v[name] = value;
+            return name;
         }
 	}
 }
