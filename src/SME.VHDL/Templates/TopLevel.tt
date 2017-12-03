@@ -169,8 +169,6 @@ begin
         RDY_<#= p.InstanceName #> <= RDY_<#= parents.First().InstanceName #>;
       end if;
     end process;
-
-    RDY_<#= p.InstanceName #> <= <#= string.Join(" AND ", parents.Select(x => string.Format("RDY_{0}", x.InstanceName))) #>;
 <#     } #>
 <# } #>
 
