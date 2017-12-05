@@ -126,16 +126,22 @@ namespace SME.Tracer
 			if (value == null)
 				throw new ArgumentNullException(nameof(value));
 
-			if (value is ReadViolationException)
-				return "U";
-			else if (value is Exception)
-				return "X";
-			else if (typeof(ITracerSerializable).IsAssignableFrom(itemtype))
-				return ((ITracerSerializable)value).Serialize(this);
-			else if (itemtype == typeof(bool))
-				return ((bool)value) ? "1" : "0";
-			else if (itemtype.IsEnum)
-				return ConvertToValidName(value.GetType().FullName + "." + value.ToString()).ToLower();
+            if (value is ReadViolationException)
+                return "U";
+            else if (value is Exception)
+                return "X";
+            else if (typeof(ITracerSerializable).IsAssignableFrom(itemtype))
+                return ((ITracerSerializable)value).Serialize(this);
+            else if (itemtype == typeof(bool))
+                return ((bool)value) ? "1" : "0";
+            else if (itemtype.IsEnum)
+            {
+                var v = value.ToString();
+                if (!Enum.GetNames(value.GetType()).Any(x => x == v))
+                    v = Enum.GetNames(value.GetType()).First();
+                
+                return ConvertToValidName(value.GetType().FullName + "." + v).ToLower();
+            }
 			else if (itemtype == typeof(byte))
 				return Convert.ToString((byte)value, 2).PadLeft(8, '0');
 			else if (itemtype == typeof(ushort))
