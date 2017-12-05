@@ -983,7 +983,7 @@ entity ");
             #line hidden
             
             #line 164 ""
-            this.Write("\n            reentry_guard := \'1\';\n            FIN <= \'0\';\n\n            -- Initia" +
+            this.Write("\n            reentry_guard := \'0\';\n            FIN <= \'0\';\n\n            -- Initia" +
                     "lize code here\n            -- #### USER-DATA-NONCLOCKEDRESETCODE-START\n         " +
                     "   -- #### USER-DATA-NONCLOCKEDRESETCODE-END\n\n        ");
             
@@ -997,83 +997,83 @@ entity ");
             #line hidden
             
             #line 173 ""
-            this.Write("        elsif rising_edge(CLK) then\n        ");
-            
-            #line default
-            #line hidden
-            
-            #line 174 ""
- } else  { 
-            
-            #line default
-            #line hidden
-            
-            #line 175 ""
-            this.Write("        else\n        ");
+            this.Write("\n        --elsif rising_edge(CLK) then\n        elsif RDY /= reentry_guard then\n  " +
+                    "      ");
             
             #line default
             #line hidden
             
             #line 176 ""
- } 
+ } else  { 
             
             #line default
             #line hidden
             
             #line 177 ""
-            this.Write("\n            if RDY /= reentry_guard then\n\n                reentry_guard := RDY;\n" +
-                    "\n                -- Initialize code here\n                -- #### USER-DATA-NONCL" +
-                    "OCKEDINITIALIZECODE-START\n                -- #### USER-DATA-NONCLOCKEDINITIALIZE" +
-                    "CODE-END\n\n\n");
+            this.Write("\n        elsif RDY /= reentry_guard then\n        ");
             
             #line default
             #line hidden
             
-            #line 187 ""
-     foreach(var line in RSP.Helper.RenderMethod(Process.MainMethod)) { 
-            
-            #line default
-            #line hidden
-            
-            #line 188 ""
-            this.Write("                ");
-            
-            #line default
-            #line hidden
-            
-            #line 188 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( line ));
-            
-            #line default
-            #line hidden
-            
-            #line 188 ""
-            this.Write("\n");
-            
-            #line default
-            #line hidden
-            
-            #line 189 ""
-     } 
-            
-            #line default
-            #line hidden
-            
-            #line 190 ""
-            this.Write("\n                FIN <= RDY;\n\n            end if;\n        end if;\n\n        -- Non" +
-                    "-clocked process actions here\n\n        -- #### USER-DATA-CODE-START\n        -- #" +
-                    "### USER-DATA-CODE-END\n\n    end process;\n");
-            
-            #line default
-            #line hidden
-            
-            #line 202 ""
+            #line 179 ""
  } 
             
             #line default
             #line hidden
             
+            #line 180 ""
+            this.Write("\n\n                reentry_guard := RDY;\n\n                -- Initialize code here\n" +
+                    "                -- #### USER-DATA-NONCLOCKEDINITIALIZECODE-START\n               " +
+                    " -- #### USER-DATA-NONCLOCKEDINITIALIZECODE-END\n\n\n");
+            
+            #line default
+            #line hidden
+            
+            #line 189 ""
+     foreach(var line in RSP.Helper.RenderMethod(Process.MainMethod)) { 
+            
+            #line default
+            #line hidden
+            
+            #line 190 ""
+            this.Write("                ");
+            
+            #line default
+            #line hidden
+            
+            #line 190 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( line ));
+            
+            #line default
+            #line hidden
+            
+            #line 190 ""
+            this.Write("\n");
+            
+            #line default
+            #line hidden
+            
+            #line 191 ""
+     } 
+            
+            #line default
+            #line hidden
+            
+            #line 192 ""
+            this.Write("\n                FIN <= RDY;\n\n        end if;\n\n        -- Non-clocked process act" +
+                    "ions here\n\n        -- #### USER-DATA-CODE-START\n        -- #### USER-DATA-CODE-E" +
+                    "ND\n\n    end process;\n");
+            
+            #line default
+            #line hidden
+            
             #line 203 ""
+ } 
+            
+            #line default
+            #line hidden
+            
+            #line 204 ""
             this.Write("\nend RTL;\n\n-- User defined architectures here\n-- #### USER-DATA-ARCH-START\n-- ###" +
                     "# USER-DATA-ARCH-END\n");
             

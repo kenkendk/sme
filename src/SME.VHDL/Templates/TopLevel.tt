@@ -155,19 +155,19 @@ begin
 
     -- Connect ready signals
 <# foreach (var p in processes) { 
-       var parents = RS.DependsOn(p).ToArray();
+       var parents = RS.DependsOn(p).Select(x => x.InstanceName).Distinct().ToArray();
        if (parents.Length == 0) { #>
     RDY_<#= p.InstanceName #> <= RDY;
 <#     } else if (parents.Length == 1) { #>
-    RDY_<#= p.InstanceName #> <= RDY_<#= parents.First().InstanceName #>;
+    RDY_<#= p.InstanceName #> <= FIN_<#= parents.First() #>;
 <#     } else { #>
     -- Setup the RDY signal for <#= p.InstanceName #>
     process(
-      <#= string.Join(", " + Environment.NewLine + "      ", processes.Select(x => string.Format("FIN_{0}", x.InstanceName))) #>
+      <#= string.Join(", " + Environment.NewLine + "      ", parents.Select(x => string.Format("FIN_{0}", x))) #>
     )
     begin
-      if <#= string.Join(" AND ", parents.Skip(1).Select(x => string.Format("FIN_{0} = FIN_{1}", parents.First().InstanceName, x.InstanceName))) #> then
-        RDY_<#= p.InstanceName #> <= RDY_<#= parents.First().InstanceName #>;
+      if <#= string.Join(" AND ", parents.Skip(1).Select(x => string.Format("FIN_{0} = FIN_{1}", parents.First(), x))) #> then
+        RDY_<#= p.InstanceName #> <= FIN_<#= parents.First() #>;
       end if;
     end process;
 <#     } #>

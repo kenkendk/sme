@@ -911,7 +911,7 @@ end ");
             
             #line 157 ""
  foreach (var p in processes) { 
-       var parents = RS.DependsOn(p).ToArray();
+       var parents = RS.DependsOn(p).Select(x => x.InstanceName).Distinct().ToArray();
        if (parents.Length == 0) { 
             
             #line default
@@ -954,13 +954,13 @@ end ");
             #line hidden
             
             #line 162 ""
-            this.Write(" <= RDY_");
+            this.Write(" <= FIN_");
             
             #line default
             #line hidden
             
             #line 162 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( parents.First().InstanceName ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( parents.First() ));
             
             #line default
             #line hidden
@@ -996,7 +996,7 @@ end ");
             #line hidden
             
             #line 166 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( string.Join(", " + Environment.NewLine + "      ", processes.Select(x => string.Format("FIN_{0}", x.InstanceName))) ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( string.Join(", " + Environment.NewLine + "      ", parents.Select(x => string.Format("FIN_{0}", x))) ));
             
             #line default
             #line hidden
@@ -1008,7 +1008,7 @@ end ");
             #line hidden
             
             #line 169 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( string.Join(" AND ", parents.Skip(1).Select(x => string.Format("FIN_{0} = FIN_{1}", parents.First().InstanceName, x.InstanceName))) ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( string.Join(" AND ", parents.Skip(1).Select(x => string.Format("FIN_{0} = FIN_{1}", parents.First(), x))) ));
             
             #line default
             #line hidden
@@ -1026,13 +1026,13 @@ end ");
             #line hidden
             
             #line 170 ""
-            this.Write(" <= RDY_");
+            this.Write(" <= FIN_");
             
             #line default
             #line hidden
             
             #line 170 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( parents.First().InstanceName ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( parents.First() ));
             
             #line default
             #line hidden

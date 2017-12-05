@@ -162,7 +162,7 @@ begin
             <#= variable.Name #> <= <#= variable.Name #>_reset_value;
 <#     } #>
 
-            reentry_guard := '1';
+            reentry_guard := '0';
             FIN <= '0';
 
             -- Initialize code here
@@ -170,12 +170,14 @@ begin
             -- #### USER-DATA-NONCLOCKEDRESETCODE-END
 
         <# if (Process.IsClocked) { #>
-        elsif rising_edge(CLK) then
+
+        --elsif rising_edge(CLK) then
+        elsif RDY /= reentry_guard then
         <# } else  { #>
-        else
+
+        elsif RDY /= reentry_guard then
         <# } #>
 
-            if RDY /= reentry_guard then
 
                 reentry_guard := RDY;
 
@@ -190,7 +192,6 @@ begin
 
                 FIN <= RDY;
 
-            end if;
         end if;
 
         -- Non-clocked process actions here
