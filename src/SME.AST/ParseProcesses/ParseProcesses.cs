@@ -303,7 +303,7 @@ namespace SME.AST
 		{
             var st = process.Instance.GetType();
 
-            var inputbusses = process.Instance.InputBusses.Concat(process.Instance.ClockedInputBusses).Distinct().ToArray();
+            var inputbusses = process.Instance.InputBusses.Union(process.Instance.ClockedInputBusses).ToArray();
             var outputbusses = process.Instance.OutputBusses.Distinct().ToArray();
 
 			var res = new ProcessState()
