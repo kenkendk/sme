@@ -57,7 +57,7 @@ namespace SME.Tracer
 			m_writer.WriteStartArray();
 		}
 
-		protected override void OuputSignalData(IEnumerable<Tuple<SignalEntry, object>> values)
+		protected override void OutputSignalData(IEnumerable<Tuple<SignalEntry, object>> values)
 		{
 			m_writer.WriteStartArray();
 

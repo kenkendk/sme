@@ -50,7 +50,7 @@ namespace SME.Tracer
 			}
 		}
 
-		protected override void OuputSignalData(IEnumerable<Tuple<SignalEntry, object>> values)
+		protected override void OutputSignalData(IEnumerable<Tuple<SignalEntry, object>> values)
 		{
 			var first = true;
 			using (var af = File.AppendText(m_filename))

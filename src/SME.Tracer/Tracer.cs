@@ -33,7 +33,7 @@ namespace SME.Tracer
 
 
 		protected abstract void OutputSignalNames(SignalEntry[] signals);
-		protected abstract void OuputSignalData(IEnumerable<Tuple<SignalEntry, object>> values);
+        protected abstract void OutputSignalData(IEnumerable<Tuple<SignalEntry, object>> values);
 
 		protected virtual IEnumerable<Tuple<SignalEntry, object>> GetValues()
 		{
@@ -71,7 +71,7 @@ namespace SME.Tracer
 				return;
 			}
 
-			OuputSignalData(GetValues());
+			OutputSignalData(GetValues());
 		}
 
 		protected virtual void Dispose(bool disposing)
