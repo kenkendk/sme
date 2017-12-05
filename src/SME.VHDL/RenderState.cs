@@ -1253,5 +1253,12 @@ namespace SME.VHDL
             v[name] = value;
             return name;
         }
+
+        public string GetLocalBusName(AST.Bus bus, AST.Process process)
+        {
+            if (process != null && process.LocalBusNames.ContainsKey(bus))
+                return process.LocalBusNames[bus];
+            return bus.Name;
+        }
 	}
 }

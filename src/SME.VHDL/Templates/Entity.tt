@@ -23,28 +23,34 @@ use work.CUSTOM_TYPES.ALL;
 
 entity <#= Process.Name #> is
   port(
-<# foreach (var bus in Process.InputBusses.Where(x => !Process.OutputBusses.Contains(x))) { #>
-    -- Input bus <#= bus.Name #> signals
+<# foreach (var bus in Process.InputBusses.Where(x => !Process.OutputBusses.Contains(x))) { 
+       var busname = RS.GetLocalBusName(bus, Process);
+#>
+    -- Input bus <#= busname #> signals
 <#     foreach (var signal in bus.Signals) { #>
-    <#= bus.Name #>_<#= signal.Name #>: in <#= RS.VHDLWrappedTypeName(signal) #>;
+    <#= Naming.ToValidName(busname + "_" + signal.Name) #>: in <#= RS.VHDLWrappedTypeName(signal) #>;
 <#     } #>
 <# } #>
 
-<# foreach (var bus in Process.OutputBusses.Where(x => !Process.InputBusses.Contains(x))) { #>
-    -- Output bus <#= bus.Name #> signals
+<# foreach (var bus in Process.OutputBusses.Where(x => !Process.InputBusses.Contains(x))) {
+       var busname = RS.GetLocalBusName(bus, Process);
+#>
+    -- Output bus <#= busname #> signals
 <#     foreach (var signal in RSP.WrittenSignals(bus)) { #>
-    <#= bus.Name #>_<#= signal.Name #>: out <#= RS.VHDLWrappedTypeName(signal) #>;
+    <#= Naming.ToValidName(busname + "_" + signal.Name) #>: out <#= RS.VHDLWrappedTypeName(signal) #>;
 <#     } #>
 <# } #>
 
-<# foreach (var bus in Process.InputBusses.Where(x => Process.OutputBusses.Contains(x))) { #>
-    -- Input/output bus <#= bus.Name #> signals
+<# foreach (var bus in Process.InputBusses.Where(x => Process.OutputBusses.Contains(x))) {
+       var busname = RS.GetLocalBusName(bus, Process);
+#>
+    -- Input/output bus <#= busname #> signals
 <#     foreach (var signal in bus.Signals) { #>
-    <#= bus.Name #>_<#= signal.Name #>: in <#= RS.VHDLWrappedTypeName(signal) #>;
+    <#= Naming.ToValidName(busname + "_" + signal.Name) #>: in <#= RS.VHDLWrappedTypeName(signal) #>;
 <#     } #>
 
 <#     foreach (var signal in bus.Signals) { #>
-    out_<#= bus.Name #>_<#= signal.Name #>: out <#= RS.VHDLWrappedTypeName(signal) #>;
+    out_<#= Naming.ToValidName(busname + "_" + signal.Name) #>: out <#= RS.VHDLWrappedTypeName(signal) #>;
 <#     } #>
 <# } #>
 
@@ -73,10 +79,12 @@ entity <#= Process.Name #> is
 end <#= Process.Name #>;
 
 architecture RTL of <#= Process.Name #> is
-<# foreach (var bus in Process.InternalBusses) { #>
-  -- Internal bus <#= bus.Name #> signals
+<# foreach (var bus in Process.InternalBusses) {
+       var busname = RS.GetLocalBusName(bus, Process);
+#>
+  -- Internal bus <#= busname #> signals
 <#     foreach (var signal in bus.Signals) { #>
-  signal <#= bus.Name #>_<#= signal.Name #>: <#= RS.VHDLWrappedTypeName(signal) #>;
+  signal <#= Naming.ToValidName(busname + "_" + signal.Name) #>: <#= RS.VHDLWrappedTypeName(signal) #>;
 <#     } #>
 
 <# } #>

@@ -519,7 +519,13 @@ namespace SME.VHDL
         private string RenderExpression(AST.MemberReferenceExpression e)
         {
             if (e.Target.Parent is AST.Bus)
-                return e.Target.Parent.Name + "_" + e.Target.Name;
+            {
+                var busname = e.Target.Parent.Name;
+                if (Process != null && Process.LocalBusNames.ContainsKey(e.Target.Parent as AST.Bus))
+                    busname = Process.LocalBusNames[e.Target.Parent as AST.Bus];
+                
+                return Naming.ToValidName(busname + "_" + e.Target.Name);
+            }
             else if (e.Target is AST.Constant)
             {
                 var ce = e.Target as AST.Constant;

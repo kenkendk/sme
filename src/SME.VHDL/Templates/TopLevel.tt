@@ -114,6 +114,7 @@ begin
 	      if (feedbacks.Contains(bus))
 	          input_suffix = "_current";
 
+          var busname = RS.GetLocalBusName(bus, p);
           var signals = bus.Signals.AsEnumerable();
 
 	      if (isOutput && !isBoth)
@@ -122,15 +123,15 @@ begin
         -- <#= type #> bus <#= bus.Name #>
 <#		  foreach(var signal in signals) { #>
 <#              if (isInput || isBoth) { #>
-        <#= bus.Name #>_<#= signal.Name #> => <#= bus.InstanceName #>_<#= signal.Name #><#= input_suffix #>,
+        <#= Naming.ToValidName(busname + "_" + signal.Name) #> => <#= bus.InstanceName #>_<#= signal.Name #><#= input_suffix #>,
 <#              } else { #>
-        <#= bus.Name #>_<#= signal.Name #> => <#= bus.InstanceName #>_<#= signal.Name #><#= output_suffix #>,
+        <#= Naming.ToValidName(busname + "_" + signal.Name) #> => <#= bus.InstanceName #>_<#= signal.Name #><#= output_suffix #>,
 <#              } #>
 <#        } #>
 
 <#        if (isBoth) { #>
 <#		      foreach(var signal in bus.Signals) { #>
-        out_<#= bus.Name #>_<#= signal.Name #> => <#= bus.InstanceName #>_<#= signal.Name #><#= output_suffix #>,
+        out_<#= Naming.ToValidName(busname + "_" + signal.Name) #> => <#= bus.InstanceName #>_<#= signal.Name #><#= output_suffix #>,
 <#            } #>
 <#        } #>
 

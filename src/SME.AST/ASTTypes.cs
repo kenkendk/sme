@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace SME.AST
 {
@@ -216,6 +217,11 @@ namespace SME.AST
         /// The name of the instance, if different from the type name
         /// </summary>
         public string InstanceName;
+
+        /// <summary>
+        /// A lookup table with the names of the busses within this process
+        /// </summary>
+        public readonly Dictionary<Bus, string> LocalBusNames = new Dictionary<Bus, string>();
 	}
 
 	/// <summary>

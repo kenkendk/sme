@@ -344,6 +344,16 @@ namespace SME.AST
 			foreach (var ib in res.InternalBusses)
 				ib.IsInternal = true;
 
+            // Set up the local names by finding the field that holds the instance reference
+            foreach(var b in res.InputBusses.Union(res.OutputBusses).Union(res.InternalBusses))
+            {
+                var f = st
+                    .GetFields(BindingFlags.Instance | BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.NonPublic)
+                    .FirstOrDefault(x => x.GetValue(process.Instance) == b.SourceInstance);
+                if (f != null)
+                    res.LocalBusNames[b] = f.Name;                    
+            }
+
 			if (res.Decompile)
 			{
                 // Register all variables
