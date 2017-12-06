@@ -423,10 +423,10 @@ end ");
 
 	      var output_suffix = string.Empty;
 	      var input_suffix = string.Empty;
-	      if (isOutput && bus.IsClocked || feedbacks.Contains(bus) || p.IsClocked)
+	      if (isOutput && delayedsignals.Any(x => x.Parent == bus))
 	          output_suffix = "_next";
-	      if (feedbacks.Contains(bus))
-	          input_suffix = "_current";
+          if (feedbacks.Contains(bus))
+              input_suffix = "_current";
 
           var busname = RS.GetLocalBusName(bus, p);
           var signals = bus.Signals.AsEnumerable();
@@ -1023,7 +1023,7 @@ end ");
             #line hidden
             
             #line 193 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name + "_current") ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name + (feedbacks.Contains(signal.Parent as AST.Bus) ? "_next" : "_current")) ));
             
             #line default
             #line hidden
