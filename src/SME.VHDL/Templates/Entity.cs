@@ -369,13 +369,13 @@ entity ");
             #line hidden
             
             #line 60 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( variable.Name ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("reset_" + variable.Name) ));
             
             #line default
             #line hidden
             
             #line 60 ""
-            this.Write("_reset_value: in ");
+            this.Write(": in ");
             
             #line default
             #line hidden
@@ -411,13 +411,13 @@ entity ");
             #line hidden
             
             #line 63 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( variable.Name ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("reset_" + variable.Name) ));
             
             #line default
             #line hidden
             
             #line 63 ""
-            this.Write("_reset_value: in ");
+            this.Write(": in ");
             
             #line default
             #line hidden
@@ -774,84 +774,72 @@ entity ");
             #line 129 ""
             this.Write("\n    process(\n        -- Custom sensitivity signals here\n        -- #### USER-DAT" +
                     "A-SENSITIVITY-START\n        -- #### USER-DATA-SENSITIVITY-END\n        RDY,\n     " +
-                    "   ");
+                    "   RST\n    )\n");
             
             #line default
             #line hidden
             
-            #line 135 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Process.IsClocked ? "CLK," : "" ));
-            
-            #line default
-            #line hidden
-            
-            #line 135 ""
-            this.Write("\n        RST\n    )\n");
-            
-            #line default
-            #line hidden
-            
-            #line 138 ""
+            #line 137 ""
          if (RSP.Variables.Count() > 0) { 
             
             #line default
             #line hidden
             
-            #line 139 ""
+            #line 138 ""
             this.Write("    -- Internal variables\n");
             
             #line default
             #line hidden
             
-            #line 140 ""
+            #line 139 ""
          } 
             
             #line default
             #line hidden
             
-            #line 141 ""
+            #line 140 ""
          foreach(var s in RSP.Variables) { 
             
             #line default
             #line hidden
             
-            #line 142 ""
+            #line 141 ""
             this.Write("    variable ");
             
             #line default
             #line hidden
             
-            #line 142 ""
+            #line 141 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( s.Name ));
             
             #line default
             #line hidden
             
-            #line 142 ""
+            #line 141 ""
             this.Write(" : ");
             
             #line default
             #line hidden
             
-            #line 142 ""
+            #line 141 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( RS.VHDLWrappedTypeName(s) ));
             
             #line default
             #line hidden
             
-            #line 142 ""
+            #line 141 ""
             this.Write(";\n");
             
             #line default
             #line hidden
             
-            #line 143 ""
+            #line 142 ""
          } 
             
             #line default
             #line hidden
             
-            #line 144 ""
+            #line 143 ""
             this.Write(@"
     variable reentry_guard : Std_logic;
 
@@ -868,121 +856,121 @@ entity ");
             #line default
             #line hidden
             
-            #line 155 ""
+            #line 154 ""
      foreach(var s in RSP.ProcessResetStaments) { 
             
             #line default
             #line hidden
             
-            #line 156 ""
+            #line 155 ""
             this.Write("            ");
             
             #line default
             #line hidden
             
-            #line 156 ""
+            #line 155 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( s ));
             
             #line default
             #line hidden
             
-            #line 156 ""
+            #line 155 ""
             this.Write("\n");
             
             #line default
             #line hidden
             
-            #line 157 ""
+            #line 156 ""
      } 
             
             #line default
             #line hidden
             
-            #line 158 ""
+            #line 157 ""
      foreach(var variable in Process.SharedVariables) { 
             
             #line default
             #line hidden
             
-            #line 159 ""
+            #line 158 ""
             this.Write("            ");
             
             #line default
             #line hidden
             
-            #line 159 ""
+            #line 158 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( variable.Name ));
             
             #line default
             #line hidden
             
-            #line 159 ""
+            #line 158 ""
             this.Write(" := ");
             
             #line default
             #line hidden
             
-            #line 159 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( variable.Name ));
+            #line 158 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("reset_" + variable.Name) ));
+            
+            #line default
+            #line hidden
+            
+            #line 158 ""
+            this.Write(";\n");
             
             #line default
             #line hidden
             
             #line 159 ""
-            this.Write("_reset_value;\n");
+     } 
             
             #line default
             #line hidden
             
             #line 160 ""
-     } 
-            
-            #line default
-            #line hidden
-            
-            #line 161 ""
      foreach(var variable in Process.SharedSignals) { 
             
             #line default
             #line hidden
             
-            #line 162 ""
+            #line 161 ""
             this.Write("            ");
             
             #line default
             #line hidden
             
-            #line 162 ""
+            #line 161 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( variable.Name ));
             
             #line default
             #line hidden
             
-            #line 162 ""
+            #line 161 ""
             this.Write(" <= ");
             
             #line default
             #line hidden
             
-            #line 162 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( variable.Name ));
+            #line 161 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("reset_" + variable.Name) ));
+            
+            #line default
+            #line hidden
+            
+            #line 161 ""
+            this.Write(";\n");
             
             #line default
             #line hidden
             
             #line 162 ""
-            this.Write("_reset_value;\n");
-            
-            #line default
-            #line hidden
-            
-            #line 163 ""
      } 
             
             #line default
             #line hidden
             
-            #line 164 ""
+            #line 163 ""
             this.Write("\n            reentry_guard := \'0\';\n            FIN <= \'0\';\n\n            -- Initia" +
                     "lize code here\n            -- #### USER-DATA-NONCLOCKEDRESETCODE-START\n         " +
                     "   -- #### USER-DATA-NONCLOCKEDRESETCODE-END\n\n        ");
@@ -990,38 +978,37 @@ entity ");
             #line default
             #line hidden
             
-            #line 172 ""
+            #line 171 ""
  if (Process.IsClocked) { 
             
             #line default
             #line hidden
             
-            #line 173 ""
-            this.Write("\n        --elsif rising_edge(CLK) then\n        elsif RDY /= reentry_guard then\n  " +
-                    "      ");
-            
-            #line default
-            #line hidden
-            
-            #line 176 ""
- } else  { 
-            
-            #line default
-            #line hidden
-            
-            #line 177 ""
+            #line 172 ""
             this.Write("\n        elsif RDY /= reentry_guard then\n        ");
             
             #line default
             #line hidden
             
-            #line 179 ""
+            #line 174 ""
+ } else  { 
+            
+            #line default
+            #line hidden
+            
+            #line 175 ""
+            this.Write("\n        elsif RDY /= reentry_guard then\n        ");
+            
+            #line default
+            #line hidden
+            
+            #line 177 ""
  } 
             
             #line default
             #line hidden
             
-            #line 180 ""
+            #line 178 ""
             this.Write("\n\n                reentry_guard := RDY;\n\n                -- Initialize code here\n" +
                     "                -- #### USER-DATA-NONCLOCKEDINITIALIZECODE-START\n               " +
                     " -- #### USER-DATA-NONCLOCKEDINITIALIZECODE-END\n\n\n");
@@ -1029,37 +1016,37 @@ entity ");
             #line default
             #line hidden
             
-            #line 189 ""
+            #line 187 ""
      foreach(var line in RSP.Helper.RenderMethod(Process.MainMethod)) { 
             
             #line default
             #line hidden
             
-            #line 190 ""
+            #line 188 ""
             this.Write("                ");
             
             #line default
             #line hidden
             
-            #line 190 ""
+            #line 188 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( line ));
             
             #line default
             #line hidden
             
-            #line 190 ""
+            #line 188 ""
             this.Write("\n");
             
             #line default
             #line hidden
             
-            #line 191 ""
+            #line 189 ""
      } 
             
             #line default
             #line hidden
             
-            #line 192 ""
+            #line 190 ""
             this.Write("\n                FIN <= RDY;\n\n        end if;\n\n        -- Non-clocked process act" +
                     "ions here\n\n        -- #### USER-DATA-CODE-START\n        -- #### USER-DATA-CODE-E" +
                     "ND\n\n    end process;\n");
@@ -1067,13 +1054,13 @@ entity ");
             #line default
             #line hidden
             
-            #line 203 ""
+            #line 201 ""
  } 
             
             #line default
             #line hidden
             
-            #line 204 ""
+            #line 202 ""
             this.Write("\nend RTL;\n\n-- User defined architectures here\n-- #### USER-DATA-ARCH-START\n-- ###" +
                     "# USER-DATA-ARCH-END\n");
             

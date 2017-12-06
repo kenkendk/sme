@@ -57,10 +57,10 @@ entity <#= Process.Name #> is
 <# if (Process.SharedVariables.Any() || Process.SharedSignals.Any()) { #>
     -- Initialization values
 <#     foreach (var variable in Process.SharedVariables) { #>
-    <#= variable.Name #>_reset_value: in <#= RS.VHDLWrappedTypeName(variable) #>;
+    <#= Naming.ToValidName("reset_" + variable.Name) #>: in <#= RS.VHDLWrappedTypeName(variable) #>;
 <#     } #>
 <#     foreach (var variable in Process.SharedSignals) { #>
-    <#= variable.Name #>_reset_value: in <#= RS.VHDLWrappedTypeName(variable) #>;
+    <#= Naming.ToValidName("reset_" + variable.Name) #>: in <#= RS.VHDLWrappedTypeName(variable) #>;
 <#     } #>
 <# } #>
 
@@ -132,7 +132,6 @@ begin
         -- #### USER-DATA-SENSITIVITY-START
         -- #### USER-DATA-SENSITIVITY-END
         RDY,
-        <#= Process.IsClocked ? "CLK," : "" #>
         RST
     )
 <#         if (RSP.Variables.Count() > 0) { #>
@@ -156,10 +155,10 @@ begin
             <#= s #>
 <#     } #>
 <#     foreach(var variable in Process.SharedVariables) { #>
-            <#= variable.Name #> := <#= variable.Name #>_reset_value;
+            <#= variable.Name #> := <#= Naming.ToValidName("reset_" + variable.Name) #>;
 <#     } #>
 <#     foreach(var variable in Process.SharedSignals) { #>
-            <#= variable.Name #> <= <#= variable.Name #>_reset_value;
+            <#= variable.Name #> <= <#= Naming.ToValidName("reset_" + variable.Name) #>;
 <#     } #>
 
             reentry_guard := '0';
@@ -171,7 +170,6 @@ begin
 
         <# if (Process.IsClocked) { #>
 
-        --elsif rising_edge(CLK) then
         elsif RDY /= reentry_guard then
         <# } else  { #>
 
