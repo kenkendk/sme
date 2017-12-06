@@ -201,8 +201,6 @@ namespace SME
                 foreach (var cfg in m_preloaders)
                     cfg(this);
 
-                var tick = 0UL;
-
                 // Fire up all the processes
                 var running_tasks = m_processes.Keys
                     .Select(x =>
@@ -215,7 +213,7 @@ namespace SME
                 {
                     foreach (var clk in m_tickers)
                         clk(this);
-                    tick++;
+                    Tick++;
 
                     Graph.Execute();
 
