@@ -412,6 +412,8 @@ namespace SME.VHDL
                 {
                     if (svhdl.IsSigned == target.IsSigned)
                         return WrapExpression(render, s, string.Format("resize({0}, {1})", "{0}", targetlengthstr), target);
+                    else if (svhdl.IsSigned && svhdl.Length > target.Length)
+                        return WrapExpression(render, s, string.Format("resize(UNSIGNED({0}), {1})", "{0}", targetlengthstr), target);
                     else
                         return WrapExpression(render, s, string.Format("{2}(resize({0}, {1}))", "{0}", targetlengthstr, target.IsSigned ? "SIGNED" : "UNSIGNED"), target);
                 }
