@@ -17,9 +17,13 @@ namespace SME
 		/// </summary>
         private List<Action<Simulation>> m_preloaders = new List<Action<Simulation>>();
 		/// <summary>
-		/// The methods to call during the simulation
+		/// The methods to call each cycle before running the network during the simulation
 		/// </summary>
-        private List<Action<Simulation>> m_tickers = new List<Action<Simulation>>();
+        private List<Action<Simulation>> m_prerunners = new List<Action<Simulation>>();
+        /// <summary>
+        /// The methods to call each cycle before running the network during the simulation
+        /// </summary>
+        private List<Action<Simulation>> m_postrunners = new List<Action<Simulation>>();
 		/// <summary>
 		/// The methods to call after the simulation
 		/// </summary>
@@ -102,17 +106,41 @@ namespace SME
 		}
 
 		/// <summary>
-		/// Adds a ticker.
+		/// Adds pre-run handler.
 		/// </summary>
-		/// <param name="ticker">The ticker.</param>
-        public Simulation AddTicker(Action<Simulation> ticker)
+        /// <returns>The simulation instance for chaining syntax use</returns>
+		/// <param name="prerunner">The prerunner method.</param>
+        public Simulation AddPreRunner(Action<Simulation> prerunner)
 		{
-			if (ticker == null)
-				throw new ArgumentNullException($"{ticker}");
+			if (prerunner == null)
+				throw new ArgumentNullException($"{prerunner}");
 
-			m_tickers.Add(ticker);
+            m_prerunners.Add(prerunner);
             return this;
 		}
+
+        /// <summary>
+        /// Adds post-run handler.
+        /// </summary>
+        /// <param name="postrunner">The postrunner method.</param>
+        public Simulation AddPostRunner(Action<Simulation> postrunner)
+        {
+            if (postrunner == null)
+                throw new ArgumentNullException($"{postrunner}");
+
+            m_postrunners.Add(postrunner);
+            return this;
+        }
+
+        /// <summary>
+        /// Adds a callback method that is invoked after each cycle
+        /// </summary>
+        /// <returns>The simulation instance for chaining syntax use</returns>
+        /// <param name="ticker">The method to invoke.</param>
+        public Simulation AddTicker(Action<Simulation> ticker)
+        {
+            return AddPostRunner(ticker);
+        }
 
         /// <summary>
         /// Creates a single process for each class that implements <see cref="IProcess"/> and runs the simulation on that
@@ -211,15 +239,20 @@ namespace SME
 
                 while (!running_tasks.Any(x => x.IsCompleted))
                 {
-                    foreach (var clk in m_tickers)
+                    foreach (var clk in m_prerunners)
                         clk(this);
-                    Tick++;
 
                     Graph.Execute();
+
+                    foreach (var clk in m_postrunners)
+                        clk(this);
 
                     var crashes = running_tasks.Where(x => x.Exception != null).SelectMany(x => x.Exception.InnerExceptions);
                     if (crashes.Any())
                         throw new AggregateException(crashes);
+
+                    Tick++;
+
                 }
 
                 foreach (var cfg in m_postloaders)
