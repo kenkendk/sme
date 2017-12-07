@@ -95,9 +95,18 @@ begin
         fieldno := fieldno + 1;
 <# } #>
 
-		RESET <= '1';
+        RESET <= '1';
         wait for <#= RS.ClockPulseLength #> NS;
         RESET <= '0';
+
+<# if (RS.DriverSignals.Count() == 0) { #>
+        -- There are no driver signals in this network, 
+        -- so we skip the first cycle and wait until 
+        -- the initialization phase has passed.
+        -- This is required because the driven signals 
+        -- are not propagated before the RDY signal has been set
+        wait until Rising_edge(CLOCK);
+<# } #>
 
         -- Read a line each clock
         while not ENDFILE(F) loop
@@ -106,33 +115,36 @@ begin
             fieldno := 0;
             newfailures := 0;
 
+<# if (RS.DriverSignals.Count() > 0) { #>
             -- Write all driver signals out
-<# foreach (var signal in RS.DriverSignals) { 
-       var vhdltype = RS.VHDLType(signal);
+
+<#     foreach (var signal in RS.DriverSignals) { 
+           var vhdltype = RS.VHDLType(signal);
 #>
             read_csv_field(L, tmp);
-<#    if (vhdltype.IsStdLogic || vhdltype == VHDLTypes.SYSTEM_BOOL) { #>
+<#        if (vhdltype.IsStdLogic || vhdltype == VHDLTypes.SYSTEM_BOOL) { #>
             if are_strings_equal(tmp, "U") then
                 <#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#> <= 'U';
             else
                 <#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#> <= to_std_logic(truncate(tmp));
             end if;
-<#    } else if (vhdltype.IsStdLogicVector || vhdltype.IsSystemType) { #>
+<#        } else if (vhdltype.IsStdLogicVector || vhdltype.IsSystemType) { #>
             if are_strings_equal(tmp, "U") then
                 <#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#> <= (others => 'U');
             else
-<#        if (vhdltype.IsSystemType && vhdltype.IsSigned) { #>
+<#            if (vhdltype.IsSystemType && vhdltype.IsSigned) { #>
                 <#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#> <= signed(to_std_logic_vector(truncate(tmp)));
-<#        } else if (vhdltype.IsSystemType && vhdltype.IsUnsigned) { #>
+<#            } else if (vhdltype.IsSystemType && vhdltype.IsUnsigned) { #>
                 <#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#> <= unsigned(to_std_logic_vector(truncate(tmp)));
-<#        } else { #>
+<#            } else { #>
                 <#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#> <= to_std_logic_vector(truncate(tmp));
-<#        } #>
+<#            } #>
             end if;
-<#    } else { #>
+<#        } else { #>
             <#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#> <= <#= vhdltype.ToSafeVHDLName()#>'value(to_safe_name(truncate(tmp)));
-<#    } #>
+<#        } #>
             fieldno := fieldno + 1;
+<#     } #>
 <# } #>
 
             wait until Rising_edge(CLOCK);
