@@ -9,6 +9,7 @@ namespace SME.Tracer
 	public class CSVTracer : Tracer
 	{
 		private string m_filename;
+        private bool m_firstEntry = true;
 
 		public CSVTracer(string filename = null, string targetfolder = null)
 		{
@@ -50,15 +51,14 @@ namespace SME.Tracer
 			}
 		}
 
-		protected override void OutputSignalData(IEnumerable<Tuple<SignalEntry, object>> values)
+		protected override void OutputSignalData(IEnumerable<Tuple<SignalEntry, object>> values, bool last)
 		{
-			var first = true;
 			using (var af = File.AppendText(m_filename))
 			{
 				foreach (var signal in values)
 				{
-					if (first)
-						first = false;
+                    if (m_firstEntry)
+                        m_firstEntry = false;
 					else
 						af.Write(",");
 
@@ -117,7 +117,11 @@ namespace SME.Tracer
 					}
 				}
 
-				af.WriteLine();
+                if (last)
+                {
+                    af.WriteLine();
+                    m_firstEntry = true;
+                }
 			}
 		}
 

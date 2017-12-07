@@ -5,12 +5,33 @@ using Newtonsoft.Json;
 
 namespace SME.Tracer
 {
+    /// <summary>
+    /// A tracer that outputs the traced data in JSON format
+    /// </summary>
 	public class JsonTracer : Tracer
 	{
+        /// <summary>
+        /// The name of the file where data is written
+        /// </summary>
 		private string m_filename;
+        /// <summary>
+        /// The writer instance
+        /// </summary>
 		private JsonWriter m_writer;
+        /// <summary>
+        /// The open stream
+        /// </summary>
 		private StreamWriter m_stream;
+        /// <summary>
+        /// Flag that tracks the output state for the signal arrays
+        /// </summary>
+        private bool m_startedArray = false;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:SME.Tracer.JsonTracer"/> class.
+        /// </summary>
+        /// <param name="filename">The name of the file to write to.</param>
+        /// <param name="targetfolder">The folder where the file shold be written, if the filename is not an absolute path.</param>
 		public JsonTracer(string filename = null, string targetfolder = null)
 		{
 			m_filename = Path.GetFullPath(Path.Combine(targetfolder ?? ".", filename ?? DateTime.Now.ToString("yyyyMMddTHHmmss") + ".json"));
@@ -57,9 +78,13 @@ namespace SME.Tracer
 			m_writer.WriteStartArray();
 		}
 
-		protected override void OutputSignalData(IEnumerable<Tuple<SignalEntry, object>> values)
+		protected override void OutputSignalData(IEnumerable<Tuple<SignalEntry, object>> values, bool last)
 		{
-			m_writer.WriteStartArray();
+            if (!m_startedArray)
+            {
+                m_writer.WriteStartArray();
+                m_startedArray = true;
+            }
 
 			foreach (var v in values)
 				if (v.Item2 is SME.ReadViolationException)
@@ -71,7 +96,12 @@ namespace SME.Tracer
 				else
 					m_writer.WriteValue(v.Item2);
 
-			m_writer.WriteEndArray();
+            if (last)
+            {
+                if (m_startedArray)
+                    m_writer.WriteEndArray();
+                m_startedArray = false;
+            }
 		}
 
 
