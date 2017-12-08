@@ -111,9 +111,12 @@ namespace SME.Tracer
                 OutputSignalNames(m_props);
                 m_first = false;
                 m_driversignalcount = m_props.TakeWhile(x => x.IsDriver).Count();
+
+                // Send out the init cycle
+                OutputSignalData(GetValues(), true);
             }
 
-            OutputSignalData(GetValues().Take(m_driversignalcount), false);
+            //OutputSignalData(GetValues().Take(m_driversignalcount), false);
         }
 
         /// <summary>
@@ -128,7 +131,8 @@ namespace SME.Tracer
                 return;
             }
 
-            OutputSignalData(GetValues().Skip(m_driversignalcount), true);
+            //OutputSignalData(GetValues().Skip(m_driversignalcount), true);
+            OutputSignalData(GetValues(), true);
 		}
 
         /// <summary>

@@ -99,15 +99,6 @@ begin
         wait for <#= RS.ClockPulseLength #> NS;
         RESET <= '0';
 
-<# if (RS.DriverSignals.Count() == 0) { #>
-        -- There are no driver signals in this network, 
-        -- so we skip the first cycle and wait until 
-        -- the initialization phase has passed.
-        -- This is required because the driven signals 
-        -- are not propagated before the RDY signal has been set
-        wait until Rising_edge(CLOCK);
-<# } #>
-
         -- Read a line each clock
         while not ENDFILE(F) loop
             READLINE(F, L);

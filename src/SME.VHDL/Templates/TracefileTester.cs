@@ -333,55 +333,26 @@ begin
             #line hidden
             
             #line 99 ""
-            this.Write(" NS;\n        RESET <= \'0\';\n\n");
-            
-            #line default
-            #line hidden
-            
-            #line 102 ""
- if (RS.DriverSignals.Count() == 0) { 
-            
-            #line default
-            #line hidden
-            
-            #line 103 ""
-            this.Write(@"        -- There are no driver signals in this network, 
-        -- so we skip the first cycle and wait until 
-        -- the initialization phase has passed.
-        -- This is required because the driven signals 
-        -- are not propagated before the RDY signal has been set
-        wait until Rising_edge(CLOCK);
-");
+            this.Write(" NS;\n        RESET <= \'0\';\n\n        -- Read a line each clock\n        while not E" +
+                    "NDFILE(F) loop\n            READLINE(F, L);\n\n            fieldno := 0;\n          " +
+                    "  newfailures := 0;\n\n");
             
             #line default
             #line hidden
             
             #line 109 ""
- } 
-            
-            #line default
-            #line hidden
-            
-            #line 110 ""
-            this.Write("\n        -- Read a line each clock\n        while not ENDFILE(F) loop\n            " +
-                    "READLINE(F, L);\n\n            fieldno := 0;\n            newfailures := 0;\n\n");
-            
-            #line default
-            #line hidden
-            
-            #line 118 ""
  if (RS.DriverSignals.Count() > 0) { 
             
             #line default
             #line hidden
             
-            #line 119 ""
+            #line 110 ""
             this.Write("            -- Write all driver signals out\n\n");
             
             #line default
             #line hidden
             
-            #line 121 ""
+            #line 112 ""
      foreach (var signal in RS.DriverSignals) { 
            var vhdltype = RS.VHDLType(signal);
 
@@ -389,308 +360,308 @@ begin
             #line default
             #line hidden
             
-            #line 124 ""
+            #line 115 ""
             this.Write("            read_csv_field(L, tmp);\n");
             
             #line default
             #line hidden
             
-            #line 125 ""
+            #line 116 ""
         if (vhdltype.IsStdLogic || vhdltype == VHDLTypes.SYSTEM_BOOL) { 
             
             #line default
             #line hidden
             
-            #line 126 ""
+            #line 117 ""
             this.Write("            if are_strings_equal(tmp, \"U\") then\n                ");
             
             #line default
             #line hidden
             
-            #line 127 ""
+            #line 118 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( ((AST.Bus)signal.Parent).InstanceName));
             
             #line default
             #line hidden
             
-            #line 127 ""
+            #line 118 ""
             this.Write("_");
             
             #line default
             #line hidden
             
-            #line 127 ""
+            #line 118 ""
             this.Write(this.ToStringHelper.ToStringWithCulture(signal.Name));
             
             #line default
             #line hidden
             
-            #line 127 ""
+            #line 118 ""
             this.Write(" <= \'U\';\n            else\n                ");
             
             #line default
             #line hidden
             
-            #line 129 ""
+            #line 120 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( ((AST.Bus)signal.Parent).InstanceName));
             
             #line default
             #line hidden
             
-            #line 129 ""
+            #line 120 ""
             this.Write("_");
             
             #line default
             #line hidden
             
-            #line 129 ""
+            #line 120 ""
             this.Write(this.ToStringHelper.ToStringWithCulture(signal.Name));
             
             #line default
             #line hidden
             
-            #line 129 ""
+            #line 120 ""
             this.Write(" <= to_std_logic(truncate(tmp));\n            end if;\n");
             
             #line default
             #line hidden
             
-            #line 131 ""
+            #line 122 ""
         } else if (vhdltype.IsStdLogicVector || vhdltype.IsSystemType) { 
             
             #line default
             #line hidden
             
-            #line 132 ""
+            #line 123 ""
             this.Write("            if are_strings_equal(tmp, \"U\") then\n                ");
             
             #line default
             #line hidden
             
-            #line 133 ""
+            #line 124 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( ((AST.Bus)signal.Parent).InstanceName));
             
             #line default
             #line hidden
             
-            #line 133 ""
+            #line 124 ""
             this.Write("_");
             
             #line default
             #line hidden
             
-            #line 133 ""
+            #line 124 ""
             this.Write(this.ToStringHelper.ToStringWithCulture(signal.Name));
             
             #line default
             #line hidden
             
-            #line 133 ""
+            #line 124 ""
             this.Write(" <= (others => \'U\');\n            else\n");
             
             #line default
             #line hidden
             
-            #line 135 ""
+            #line 126 ""
             if (vhdltype.IsSystemType && vhdltype.IsSigned) { 
             
             #line default
             #line hidden
             
-            #line 136 ""
+            #line 127 ""
             this.Write("                ");
             
             #line default
             #line hidden
             
-            #line 136 ""
+            #line 127 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( ((AST.Bus)signal.Parent).InstanceName));
             
             #line default
             #line hidden
             
-            #line 136 ""
+            #line 127 ""
             this.Write("_");
             
             #line default
             #line hidden
             
-            #line 136 ""
+            #line 127 ""
             this.Write(this.ToStringHelper.ToStringWithCulture(signal.Name));
             
             #line default
             #line hidden
             
-            #line 136 ""
+            #line 127 ""
             this.Write(" <= signed(to_std_logic_vector(truncate(tmp)));\n");
             
             #line default
             #line hidden
             
-            #line 137 ""
+            #line 128 ""
             } else if (vhdltype.IsSystemType && vhdltype.IsUnsigned) { 
             
             #line default
             #line hidden
             
-            #line 138 ""
+            #line 129 ""
             this.Write("                ");
             
             #line default
             #line hidden
             
-            #line 138 ""
+            #line 129 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( ((AST.Bus)signal.Parent).InstanceName));
             
             #line default
             #line hidden
             
-            #line 138 ""
+            #line 129 ""
             this.Write("_");
             
             #line default
             #line hidden
             
-            #line 138 ""
+            #line 129 ""
             this.Write(this.ToStringHelper.ToStringWithCulture(signal.Name));
             
             #line default
             #line hidden
             
-            #line 138 ""
+            #line 129 ""
             this.Write(" <= unsigned(to_std_logic_vector(truncate(tmp)));\n");
             
             #line default
             #line hidden
             
-            #line 139 ""
+            #line 130 ""
             } else { 
             
             #line default
             #line hidden
             
-            #line 140 ""
+            #line 131 ""
             this.Write("                ");
             
             #line default
             #line hidden
             
-            #line 140 ""
+            #line 131 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( ((AST.Bus)signal.Parent).InstanceName));
             
             #line default
             #line hidden
             
-            #line 140 ""
+            #line 131 ""
             this.Write("_");
             
             #line default
             #line hidden
             
-            #line 140 ""
+            #line 131 ""
             this.Write(this.ToStringHelper.ToStringWithCulture(signal.Name));
             
             #line default
             #line hidden
             
-            #line 140 ""
+            #line 131 ""
             this.Write(" <= to_std_logic_vector(truncate(tmp));\n");
             
             #line default
             #line hidden
             
-            #line 141 ""
+            #line 132 ""
             } 
             
             #line default
             #line hidden
             
-            #line 142 ""
+            #line 133 ""
             this.Write("            end if;\n");
             
             #line default
             #line hidden
             
-            #line 143 ""
+            #line 134 ""
         } else { 
             
             #line default
             #line hidden
             
-            #line 144 ""
+            #line 135 ""
             this.Write("            ");
             
             #line default
             #line hidden
             
-            #line 144 ""
+            #line 135 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( ((AST.Bus)signal.Parent).InstanceName));
             
             #line default
             #line hidden
             
-            #line 144 ""
+            #line 135 ""
             this.Write("_");
             
             #line default
             #line hidden
             
-            #line 144 ""
+            #line 135 ""
             this.Write(this.ToStringHelper.ToStringWithCulture(signal.Name));
             
             #line default
             #line hidden
             
-            #line 144 ""
+            #line 135 ""
             this.Write(" <= ");
             
             #line default
             #line hidden
             
-            #line 144 ""
+            #line 135 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( vhdltype.ToSafeVHDLName()));
             
             #line default
             #line hidden
             
-            #line 144 ""
+            #line 135 ""
             this.Write("\'value(to_safe_name(truncate(tmp)));\n");
             
             #line default
             #line hidden
             
-            #line 145 ""
+            #line 136 ""
         } 
             
             #line default
             #line hidden
             
-            #line 146 ""
+            #line 137 ""
             this.Write("            fieldno := fieldno + 1;\n");
             
             #line default
             #line hidden
             
-            #line 147 ""
+            #line 138 ""
      } 
             
             #line default
             #line hidden
             
-            #line 148 ""
+            #line 139 ""
  } 
             
             #line default
             #line hidden
             
-            #line 149 ""
+            #line 140 ""
             this.Write("\n            wait until Rising_edge(CLOCK);\n\n            -- Compare each signal w" +
                     "ith the value in the CSV file\n");
             
             #line default
             #line hidden
             
-            #line 153 ""
+            #line 144 ""
  foreach (var signal in RS.VerifySignals) { 
        var vhdltype = RS.VHDLType(signal);
 
@@ -698,228 +669,228 @@ begin
             #line default
             #line hidden
             
-            #line 156 ""
+            #line 147 ""
             this.Write("\t        read_csv_field(L, tmp);\n\t        if not are_strings_equal(tmp, \"U\") then" +
                     "\n");
             
             #line default
             #line hidden
             
-            #line 158 ""
+            #line 149 ""
     if (vhdltype.IsStdLogicVector || vhdltype.IsSystemType) { 
             
             #line default
             #line hidden
             
-            #line 159 ""
+            #line 150 ""
             this.Write("            \tif not are_strings_equal(str(");
             
             #line default
             #line hidden
             
-            #line 159 ""
+            #line 150 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( ((AST.Bus)signal.Parent).InstanceName));
             
             #line default
             #line hidden
             
-            #line 159 ""
+            #line 150 ""
             this.Write("_");
             
             #line default
             #line hidden
             
-            #line 159 ""
+            #line 150 ""
             this.Write(this.ToStringHelper.ToStringWithCulture(signal.Name));
             
             #line default
             #line hidden
             
-            #line 159 ""
+            #line 150 ""
             this.Write("), tmp) then\n                    newfailures := newfailures + 1;\n                " +
                     "    report \"Value for ");
             
             #line default
             #line hidden
             
-            #line 161 ""
+            #line 152 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( ((AST.Bus)signal.Parent).InstanceName));
             
             #line default
             #line hidden
             
-            #line 161 ""
+            #line 152 ""
             this.Write("_");
             
             #line default
             #line hidden
             
-            #line 161 ""
+            #line 152 ""
             this.Write(this.ToStringHelper.ToStringWithCulture(signal.Name));
             
             #line default
             #line hidden
             
-            #line 161 ""
+            #line 152 ""
             this.Write(" in cycle \" & integer\'image(clockcycle) & \" was: \" & str(");
             
             #line default
             #line hidden
             
-            #line 161 ""
+            #line 152 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( ((AST.Bus)signal.Parent).InstanceName));
             
             #line default
             #line hidden
             
-            #line 161 ""
+            #line 152 ""
             this.Write("_");
             
             #line default
             #line hidden
             
-            #line 161 ""
+            #line 152 ""
             this.Write(this.ToStringHelper.ToStringWithCulture(signal.Name));
             
             #line default
             #line hidden
             
-            #line 161 ""
+            #line 152 ""
             this.Write(") & \" but should have been: \" & truncate(tmp) severity Error;\n                end" +
                     " if;\n");
             
             #line default
             #line hidden
             
-            #line 163 ""
+            #line 154 ""
     } else { 
             
             #line default
             #line hidden
             
-            #line 164 ""
+            #line 155 ""
             this.Write("            \tif not are_strings_equal(");
             
             #line default
             #line hidden
             
-            #line 164 ""
+            #line 155 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( vhdltype.ToSafeVHDLName()));
             
             #line default
             #line hidden
             
-            #line 164 ""
+            #line 155 ""
             this.Write("\'image(");
             
             #line default
             #line hidden
             
-            #line 164 ""
+            #line 155 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( ((AST.Bus)signal.Parent).InstanceName));
             
             #line default
             #line hidden
             
-            #line 164 ""
+            #line 155 ""
             this.Write("_");
             
             #line default
             #line hidden
             
-            #line 164 ""
+            #line 155 ""
             this.Write(this.ToStringHelper.ToStringWithCulture(signal.Name));
             
             #line default
             #line hidden
             
-            #line 164 ""
+            #line 155 ""
             this.Write("), to_safe_name(tmp)) then\n                    newfailures := newfailures + 1;\n  " +
                     "                  report \"Value for ");
             
             #line default
             #line hidden
             
-            #line 166 ""
+            #line 157 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( ((AST.Bus)signal.Parent).InstanceName));
             
             #line default
             #line hidden
             
-            #line 166 ""
+            #line 157 ""
             this.Write("_");
             
             #line default
             #line hidden
             
-            #line 166 ""
+            #line 157 ""
             this.Write(this.ToStringHelper.ToStringWithCulture(signal.Name));
             
             #line default
             #line hidden
             
-            #line 166 ""
+            #line 157 ""
             this.Write(" in cycle \" & integer\'image(clockcycle) & \" was: \" & ");
             
             #line default
             #line hidden
             
-            #line 166 ""
+            #line 157 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( vhdltype.ToSafeVHDLName()));
             
             #line default
             #line hidden
             
-            #line 166 ""
+            #line 157 ""
             this.Write("\'image(");
             
             #line default
             #line hidden
             
-            #line 166 ""
+            #line 157 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( ((AST.Bus)signal.Parent).InstanceName));
             
             #line default
             #line hidden
             
-            #line 166 ""
+            #line 157 ""
             this.Write("_");
             
             #line default
             #line hidden
             
-            #line 166 ""
+            #line 157 ""
             this.Write(this.ToStringHelper.ToStringWithCulture(signal.Name));
             
             #line default
             #line hidden
             
-            #line 166 ""
+            #line 157 ""
             this.Write(") & \" but should have been: \" & to_safe_name(truncate(tmp)) severity Error;\n     " +
                     "            end if;\n");
             
             #line default
             #line hidden
             
-            #line 168 ""
+            #line 159 ""
     } 
             
             #line default
             #line hidden
             
-            #line 169 ""
+            #line 160 ""
             this.Write("            end if;\n            fieldno := fieldno + 1;\n\n");
             
             #line default
             #line hidden
             
-            #line 172 ""
+            #line 163 ""
  } 
             
             #line default
             #line hidden
             
-            #line 173 ""
+            #line 164 ""
             this.Write(@"            failures := failures + newfailures;
             if newfailures = 0 then
                 first_failure_tick := -1;
