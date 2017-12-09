@@ -191,8 +191,13 @@ begin
 <# } #>
 
     -- Propagate feedback and clocked signals immediately
-<# foreach(var signal in delayedsignals) { #>
-    <#= Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name) #> <= <#= Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name +  "_next") #>;
+<# foreach(var signal in delayedsignals) { 
+    var bus = signal.Parent as AST.Bus;
+    var suffix = "_next";
+    if (bus.IsClocked || processes.Where(x => x.IsClocked).SelectMany(x => x.OutputBusses).Contains(bus))
+        suffix = "_current";
+#>
+    <#= Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name) #> <= <#= Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name +  suffix) #>;
 <# } #>
 
     -- Propagate all clocked and feedback signals

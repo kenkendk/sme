@@ -1002,144 +1002,149 @@ end ");
             
             #line 194 ""
  foreach(var signal in delayedsignals) { 
+    var bus = signal.Parent as AST.Bus;
+    var suffix = "_next";
+    if (bus.IsClocked || processes.Where(x => x.IsClocked).SelectMany(x => x.OutputBusses).Contains(bus))
+        suffix = "_current";
+
             
             #line default
             #line hidden
             
-            #line 195 ""
+            #line 200 ""
             this.Write("    ");
             
             #line default
             #line hidden
             
-            #line 195 ""
+            #line 200 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name) ));
             
             #line default
             #line hidden
             
-            #line 195 ""
+            #line 200 ""
             this.Write(" <= ");
             
             #line default
             #line hidden
             
-            #line 195 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name +  "_next") ));
+            #line 200 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name +  suffix) ));
             
             #line default
             #line hidden
             
-            #line 195 ""
+            #line 200 ""
             this.Write(";\n");
             
             #line default
             #line hidden
             
-            #line 196 ""
+            #line 201 ""
  } 
             
             #line default
             #line hidden
             
-            #line 197 ""
+            #line 202 ""
             this.Write("\n    -- Propagate all clocked and feedback signals\n    process(\n        CLK,\n    " +
                     "    RST)\n    begin\n        if RST = \'1\' then\n\n");
             
             #line default
             #line hidden
             
-            #line 205 ""
+            #line 210 ""
  foreach(var signal in delayedsignals) { 
             
             #line default
             #line hidden
             
-            #line 206 ""
+            #line 211 ""
             this.Write("            ");
             
             #line default
             #line hidden
             
-            #line 206 ""
+            #line 211 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name + "_current") ));
             
             #line default
             #line hidden
             
-            #line 206 ""
+            #line 211 ""
             this.Write(" <= ");
             
             #line default
             #line hidden
             
-            #line 206 ""
+            #line 211 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( RS.DefaultValue(signal) ));
             
             #line default
             #line hidden
             
-            #line 206 ""
+            #line 211 ""
             this.Write(";\n");
-            
-            #line default
-            #line hidden
-            
-            #line 207 ""
- } 
-            
-            #line default
-            #line hidden
-            
-            #line 208 ""
-            this.Write("\n            RDY <= \'0\';\n        elsif rising_edge(CLK) and ENB = \'1\' then\n\n");
             
             #line default
             #line hidden
             
             #line 212 ""
- foreach(var signal in delayedsignals) { 
-            
-            #line default
-            #line hidden
-            
-            #line 213 ""
-            this.Write("            ");
-            
-            #line default
-            #line hidden
-            
-            #line 213 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name + "_current") ));
-            
-            #line default
-            #line hidden
-            
-            #line 213 ""
-            this.Write(" <= ");
-            
-            #line default
-            #line hidden
-            
-            #line 213 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name + "_next") ));
-            
-            #line default
-            #line hidden
-            
-            #line 213 ""
-            this.Write(";\n");
-            
-            #line default
-            #line hidden
-            
-            #line 214 ""
  } 
             
             #line default
             #line hidden
             
-            #line 215 ""
+            #line 213 ""
+            this.Write("\n            RDY <= \'0\';\n        elsif rising_edge(CLK) and ENB = \'1\' then\n\n");
+            
+            #line default
+            #line hidden
+            
+            #line 217 ""
+ foreach(var signal in delayedsignals) { 
+            
+            #line default
+            #line hidden
+            
+            #line 218 ""
+            this.Write("            ");
+            
+            #line default
+            #line hidden
+            
+            #line 218 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name + "_current") ));
+            
+            #line default
+            #line hidden
+            
+            #line 218 ""
+            this.Write(" <= ");
+            
+            #line default
+            #line hidden
+            
+            #line 218 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name + "_next") ));
+            
+            #line default
+            #line hidden
+            
+            #line 218 ""
+            this.Write(";\n");
+            
+            #line default
+            #line hidden
+            
+            #line 219 ""
+ } 
+            
+            #line default
+            #line hidden
+            
+            #line 220 ""
             this.Write("\n            RDY <= not RDY;\n\n        end if;\n    end process;\n\n-- User defined p" +
                     "rocesses here\n-- #### USER-DATA-CODE-START\n-- #### USER-DATA-CODE-END\n\nend RTL;");
             
