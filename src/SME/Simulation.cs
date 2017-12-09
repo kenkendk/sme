@@ -169,26 +169,27 @@ namespace SME
                 p.RegisterInitializationData();
 
             // Assign unique names to processes if there are multiple instances
-            var processmap = new Dictionary<Type, List<ProcessMetadata>>();
+            var processmap = new Dictionary<string, List<ProcessMetadata>>();
             foreach (var p in m_processes.Values)
             {
                 List<ProcessMetadata> lp;
-                if (!processmap.TryGetValue(p.Instance.GetType(), out lp))
-                    processmap[p.Instance.GetType()] = lp = new List<ProcessMetadata>();
+                var pn = string.IsNullOrWhiteSpace(p.Instance.Name) ? TypeNameToName(p.Instance.GetType()) : p.InstanceName;
+
+                if (!processmap.TryGetValue(pn, out lp))
+                    processmap[pn] = lp = new List<ProcessMetadata>();
                 lp.Add(p);
             }
 
-            foreach (var lp in processmap.Values)
+            foreach (var lp in processmap)
             {
-                var t = TypeNameToName(lp[0].Instance.GetType());
-                if (lp.Count == 1)
+                if (lp.Value.Count == 1)
                 {
-                    lp[0].InstanceName = t;
+                    lp.Value[0].InstanceName = lp.Key;
                 }
                 else
                 {
-                    for (var i = 0; i < lp.Count; i++)
-                        lp[i].InstanceName = t + "#" + i.ToString();
+                    for (var i = 0; i < lp.Value.Count; i++)
+                        lp.Value[i].InstanceName = lp.Key + "#" + i.ToString();
                 }
             }
 

@@ -42,6 +42,7 @@ namespace SME
 		IBus[] InternalBusses { get; }
 
 		bool IsClockedProcess { get; }
+        string Name { get; }
 
 		Task Run();
 	}

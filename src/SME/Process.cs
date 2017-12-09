@@ -68,6 +68,12 @@ namespace SME
 		/// </summary>
 		protected bool DebugOutput;
 
+        /// <summary>
+        /// Gets the name of this process
+        /// </summary>
+        /// <value>The name.</value>
+        string IProcess.Name { get { return null; } }
+
 		/// <summary>
 		/// Signals the input is ready, allowing all waiters to procceed.
 		/// </summary>
