@@ -4,8 +4,7 @@ using System.Threading.Tasks;
 
 namespace Tester
 {
-	[ClockedProcess]
-	public class MemoryTester : Process
+	public class MemoryTester : SimulationProcess
 	{
 		[InputBus, OutputBus]
         private readonly IMemoryInterface Interface;

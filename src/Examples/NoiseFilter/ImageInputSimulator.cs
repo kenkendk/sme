@@ -8,8 +8,6 @@ namespace NoiseFilter
 	/// <summary>
 	/// Helper process that loads images and writes them into the simulation
 	/// </summary>
-	[Ignore]
-	[ClockedProcess]
 	public class ImageInputSimulator : SimulationProcess
 	{
 		[OutputBus]

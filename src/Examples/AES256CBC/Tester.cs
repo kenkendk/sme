@@ -7,9 +7,7 @@ using SME.VHDL;
 
 namespace AES256CBC
 {
-	[Ignore]
-	//[ClockedProcess]
-	public class Tester : Process
+	public class Tester : SimulationProcess
 	{
         // The AES test reference vectors
         private static readonly byte[][] REFERENCE_VECTORS = new[] {
@@ -140,8 +138,11 @@ namespace AES256CBC
 				Input.Data0 = PackArrayToLong(testvector.Key, 0);
 				Input.Data1 = PackArrayToLong(testvector.Key, 8);
 
+                // Since both processes are clocked, we need to wait twice
 				await ClockAsync();
+                Input.DataReady = false;
 
+                await ClockAsync();
 				if (!Output.DataReady)
 					throw new Exception("Failed to produce data?");
 

@@ -5,8 +5,6 @@ using SME;
 
 namespace SimpleTrader
 {
-	[ClockedProcess]
-	[Ignore]
 	class SimulationDriver : SimulationProcess
 	{
 		[OutputBus]
