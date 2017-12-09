@@ -59,7 +59,7 @@ entity ");
 
 var feedbacks = RS.FeedbackBusses.ToArray();
 var processes = Network.Processes.Where(x => !x.IsSimulation).ToArray();
-var delayedsignals = processes
+var delayedoutputs = processes
                         .Where(x => x.IsClocked)
                         .SelectMany(x => x.OutputBusses)
                         .Union(
@@ -69,17 +69,24 @@ var delayedsignals = processes
                         .SelectMany(x => x.Signals)
                         .ToArray();
 
+var delayedinputs = processes
+                        .Where(x => x.IsClocked)
+                        .SelectMany(x => x.InputBusses)
+                        .SelectMany(x => x.Signals)
+                        .Distinct()
+                        .ToArray();
+
             
             #line default
             #line hidden
             
-            #line 39 ""
+            #line 46 ""
             this.Write("\n");
             
             #line default
             #line hidden
             
-            #line 40 ""
+            #line 47 ""
  foreach (var bus in Network.Busses.Where(x => !x.IsInternal)) { 
 	var signaltype = "inout"; 
 
@@ -92,103 +99,103 @@ var delayedsignals = processes
             #line default
             #line hidden
             
-            #line 48 ""
+            #line 55 ""
             this.Write("    -- Top-level bus ");
             
             #line default
             #line hidden
             
-            #line 48 ""
+            #line 55 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
             
             #line default
             #line hidden
             
-            #line 48 ""
+            #line 55 ""
             this.Write(" signals\n");
             
             #line default
             #line hidden
             
-            #line 49 ""
+            #line 56 ""
      foreach (var signal in bus.Signals) { 
             
             #line default
             #line hidden
             
-            #line 50 ""
+            #line 57 ""
             this.Write("    ");
             
             #line default
             #line hidden
             
-            #line 50 ""
+            #line 57 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( bus.InstanceName ));
             
             #line default
             #line hidden
             
-            #line 50 ""
+            #line 57 ""
             this.Write("_");
             
             #line default
             #line hidden
             
-            #line 50 ""
+            #line 57 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 50 ""
+            #line 57 ""
             this.Write(": ");
             
             #line default
             #line hidden
             
-            #line 50 ""
+            #line 57 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signaltype ));
             
             #line default
             #line hidden
             
-            #line 50 ""
+            #line 57 ""
             this.Write(" ");
             
             #line default
             #line hidden
             
-            #line 50 ""
+            #line 57 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( RS.VHDLWrappedTypeName(signal) ));
             
             #line default
             #line hidden
             
-            #line 50 ""
+            #line 57 ""
             this.Write(";\n");
             
             #line default
             #line hidden
             
-            #line 51 ""
+            #line 58 ""
      } 
             
             #line default
             #line hidden
             
-            #line 52 ""
+            #line 59 ""
             this.Write("\n");
             
             #line default
             #line hidden
             
-            #line 53 ""
+            #line 60 ""
  } 
             
             #line default
             #line hidden
             
-            #line 54 ""
+            #line 61 ""
             this.Write(@"
     -- User defined signals here
     -- #### USER-DATA-ENTITYSIGNALS-START
@@ -211,206 +218,206 @@ end ");
             #line default
             #line hidden
             
-            #line 71 ""
+            #line 78 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( Network.Name ));
             
             #line default
             #line hidden
             
-            #line 71 ""
+            #line 78 ""
             this.Write(";\n\narchitecture RTL of ");
             
             #line default
             #line hidden
             
-            #line 73 ""
+            #line 80 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( Network.Name ));
             
             #line default
             #line hidden
             
-            #line 73 ""
+            #line 80 ""
             this.Write(" is  \n  -- User defined signals here\n  -- #### USER-DATA-SIGNALS-START\n  -- #### " +
                     "USER-DATA-SIGNALS-END\n\n");
             
             #line default
             #line hidden
             
-            #line 78 ""
- if (delayedsignals.Length > 0) { 
+            #line 85 ""
+ if (delayedoutputs.Length > 0 || delayedinputs.Length > 0) { 
             
             #line default
             #line hidden
             
-            #line 79 ""
+            #line 86 ""
             this.Write("\n    -- Feedback signals\n");
             
             #line default
             #line hidden
             
-            #line 81 ""
-     foreach (var signal in delayedsignals) { 
-            
-            #line default
-            #line hidden
-            
-            #line 82 ""
-            this.Write("    signal ");
-            
-            #line default
-            #line hidden
-            
-            #line 82 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name + "_current") ));
-            
-            #line default
-            #line hidden
-            
-            #line 82 ""
-            this.Write(", ");
-            
-            #line default
-            #line hidden
-            
-            #line 82 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name + "_next") ));
-            
-            #line default
-            #line hidden
-            
-            #line 82 ""
-            this.Write(": ");
-            
-            #line default
-            #line hidden
-            
-            #line 82 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( RS.VHDLWrappedTypeName(signal) ));
-            
-            #line default
-            #line hidden
-            
-            #line 82 ""
-            this.Write(";\n");
-            
-            #line default
-            #line hidden
-            
-            #line 83 ""
-     } 
-            
-            #line default
-            #line hidden
-            
-            #line 84 ""
- } 
-            
-            #line default
-            #line hidden
-            
-            #line 85 ""
-            this.Write("\n  -- Process ready triggers\n");
-            
-            #line default
-            #line hidden
-            
-            #line 87 ""
- foreach (var p in processes) { 
-            
-            #line default
-            #line hidden
-            
             #line 88 ""
-            this.Write("  signal ");
-            
-            #line default
-            #line hidden
-            
-            #line 88 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("RDY_" + p.InstanceName) ));
-            
-            #line default
-            #line hidden
-            
-            #line 88 ""
-            this.Write(", ");
-            
-            #line default
-            #line hidden
-            
-            #line 88 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("FIN_" + p.InstanceName) ));
-            
-            #line default
-            #line hidden
-            
-            #line 88 ""
-            this.Write(" : std_logic;\n");
+     foreach (var signal in delayedoutputs.Union(delayedinputs)) { 
             
             #line default
             #line hidden
             
             #line 89 ""
- } 
+            this.Write("    signal ");
+            
+            #line default
+            #line hidden
+            
+            #line 89 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name + "_current") ));
+            
+            #line default
+            #line hidden
+            
+            #line 89 ""
+            this.Write(", ");
+            
+            #line default
+            #line hidden
+            
+            #line 89 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name + "_next") ));
+            
+            #line default
+            #line hidden
+            
+            #line 89 ""
+            this.Write(": ");
+            
+            #line default
+            #line hidden
+            
+            #line 89 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( RS.VHDLWrappedTypeName(signal) ));
+            
+            #line default
+            #line hidden
+            
+            #line 89 ""
+            this.Write(";\n");
             
             #line default
             #line hidden
             
             #line 90 ""
-            this.Write("\n  -- The primary ready driver signal\n  signal RDY : std_logic;\n\nbegin\n\n");
+     } 
             
             #line default
             #line hidden
             
-            #line 96 ""
+            #line 91 ""
+ } 
+            
+            #line default
+            #line hidden
+            
+            #line 92 ""
+            this.Write("\n  -- Process ready triggers\n");
+            
+            #line default
+            #line hidden
+            
+            #line 94 ""
  foreach (var p in processes) { 
             
             #line default
             #line hidden
             
+            #line 95 ""
+            this.Write("  signal ");
+            
+            #line default
+            #line hidden
+            
+            #line 95 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("RDY_" + p.InstanceName) ));
+            
+            #line default
+            #line hidden
+            
+            #line 95 ""
+            this.Write(", ");
+            
+            #line default
+            #line hidden
+            
+            #line 95 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("FIN_" + p.InstanceName) ));
+            
+            #line default
+            #line hidden
+            
+            #line 95 ""
+            this.Write(" : std_logic;\n");
+            
+            #line default
+            #line hidden
+            
+            #line 96 ""
+ } 
+            
+            #line default
+            #line hidden
+            
             #line 97 ""
+            this.Write("\n  -- The primary ready driver signal\n  signal RDY : std_logic;\n\nbegin\n\n");
+            
+            #line default
+            #line hidden
+            
+            #line 103 ""
+ foreach (var p in processes) { 
+            
+            #line default
+            #line hidden
+            
+            #line 104 ""
             this.Write("\n    -- Entity  ");
             
             #line default
             #line hidden
             
-            #line 98 ""
+            #line 105 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( p.InstanceName ));
             
             #line default
             #line hidden
             
-            #line 98 ""
+            #line 105 ""
             this.Write(" signals\n    ");
             
             #line default
             #line hidden
             
-            #line 99 ""
+            #line 106 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName(p.InstanceName) ));
             
             #line default
             #line hidden
             
-            #line 99 ""
+            #line 106 ""
             this.Write(": entity work.");
             
             #line default
             #line hidden
             
-            #line 99 ""
+            #line 106 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName(p.Name) ));
             
             #line default
             #line hidden
             
-            #line 99 ""
+            #line 106 ""
             this.Write("\n    port map (\n");
             
             #line default
             #line hidden
             
-            #line 101 ""
+            #line 108 ""
     foreach (var bus in p.InputBusses.Concat(p.OutputBusses).Distinct()) { 
 	      var isInput = p.InputBusses.Contains(bus);
 	      var isOutput = p.OutputBusses.Contains(bus);
@@ -423,11 +430,13 @@ end ");
 
 	      var output_suffix = string.Empty;
 	      var input_suffix = string.Empty;
-          if (isInput && delayedsignals.Any(x => x.Parent == bus))
+          if (isInput && delayedoutputs.Any(x => x.Parent == bus))
               input_suffix = "_next";
-	      if (isOutput && delayedsignals.Any(x => x.Parent == bus))
+	      if (isOutput && delayedoutputs.Any(x => x.Parent == bus))
 	          output_suffix = "_next";
           if (feedbacks.Contains(bus))
+              input_suffix = "_current";
+          if (isInput && delayedinputs.Any(x => x.Parent == bus))
               input_suffix = "_current";
 
           var busname = RS.GetLocalBusName(bus, p);
@@ -440,331 +449,331 @@ end ");
             #line default
             #line hidden
             
-            #line 126 ""
+            #line 135 ""
             this.Write("        -- ");
             
             #line default
             #line hidden
             
-            #line 126 ""
+            #line 135 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( type ));
             
             #line default
             #line hidden
             
-            #line 126 ""
+            #line 135 ""
             this.Write(" bus ");
             
             #line default
             #line hidden
             
-            #line 126 ""
+            #line 135 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
             
             #line default
             #line hidden
             
-            #line 126 ""
-            this.Write("\n");
-            
-            #line default
-            #line hidden
-            
-            #line 127 ""
-		  foreach(var signal in signals) { 
-            
-            #line default
-            #line hidden
-            
-            #line 128 ""
-              if (isInput || isBoth) { 
-            
-            #line default
-            #line hidden
-            
-            #line 129 ""
-            this.Write("        ");
-            
-            #line default
-            #line hidden
-            
-            #line 129 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName(busname + "_" + signal.Name) ));
-            
-            #line default
-            #line hidden
-            
-            #line 129 ""
-            this.Write(" => ");
-            
-            #line default
-            #line hidden
-            
-            #line 129 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName(bus.InstanceName + "_" + signal.Name + input_suffix) ));
-            
-            #line default
-            #line hidden
-            
-            #line 129 ""
-            this.Write(",\n");
-            
-            #line default
-            #line hidden
-            
-            #line 130 ""
-              } else { 
-            
-            #line default
-            #line hidden
-            
-            #line 131 ""
-            this.Write("        ");
-            
-            #line default
-            #line hidden
-            
-            #line 131 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName(busname + "_" + signal.Name) ));
-            
-            #line default
-            #line hidden
-            
-            #line 131 ""
-            this.Write(" => ");
-            
-            #line default
-            #line hidden
-            
-            #line 131 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName(bus.InstanceName + "_" + signal.Name + output_suffix) ));
-            
-            #line default
-            #line hidden
-            
-            #line 131 ""
-            this.Write(",\n");
-            
-            #line default
-            #line hidden
-            
-            #line 132 ""
-              } 
-            
-            #line default
-            #line hidden
-            
-            #line 133 ""
-        } 
-            
-            #line default
-            #line hidden
-            
-            #line 134 ""
-            this.Write("\n");
-            
-            #line default
-            #line hidden
-            
             #line 135 ""
-        if (isBoth) { 
+            this.Write("\n");
             
             #line default
             #line hidden
             
             #line 136 ""
-		      foreach(var signal in bus.Signals) { 
+		  foreach(var signal in signals) { 
             
             #line default
             #line hidden
             
             #line 137 ""
-            this.Write("        out_");
-            
-            #line default
-            #line hidden
-            
-            #line 137 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName(busname + "_" + signal.Name) ));
-            
-            #line default
-            #line hidden
-            
-            #line 137 ""
-            this.Write(" => ");
-            
-            #line default
-            #line hidden
-            
-            #line 137 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName(bus.InstanceName + "_" + signal.Name + output_suffix) ));
-            
-            #line default
-            #line hidden
-            
-            #line 137 ""
-            this.Write(",\n");
+              if (isInput || isBoth) { 
             
             #line default
             #line hidden
             
             #line 138 ""
-            } 
+            this.Write("        ");
+            
+            #line default
+            #line hidden
+            
+            #line 138 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName(busname + "_" + signal.Name) ));
+            
+            #line default
+            #line hidden
+            
+            #line 138 ""
+            this.Write(" => ");
+            
+            #line default
+            #line hidden
+            
+            #line 138 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName(bus.InstanceName + "_" + signal.Name + input_suffix) ));
+            
+            #line default
+            #line hidden
+            
+            #line 138 ""
+            this.Write(",\n");
             
             #line default
             #line hidden
             
             #line 139 ""
-        } 
+              } else { 
             
             #line default
             #line hidden
             
             #line 140 ""
-            this.Write("\n");
+            this.Write("        ");
+            
+            #line default
+            #line hidden
+            
+            #line 140 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName(busname + "_" + signal.Name) ));
+            
+            #line default
+            #line hidden
+            
+            #line 140 ""
+            this.Write(" => ");
+            
+            #line default
+            #line hidden
+            
+            #line 140 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName(bus.InstanceName + "_" + signal.Name + output_suffix) ));
+            
+            #line default
+            #line hidden
+            
+            #line 140 ""
+            this.Write(",\n");
             
             #line default
             #line hidden
             
             #line 141 ""
-    } 
+              } 
             
             #line default
             #line hidden
             
             #line 142 ""
-            this.Write("\n        -- Initialization values\n");
+        } 
+            
+            #line default
+            #line hidden
+            
+            #line 143 ""
+            this.Write("\n");
             
             #line default
             #line hidden
             
             #line 144 ""
-     foreach (var variable in p.SharedVariables) { 
+        if (isBoth) { 
             
             #line default
             #line hidden
             
             #line 145 ""
-            this.Write("        ");
-            
-            #line default
-            #line hidden
-            
-            #line 145 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("reset_" + variable.Name) ));
-            
-            #line default
-            #line hidden
-            
-            #line 145 ""
-            this.Write(" => ");
-            
-            #line default
-            #line hidden
-            
-            #line 145 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( RS.GetResetExpression(variable) ));
-            
-            #line default
-            #line hidden
-            
-            #line 145 ""
-            this.Write(",\n");
+		      foreach(var signal in bus.Signals) { 
             
             #line default
             #line hidden
             
             #line 146 ""
-     } 
+            this.Write("        out_");
             
             #line default
             #line hidden
             
-            #line 147 ""
-     foreach (var variable in p.SharedSignals) { 
+            #line 146 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName(busname + "_" + signal.Name) ));
             
             #line default
             #line hidden
             
-            #line 148 ""
-            this.Write("        ");
-            
-            #line default
-            #line hidden
-            
-            #line 148 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("reset_" + variable.Name) ));
-            
-            #line default
-            #line hidden
-            
-            #line 148 ""
+            #line 146 ""
             this.Write(" => ");
             
             #line default
             #line hidden
             
-            #line 148 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( RS.GetResetExpression(variable) ));
+            #line 146 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName(bus.InstanceName + "_" + signal.Name + output_suffix) ));
             
             #line default
             #line hidden
             
-            #line 148 ""
+            #line 146 ""
             this.Write(",\n");
             
             #line default
             #line hidden
             
+            #line 147 ""
+            } 
+            
+            #line default
+            #line hidden
+            
+            #line 148 ""
+        } 
+            
+            #line default
+            #line hidden
+            
             #line 149 ""
-     } 
+            this.Write("\n");
             
             #line default
             #line hidden
             
             #line 150 ""
-            this.Write("\n        CLK => CLK,\n        RDY => RDY_");
+    } 
             
             #line default
             #line hidden
             
-            #line 152 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName(p.InstanceName) ));
-            
-            #line default
-            #line hidden
-            
-            #line 152 ""
-            this.Write(",\n        FIN => FIN_");
+            #line 151 ""
+            this.Write("\n        -- Initialization values\n");
             
             #line default
             #line hidden
             
             #line 153 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName(p.InstanceName) ));
+     foreach (var variable in p.SharedVariables) { 
             
             #line default
             #line hidden
             
-            #line 153 ""
-            this.Write(",\n        RST => RST\n    );\n\n");
+            #line 154 ""
+            this.Write("        ");
+            
+            #line default
+            #line hidden
+            
+            #line 154 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("reset_" + variable.Name) ));
+            
+            #line default
+            #line hidden
+            
+            #line 154 ""
+            this.Write(" => ");
+            
+            #line default
+            #line hidden
+            
+            #line 154 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( RS.GetResetExpression(variable) ));
+            
+            #line default
+            #line hidden
+            
+            #line 154 ""
+            this.Write(",\n");
+            
+            #line default
+            #line hidden
+            
+            #line 155 ""
+     } 
+            
+            #line default
+            #line hidden
+            
+            #line 156 ""
+     foreach (var variable in p.SharedSignals) { 
             
             #line default
             #line hidden
             
             #line 157 ""
- } 
+            this.Write("        ");
+            
+            #line default
+            #line hidden
+            
+            #line 157 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("reset_" + variable.Name) ));
+            
+            #line default
+            #line hidden
+            
+            #line 157 ""
+            this.Write(" => ");
+            
+            #line default
+            #line hidden
+            
+            #line 157 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( RS.GetResetExpression(variable) ));
+            
+            #line default
+            #line hidden
+            
+            #line 157 ""
+            this.Write(",\n");
             
             #line default
             #line hidden
             
             #line 158 ""
+     } 
+            
+            #line default
+            #line hidden
+            
+            #line 159 ""
+            this.Write("\n        CLK => CLK,\n        RDY => RDY_");
+            
+            #line default
+            #line hidden
+            
+            #line 161 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName(p.InstanceName) ));
+            
+            #line default
+            #line hidden
+            
+            #line 161 ""
+            this.Write(",\n        FIN => FIN_");
+            
+            #line default
+            #line hidden
+            
+            #line 162 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName(p.InstanceName) ));
+            
+            #line default
+            #line hidden
+            
+            #line 162 ""
+            this.Write(",\n        RST => RST\n    );\n\n");
+            
+            #line default
+            #line hidden
+            
+            #line 166 ""
+ } 
+            
+            #line default
+            #line hidden
+            
+            #line 167 ""
             this.Write("\n    -- Connect ready signals\n");
             
             #line default
             #line hidden
             
-            #line 160 ""
+            #line 169 ""
  foreach (var p in processes) { 
        var parents = RS.DependsOn(p).Select(x => x.InstanceName).Distinct().ToArray();
        if (parents.Length == 0) { 
@@ -772,338 +781,327 @@ end ");
             #line default
             #line hidden
             
-            #line 163 ""
+            #line 172 ""
             this.Write("    RDY_");
             
             #line default
             #line hidden
             
-            #line 163 ""
+            #line 172 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( p.InstanceName ));
             
             #line default
             #line hidden
             
-            #line 163 ""
+            #line 172 ""
             this.Write(" <= RDY;\n");
             
             #line default
             #line hidden
             
-            #line 164 ""
+            #line 173 ""
      } else if (parents.Length == 1) { 
             
             #line default
             #line hidden
             
-            #line 165 ""
+            #line 174 ""
             this.Write("    RDY_");
             
             #line default
             #line hidden
             
-            #line 165 ""
+            #line 174 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( p.InstanceName ));
             
             #line default
             #line hidden
             
-            #line 165 ""
+            #line 174 ""
             this.Write(" <= FIN_");
             
             #line default
             #line hidden
             
-            #line 165 ""
+            #line 174 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( parents.First() ));
             
             #line default
             #line hidden
             
-            #line 165 ""
+            #line 174 ""
             this.Write(";\n");
             
             #line default
             #line hidden
             
-            #line 166 ""
+            #line 175 ""
      } else { 
             
             #line default
             #line hidden
             
-            #line 167 ""
+            #line 176 ""
             this.Write("    -- Setup the RDY signal for ");
             
             #line default
             #line hidden
             
-            #line 167 ""
+            #line 176 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( p.InstanceName ));
             
             #line default
             #line hidden
             
-            #line 167 ""
+            #line 176 ""
             this.Write("\n    process(\n      ");
             
             #line default
             #line hidden
             
-            #line 169 ""
+            #line 178 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( string.Join(", " + Environment.NewLine + "      ", parents.Select(x => string.Format("FIN_{0}", x))) ));
             
             #line default
             #line hidden
             
-            #line 169 ""
+            #line 178 ""
             this.Write("\n    )\n    begin\n      if ");
             
             #line default
             #line hidden
             
-            #line 172 ""
+            #line 181 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( string.Join(" AND ", parents.Skip(1).Select(x => string.Format("{0} = {1}", Naming.ToValidName("FIN_" + parents.First()), Naming.ToValidName("FIN_" + x)))) ));
             
             #line default
             #line hidden
             
-            #line 172 ""
+            #line 181 ""
             this.Write(" then\n        ");
             
             #line default
             #line hidden
             
-            #line 173 ""
+            #line 182 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("RDY_" + p.InstanceName) ));
             
             #line default
             #line hidden
             
-            #line 173 ""
+            #line 182 ""
             this.Write(" <= ");
-            
-            #line default
-            #line hidden
-            
-            #line 173 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("FIN_" + parents.First()) ));
-            
-            #line default
-            #line hidden
-            
-            #line 173 ""
-            this.Write(";\n      end if;\n    end process;\n");
-            
-            #line default
-            #line hidden
-            
-            #line 176 ""
-     } 
-            
-            #line default
-            #line hidden
-            
-            #line 177 ""
- } 
-            
-            #line default
-            #line hidden
-            
-            #line 178 ""
-            this.Write("\n    -- Setup the FIN feedback signal\n");
-            
-            #line default
-            #line hidden
-            
-            #line 180 ""
- if (processes.Length == 1) { 
-            
-            #line default
-            #line hidden
-            
-            #line 181 ""
-            this.Write("    FIN <= ");
-            
-            #line default
-            #line hidden
-            
-            #line 181 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("FIN_" + processes.First().InstanceName) ));
-            
-            #line default
-            #line hidden
-            
-            #line 181 ""
-            this.Write(";\n");
             
             #line default
             #line hidden
             
             #line 182 ""
- } else { 
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("FIN_" + parents.First()) ));
             
             #line default
             #line hidden
             
-            #line 183 ""
-            this.Write("    process(\n      ");
-            
-            #line default
-            #line hidden
-            
-            #line 184 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( string.Join(", " + Environment.NewLine + "      ", processes.Select(x => Naming.ToValidName("FIN_" + x.InstanceName))) ));
-            
-            #line default
-            #line hidden
-            
-            #line 184 ""
-            this.Write("\n    )\n    begin\n      if ");
-            
-            #line default
-            #line hidden
-            
-            #line 187 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( string.Join(" AND ", processes.Skip(1).Select(x => string.Format("{0} = {1}", Naming.ToValidName("FIN_" + processes.First().InstanceName), Naming.ToValidName("FIN_" + x.InstanceName)))) ));
-            
-            #line default
-            #line hidden
-            
-            #line 187 ""
-            this.Write(" then\n        FIN <= ");
-            
-            #line default
-            #line hidden
-            
-            #line 188 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("FIN_" + processes.First().InstanceName) ));
-            
-            #line default
-            #line hidden
-            
-            #line 188 ""
+            #line 182 ""
             this.Write(";\n      end if;\n    end process;\n");
             
             #line default
             #line hidden
             
-            #line 191 ""
+            #line 185 ""
+     } 
+            
+            #line default
+            #line hidden
+            
+            #line 186 ""
  } 
             
             #line default
             #line hidden
             
-            #line 192 ""
-            this.Write("\n    -- Propagate feedback and clocked signals immediately\n");
+            #line 187 ""
+            this.Write("\n    -- Setup the FIN feedback signal\n");
             
             #line default
             #line hidden
             
-            #line 194 ""
- foreach(var signal in delayedsignals) { 
-    var bus = signal.Parent as AST.Bus;
-    var suffix = "_next";
-    if (bus.IsClocked || processes.Where(x => x.IsClocked).SelectMany(x => x.OutputBusses).Contains(bus))
-        suffix = "_current";
-
+            #line 189 ""
+ if (processes.Length == 1) { 
             
             #line default
             #line hidden
             
-            #line 200 ""
-            this.Write("    ");
+            #line 190 ""
+            this.Write("    FIN <= ");
             
             #line default
             #line hidden
             
-            #line 200 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name) ));
+            #line 190 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("FIN_" + processes.First().InstanceName) ));
             
             #line default
             #line hidden
             
-            #line 200 ""
-            this.Write(" <= ");
-            
-            #line default
-            #line hidden
-            
-            #line 200 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name +  suffix) ));
-            
-            #line default
-            #line hidden
-            
-            #line 200 ""
+            #line 190 ""
             this.Write(";\n");
             
             #line default
             #line hidden
             
-            #line 201 ""
+            #line 191 ""
+ } else { 
+            
+            #line default
+            #line hidden
+            
+            #line 192 ""
+            this.Write("    process(\n      ");
+            
+            #line default
+            #line hidden
+            
+            #line 193 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( string.Join(", " + Environment.NewLine + "      ", processes.Select(x => Naming.ToValidName("FIN_" + x.InstanceName))) ));
+            
+            #line default
+            #line hidden
+            
+            #line 193 ""
+            this.Write("\n    )\n    begin\n      if ");
+            
+            #line default
+            #line hidden
+            
+            #line 196 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( string.Join(" AND ", processes.Skip(1).Select(x => string.Format("{0} = {1}", Naming.ToValidName("FIN_" + processes.First().InstanceName), Naming.ToValidName("FIN_" + x.InstanceName)))) ));
+            
+            #line default
+            #line hidden
+            
+            #line 196 ""
+            this.Write(" then\n        FIN <= ");
+            
+            #line default
+            #line hidden
+            
+            #line 197 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("FIN_" + processes.First().InstanceName) ));
+            
+            #line default
+            #line hidden
+            
+            #line 197 ""
+            this.Write(";\n      end if;\n    end process;\n");
+            
+            #line default
+            #line hidden
+            
+            #line 200 ""
  } 
             
             #line default
             #line hidden
             
-            #line 202 ""
+            #line 201 ""
+            this.Write("\n    -- Propagate feedback and clocked signals immediately\n");
+            
+            #line default
+            #line hidden
+            
+            #line 203 ""
+ foreach(var signal in delayedoutputs) { 
+            
+            #line default
+            #line hidden
+            
+            #line 204 ""
+            this.Write("    ");
+            
+            #line default
+            #line hidden
+            
+            #line 204 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name) ));
+            
+            #line default
+            #line hidden
+            
+            #line 204 ""
+            this.Write(" <= ");
+            
+            #line default
+            #line hidden
+            
+            #line 204 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name + "_next") ));
+            
+            #line default
+            #line hidden
+            
+            #line 204 ""
+            this.Write(";\n");
+            
+            #line default
+            #line hidden
+            
+            #line 205 ""
+ } 
+            
+            #line default
+            #line hidden
+            
+            #line 206 ""
+ foreach(var signal in delayedinputs) { 
+            
+            #line default
+            #line hidden
+            
+            #line 207 ""
+            this.Write("    ");
+            
+            #line default
+            #line hidden
+            
+            #line 207 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name + "_next") ));
+            
+            #line default
+            #line hidden
+            
+            #line 207 ""
+            this.Write(" <= ");
+            
+            #line default
+            #line hidden
+            
+            #line 207 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name) ));
+            
+            #line default
+            #line hidden
+            
+            #line 207 ""
+            this.Write(";\n");
+            
+            #line default
+            #line hidden
+            
+            #line 208 ""
+ } 
+            
+            #line default
+            #line hidden
+            
+            #line 209 ""
             this.Write("\n    -- Propagate all clocked and feedback signals\n    process(\n        CLK,\n    " +
                     "    RST)\n    begin\n        if RST = \'1\' then\n\n");
             
             #line default
             #line hidden
             
-            #line 210 ""
- foreach(var signal in delayedsignals) { 
-            
-            #line default
-            #line hidden
-            
-            #line 211 ""
-            this.Write("            ");
-            
-            #line default
-            #line hidden
-            
-            #line 211 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name + "_current") ));
-            
-            #line default
-            #line hidden
-            
-            #line 211 ""
-            this.Write(" <= ");
-            
-            #line default
-            #line hidden
-            
-            #line 211 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( RS.DefaultValue(signal) ));
-            
-            #line default
-            #line hidden
-            
-            #line 211 ""
-            this.Write(";\n");
-            
-            #line default
-            #line hidden
-            
-            #line 212 ""
- } 
-            
-            #line default
-            #line hidden
-            
-            #line 213 ""
-            this.Write("\n            RDY <= \'0\';\n        elsif rising_edge(CLK) and ENB = \'1\' then\n\n");
-            
-            #line default
-            #line hidden
-            
             #line 217 ""
- foreach(var signal in delayedsignals) { 
+ foreach(var signal in delayedoutputs) { 
             
             #line default
             #line hidden
@@ -1127,7 +1125,7 @@ end ");
             #line hidden
             
             #line 218 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name + "_next") ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( RS.DefaultValue(signal) ));
             
             #line default
             #line hidden
@@ -1145,6 +1143,96 @@ end ");
             #line hidden
             
             #line 220 ""
+            this.Write("\n            RDY <= \'0\';\n        elsif rising_edge(CLK) and ENB = \'1\' then\n\n");
+            
+            #line default
+            #line hidden
+            
+            #line 224 ""
+ foreach(var signal in delayedoutputs) { 
+            
+            #line default
+            #line hidden
+            
+            #line 225 ""
+            this.Write("            ");
+            
+            #line default
+            #line hidden
+            
+            #line 225 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name + "_current") ));
+            
+            #line default
+            #line hidden
+            
+            #line 225 ""
+            this.Write(" <= ");
+            
+            #line default
+            #line hidden
+            
+            #line 225 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name + "_next") ));
+            
+            #line default
+            #line hidden
+            
+            #line 225 ""
+            this.Write(";\n");
+            
+            #line default
+            #line hidden
+            
+            #line 226 ""
+ } 
+            
+            #line default
+            #line hidden
+            
+            #line 227 ""
+ foreach(var signal in delayedinputs) { 
+            
+            #line default
+            #line hidden
+            
+            #line 228 ""
+            this.Write("            ");
+            
+            #line default
+            #line hidden
+            
+            #line 228 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name + "_current") ));
+            
+            #line default
+            #line hidden
+            
+            #line 228 ""
+            this.Write(" <= ");
+            
+            #line default
+            #line hidden
+            
+            #line 228 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name + "_next") ));
+            
+            #line default
+            #line hidden
+            
+            #line 228 ""
+            this.Write(";\n");
+            
+            #line default
+            #line hidden
+            
+            #line 229 ""
+ } 
+            
+            #line default
+            #line hidden
+            
+            #line 230 ""
             this.Write("\n            RDY <= not RDY;\n\n        end if;\n    end process;\n\n-- User defined p" +
                     "rocesses here\n-- #### USER-DATA-CODE-START\n-- #### USER-DATA-CODE-END\n\nend RTL;");
             
