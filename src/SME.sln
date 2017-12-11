@@ -133,27 +133,10 @@ Global
 		{C1716AA9-45FF-4103-AD48-5333E325C9D9} = {0F94E837-9D61-47FE-98A0-EDFA671A44FA}
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
-		version = 0.2
+		version = 0.3
 		Policies = $0
 		$0.DotNetNamingPolicy = $1
 		$1.DirectoryNamespaceAssociation = PrefixedHierarchical
 		$0.TextStylePolicy = $7
-		$2.inheritsSet = null
-		$2.scope = text/x-csharp
-		$0.CSharpFormattingPolicy = $3
-		$3.scope = text/x-csharp
-		$4.FileWidth = 80
-		$4.TabsToSpaces = True
-		$4.scope = text/plain
-		$5.inheritsSet = null
-		$5.scope = application/config+xml
-		$0.XmlFormattingPolicy = $8
-		$6.inheritsSet = null
-		$6.scope = application/config+xml
-		$7.inheritsSet = null
-		$7.scope = application/xml
-		$8.scope = application/xml
-		$0.StandardHeader = $9
-		$0.VersionControlPolicy = $10
 	EndGlobalSection
 EndGlobal
