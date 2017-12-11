@@ -98,6 +98,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="SME.AST.nuspec" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="ParseProcesses\" />

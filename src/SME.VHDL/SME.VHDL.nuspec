@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>SME.VHDL</id>
-    <version>0.2</version>
+    <version>0.3.0</version>
     <authors>Kenneth Skovhede</authors>
     <owners>Kenneth Skovhede</owners>
     <licenseUrl>https://raw.githubusercontent.com/kenkendk/sme/master/LICENSE</licenseUrl>
@@ -13,7 +13,6 @@
     <copyright>Copyright Kenneth Skovhede 2017</copyright>
     <tags>SME hardware simulation</tags>
     <dependencies>
-      <dependency id="CommandLineParser" version="1.9.71" />
       <dependency id="ICSharpCode.NRefactory" version="5.5.1" />
       <dependency id="Mono.Cecil" version="0.9.5.4" />
     </dependencies>

@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>SME</id>
-    <version>0.2</version>
+    <version>0.3.0</version>
     <authors>Kenneth Skovhede</authors>
     <owners>Kenneth Skovhede</owners>
     <licenseUrl>https://raw.githubusercontent.com/kenkendk/sme/master/LICENSE</licenseUrl>
@@ -13,10 +13,10 @@
     <copyright>Copyright Kenneth Skovhede 2017</copyright>
     <tags>SME hardware simulation</tags>
     <dependencies>
-      <dependency id="Castle.Core" version="3.3.3" />
+      <dependency id="Castle.Core" version="4.2.1" />
     </dependencies>
   </metadata>
   <files>
-    <file src="bin/Release/SME.exe" target="lib/net45" />
+    <file src="bin/Release/SME.dll" target="lib/net45" />
   </files>
 </package>

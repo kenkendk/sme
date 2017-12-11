@@ -143,6 +143,7 @@
       <Generator>TextTemplatingFilePreprocessor</Generator>
       <LastGenOutput>SimulationImplementation.cs</LastGenOutput>
     </None>
+    <None Include="SME.CPP.nuspec" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Transformations\" />

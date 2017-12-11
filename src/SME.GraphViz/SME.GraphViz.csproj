@@ -43,5 +43,8 @@
       <Name>SME</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="SME.GraphViz.nuspec" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
