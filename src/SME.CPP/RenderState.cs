@@ -248,13 +248,16 @@ namespace SME.CPP
 		/// <param name="s">The signal to find the name for.</param>
 		public string TestBenchSignalName(BusSignal s)
 		{
-			var bus = (AST.Bus)s.Parent;
-			var st = bus.SourceType;
-			var name = st.Name + "." + s.Name;
-			if (st.DeclaringType != null)
-				name = st.DeclaringType.Name + "." + name;
+            var bus = (AST.Bus)s.Parent;
+            var st = bus.SourceType;
+            if (bus.SourceInstance != null && Simulation.BusNames.ContainsKey(bus.SourceInstance))
+                return Simulation.BusNames[bus.SourceInstance] + "." + s.Name;
 
-			return name;
+            var name = st.Name + "." + s.Name;
+            if (st.DeclaringType != null)
+                name = st.DeclaringType.Name + "." + name;
+
+            return name;
 		}
 
 
@@ -322,37 +325,52 @@ namespace SME.CPP
                     if (nx is ICSharpCode.NRefactory.CSharp.ArrayCreateExpression)
                     {
                         var arc = nx as ICSharpCode.NRefactory.CSharp.ArrayCreateExpression;
-						var eltype = n.CecilType.GetElementType();
-						var cpptype = TypeScope.GetType(n);
+                        var eltype = n.CecilType.GetElementType();
+                        var cpptype = TypeScope.GetType(n);
 
-						string values;
+                        string values;
                         if (new[] { typeof(sbyte), typeof(byte), typeof(ushort), typeof(short), typeof(int), typeof(uint), typeof(long), typeof(ulong) }.Select(x => eltype.Module.Import(x).Resolve()).Contains(eltype.Resolve()))
                             values = string.Join(", ", arc.Initializer.Elements.Select(x => string.Format("{0}", x)));
                         else
                             throw new Exception("Unexpected initializer type");
 
                         yield return string.Format("const {0} {1}[{2}] = {{ {3} }}", cpptype.ElementName, n.Name, arc.Initializer.Elements.Count, values);
-					}
+                    }
                     else if (nx is AST.ArrayCreateExpression)
                     {
                         var arc = nx as AST.ArrayCreateExpression;
-						var eltype = n.CecilType.GetElementType();
-						var cpptype = TypeScope.GetType(n);
+                        var eltype = n.CecilType.GetElementType();
+                        var cpptype = TypeScope.GetType(n);
 
-						string values;
+                        string values;
                         if (new[] { typeof(sbyte), typeof(byte), typeof(ushort), typeof(short), typeof(int), typeof(uint), typeof(long), typeof(ulong) }.Select(x => eltype.Module.Import(x).Resolve()).Contains(eltype.Resolve()))
                             values = string.Join(", ", arc.ElementExpressions.Select(x => Renderer.RenderExpression(x)));
-						else
-							throw new Exception("Unexpected initializer type");
+                        else
+                            throw new Exception("Unexpected initializer type");
 
                         yield return string.Format("const {0} {1}[{2}] = {{ {3} }}", cpptype.ElementName, n.Name, arc.ElementExpressions.Length, values);
 
-					}
+                    }
                     else if (nx is AST.EmptyArrayCreateExpression)
                     {
                         var arc = nx as AST.EmptyArrayCreateExpression;
-						var cpptype = TypeScope.GetType(n);
-						yield return $"const {cpptype.ElementName} {n.Name}[{Renderer.RenderExpression(((EmptyArrayCreateExpression)nx).SizeExpression)}]()";
+                        var cpptype = TypeScope.GetType(n);
+                        yield return $"const {cpptype.ElementName} {n.Name}[{Renderer.RenderExpression(((EmptyArrayCreateExpression)nx).SizeExpression)}]()";
+                    }
+                    else if (nx is Array)
+                    {
+                        var arc = nx as Array;
+                        var eltype = n.CecilType.GetElementType();
+                        var cpptype = TypeScope.GetType(n);
+
+                        string values;
+                        if (new[] { typeof(sbyte), typeof(byte), typeof(ushort), typeof(short), typeof(int), typeof(uint), typeof(long), typeof(ulong) }.Select(x => eltype.Module.Import(x).Resolve()).Contains(eltype.Resolve()))
+                            values = string.Join(", ", Enumerable.Range(0, arc.GetLength(0)).Select(x => arc.GetValue(x).ToString()));
+                        else
+                            throw new Exception("Unexpected initializer type");
+
+                        yield return string.Format("const {0} {1}[{2}] = {{ {3} }}", cpptype.ElementName, n.Name, arc.GetLength(0), values);
+
                     }
                     else if (nx != null)
                     {

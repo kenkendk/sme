@@ -206,7 +206,7 @@ namespace SME.CPP.Templates
 
 		public AST.Process GetProcess(IProcess proc)
 		{
-			return Network.Processes.FirstOrDefault(x => x.SourceInstance == proc);
+            return Network.Processes.FirstOrDefault(x => x.SourceInstance.Instance == proc);
 		}
 
 		public AST.Bus GetBus(IBus bus)
