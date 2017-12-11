@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>SME</id>
-    <version>0.3.0</version>
+    <version>0.3.1</version>
     <authors>Kenneth Skovhede</authors>
     <owners>Kenneth Skovhede</owners>
     <licenseUrl>https://raw.githubusercontent.com/kenkendk/sme/master/LICENSE</licenseUrl>

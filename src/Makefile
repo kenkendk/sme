@@ -44,12 +44,12 @@ pack: nupkg nupkg/SME.nupkg nupkg/SME.Tracer.nupkg nupkg/SME.GraphViz.nupkg nupk
 
 
 deploy:
-	cd nupkg; nuget push SME.$(VERSION).nupkg
-	cd nupkg; nuget push SME.Tracer.$(VERSION).nupkg
-	cd nupkg; nuget push SME.$(VERSION).GraphViz.nupkg
-	cd nupkg; nuget push SME.$(VERSION).AST.nupkg
-	cd nupkg; nuget push SME.$(VERSION).CPP.nupkg
-	cd nupkg; nuget push SME.$(VERSION).VHDL.nupkg
+	cd nupkg; nuget push SME.$(VERSION).nupkg -src https://www.nuget.org
+	cd nupkg; nuget push SME.Tracer.$(VERSION).nupkg -src https://www.nuget.org
+	cd nupkg; nuget push SME.GraphViz.$(VERSION).nupkg -src https://www.nuget.org
+	cd nupkg; nuget push SME.AST.$(VERSION).nupkg -src https://www.nuget.org
+	cd nupkg; nuget push SME.CPP.$(VERSION).nupkg -src https://www.nuget.org
+	cd nupkg; nuget push SME.VHDL.$(VERSION).nupkg -src https://www.nuget.org
 
 
 clean:

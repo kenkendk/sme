@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>SME.Tracer</id>
-    <version>0.3.0</version>
+    <version>0.3.1</version>
     <authors>Kenneth Skovhede</authors>
     <owners>Kenneth Skovhede</owners>
     <licenseUrl>https://raw.githubusercontent.com/kenkendk/sme/master/LICENSE</licenseUrl>
@@ -14,6 +14,7 @@
     <tags>SME hardware simulation</tags>
     <dependencies>
       <dependency id="Newtonsoft.Json" version="10.0.3" />
+      <dependency id="SME" version="0.3.1" />
     </dependencies>
   </metadata>
   <files>

@@ -8,7 +8,7 @@
     <RootNamespace>SimpleComponents</RootNamespace>
     <AssemblyName>SimpleComponents</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
-    <ReleaseVersion>0.3</ReleaseVersion>
+    <ReleaseVersion>0.3.1</ReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>

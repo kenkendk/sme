@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>SME.AST</id>
-    <version>0.3.0</version>
+    <version>0.3.1</version>
     <authors>Kenneth Skovhede</authors>
     <owners>Kenneth Skovhede</owners>
     <licenseUrl>https://raw.githubusercontent.com/kenkendk/sme/master/LICENSE</licenseUrl>
@@ -17,6 +17,7 @@
       <dependency id="ICSharpCode.NRefactory" version="5.5.1" />
       <dependency id="Mono.Cecil" version="0.9.5.4" />
       <dependency id="Newtonsoft.Json" version="10.0.3" />
+      <dependency id="SME" version="0.3.1" />
     </dependencies>
   </metadata>
   <files>
