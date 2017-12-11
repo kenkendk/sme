@@ -40,8 +40,13 @@ namespace SME.CPP
 
 		public static string ProcessNameToValidName(AST.Process process)
 		{
-			return ToValidName(process.Name);
+			return ToValidName(process.InstanceName);
 		}
+
+        public static string BusNameToValidName(AST.Bus bus)
+        {
+            return ToValidName(bus.InstanceName);
+        }
 
 		public static string BusSignalToValidName(AST.Process process, AST.Signal signal)
 		{

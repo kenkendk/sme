@@ -26,13 +26,13 @@ std::string <#= Naming.AssemblyNameToFileName(Network) #>_SIGNAL_NAMES[] = {
 <#= Naming.AssemblyNameToFileName(Network) #>::<#= Naming.AssemblyNameToFileName(Network) #>() 
     :
 <# foreach(var bus in Network.Busses) { #>
-        bus_<#= bus.Name #>(),
+        bus_<#= Naming.BusNameToValidName(bus) #>(),
 <# } #>
 <# foreach(var process in Network.Processes) {
 
        var busses = process.InputBusses.Concat(process.OutputBusses).Concat(process.InternalBusses).Distinct().OrderBy(x => x.Name).ToArray();
 #>
-        proc_<#= process.Name #>(<# foreach(var bus in busses) { #>&bus_<#= bus.Name #><#= bus == busses.Last() ? "" : ", " #><# } #>),
+        proc_<#= Naming.ProcessNameToValidName(process) #>(<# foreach(var bus in busses) { #>&bus_<#= bus.Name #><#= bus == busses.Last() ? "" : ", " #><# } #>),
 <# } #>
         trace_input(NULL),
         input_line(),
@@ -124,7 +124,7 @@ bool <#= Naming.AssemblyNameToFileName(Network) #>::DriveFromTraceInput()
             throw MessageException(sstm.str());
         }
         if (token.compare("U") != 0)
-            bus_<#= signal.Parent.Name #>.<#= signal.Name #>(i, parse_<#= eltype #>(token));            
+            bus_<#= Naming.BusNameToValidName(signal.Parent as AST.Bus) #>.<#= signal.Name #>(i, parse_<#= eltype #>(token));            
         field++;
     }
 <#     
@@ -137,7 +137,7 @@ bool <#= Naming.AssemblyNameToFileName(Network) #>::DriveFromTraceInput()
         throw MessageException(sstm.str());
     }
     if (token.compare("U") != 0)
-        bus_<#= signal.Parent.Name #>.<#= signal.Name #>(parse_<#= RS.TypeScope.GetType(signal).Name #>(token));
+        bus_<#= Naming.BusNameToValidName(signal.Parent as AST.Bus) #>.<#= signal.Name #>(parse_<#= RS.TypeScope.GetType(signal).Name #>(token));
     field++;
 <#     } #>
 
@@ -164,16 +164,16 @@ void <#= Naming.AssemblyNameToFileName(Network) #>::OnTick()
        var pn = GetProcess(n.Item);
        if (pn != null) {
 #>
-    proc_<#= pn.Name #>.onTick();
+    proc_<#= Naming.ProcessNameToValidName(pn) #>.onTick();
 <#     } #>
 <#     foreach(var b in n.Item.OutputBusses.Concat(n.Item.InternalBusses).Distinct()) { #>
-    bus_<#= GetBus(b).Name #>.forward_signals();
+    bus_<#= Naming.BusNameToValidName(GetBus(b)) #>.forward_signals();
 <#     } #>
 <#     foreach(var b in n.PropagateAfter) { #>
-    bus_<#= GetBus(b).Name #>.propagate_signals();
+    bus_<#= Naming.BusNameToValidName(GetBus(b)) #>.propagate_signals();
 <#     } #>
 <#     foreach(var b in n.Item.InternalBusses) { #>
-    bus_<#= GetBus(b).Name #>.propagate_signals();
+    bus_<#= Naming.BusNameToValidName(GetBus(b)) #>.propagate_signals();
 <#     } #>
 <# } #>
 }
@@ -216,17 +216,17 @@ void <#= Naming.AssemblyNameToFileName(Network) #>::VerifyTrace()
 
         source_is_undef = false;
         try {
-            <#= eltype #> tmpval = bus_<#= signal.Parent.Name #>.<#= signal.Name #>(i);
+            <#= eltype #> tmpval = bus_<#= Naming.BusNameToValidName(signal.Parent as AST.Bus) #>.<#= signal.Name #>(i);
         } catch (InvalidReadException e) {
             source_is_undef = true;
         }
 
         if (token.compare("U") == 0 && source_is_undef) {
          // Don't care
-        } else if (token.compare("U") != 0 && bus_<#= signal.Parent.Name #>.<#= signal.Name #>(i) != parse_<#= eltype #>(token)) {
+        } else if (token.compare("U") != 0 && bus_<#= Naming.BusNameToValidName(signal.Parent as AST.Bus) #>.<#= signal.Name #>(i) != parse_<#= eltype #>(token)) {
             std::stringstream sstm;
             sstm << "Error in cycle " << cycle << std::endl;
-            sstm << "Expected value " << <#= typecast #>parse_<#= eltype #>(token) << ", but got " << <#= typecast #>bus_<#= signal.Parent.Name #>.<#= signal.Name #>(i) << " for field " << <#= Naming.AssemblyNameToFileName(Network) #>_SIGNAL_NAMES[field] << " (raw: " << token << ")" << std::endl;
+            sstm << "Expected value " << <#= typecast #>parse_<#= eltype #>(token) << ", but got " << <#= typecast #>bus_<#= Naming.BusNameToValidName(signal.Parent as AST.Bus) #>.<#= signal.Name #>(i) << " for field " << <#= Naming.AssemblyNameToFileName(Network) #>_SIGNAL_NAMES[field] << " (raw: " << token << ")" << std::endl;
             throw MessageException(sstm.str());
         }
         field++;
@@ -241,17 +241,17 @@ void <#= Naming.AssemblyNameToFileName(Network) #>::VerifyTrace()
 
     source_is_undef = false;
     try {
-        <#= RS.TypeScope.GetType(signal).Name #> tmpval = bus_<#= signal.Parent.Name #>.<#= signal.Name #>();
+        <#= RS.TypeScope.GetType(signal).Name #> tmpval = bus_<#= Naming.BusNameToValidName(signal.Parent as AST.Bus) #>.<#= signal.Name #>();
     } catch (InvalidReadException e) {
         source_is_undef = true;
     }
 
     if (token.compare("U") == 0 && source_is_undef) {
         // Don't care
-    } else if (token.compare("U") != 0 && bus_<#= signal.Parent.Name #>.<#= signal.Name #>() != parse_<#= RS.TypeScope.GetType(signal).Name #>(token)) {
+    } else if (token.compare("U") != 0 && bus_<#= Naming.BusNameToValidName(signal.Parent as AST.Bus) #>.<#= signal.Name #>() != parse_<#= RS.TypeScope.GetType(signal).Name #>(token)) {
         std::stringstream sstm;
         sstm << "Error in cycle " << cycle << std::endl;
-        sstm << "Expected value " << <#= typecast #>parse_<#= RS.TypeScope.GetType(signal).Name #>(token) << ", but got " << <#= typecast #>bus_<#= signal.Parent.Name #>.<#= signal.Name #>() << " for field " << <#= Naming.AssemblyNameToFileName(Network) #>_SIGNAL_NAMES[field] << " (raw: " << token << ")" << std::endl;
+        sstm << "Expected value " << <#= typecast #>parse_<#= RS.TypeScope.GetType(signal).Name #>(token) << ", but got " << <#= typecast #>bus_<#= Naming.BusNameToValidName(signal.Parent as AST.Bus) #>.<#= signal.Name #>() << " for field " << <#= Naming.AssemblyNameToFileName(Network) #>_SIGNAL_NAMES[field] << " (raw: " << token << ")" << std::endl;
         throw MessageException(sstm.str());
     }
     field++;

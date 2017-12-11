@@ -13,7 +13,13 @@
 // #### USER-DATA-INCLUDE-START
 // #### USER-DATA-INCLUDE-END
 
-<# foreach(var bus in Network.Busses) { #>
+<# 
+var known = new HashSet<Type>();
+foreach(var bus in Network.Busses) { 
+    if (known.Contains(bus.SourceType))
+        continue;
+    known.Add(bus.SourceType);
+#>
 
 class <#= bus.Name #> {
 private:

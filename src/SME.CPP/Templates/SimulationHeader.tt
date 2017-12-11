@@ -28,12 +28,12 @@ private:
 
     // Internal Busses
 <# foreach(var bus in Network.Busses.Where(x => !(x.IsTopLevelInput || x.IsTopLevelOutput))) { #>
-    <#= bus.Name #> bus_<#= bus.Name #>;
+    <#= bus.Name #> bus_<#= Naming.BusNameToValidName(bus) #>;
 <# } #>
 
     // Processes
 <# foreach(var process in Network.Processes) { #>
-    <#= process.Name #> proc_<#= process.Name #>;
+    <#= process.Name #> proc_<#= Naming.ProcessNameToValidName(process) #>;
 <# } #>
 
     // The trace input file, if any
@@ -48,7 +48,7 @@ private:
 public:
     // Top level input/output busses
 <# foreach(var bus in Network.Busses.Where(x => (x.IsTopLevelInput || x.IsTopLevelOutput))) { #>
-    <#= bus.Name #> bus_<#= bus.Name #>;
+    <#= bus.Name #> bus_<#= Naming.BusNameToValidName(bus) #>;
 <# } #>
 
     // Default constructor

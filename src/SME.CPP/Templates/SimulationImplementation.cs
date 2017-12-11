@@ -183,7 +183,7 @@ namespace SME.CPP.Templates {
             #line hidden
             
             #line 29 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.BusNameToValidName(bus) ));
             
             #line default
             #line hidden
@@ -216,7 +216,7 @@ namespace SME.CPP.Templates {
             #line hidden
             
             #line 35 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( process.Name ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ProcessNameToValidName(process) ));
             
             #line default
             #line hidden
@@ -451,7 +451,7 @@ void ");
             #line hidden
             
             #line 129 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Parent.Name ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.BusNameToValidName(signal.Parent as AST.Bus) ));
             
             #line default
             #line hidden
@@ -517,7 +517,7 @@ void ");
             #line hidden
             
             #line 142 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Parent.Name ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.BusNameToValidName(signal.Parent as AST.Bus) ));
             
             #line default
             #line hidden
@@ -670,7 +670,7 @@ void ");
             #line hidden
             
             #line 169 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( pn.Name ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ProcessNameToValidName(pn) ));
             
             #line default
             #line hidden
@@ -700,7 +700,7 @@ void ");
             #line hidden
             
             #line 172 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( GetBus(b).Name ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.BusNameToValidName(GetBus(b)) ));
             
             #line default
             #line hidden
@@ -730,7 +730,7 @@ void ");
             #line hidden
             
             #line 175 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( GetBus(b).Name ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.BusNameToValidName(GetBus(b)) ));
             
             #line default
             #line hidden
@@ -760,7 +760,7 @@ void ");
             #line hidden
             
             #line 178 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( GetBus(b).Name ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.BusNameToValidName(GetBus(b)) ));
             
             #line default
             #line hidden
@@ -883,7 +883,7 @@ void ");
             #line hidden
             
             #line 221 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Parent.Name ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.BusNameToValidName(signal.Parent as AST.Bus) ));
             
             #line default
             #line hidden
@@ -909,7 +909,7 @@ void ");
             #line hidden
             
             #line 228 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Parent.Name ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.BusNameToValidName(signal.Parent as AST.Bus) ));
             
             #line default
             #line hidden
@@ -982,7 +982,7 @@ void ");
             #line hidden
             
             #line 231 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Parent.Name ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.BusNameToValidName(signal.Parent as AST.Bus) ));
             
             #line default
             #line hidden
@@ -1051,7 +1051,7 @@ void ");
             #line hidden
             
             #line 246 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Parent.Name ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.BusNameToValidName(signal.Parent as AST.Bus) ));
             
             #line default
             #line hidden
@@ -1077,7 +1077,7 @@ void ");
             #line hidden
             
             #line 253 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Parent.Name ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.BusNameToValidName(signal.Parent as AST.Bus) ));
             
             #line default
             #line hidden
@@ -1150,7 +1150,7 @@ void ");
             #line hidden
             
             #line 256 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Parent.Name ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.BusNameToValidName(signal.Parent as AST.Bus) ));
             
             #line default
             #line hidden
