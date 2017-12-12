@@ -16,38 +16,36 @@
 
 <#
 var busses = RSP.Process.InputBusses.Concat(RSP.Process.OutputBusses).Concat(RSP.Process.InternalBusses).Distinct().OrderBy(x => x.Name).ToArray();
+var members = RSP.Process.SharedVariables.Cast<DataElement>().Union(RSP.Process.SharedSignals).ToArray();
 #>
 
 <#= RSP.Process.Name #>::<#= RSP.Process.Name #>(
 <# foreach(var bus in busses) { #>
-    <#= bus.Name #>* p<#= bus.Name #><#= bus == busses.Last() ? "" : "," #>
+    <#= bus.Name #>* p<#= bus.Name #><#= (bus == busses.Last() && members.Length == 0) ? "" : "," #>
+<#  } #>
+<# foreach(var v in members) { 
+       var rt = RS.TypeScope.GetType(v);
+       if (rt.IsArray) { #>
+    size_t init_size_<#= v.Name #>,
+<#     } #>
+    const <#= Type(v) #> init_<#= v.Name #><#= v == members.Last() ? "" : "," #>
 <#  } #>
 ) {
 <# foreach(var bus in busses) { #>
     bus_<#= bus.Name #> = p<#= bus.Name #>;
 <#  } #>
 
-<# foreach(var v in RSP.Process.SharedVariables.Cast<DataElement>().Concat(RSP.Process.SharedSignals)) { 
-       var initializer = RS.Renderer.GetInitializer(v);
-       if (!string.IsNullOrWhiteSpace(initializer)) { 
-           var rt = RS.TypeScope.GetType(v);
-           if (rt.IsArray) {
-               var eltype = rt.ElementName;
-
-               var arraylen = RS.GetArrayLength(v).DefaultValue;
-
-               if ((v.DefaultValue is SME.AST.ArrayCreateExpression)) { #>
-    <#= v.Name #> = new <#= eltype #>[<#= arraylen #>];
-    <#= eltype #> orig_<#= v.Name #>[]<#= initializer #>;
-    std::memcpy(<#= v.Name #>, orig_<#= v.Name #>, <#= arraylen #> * sizeof(<#= eltype #>));
-<#             } else { #>
-    <#= v.Name #> = new <#= eltype #>[<#= arraylen #>]();
-<#             } #>
-    size_<#= v.Name #> = <#= arraylen #>;
-<#         } else { #>
-    <#= v.Name #><#= initializer #>;
-<#         } #>
-<#     } #>
+<# foreach(var v in members) {
+       var rt = RS.TypeScope.GetType(v);
+       if (rt.IsArray) { 
+           var eltype = rt.ElementName;
+#>
+    size_<#= v.Name #> = init_size_<#= v.Name #>;
+    <#= v.Name #> = new <#= eltype #>[size_<#= v.Name #>];
+    std::memcpy(<#= v.Name #>, init_<#= v.Name #>, size_<#= v.Name #> * sizeof(<#= eltype #>));
+<#     } else { #>
+    <#= v.Name #> = init_<#= v.Name #>;
+<#     }#>
 <# } #>
 
     // Insert additional initialization here

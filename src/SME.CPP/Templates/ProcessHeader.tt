@@ -14,6 +14,7 @@
 <#
 
 var busses = RSP.Process.InputBusses.Concat(RSP.Process.OutputBusses).Concat(RSP.Process.InternalBusses).Distinct().OrderBy(x => x.Name).ToArray();
+var members = RSP.Process.SharedVariables.Cast<DataElement>().Union(RSP.Process.SharedSignals).ToArray();
 #>
 
 class <#= RSP.Process.Name #> : public IProcess {
@@ -60,8 +61,16 @@ private:
 public:
     <#= RSP.Process.Name #>(
 <#     foreach(var bus in busses) { #>
-        <#= bus.Name #>* p<#= bus.Name #><#= bus == busses.Last() ? "" : "," #>
-<#      } #>    );
+        <#= bus.Name #>* p<#= bus.Name #><#= (bus == busses.Last() && members.Length == 0) ? "" : "," #>
+<#      } #>
+<# foreach(var v in members) { 
+       var rt = RS.TypeScope.GetType(v);
+       if (rt.IsArray) { #>
+        size_t init_size_<#= v.Name #>,
+<#     } #>
+       const <#= Type(v) #> init_<#= v.Name #><#= v == members.Last() ? "" : "," #>
+<#  } #>
+    );
 
     void onTick();
 };

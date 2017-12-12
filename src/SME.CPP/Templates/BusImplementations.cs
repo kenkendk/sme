@@ -431,7 +431,7 @@ foreach(var bus in Network.Busses) {
             #line hidden
             
             #line 53 ""
-            this.Write("[]");
+            this.Write("[] = ");
             
             #line default
             #line hidden
@@ -628,6 +628,12 @@ foreach(var bus in Network.Busses) {
             
             #line 73 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 73 ""
+            this.Write(" = ");
             
             #line default
             #line hidden

@@ -32,7 +32,7 @@ namespace SME.CPP
                 var indent = new string(' ', indentation);
 
                 foreach (var n in variables)
-                    yield return $"{indent}{m_typeScope.GetType(n).Name} {n.Name}{GetInitializer(n)};";
+                    yield return $"{indent}{m_typeScope.GetType(n).Name} {n.Name} = {GetInitializer(n)};";
 
                 yield return "";
             }
@@ -584,15 +584,37 @@ namespace SME.CPP
 						Value = ((PrimitiveExpression)x).Value
 					}).Cast<Expression>().ToArray();
 
-				return " = " + RenderExpression(nae);
+				return RenderExpression(nae);
 
 			}
+            else if (element.DefaultValue is Array)
+            {
+                var arr = (Array)element.DefaultValue;
+
+                var nae = new ArrayCreateExpression()
+                {
+                    SourceExpression = null,
+                    SourceResultType = element.CecilType.GetArrayElementType(),
+                };
+
+                nae.ElementExpressions = Enumerable.Range(0, arr.Length)
+                    .Select(x => new PrimitiveExpression()
+                    {
+                        SourceExpression = null,
+                        SourceResultType = element.CecilType.GetArrayElementType(),
+                        Parent = nae,
+                        Value = arr.GetValue(0)
+                    }).Cast<Expression>().ToArray();
+
+                return RenderExpression(nae);
+
+            }
 			else if (element.DefaultValue is ICSharpCode.NRefactory.CSharp.AstNode)
 			{
 				var eltype = Type.GetType(element.CecilType.FullName);
 				var defaultvalue = eltype != null && element.CecilType.IsValueType ? Activator.CreateInstance(eltype) : null;
 
-				return " = " + RenderExpression(new AST.PrimitiveExpression()
+				return RenderExpression(new AST.PrimitiveExpression()
 				{
 					Value = defaultvalue,
 					SourceResultType = element.CecilType
@@ -601,7 +623,7 @@ namespace SME.CPP
 			else if (element.DefaultValue is AST.EmptyArrayCreateExpression)
 			{
 				var ese = element.DefaultValue as AST.EmptyArrayCreateExpression;
-				return " = " + RenderExpression(new AST.EmptyArrayCreateExpression()
+				return RenderExpression(new AST.EmptyArrayCreateExpression()
 				{
 					SizeExpression = ese.SizeExpression.Clone(),
 					SourceExpression = ese.SourceExpression,
@@ -611,7 +633,7 @@ namespace SME.CPP
 			}
 			else if (element.CecilType.IsArrayType() && element.DefaultValue == null)
 			{
-				return " = " + RenderExpression(new EmptyArrayCreateExpression()
+				return RenderExpression(new EmptyArrayCreateExpression()
 				{
 					SourceExpression = null,
 					SourceResultType = element.CecilType,
@@ -626,7 +648,7 @@ namespace SME.CPP
 			}
 			else
 			{
-				return " = " + RenderExpression(new AST.PrimitiveExpression()
+				return RenderExpression(new AST.PrimitiveExpression()
 				{
 					Value = element.DefaultValue,
 					SourceResultType = element.CecilType

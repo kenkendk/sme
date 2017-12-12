@@ -155,8 +155,13 @@ namespace SME.CPP
 			var makeFileTarget = Path.Combine(TargetFolder, "Makefile");
             File.WriteAllText(makeFileTarget, MergeUserData(new Templates.Makefile(this).TransformText(), makeFileTarget));
 
+            var duplicates = new HashSet<Type>();
 			foreach (var p in Network.Processes)
 			{
+                if (duplicates.Contains(p.SourceType))
+                    continue;
+                duplicates.Add(p.SourceType);
+
 				var rsp = new RenderStateProcess(this, p);
 				var targetheaderfile = Path.Combine(TargetFolder, p.Name + ".hpp");
                 File.WriteAllText(targetheaderfile, MergeUserData(new Templates.ProcessHeader(this, rsp).TransformText(), targetheaderfile));
@@ -228,9 +233,13 @@ namespace SME.CPP
                         File.Copy(s, Path.Combine(backupname, fn));
                 }
 
+                var duplicates = new HashSet<string>();
 				foreach (var p in Network.Processes)
 				{
 					var source = Path.Combine(targetfolder, Naming.ProcessNameToFileName(p));
+                    if (duplicates.Contains(source))
+                        continue;
+                    duplicates.Add(source);
 					if (File.Exists(source))
 						File.Copy(source, Path.Combine(backupname, Naming.ProcessNameToFileName(p)));
 				}

@@ -78,6 +78,12 @@ namespace SME.CPP.Templates
 		{
 			return RS.TypeScope.GetType(parameter).Name;
 		}
+
+        public string Type(AST.DataElement el)
+        {
+            return RS.TypeScope.GetType(el).Name;
+        }
+
 	}
 
 	public partial class ProcessHeader
@@ -107,6 +113,11 @@ namespace SME.CPP.Templates
 		{
 			return RS.TypeScope.GetType(parameter).Name;
 		}
+
+        public string Type(AST.DataElement el)
+        {
+            return RS.TypeScope.GetType(el).Name;
+        }
 	}
 
     public partial class CustomTypes
@@ -144,8 +155,15 @@ namespace SME.CPP.Templates
 		{
 			get
 			{
-				foreach (var p in RS.Network.Processes)
-					yield return Naming.ProcessNameToValidName(p);
+                var known = new HashSet<Type>();
+                foreach (var p in RS.Network.Processes)
+                {
+                    if (known.Contains(p.SourceType))
+                        continue;
+                    known.Add(p.SourceType);
+
+                    yield return p.Name;
+                }
 
 				foreach (var p in RawNames)
 					yield return p;

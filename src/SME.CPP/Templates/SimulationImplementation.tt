@@ -22,6 +22,21 @@ std::string <#= Naming.AssemblyNameToFileName(Network) #>_SIGNAL_NAMES[] = {
 <# } #>
 };
 
+<# foreach(var process in Network.Processes) {
+       var members = process
+           .SharedVariables.Cast<AST.DataElement>()
+           .Union(process.SharedSignals)
+           //.Where(x => RS.TypeScope.GetType(x).IsArray)
+           .Where(x => (x.DefaultValue is SME.AST.ArrayCreateExpression) || (x.DefaultValue is Array));
+           foreach (var v in members) { 
+               var rt = RS.TypeScope.GetType(v);
+               var eltype = rt.ElementName;
+               var arraylen = RS.GetArrayLength(v).DefaultValue;
+#>
+const <#= eltype #> init_<#= Naming.ProcessNameToValidName(process) #>_<#= Naming.ToValidName(v.Name) #>[<#= arraylen #>] = <#= RS.Renderer.GetInitializer(v) #>;
+<#     } #>
+<# } #>
+
 
 <#= Naming.AssemblyNameToFileName(Network) #>::<#= Naming.AssemblyNameToFileName(Network) #>() 
     :
@@ -31,8 +46,35 @@ std::string <#= Naming.AssemblyNameToFileName(Network) #>_SIGNAL_NAMES[] = {
 <# foreach(var process in Network.Processes) {
 
        var busses = process.InputBusses.Concat(process.OutputBusses).Concat(process.InternalBusses).Distinct().OrderBy(x => x.Name).ToArray();
+       var members = process.SharedVariables.Cast<AST.DataElement>().Union(process.SharedSignals).ToArray();
 #>
-        proc_<#= Naming.ProcessNameToValidName(process) #>(<# foreach(var bus in busses) { #>&bus_<#= bus.Name #><#= bus == busses.Last() ? "" : ", " #><# } #>),
+        proc_<#= Naming.ProcessNameToValidName(process) #>(
+<# foreach(var bus in busses) { #>
+            &bus_<#= Naming.BusNameToValidName(bus) #><#= (bus == busses.Last() & members.Length == 0) ? "" : ", " #>
+<# } #>
+<# foreach(var v in members) { 
+       var initializer = RS.Renderer.GetInitializer(v);
+       if (!string.IsNullOrWhiteSpace(initializer)) { 
+           var rt = RS.TypeScope.GetType(v);
+           if (rt.IsArray) {
+               var eltype = rt.ElementName;
+               var arraylen = RS.GetArrayLength(v).DefaultValue;
+
+#>
+            <#= arraylen #>,
+<#
+
+               if ((v.DefaultValue is SME.AST.ArrayCreateExpression) || v.DefaultValue is Array) { #>
+            init_<#= Naming.ProcessNameToValidName(process) #>_<#= Naming.ToValidName(v.Name) #><#= v == members.Last() ? "" : "," #>
+<#             } else { #>
+            new <#= eltype #>[<#= arraylen #>]()<#= v == members.Last() ? "" : "," #>
+<#             } #>
+<#         } else { #>
+            <#= initializer #><#= v == members.Last() ? "" : "," #>
+<#         } #>
+<#     } #>
+<# } #>
+        ),
 <# } #>
         trace_input(NULL),
         input_line(),
