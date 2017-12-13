@@ -45,7 +45,7 @@ private:
 <# } #>
     // Bus pointers
 <# foreach(var bus in busses) { #>
-    <#= bus.Name #>* bus_<#= bus.Name #>;
+    <#= bus.Name #>* bus_<#= Naming.BusNameToValidName(bus, RSP.Process) #>;
 <# } #>
 
 <# if (RSP.Process.Methods != null && RSP.Process.Methods.Any(x => !x.Ignore)) { #>
@@ -61,14 +61,14 @@ private:
 public:
     <#= RSP.Process.Name #>(
 <#     foreach(var bus in busses) { #>
-        <#= bus.Name #>* p<#= bus.Name #><#= (bus == busses.Last() && members.Length == 0) ? "" : "," #>
+        <#= bus.Name #>* p<#= Naming.BusNameToValidName(bus, RSP.Process) #><#= (bus == busses.Last() && members.Length == 0) ? "" : "," #>
 <#      } #>
 <# foreach(var v in members) { 
        var rt = RS.TypeScope.GetType(v);
        if (rt.IsArray) { #>
         size_t init_size_<#= v.Name #>,
 <#     } #>
-       const <#= Type(v) #> init_<#= v.Name #><#= v == members.Last() ? "" : "," #>
+        const <#= Type(v) #> init_<#= v.Name #><#= v == members.Last() ? "" : "," #>
 <#  } #>
     );
 

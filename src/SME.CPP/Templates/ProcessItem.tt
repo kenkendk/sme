@@ -21,7 +21,7 @@ var members = RSP.Process.SharedVariables.Cast<DataElement>().Union(RSP.Process.
 
 <#= RSP.Process.Name #>::<#= RSP.Process.Name #>(
 <# foreach(var bus in busses) { #>
-    <#= bus.Name #>* p<#= bus.Name #><#= (bus == busses.Last() && members.Length == 0) ? "" : "," #>
+    <#= bus.Name #>* p<#= Naming.BusNameToValidName(bus, RSP.Process) #><#= (bus == busses.Last() && members.Length == 0) ? "" : "," #>
 <#  } #>
 <# foreach(var v in members) { 
        var rt = RS.TypeScope.GetType(v);
@@ -32,7 +32,7 @@ var members = RSP.Process.SharedVariables.Cast<DataElement>().Union(RSP.Process.
 <#  } #>
 ) {
 <# foreach(var bus in busses) { #>
-    bus_<#= bus.Name #> = p<#= bus.Name #>;
+    bus_<#= Naming.BusNameToValidName(bus, RSP.Process) #> = p<#= Naming.BusNameToValidName(bus, RSP.Process) #>;
 <#  } #>
 
 <# foreach(var v in members) {

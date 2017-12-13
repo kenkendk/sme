@@ -43,8 +43,10 @@ namespace SME.CPP
 			return ToValidName(process.InstanceName);
 		}
 
-        public static string BusNameToValidName(AST.Bus bus)
+        public static string BusNameToValidName(AST.Bus bus, AST.Process proc = null)
         {
+            if (proc != null && proc.LocalBusNames != null && proc.LocalBusNames.ContainsKey(bus))
+                return ToValidName(proc.LocalBusNames[bus]);
             return ToValidName(bus.InstanceName);
         }
 

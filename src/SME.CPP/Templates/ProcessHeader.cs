@@ -334,7 +334,7 @@ var members = RSP.Process.SharedVariables.Cast<DataElement>().Union(RSP.Process.
             #line hidden
             
             #line 48 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.BusNameToValidName(bus, RSP.Process) ));
             
             #line default
             #line hidden
@@ -480,7 +480,7 @@ var members = RSP.Process.SharedVariables.Cast<DataElement>().Union(RSP.Process.
             #line hidden
             
             #line 64 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.BusNameToValidName(bus, RSP.Process) ));
             
             #line default
             #line hidden
@@ -536,7 +536,7 @@ var members = RSP.Process.SharedVariables.Cast<DataElement>().Union(RSP.Process.
             #line hidden
             
             #line 71 ""
-            this.Write("       const ");
+            this.Write("        const ");
             
             #line default
             #line hidden

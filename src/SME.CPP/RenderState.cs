@@ -162,12 +162,14 @@ namespace SME.CPP
                     continue;
                 duplicates.Add(p.SourceType);
 
+                Renderer.Process = p;
 				var rsp = new RenderStateProcess(this, p);
 				var targetheaderfile = Path.Combine(TargetFolder, p.Name + ".hpp");
                 File.WriteAllText(targetheaderfile, MergeUserData(new Templates.ProcessHeader(this, rsp).TransformText(), targetheaderfile));
 
 				var targetfile = Path.Combine(TargetFolder, Naming.ProcessNameToFileName(p));
 				File.WriteAllText(targetfile, MergeUserData(new Templates.ProcessItem(this, rsp).TransformText(), targetfile));
+                Renderer.Process = null;
 			}
 
             var names = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceNames();

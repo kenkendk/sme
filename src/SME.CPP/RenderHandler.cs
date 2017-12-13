@@ -11,6 +11,12 @@ namespace SME.CPP
         private readonly CppTypeScope m_typeScope;
 
         /// <summary>
+        /// The currently rendering process, can be null if no process is currently being rendered
+        /// </summary>
+        /// <value>The process.</value>
+        public AST.Process Process { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="T:SME.CPP.RenderHandler"/> class.
         /// </summary>
         /// <param name="typeScope">The type scope to use.</param>
@@ -447,7 +453,7 @@ namespace SME.CPP
         private string RenderExpression(AST.MemberReferenceExpression e)
         {
             if (e.Target.Parent is AST.Bus)
-				return $"bus_{e.Target.Parent.Name}->{e.Target.Name}()";
+                return $"bus_{Naming.BusNameToValidName(e.Target.Parent as AST.Bus, Process)}->{e.Target.Name}()";
             
 			else if (e.Target is AST.Constant)
             {
