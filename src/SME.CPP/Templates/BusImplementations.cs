@@ -401,7 +401,7 @@ foreach(var bus in Network.Busses) {
             #line hidden
             
             #line 52 ""
-                 if ((signal.DefaultValue is SME.AST.ArrayCreateExpression)) { 
+                 if ((signal.DefaultValue is SME.AST.ArrayCreateExpression) || signal.DefaultValue is Array) { 
             
             #line default
             #line hidden
@@ -491,96 +491,144 @@ foreach(var bus in Network.Busses) {
             #line hidden
             
             #line 54 ""
-            this.Write("));\n");
+            this.Write("));\n    std::memcpy(write_");
             
             #line default
             #line hidden
             
             #line 55 ""
-                 } 
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 55 ""
+            this.Write(", orig_");
+            
+            #line default
+            #line hidden
+            
+            #line 55 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 55 ""
+            this.Write(", ");
+            
+            #line default
+            #line hidden
+            
+            #line 55 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( arraylen ));
+            
+            #line default
+            #line hidden
+            
+            #line 55 ""
+            this.Write(" * sizeof(");
+            
+            #line default
+            #line hidden
+            
+            #line 55 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( eltype ));
+            
+            #line default
+            #line hidden
+            
+            #line 55 ""
+            this.Write("));\n");
             
             #line default
             #line hidden
             
             #line 56 ""
-             } 
+                 } 
             
             #line default
             #line hidden
             
             #line 57 ""
-         } else { 
-            
-            #line default
-            #line hidden
-            
-            #line 58 ""
-            this.Write("    written_");
-            
-            #line default
-            #line hidden
-            
-            #line 58 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 58 ""
-            this.Write(" = false;\n");
-            
-            #line default
-            #line hidden
-            
-            #line 59 ""
-             if (signal.DefaultValue == null) { 
-            
-            #line default
-            #line hidden
-            
-            #line 60 ""
-            this.Write("    valid_");
-            
-            #line default
-            #line hidden
-            
-            #line 60 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 60 ""
-            this.Write(" = false;\n");
-            
-            #line default
-            #line hidden
-            
-            #line 61 ""
              } 
             
             #line default
             #line hidden
             
+            #line 58 ""
+         } else { 
+            
+            #line default
+            #line hidden
+            
+            #line 59 ""
+            this.Write("    written_");
+            
+            #line default
+            #line hidden
+            
+            #line 59 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 59 ""
+            this.Write(" = false;\n");
+            
+            #line default
+            #line hidden
+            
+            #line 60 ""
+             if (signal.DefaultValue == null) { 
+            
+            #line default
+            #line hidden
+            
+            #line 61 ""
+            this.Write("    valid_");
+            
+            #line default
+            #line hidden
+            
+            #line 61 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 61 ""
+            this.Write(" = false;\n");
+            
+            #line default
+            #line hidden
+            
             #line 62 ""
-         } 
+             } 
             
             #line default
             #line hidden
             
             #line 63 ""
-     } 
+         } 
             
             #line default
             #line hidden
             
             #line 64 ""
-            this.Write("\n");
+     } 
             
             #line default
             #line hidden
             
             #line 65 ""
+            this.Write("\n");
+            
+            #line default
+            #line hidden
+            
+            #line 66 ""
      foreach(var signal in bus.Signals.Where(x => x.DefaultValue != null)) { 
            var cpptype = RS.TypeScope.GetType(signal);
            var ini = RS.Renderer.GetInitializer(signal);
@@ -590,85 +638,97 @@ foreach(var bus in Network.Busses) {
             #line default
             #line hidden
             
-            #line 70 ""
+            #line 71 ""
             this.Write("    valid_");
             
             #line default
             #line hidden
             
-            #line 70 ""
+            #line 71 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 70 ""
-            this.Write(" = true;\n");
             
             #line default
             #line hidden
             
             #line 71 ""
-         } 
+            this.Write(" = true;\n");
             
             #line default
             #line hidden
             
             #line 72 ""
-         if (!string.IsNullOrWhiteSpace(ini)) { 
-            
-            #line default
-            #line hidden
-            
-            #line 73 ""
-            this.Write("    read_");
-            
-            #line default
-            #line hidden
-            
-            #line 73 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 73 ""
-            this.Write(" = ");
-            
-            #line default
-            #line hidden
-            
-            #line 73 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( RS.Renderer.GetInitializer(signal) ));
-            
-            #line default
-            #line hidden
-            
-            #line 73 ""
-            this.Write(";\n");
-            
-            #line default
-            #line hidden
-            
-            #line 74 ""
          } 
             
             #line default
             #line hidden
             
+            #line 73 ""
+         if (!string.IsNullOrWhiteSpace(ini)) { 
+            
+            #line default
+            #line hidden
+            
+            #line 74 ""
+            this.Write("    read_");
+            
+            #line default
+            #line hidden
+            
+            #line 74 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 74 ""
+            this.Write(" = write_");
+            
+            #line default
+            #line hidden
+            
+            #line 74 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 74 ""
+            this.Write(" = ");
+            
+            #line default
+            #line hidden
+            
+            #line 74 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( RS.Renderer.GetInitializer(signal) ));
+            
+            #line default
+            #line hidden
+            
+            #line 74 ""
+            this.Write(";\n");
+            
+            #line default
+            #line hidden
+            
             #line 75 ""
-     } 
+         } 
             
             #line default
             #line hidden
             
             #line 76 ""
+     } 
+            
+            #line default
+            #line hidden
+            
+            #line 77 ""
             this.Write("}\n\n");
             
             #line default
             #line hidden
             
-            #line 78 ""
+            #line 79 ""
      foreach(var signal in bus.Signals) { 
            var cpptype = RS.TypeScope.GetType(signal);
            if (cpptype.IsArray) {
@@ -679,499 +739,499 @@ foreach(var bus in Network.Busses) {
             #line default
             #line hidden
             
-            #line 84 ""
+            #line 85 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( eltype ));
             
             #line default
             #line hidden
             
-            #line 84 ""
+            #line 85 ""
             this.Write(" ");
             
             #line default
             #line hidden
             
-            #line 84 ""
+            #line 85 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
             
             #line default
             #line hidden
             
-            #line 84 ""
+            #line 85 ""
             this.Write("::");
             
             #line default
             #line hidden
             
-            #line 84 ""
+            #line 85 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 84 ""
+            #line 85 ""
             this.Write("(size_t index) const {\n    if (index >= size_");
             
             #line default
             #line hidden
             
-            #line 85 ""
+            #line 86 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 85 ""
+            #line 86 ""
             this.Write(")\n        throw IndexOutOfBoundsException(\"Invalid index: ");
             
             #line default
             #line hidden
             
-            #line 86 ""
+            #line 87 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
             
             #line default
             #line hidden
             
-            #line 86 ""
+            #line 87 ""
             this.Write(".");
             
             #line default
             #line hidden
             
-            #line 86 ""
+            #line 87 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 86 ""
+            #line 87 ""
             this.Write("\");\n    if (!valid_");
             
             #line default
             #line hidden
             
-            #line 87 ""
+            #line 88 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 87 ""
+            #line 88 ""
             this.Write("[index])\n        throw InvalidReadException(\"Invalid read: ");
             
             #line default
             #line hidden
             
-            #line 88 ""
+            #line 89 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
             
             #line default
             #line hidden
             
-            #line 88 ""
+            #line 89 ""
             this.Write(".");
             
             #line default
             #line hidden
             
-            #line 88 ""
+            #line 89 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 88 ""
+            #line 89 ""
             this.Write("\");\n\n    return read_");
             
             #line default
             #line hidden
             
-            #line 90 ""
+            #line 91 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 90 ""
+            #line 91 ""
             this.Write("[index];\n}\n\n");
             
             #line default
             #line hidden
             
-            #line 93 ""
+            #line 94 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( eltype ));
             
             #line default
             #line hidden
             
-            #line 93 ""
+            #line 94 ""
             this.Write(" ");
             
             #line default
             #line hidden
             
-            #line 93 ""
+            #line 94 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
             
             #line default
             #line hidden
             
-            #line 93 ""
+            #line 94 ""
             this.Write("::");
             
             #line default
             #line hidden
             
-            #line 93 ""
+            #line 94 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 93 ""
+            #line 94 ""
             this.Write("(size_t index, ");
             
             #line default
             #line hidden
             
-            #line 93 ""
+            #line 94 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( eltype ));
             
             #line default
             #line hidden
             
-            #line 93 ""
+            #line 94 ""
             this.Write(" value) {\n    if (index >= size_");
             
             #line default
             #line hidden
             
-            #line 94 ""
+            #line 95 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 94 ""
+            #line 95 ""
             this.Write(")\n        throw IndexOutOfBoundsException(\"Invalid index: ");
             
             #line default
             #line hidden
             
-            #line 95 ""
+            #line 96 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
             
             #line default
             #line hidden
             
-            #line 95 ""
+            #line 96 ""
             this.Write(".");
             
             #line default
             #line hidden
             
-            #line 95 ""
+            #line 96 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 95 ""
+            #line 96 ""
             this.Write("\");\n    if (written_");
             
             #line default
             #line hidden
             
-            #line 96 ""
+            #line 97 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 96 ""
+            #line 97 ""
             this.Write("[index])\n        throw InvalidDoubleWriteException(\"Invalid write: ");
             
             #line default
             #line hidden
             
-            #line 97 ""
+            #line 98 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
             
             #line default
             #line hidden
             
-            #line 97 ""
+            #line 98 ""
             this.Write(".");
             
             #line default
             #line hidden
             
-            #line 97 ""
+            #line 98 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 97 ""
+            #line 98 ""
             this.Write("\");\n\n    staged_");
             
             #line default
             #line hidden
             
-            #line 99 ""
+            #line 100 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 99 ""
+            #line 100 ""
             this.Write("[index] = true;\n    return write_");
             
             #line default
             #line hidden
             
-            #line 100 ""
+            #line 101 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 100 ""
+            #line 101 ""
             this.Write("[index] = value;\n}\n");
             
             #line default
             #line hidden
             
-            #line 102 ""
+            #line 103 ""
          } else { 
             
             #line default
             #line hidden
             
-            #line 103 ""
+            #line 104 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( Type(signal) ));
             
             #line default
             #line hidden
             
-            #line 103 ""
+            #line 104 ""
             this.Write(" ");
             
             #line default
             #line hidden
             
-            #line 103 ""
+            #line 104 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
             
             #line default
             #line hidden
             
-            #line 103 ""
+            #line 104 ""
             this.Write("::");
             
             #line default
             #line hidden
             
-            #line 103 ""
+            #line 104 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 103 ""
+            #line 104 ""
             this.Write("() const {\n    if (!valid_");
             
             #line default
             #line hidden
             
-            #line 104 ""
+            #line 105 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 104 ""
+            #line 105 ""
             this.Write(")\n        throw InvalidReadException(\"Invalid read: ");
             
             #line default
             #line hidden
             
-            #line 105 ""
+            #line 106 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
             
             #line default
             #line hidden
             
-            #line 105 ""
+            #line 106 ""
             this.Write(".");
             
             #line default
             #line hidden
             
-            #line 105 ""
+            #line 106 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 105 ""
+            #line 106 ""
             this.Write("\");\n\n    return read_");
             
             #line default
             #line hidden
             
-            #line 107 ""
+            #line 108 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 107 ""
+            #line 108 ""
             this.Write(";\n}\n\n");
             
             #line default
             #line hidden
             
-            #line 110 ""
+            #line 111 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( Type(signal) ));
             
             #line default
             #line hidden
             
-            #line 110 ""
+            #line 111 ""
             this.Write(" ");
             
             #line default
             #line hidden
             
-            #line 110 ""
+            #line 111 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
             
             #line default
             #line hidden
             
-            #line 110 ""
+            #line 111 ""
             this.Write("::");
             
             #line default
             #line hidden
             
-            #line 110 ""
+            #line 111 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 110 ""
+            #line 111 ""
             this.Write("(");
             
             #line default
             #line hidden
             
-            #line 110 ""
+            #line 111 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( Type(signal) ));
             
             #line default
             #line hidden
             
-            #line 110 ""
+            #line 111 ""
             this.Write(" value) {\n    if (written_");
             
             #line default
             #line hidden
             
-            #line 111 ""
+            #line 112 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 111 ""
+            #line 112 ""
             this.Write(")\n        throw InvalidDoubleWriteException(\"Invalid write: ");
             
             #line default
             #line hidden
             
-            #line 112 ""
+            #line 113 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
             
             #line default
             #line hidden
             
-            #line 112 ""
+            #line 113 ""
             this.Write(".");
             
             #line default
             #line hidden
             
-            #line 112 ""
+            #line 113 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 112 ""
+            #line 113 ""
             this.Write("\");\n\n    staged_");
             
             #line default
             #line hidden
             
-            #line 114 ""
+            #line 115 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 114 ""
+            #line 115 ""
             this.Write(" = true;\n    return write_");
             
             #line default
             #line hidden
             
-            #line 115 ""
+            #line 116 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 115 ""
+            #line 116 ""
             this.Write(" = value;\n}\n");
             
             #line default
             #line hidden
             
-            #line 117 ""
+            #line 118 ""
          } 
             
             #line default
             #line hidden
             
-            #line 118 ""
+            #line 119 ""
      } 
             
             #line default
             #line hidden
             
-            #line 119 ""
+            #line 120 ""
             this.Write("\nvoid ");
             
             #line default
             #line hidden
             
-            #line 120 ""
+            #line 121 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
             
             #line default
             #line hidden
             
-            #line 120 ""
+            #line 121 ""
             this.Write("::forward_signals() {\n    size_t i;\n\n");
             
             #line default
             #line hidden
             
-            #line 123 ""
+            #line 124 ""
      foreach(var signal in bus.Signals) {
            var cpptype = RS.TypeScope.GetType(signal);
            if (cpptype.IsArray) {
@@ -1181,211 +1241,211 @@ foreach(var bus in Network.Busses) {
             #line default
             #line hidden
             
-            #line 128 ""
+            #line 129 ""
             this.Write("    for(i = 0; i < size_");
             
             #line default
             #line hidden
             
-            #line 128 ""
+            #line 129 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 128 ""
+            #line 129 ""
             this.Write("; i++) {\n        if (staged_");
             
             #line default
             #line hidden
             
-            #line 129 ""
+            #line 130 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 129 ""
+            #line 130 ""
             this.Write("[i]) {\n            written_");
             
             #line default
             #line hidden
             
-            #line 130 ""
+            #line 131 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 130 ""
+            #line 131 ""
             this.Write("[i] = true;\n            staged_");
             
             #line default
             #line hidden
             
-            #line 131 ""
+            #line 132 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 131 ""
+            #line 132 ""
             this.Write("[i] = false;\n            valid_");
             
             #line default
             #line hidden
             
-            #line 132 ""
+            #line 133 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 132 ""
+            #line 133 ""
             this.Write("[i] = true;\n            read_");
             
             #line default
             #line hidden
             
-            #line 133 ""
+            #line 134 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 133 ""
+            #line 134 ""
             this.Write("[i] = write_");
             
             #line default
             #line hidden
             
-            #line 133 ""
+            #line 134 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 133 ""
+            #line 134 ""
             this.Write("[i];\n        }\n    }\n");
             
             #line default
             #line hidden
             
-            #line 136 ""
+            #line 137 ""
          } else { 
             
             #line default
             #line hidden
             
-            #line 137 ""
+            #line 138 ""
             this.Write("    if (staged_");
             
             #line default
             #line hidden
             
-            #line 137 ""
+            #line 138 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 137 ""
+            #line 138 ""
             this.Write(") {\n        written_");
             
             #line default
             #line hidden
             
-            #line 138 ""
+            #line 139 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 138 ""
+            #line 139 ""
             this.Write(" = true;\n        staged_");
             
             #line default
             #line hidden
             
-            #line 139 ""
+            #line 140 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 139 ""
+            #line 140 ""
             this.Write(" = false;\n        valid_");
             
             #line default
             #line hidden
             
-            #line 140 ""
+            #line 141 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 140 ""
+            #line 141 ""
             this.Write(" = true;\n        read_");
             
             #line default
             #line hidden
             
-            #line 141 ""
+            #line 142 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 141 ""
+            #line 142 ""
             this.Write(" = write_");
             
             #line default
             #line hidden
             
-            #line 141 ""
+            #line 142 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 141 ""
+            #line 142 ""
             this.Write(";\n    }\n");
             
             #line default
             #line hidden
             
-            #line 143 ""
+            #line 144 ""
          } 
             
             #line default
             #line hidden
             
-            #line 144 ""
+            #line 145 ""
      } 
             
             #line default
             #line hidden
             
-            #line 145 ""
+            #line 146 ""
             this.Write("}\n\nvoid ");
             
             #line default
             #line hidden
             
-            #line 147 ""
+            #line 148 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( bus.Name ));
             
             #line default
             #line hidden
             
-            #line 147 ""
+            #line 148 ""
             this.Write("::propagate_signals() {\n    size_t i;\n\n");
             
             #line default
             #line hidden
             
-            #line 150 ""
+            #line 151 ""
      foreach(var signal in bus.Signals) {
            var cpptype = RS.TypeScope.GetType(signal);
            if (cpptype.IsArray) {
@@ -1394,109 +1454,109 @@ foreach(var bus in Network.Busses) {
             #line default
             #line hidden
             
-            #line 154 ""
+            #line 155 ""
             this.Write("    for (i = 0; i < size_");
             
             #line default
             #line hidden
             
-            #line 154 ""
+            #line 155 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 154 ""
+            #line 155 ""
             this.Write("; i++) {\n        if (written_");
             
             #line default
             #line hidden
             
-            #line 155 ""
+            #line 156 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 155 ""
+            #line 156 ""
             this.Write("[i]) {\n            written_");
             
             #line default
             #line hidden
             
-            #line 156 ""
+            #line 157 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 156 ""
+            #line 157 ""
             this.Write("[i] = false;\n        }\n    }\n");
             
             #line default
             #line hidden
             
-            #line 159 ""
+            #line 160 ""
          } else { 
             
             #line default
             #line hidden
             
-            #line 160 ""
+            #line 161 ""
             this.Write("    if (written_");
             
             #line default
             #line hidden
             
-            #line 160 ""
+            #line 161 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 160 ""
+            #line 161 ""
             this.Write(") {\n        written_");
             
             #line default
             #line hidden
             
-            #line 161 ""
+            #line 162 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( signal.Name ));
             
             #line default
             #line hidden
             
-            #line 161 ""
+            #line 162 ""
             this.Write(" = false;\n    }\n");
             
             #line default
             #line hidden
             
-            #line 163 ""
+            #line 164 ""
          } 
             
             #line default
             #line hidden
             
-            #line 164 ""
+            #line 165 ""
      } 
             
             #line default
             #line hidden
             
-            #line 165 ""
+            #line 166 ""
             this.Write("}\n\n");
             
             #line default
             #line hidden
             
-            #line 167 ""
+            #line 168 ""
  } 
             
             #line default
             #line hidden
             
-            #line 168 ""
+            #line 169 ""
             this.Write("\n// Insert additional code and classes here\n// #### USER-DATA-EXTRA-START\n// ####" +
                     " USER-DATA-EXTRA-END\n");
             

@@ -48,9 +48,10 @@ foreach(var bus in Network.Busses) {
     std::memset(valid_<#= signal.Name #>, 0, size_<#= signal.Name #> * sizeof(bool));
 <#             } else { #>
     std::memset(valid_<#= signal.Name #>, 1, size_<#= signal.Name #> * sizeof(bool));
-<#                 if ((signal.DefaultValue is SME.AST.ArrayCreateExpression)) { #>
+<#                 if ((signal.DefaultValue is SME.AST.ArrayCreateExpression) || signal.DefaultValue is Array) { #>
     <#= eltype #> orig_<#= signal.Name #>[] = <#= RS.Renderer.GetInitializer(signal) #>;
     std::memcpy(read_<#= signal.Name #>, orig_<#= signal.Name #>, <#= arraylen #> * sizeof(<#= eltype #>));
+    std::memcpy(write_<#= signal.Name #>, orig_<#= signal.Name #>, <#= arraylen #> * sizeof(<#= eltype #>));
 <#                 } #>
 <#             } #>
 <#         } else { #>
@@ -69,7 +70,7 @@ foreach(var bus in Network.Busses) {
     valid_<#= signal.Name #> = true;
 <#         } #>
 <#         if (!string.IsNullOrWhiteSpace(ini)) { #>
-    read_<#= signal.Name #> = <#= RS.Renderer.GetInitializer(signal) #>;
+    read_<#= signal.Name #> = write_<#= signal.Name #> = <#= RS.Renderer.GetInitializer(signal) #>;
 <#         } #>
 <#     } #>
 }
