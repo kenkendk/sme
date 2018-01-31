@@ -61,7 +61,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -104,7 +104,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -147,7 +147,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -190,7 +190,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -233,7 +233,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -276,7 +276,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -319,7 +319,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -362,7 +362,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -405,7 +405,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -448,7 +448,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -491,7 +491,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -534,7 +534,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -577,7 +577,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -620,7 +620,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -663,7 +663,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -706,7 +706,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -749,7 +749,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -792,7 +792,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -835,7 +835,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -878,7 +878,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -921,7 +921,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -964,7 +964,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -1007,7 +1007,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -1050,7 +1050,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -1093,7 +1093,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -1136,7 +1136,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -1179,7 +1179,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -1222,7 +1222,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -1265,7 +1265,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -1308,7 +1308,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -1351,7 +1351,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -1394,7 +1394,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -1437,7 +1437,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -1480,7 +1480,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -1523,7 +1523,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -1566,7 +1566,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -1609,7 +1609,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -1652,7 +1652,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -1695,7 +1695,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -1738,7 +1738,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -1781,7 +1781,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -1824,7 +1824,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -1867,7 +1867,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -1910,7 +1910,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -1953,7 +1953,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -1996,7 +1996,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -2039,7 +2039,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -2082,7 +2082,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -2125,7 +2125,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -2168,7 +2168,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -2211,7 +2211,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -2254,7 +2254,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -2297,7 +2297,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -2340,7 +2340,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -2383,7 +2383,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -2426,7 +2426,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -2469,7 +2469,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -2512,7 +2512,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -2555,7 +2555,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
@@ -2598,7 +2598,7 @@ namespace SME.VHDL
 
 		public override string ToString()
 		{
-			return Value.ToString();
+			return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		string SME.Tracer.ITracerSerializable.Serialize(SME.Tracer.Tracer tracer)
