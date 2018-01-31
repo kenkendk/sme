@@ -39,12 +39,11 @@ namespace SME.Tracer
             return
                 (from bus in simulation.Graph.AllBusses
                  from prop in bus.BusType.GetProperties(BindingFlags.FlattenHierarchy | BindingFlags.Instance | BindingFlags.Public)
-                 let isDriver = bus.BusType.CustomAttributes.Any(x => typeof(TopLevelInputBusAttribute).IsAssignableFrom(x.AttributeType))
                  select new SignalEntry()
                  {
                      Bus = bus,
                      Property = prop,
-                     IsDriver = isDriver,
+                     IsDriver = simulation.TopLevelInputBusses.Contains(bus),
                      SortKey = simulation.BusNames[bus] + "." + prop.Name
                  })
                 .Where(x => !x.Bus.IsInternal)

@@ -227,7 +227,7 @@ namespace SME.AST
                        n.Instance.GetType().GetCustomAttributes(typeof(IgnoreAttribute), true).FirstOrDefault() == null
 							&&
                        !(n.Instance is SimulationProcess))
-				.Select(x => Parse(network, x))
+                .Select(x => Parse(network, x, simulation))
 				.ToArray();
 
 			if (network.Processes.Length == 0)
@@ -299,7 +299,7 @@ namespace SME.AST
 		/// </summary>
 		/// <param name="network">The top-level network.</param>
 		/// <param name="process">The process to build the AST for.</param>
-        protected virtual Process Parse(NetworkState network, ProcessMetadata process)
+        protected virtual Process Parse(NetworkState network, ProcessMetadata process, Simulation simulation)
 		{
             var st = process.Instance.GetType();
 
@@ -338,9 +338,9 @@ namespace SME.AST
                 }
             }
 
-			res.InputBusses = inputbusses.Select(x => Parse(network, res, x)).ToArray();
-			res.OutputBusses = outputbusses.Select(x => Parse(network, res, x)).ToArray();
-            res.InternalBusses = process.Instance.InternalBusses.Select(x => Parse(network, res, x)).ToArray();
+            res.InputBusses = inputbusses.Select(x => Parse(network, res, x, simulation)).ToArray();
+            res.OutputBusses = outputbusses.Select(x => Parse(network, res, x, simulation)).ToArray();
+            res.InternalBusses = process.Instance.InternalBusses.Select(x => Parse(network, res, x,simulation)).ToArray();
 			foreach (var ib in res.InternalBusses)
 				ib.IsInternal = true;
 
@@ -389,7 +389,8 @@ namespace SME.AST
 		/// <param name="network">The top-level network.</param>
 		/// <param name="proc">The process where the bus is located.</param>
 		/// <param name="bus">The bus to build the AST for.</param>
-		protected virtual Bus Parse(NetworkState network, ProcessState proc, IBus bus)
+        /// <param name="simulation">The simulation the AST is built for</param>
+        protected virtual Bus Parse(NetworkState network, ProcessState proc, IBus bus, Simulation simulation)
 		{
 			var st = bus.BusType;
 
@@ -401,8 +402,8 @@ namespace SME.AST
 				Name = NameWithoutPrefix(network, st.FullName, st),
 				SourceType = st,
                 SourceInstance = bus,
-				IsTopLevelInput = st.HasAttribute<TopLevelInputBusAttribute>(),
-				IsTopLevelOutput = st.HasAttribute<TopLevelOutputBusAttribute>(),
+                IsTopLevelInput = simulation.TopLevelInputBusses.Contains(bus),
+                IsTopLevelOutput = simulation.TopLevelOutputBusses.Contains(bus),
 				IsClocked = st.HasAttribute<ClockedBusAttribute>(),
 				IsInternal = st.HasAttribute<InternalBusAttribute>(),
 				Parent = network

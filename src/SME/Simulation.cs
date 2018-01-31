@@ -15,23 +15,23 @@ namespace SME
 		/// <summary>
 		/// The methods to call prior to running the simulation
 		/// </summary>
-        private List<Action<Simulation>> m_preloaders = new List<Action<Simulation>>();
+        private readonly List<Action<Simulation>> m_preloaders = new List<Action<Simulation>>();
 		/// <summary>
 		/// The methods to call each cycle before running the network during the simulation
 		/// </summary>
-        private List<Action<Simulation>> m_prerunners = new List<Action<Simulation>>();
+        private readonly List<Action<Simulation>> m_prerunners = new List<Action<Simulation>>();
         /// <summary>
         /// The methods to call each cycle before running the network during the simulation
         /// </summary>
-        private List<Action<Simulation>> m_postrunners = new List<Action<Simulation>>();
+        private readonly List<Action<Simulation>> m_postrunners = new List<Action<Simulation>>();
 		/// <summary>
 		/// The methods to call after the simulation
 		/// </summary>
-		private List<Action<Simulation>> m_postloaders = new List<Action<Simulation>>();
+        private readonly List<Action<Simulation>> m_postloaders = new List<Action<Simulation>>();
         /// <summary>
         /// The list of processes in the simulation
         /// </summary>
-        private Dictionary<IProcess, ProcessMetadata> m_processes = new Dictionary<IProcess, ProcessMetadata>();
+        private readonly Dictionary<IProcess, ProcessMetadata> m_processes = new Dictionary<IProcess, ProcessMetadata>();
 
         /// <summary>
         /// Create a unique scope for the simulation
@@ -58,6 +58,16 @@ namespace SME
         /// </summary>
         /// <value>The bus names.</value>
         public Dictionary<IBus, string> BusNames { get; } = new Dictionary<IBus, string>();
+
+        /// <summary>
+        /// The list of bus instances that are registered as top-level inputs
+        /// </summary>
+        public readonly HashSet<IBus> TopLevelInputBusses = new HashSet<IBus>();
+
+        /// <summary>
+        /// The list of bus instances that are registered as top-level outputs
+        /// </summary>
+        public readonly HashSet<IBus> TopLevelOutputBusses = new HashSet<IBus>();
 
         /// <summary>
         /// Gets the current running dependency graph
@@ -143,6 +153,30 @@ namespace SME
         }
 
         /// <summary>
+        /// Registers one or more busses as TopLevel input
+        /// </summary>
+        /// <returns>The simulation instance for chaining syntax use</returns>
+        /// <param name="inputs">The busses to register.</param>
+        public Simulation AddTopLevelInputs(params IBus[] inputs)
+        {
+            foreach (var b in inputs)
+                TopLevelInputBusses.Add(b);
+            return this;
+        }
+
+        /// <summary>
+        /// Registers one or more busses as TopLevel input
+        /// </summary>
+        /// <returns>The simulation instance for chaining syntax use</returns>
+        /// <param name="outputs">The busses to register.</param>
+        public Simulation AddTopLevelOutputs(params IBus[] outputs)
+        {
+            foreach (var b in outputs)
+                TopLevelOutputBusses.Add(b);
+            return this;
+        }
+
+        /// <summary>
         /// Creates a single process for each class that implements <see cref="IProcess"/> and runs the simulation on that
         /// </summary>
         /// <param name="asm">The assembly to load.</param>
@@ -196,7 +230,7 @@ namespace SME
 
             // Assign unique names to processes if there are multiple instances
             var busmap = new Dictionary<Type, List<IBus>>();
-            foreach (var b in m_processes.Values.SelectMany(x => x.Instance.InputBusses.Concat(x.Instance.OutputBusses).Concat(x.Instance.InternalBusses)).Distinct())
+            foreach (var b in m_processes.Values.Select(x => x.Instance).SelectMany(x => x.InputBusses.Concat(x.OutputBusses).Concat(x.InternalBusses).Concat(x.ClockedInputBusses)).Distinct())
             {
                 if (b == null)
                     continue;
@@ -205,6 +239,11 @@ namespace SME
                 if (!busmap.TryGetValue(b.BusType, out lp))
                     busmap[b.BusType] = lp = new List<IBus>();
                 lp.Add(b);
+
+                if (b.BusType.GetCustomAttributes(typeof(TopLevelInputBusAttribute), true).Any())
+                    TopLevelInputBusses.Add(b);
+                if (b.BusType.GetCustomAttributes(typeof(TopLevelOutputBusAttribute), true).Any())
+                    TopLevelOutputBusses.Add(b);
             }
 
             foreach (var lp in busmap.Values)
