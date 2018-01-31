@@ -179,6 +179,6 @@ namespace SME.Tracer
 
 		public virtual string BusSignalToName(SignalEntry p)
 		{
-			return p.SortKey;
+            return p.SortKey.Replace(",", "_");
 		}
 	}}
