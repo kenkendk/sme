@@ -126,7 +126,14 @@ namespace SME.VHDL
 
             ValidateNetwork(Network);
 
-            TypeScope = new VHDLTypeScope(Network.Processes.First(x => x.MainMethod != null).MainMethod.SourceMethod.Module);
+            var methodsource = Network.Processes.FirstOrDefault(x => x.MainMethod != null);
+            if (methodsource == null)
+            {
+                // This happens if we only have components in the design
+                TypeScope = new VHDLTypeScope(Network.Processes.First().CecilType.Module);
+            }
+            else
+                TypeScope = new VHDLTypeScope(methodsource.MainMethod.SourceMethod.Module);
 
             Types = Network
                 .All()
@@ -396,7 +403,7 @@ namespace SME.VHDL
             if (vt == VHDLTypes.BOOL || vt == VHDLTypes.SYSTEM_BOOL)
                 return "STD_LOGIC";
 
-            if (vt.IsSystemType)
+            if (vt.IsSystemType || vt.IsVHDLSigned || vt.IsVHDLUnsigned)
                 return TypeScope.StdLogicVectorEquivalent(vt).ToSafeVHDLName();
                 
             // TODO: Figure out how to best export array types
@@ -899,13 +906,13 @@ namespace SME.VHDL
 			var bus = (AST.Bus)s.Parent;
 			var st = bus.SourceType;
             if (bus.SourceInstance != null && Simulation.BusNames.ContainsKey(bus.SourceInstance))
-                return Simulation.BusNames[bus.SourceInstance] + "." + s.Name;
+                return (Simulation.BusNames[bus.SourceInstance] + "." + s.Name).Replace(",", "_");
             
             var name = st.Name + "." + s.Name;
 			if (st.DeclaringType != null)
 				name = st.DeclaringType.Name + "." + name;
 			
-			return name;
+            return name.Replace(",", "_");
 		}
 
 		/// <summary>
@@ -984,7 +991,7 @@ namespace SME.VHDL
 		public IEnumerable<BusSignal> WrittenSignals(AST.Process proc, AST.Bus bus)
 		{
 			// Components are assumed to use their outputs
-			if (proc.SourceInstance is IVHDLComponent)
+            if (proc.SourceInstance.Instance is IVHDLComponent)
 				return bus.Signals;
 
 			return proc

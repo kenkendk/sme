@@ -119,13 +119,13 @@ begin
             else
                 <#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#> <= to_std_logic(truncate(tmp));
             end if;
-<#        } else if (vhdltype.IsStdLogicVector || vhdltype.IsSystemType) { #>
+<#        } else if (vhdltype.IsStdLogicVector || vhdltype.IsSystemType || vhdltype.IsVHDLSigned || vhdltype.IsVHDLUnsigned) { #>
             if are_strings_equal(tmp, "U") then
                 <#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#> <= (others => 'U');
             else
-<#            if (vhdltype.IsSystemType && vhdltype.IsSigned) { #>
+<#            if ((vhdltype.IsSystemType || vhdltype.IsVHDLSigned) && vhdltype.IsSigned) { #>
                 <#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#> <= signed(to_std_logic_vector(truncate(tmp)));
-<#            } else if (vhdltype.IsSystemType && vhdltype.IsUnsigned) { #>
+<#            } else if ((vhdltype.IsSystemType || vhdltype.IsVHDLUnsigned) && vhdltype.IsUnsigned) { #>
                 <#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#> <= unsigned(to_std_logic_vector(truncate(tmp)));
 <#            } else { #>
                 <#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#> <= to_std_logic_vector(truncate(tmp));
@@ -146,7 +146,7 @@ begin
 #>
 	        read_csv_field(L, tmp);
 	        if not are_strings_equal(tmp, "U") then
-<#    if (vhdltype.IsStdLogicVector || vhdltype.IsSystemType) { #>
+<#    if (vhdltype.IsStdLogicVector || vhdltype.IsSystemType || vhdltype.IsVHDLSigned || vhdltype.IsVHDLUnsigned) { #>
             	if not are_strings_equal(str(<#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#>), tmp) then
                     newfailures := newfailures + 1;
                     report "Value for <#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#> in cycle " & integer'image(clockcycle) & " was: " & str(<#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#>) & " but should have been: " & truncate(tmp) severity Error;

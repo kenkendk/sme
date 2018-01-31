@@ -95,8 +95,22 @@ namespace SME.VHDL
 		/// </summary>
 		public bool IsComponent
 		{
-			get { return Process.SourceInstance is IVHDLComponent; }
+            get { return Process.SourceInstance.Instance is IVHDLComponent; }
 		}
+
+        /// <summary>
+        /// Gets the signals in the component
+        /// </summary>
+        public string ComponentInclude
+        {
+            get
+            {
+                if (!IsComponent)
+                    return null;
+
+                return (Process.SourceInstance.Instance as IVHDLComponent).IncludeRegion(this, 0);
+            }
+        }
 
 		/// <summary>
 		/// Gets the signals in the component
@@ -108,7 +122,7 @@ namespace SME.VHDL
 				if (!IsComponent)
 					return null;
 
-				return (Process.SourceInstance as IVHDLComponent).SignalRegion(Process.Name, 2);
+                return (Process.SourceInstance.Instance as IVHDLComponent).SignalRegion(this, 2);
 			}
 		}
 
@@ -122,7 +136,7 @@ namespace SME.VHDL
 				if (!IsComponent)
 					return null;
 
-				return (Process.SourceInstance as IVHDLComponent).ProcessRegion(Process.Name, 4);
+                return (Process.SourceInstance.Instance as IVHDLComponent).ProcessRegion(this, 4);
 			}
 		}
 

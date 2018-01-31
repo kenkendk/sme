@@ -427,7 +427,7 @@ begin
             #line hidden
             
             #line 122 ""
-        } else if (vhdltype.IsStdLogicVector || vhdltype.IsSystemType) { 
+        } else if (vhdltype.IsStdLogicVector || vhdltype.IsSystemType || vhdltype.IsVHDLSigned || vhdltype.IsVHDLUnsigned) { 
             
             #line default
             #line hidden
@@ -463,7 +463,7 @@ begin
             #line hidden
             
             #line 126 ""
-            if (vhdltype.IsSystemType && vhdltype.IsSigned) { 
+            if ((vhdltype.IsSystemType || vhdltype.IsVHDLSigned) && vhdltype.IsSigned) { 
             
             #line default
             #line hidden
@@ -499,7 +499,7 @@ begin
             #line hidden
             
             #line 128 ""
-            } else if (vhdltype.IsSystemType && vhdltype.IsUnsigned) { 
+            } else if ((vhdltype.IsSystemType || vhdltype.IsVHDLUnsigned) && vhdltype.IsUnsigned) { 
             
             #line default
             #line hidden
@@ -677,7 +677,7 @@ begin
             #line hidden
             
             #line 149 ""
-    if (vhdltype.IsStdLogicVector || vhdltype.IsSystemType) { 
+    if (vhdltype.IsStdLogicVector || vhdltype.IsSystemType || vhdltype.IsVHDLSigned || vhdltype.IsVHDLUnsigned) { 
             
             #line default
             #line hidden
