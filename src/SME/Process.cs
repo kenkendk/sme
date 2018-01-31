@@ -114,7 +114,9 @@ namespace SME
 				(from n in Loader.GetBusFields(this.GetType())
 					let attrInternal = n.GetCustomAttributes(typeof(InternalBusAttribute), true).FirstOrDefault()
 					where attrInternal != null
-					select (IBus)n.GetValue(this)).ToArray();
+					select (IBus)n.GetValue(this))
+                    .Where(x => x != null)
+                    .ToArray();
 
 			m_outputbusses = 
 				(from n in Loader.GetBusFields(this.GetType())
@@ -122,7 +124,9 @@ namespace SME
 					let attrOut = n.GetCustomAttributes(typeof(OutputBusAttribute), true).FirstOrDefault()
 					let attrInternal = n.GetCustomAttributes(typeof(InternalBusAttribute), true).FirstOrDefault()
 					where attrInternal == null && (attrOut != null || ((attrIn == null) == (attrOut == null)))
-					select (IBus)n.GetValue(this)).ToArray();
+					select (IBus)n.GetValue(this))
+                    .Where(x => x != null)
+                    .ToArray();
 
 			var inputList = 
 				(from n in Loader.GetBusFields(this.GetType())
@@ -130,7 +134,9 @@ namespace SME
 					let attrOut = n.GetCustomAttributes(typeof(OutputBusAttribute), true).FirstOrDefault()
 					let attrInternal = n.GetCustomAttributes(typeof(InternalBusAttribute), true).FirstOrDefault()
 				    where attrInternal == null && (attrOut == null || ((attrIn == null)  == (attrOut == null)))
-					select (IBus)n.GetValue(this)).ToArray();
+					select (IBus)n.GetValue(this))
+                    .Where(x => x != null)
+                    .ToArray();
 
 
 			var violator = m_internalbusses.FirstOrDefault(x => x.BusType.GetCustomAttributes(typeof(TopLevelInputBusAttribute), true).FirstOrDefault() != null);
