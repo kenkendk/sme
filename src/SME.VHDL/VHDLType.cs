@@ -292,11 +292,6 @@ namespace SME.VHDL
 		private readonly TypeDefinition[] m_resolvedNumericTypes;
 
 		/// <summary>
-		/// Regulaer expression used to parse a STD_LOGIC_VECTOR definition
-		/// </summary>
-		private readonly System.Text.RegularExpressions.Regex _re = new System.Text.RegularExpressions.Regex(@"STD_LOGIC_VECTOR\((?<from>\d+) +(?<direction>(to)|(downto)) +(?<to>\d+)\)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-
-		/// <summary>
 		/// The string types lookup.
 		/// </summary>
 		private readonly Dictionary<string, VHDLType> m_stringTypes;
@@ -377,12 +372,12 @@ namespace SME.VHDL
 				return m_stringTypes[typename];
 
 
-			var m = _re.Match(typename);
+            var m = VHDLHelper.VHDLRE.Match(typename);
 			VHDLType res;
 			if (m.Success && m.Length == typename.Length)
 			{
-				var fr = int.Parse(m.Groups["from"].Value);
-				var to = int.Parse(m.Groups["to"].Value);
+				var fr = int.Parse(m.Groups["lower"].Value);
+				var to = int.Parse(m.Groups["upper"].Value);
 
 				if (alias == null && string.Equals(m.Groups["direction"].Value, "downto", StringComparison.OrdinalIgnoreCase))
 					return GetStdLogicVector(Math.Max(fr, to) - Math.Min(fr, to) + 1);

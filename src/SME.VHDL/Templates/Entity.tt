@@ -16,6 +16,11 @@ use work.SYSTEM_TYPES.ALL;
 -- library CUSTOM_TYPES;
 use work.CUSTOM_TYPES.ALL;
 
+<# if (RSP.IsComponent) { #>
+  -- Component declaration and signals
+<#= RSP.ComponentInclude #>
+<# } #>
+
 -- User defined packages here
 -- #### USER-DATA-IMPORTS-START
 -- #### USER-DATA-IMPORTS-END
@@ -168,14 +173,7 @@ begin
             -- #### USER-DATA-NONCLOCKEDRESETCODE-START
             -- #### USER-DATA-NONCLOCKEDRESETCODE-END
 
-        <# if (Process.IsClocked) { #>
-
         elsif RDY /= reentry_guard then
-        <# } else  { #>
-
-        elsif RDY /= reentry_guard then
-        <# } #>
-
 
                 reentry_guard := RDY;
 

@@ -129,7 +129,7 @@ namespace SME.VHDL.Components
 			return ind + string.Join(Environment.NewLine + ind, string.Format(str.Trim(), Naming.ToValidName(this.GetType().Name), "DSP48E1", InputAWidth - 1, InputBWidth - 1, InputCWidth - 1, InputDWidth - 1, OutputWidth - 1, zeroes_for_a, zeroes_for_b, zeroes_for_c, zeroes_for_d).Replace("\t", new string(' ', 4)).Replace("\r", "").Split(new string[] { "\n" }, StringSplitOptions.None));
 		}
 
-		string IVHDLComponent.SignalRegion(string componentname, int indentation)
+        string IVHDLComponent.SignalRegion(RenderStateProcess renderer, int indentation)
 		{
 			return "";
 		}
@@ -207,8 +207,14 @@ namespace SME.VHDL.Components
 
 		}
 
-		string IVHDLComponent.ProcessRegion(string componentname, int indentation)
+        string IVHDLComponent.IncludeRegion(RenderStateProcess renderer, int indentation)
+        {
+            return VHDLHelper.CreateComponentInclude(renderer.Parent.Config, indentation);
+        }
+
+        string IVHDLComponent.ProcessRegion(RenderStateProcess renderer, int indentation)
 		{
+            var componentname = renderer.Process.InstanceName;
 			var cfg = DSPConfig;
 			var configbody = string.Format(@"
    -- Feature Control Attributes: Data Path Selection

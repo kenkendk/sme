@@ -110,6 +110,7 @@
     <Compile Include="RenderHelper.cs" />
     <Compile Include="Transformations\FixSwitchStatementTypes.cs" />
     <Compile Include="Transformations\RemoveNonstaticSwitchLabels.cs" />
+    <Compile Include="VHDLHelper.cs" />
     <Compile Include="RenderConfig.cs" />
   </ItemGroup>
   <ItemGroup>
