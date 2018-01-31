@@ -43,7 +43,7 @@ namespace SME.VHDL.Transformations
 		/// <param name="el">The item to visit.</param>
 		public ASTItem Transform(ASTItem el)
 		{
-			if (State.SUPPORTS_VHDL_2008)
+            if (State.Config.SUPPORTS_VHDL_2008)
 				return el;
 
 			if (el is ConditionalExpression)

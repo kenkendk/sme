@@ -345,7 +345,7 @@ package CUSTOM_TYPES is
             #line hidden
             
             #line 56 ""
-         } else if (RS.USE_EXPLICIT_LITERAL_ARRAY_LENGTH) { 
+         } else if (RS.Config.USE_EXPLICIT_LITERAL_ARRAY_LENGTH) { 
             
             #line default
             #line hidden

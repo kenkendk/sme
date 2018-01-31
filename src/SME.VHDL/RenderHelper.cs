@@ -427,7 +427,7 @@ namespace SME.VHDL
         /// <param name="e">The expression to render</param>
         private string RenderExpression(AST.BinaryOperatorExpression e)
         {
-            if (Parent.AVOID_SLL_AND_SRL)
+            if (Parent.Config.AVOID_SLL_AND_SRL)
             {
                 if (e.Operator == ICSharpCode.NRefactory.CSharp.BinaryOperatorType.ShiftLeft)
                     return string.Format("shift_left({0}, {1})", RenderExpression(e.Left), RenderExpression(e.Right));
@@ -465,7 +465,7 @@ namespace SME.VHDL
         /// <param name="e">The expression to render</param>
         private string RenderExpression(AST.ConditionalExpression e)
         {
-            if (!Parent.SUPPORTS_VHDL_2008)
+            if (!Parent.Config.SUPPORTS_VHDL_2008)
                 throw new Exception("Unexpected conditional found when the output is not VHDL 2008 compatible");
 
             return string.Format("{0} when {1} else {2}", RenderExpression(e.TrueExpression), RenderExpression(e.ConditionExpression), RenderExpression(e.FalseExpression));

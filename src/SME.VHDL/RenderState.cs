@@ -42,25 +42,10 @@ namespace SME.VHDL
 		/// </summary>
 		public readonly Network Network;
 
-		/// <summary>
-		/// Enable this to use the VHDL 2008 features if the VHDL compiler supports it
-		/// </summary>
-		public readonly bool SUPPORTS_VHDL_2008 = false;
-
-		/// <summary>
-		/// Activates explicit selection of the IEEE_1164 concatenation operator
-		/// </summary>
-		public readonly bool USE_EXPLICIT_CONCATENATION_OPERATOR = true;
-
-		/// <summary>
-		/// This makes the array lengths use explicit lengths instead of &quot;(x - 1)&quot;
-		/// </summary>
-		public readonly bool USE_EXPLICIT_LITERAL_ARRAY_LENGTH = true;
-
-		/// <summary>
-		/// This avoids emitting code with SLL and SRL, and uses shift_left() and shift_right() instead
-		/// </summary>
-		public readonly bool AVOID_SLL_AND_SRL = true;
+        /// <summary>
+        /// The render configuration
+        /// </summary>
+        public readonly RenderConfig Config;
 
 		/// <summary>
 		/// The simulation forming the basis of the network
@@ -128,13 +113,14 @@ namespace SME.VHDL
         /// <param name="backupfolder">The folder where backups are stored.</param>
         /// <param name="csvtracename">The name of the CSV trace file.</param>
         /// <param name="customfiles">A list of VHDL files to include in the Makefile, without the VHDL extension</param>
-        public RenderState(Simulation simulation, string targetfolder, string backupfolder = null, string csvtracename = null, IEnumerable<string> customfiles = null)
+        public RenderState(Simulation simulation, string targetfolder, string backupfolder = null, string csvtracename = null, IEnumerable<string> customfiles = null, RenderConfig config = null)
         {
             Simulation = simulation;
             TargetFolder = targetfolder;
             BackupFolder = backupfolder;
             CSVTracename = csvtracename;
             CustomFiles = customfiles;
+            Config = config ?? new RenderConfig();
 
             Network = ParseProcesses.BuildNetwork(simulation, true);
 
@@ -776,7 +762,7 @@ namespace SME.VHDL
 
                                 var ellength = arc.Initializer.Elements.Count;
                                 var eltrail = " - 1";
-                                if (USE_EXPLICIT_LITERAL_ARRAY_LENGTH)
+                                if (Config.USE_EXPLICIT_LITERAL_ARRAY_LENGTH)
                                 {
                                     ellength--;
                                     eltrail = "";
@@ -798,7 +784,7 @@ namespace SME.VHDL
 
                                 var ellength = arc.ElementExpressions.Length;
                                 var eltrail = " - 1";
-                                if (USE_EXPLICIT_LITERAL_ARRAY_LENGTH)
+                                if (Config.USE_EXPLICIT_LITERAL_ARRAY_LENGTH)
                                 {
                                     ellength--;
                                     eltrail = "";
@@ -820,7 +806,7 @@ namespace SME.VHDL
 
                                 var ellength = (int)((AST.PrimitiveExpression)arc.SizeExpression).Value;
                                 var eltrail = " - 1";
-                                if (USE_EXPLICIT_LITERAL_ARRAY_LENGTH)
+                                if (Config.USE_EXPLICIT_LITERAL_ARRAY_LENGTH)
                                 {
                                     ellength--;
                                     eltrail = "";
@@ -838,7 +824,7 @@ namespace SME.VHDL
 
                                 var ellength = arc.Length;
                                 var eltrail = " - 1";
-                                if (USE_EXPLICIT_LITERAL_ARRAY_LENGTH)
+                                if (Config.USE_EXPLICIT_LITERAL_ARRAY_LENGTH)
                                 {
                                     ellength--;
                                     eltrail = "";

@@ -157,7 +157,7 @@ namespace SME.VHDL
                             };
 
                             string wstr;
-                            if (render.USE_EXPLICIT_CONCATENATION_OPERATOR)
+                            if (render.Config.USE_EXPLICIT_CONCATENATION_OPERATOR)
                                 wstr = string.Format("IEEE.STD_LOGIC_1164.\"&\"(\"{0}\", {1})", new string('0', target.Length - svhdl.Length), "{0}");
                             else
                                 wstr = string.Format("\"{0}\" & {1}", new string('0', target.Length - svhdl.Length), "{0}");
@@ -314,7 +314,7 @@ namespace SME.VHDL
                         render.TypeLookup[iexp] = target;
 
                         string wexpr;
-                        if (render.USE_EXPLICIT_CONCATENATION_OPERATOR)
+                        if (render.Config.USE_EXPLICIT_CONCATENATION_OPERATOR)
                             wexpr = string.Format("IEEE.STD_LOGIC_1164.\"&\"(\"{0}\", {1})", new string('0', target.Length - svhdl.Length), "{0}");
                         else
                             wexpr = string.Format("\"{0}\" & {1}", new string('0', target.Length - svhdl.Length), "{0}");
