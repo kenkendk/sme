@@ -113,4 +113,24 @@ namespace SME.VHDL.Templates
 			}
 		}
 	}
+
+    public partial class VivadoProject
+    {
+        public readonly Network Network;
+        public readonly RenderState RS;
+        public readonly Simulation Simulation;
+        public readonly string Runtime;
+        public readonly AST.Process[] Processes;
+
+        public VivadoProject(RenderState renderer, AST.Process[] processes)
+        {
+            RS = renderer;
+            Network = renderer.Network;
+            Simulation = renderer.Simulation;
+            Runtime = ((Simulation.Tick + 2) * 10) + "ns";
+            Processes = processes;
+
+        }
+
+    }
 }

@@ -112,6 +112,9 @@
     <Compile Include="Transformations\RemoveNonstaticSwitchLabels.cs" />
     <Compile Include="VHDLHelper.cs" />
     <Compile Include="RenderConfig.cs" />
+    <Compile Include="Templates\VivadoProject.cs">
+      <DependentUpon>VivadoProject.tt</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -148,6 +151,10 @@
       <LastGenOutput>ExportTopLevel.cs</LastGenOutput>
     </None>
     <None Include="SME.VHDL.nuspec" />
+    <None Include="Templates\VivadoProject.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>VivadoProject.cs</LastGenOutput>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SME\SME.csproj">

@@ -189,40 +189,67 @@ namespace SME.VHDL
 				throw new Exception($"Cannot have an internal bus that is also toplevel input or output: {sp.Name}");
 		}
 
-		/// <summary>
-		/// Renders this instance to files
-		/// </summary>
-		public void Render()
-		{
+        /// <summary>
+        /// Renders this instance to files
+        /// </summary>
+        public void Render()
+        {
             // Build a distinct map based on the types
             var used = new HashSet<Type>();
             var processes =
-                Network.Processes.Select(x => {
+                Network.Processes.Select(x =>
+                {
                     if (used.Contains(x.SourceType))
                         return null;
 
                     used.Add(x.SourceType);
                     return x;
-            })
+                })
             .Where(x => x != null)
             .ToArray();
 
-            BackupExistingTarget(processes.Select(x => x.SourceInstance.Instance), TargetFolder, BackupFolder);
+            var extrafiles = from f in System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                             where
+                                 f.EndsWith(".vhdl", StringComparison.InvariantCultureIgnoreCase)
+                                 &&
+                                 f.StartsWith(typeof(Templates.TopLevel).Namespace + ".", StringComparison.InvariantCultureIgnoreCase)
+                             select f;
 
-            var targetTopLevel = Path.Combine(TargetFolder, Naming.AssemblyNameToFileName(Simulation));
+            var filenames = new
+            {
+                toplevel = Naming.AssemblyNameToFileName(Simulation),
+                export = "Export_" + Naming.AssemblyNameToFileName(Simulation),
+                testbench = "TestBench_" + Naming.AssemblyNameToFileName(Simulation),
+                types = "Types_" + Naming.AssemblyNameToFileName(Simulation),
+                makefile = "Makefile",
+                projectfile = Config.DEVICE_VENDOR == FPGAVendor.Xilinx ? System.IO.Path.ChangeExtension(Naming.AssemblyNameToFileName(Simulation), "xpr") : null
+            };
 
+
+
+            var protectedfiles = 
+                filenames.GetType().GetFields().Where(x => x.FieldType == typeof(string)).Select(x => x.GetValue(x) as string)
+                .Concat(extrafiles)
+                .Concat(processes.Select(x => Naming.ProcessNameToFileName(x.SourceInstance.Instance)));
+
+            BackupExistingTarget(protectedfiles, TargetFolder, BackupFolder);
+
+            var targetTopLevel = Path.Combine(TargetFolder, filenames.toplevel);
 			File.WriteAllText(targetTopLevel, MergeUserData(new TopLevel(this).TransformText(), targetTopLevel));
 
-            var targetTestBench = Path.Combine(TargetFolder, "TestBench_" + Naming.AssemblyNameToFileName(Simulation));
+            var targetTestBench = Path.Combine(TargetFolder, filenames.testbench);
 			File.WriteAllText(targetTestBench, MergeUserData(new TracefileTester(this).TransformText(), targetTestBench));
 
-            var targetTypeLib = Path.Combine(TargetFolder, "Types_" + Naming.AssemblyNameToFileName(Simulation));
+            var targetTypeLib = Path.Combine(TargetFolder, filenames.types);
 			File.WriteAllText(targetTypeLib, MergeUserData(new CustomTypes(this).TransformText(), targetTypeLib));
 
-            var exportTypeLib = Path.Combine(TargetFolder, "Export_" + Naming.AssemblyNameToFileName(Simulation));
+            var exportTypeLib = Path.Combine(TargetFolder, filenames.export);
 			File.WriteAllText(exportTypeLib, MergeUserData(new ExportTopLevel(this).TransformText(), exportTypeLib));
 
-			File.WriteAllText(Path.Combine(TargetFolder, "Makefile"), new GHDL_Makefile(this).TransformText());
+            File.WriteAllText(Path.Combine(TargetFolder, filenames.makefile), new GHDL_Makefile(this).TransformText());
+
+            if (Config.DEVICE_VENDOR == FPGAVendor.Xilinx)
+                File.WriteAllText(Path.Combine(TargetFolder, filenames.projectfile), new VivadoProject(this, processes).TransformText());
 
             foreach (var p in processes)
 			{
@@ -231,13 +258,7 @@ namespace SME.VHDL
 				File.WriteAllText(targetfile, MergeUserData(new Entity(this, rsp).TransformText(), targetfile));
 			}
 
-			foreach (
-				var vhdlfile in from f in System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceNames()
-					where
-						f.EndsWith(".vhdl", StringComparison.InvariantCultureIgnoreCase)
-						&&
-						f.StartsWith(typeof(Templates.TopLevel).Namespace + ".", StringComparison.InvariantCultureIgnoreCase)
-						select f)
+            foreach (var vhdlfile in extrafiles)
 				using (var rs = new System.IO.StreamReader(System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(vhdlfile)))
 					File.WriteAllText(Path.Combine(TargetFolder, vhdlfile.Substring(typeof(Templates.TopLevel).Namespace.Length + 1)), rs.ReadToEnd());
 			
@@ -246,10 +267,10 @@ namespace SME.VHDL
 		/// <summary>
 		/// Makes a backup of all target files
 		/// </summary>
-		/// <param name="processes">The processes being rendered.</param>
 		/// <param name="targetfolder">The folder where output is stored.</param>
 		/// <param name="backupfolder">The folder where backups are stored.</param>
-		private void BackupExistingTarget(IEnumerable<IProcess> processes, string targetfolder, string backupfolder)
+        /// <param name="filenames">A list of extra files that may be overwritten/regenerated</param>
+        private void BackupExistingTarget(IEnumerable<string> filenames, string targetfolder, string backupfolder)
 		{
 			backupfolder = backupfolder ?? targetfolder;
 
@@ -264,17 +285,12 @@ namespace SME.VHDL
 
 				Directory.CreateDirectory(backupname);
 
-				var s = Path.Combine(targetfolder, Naming.AssemblyNameToFileName(processes));
-				if (File.Exists(s))
-					File.Copy(s, Path.Combine(backupname, Naming.AssemblyNameToFileName(processes)));
-
-
-                foreach (var p in processes.Select(x => x.GetType()).Distinct())
-				{
-					var source = Path.Combine(targetfolder, Naming.ProcessNameToFileName(p));
-					if (File.Exists(source))
-						File.Copy(source, Path.Combine(backupname, Naming.ProcessNameToFileName(p)));
-				}
+                foreach (var f in (filenames ?? new string[0]).Where(x => !string.IsNullOrWhiteSpace(x)))
+                {
+                    var source = Path.Combine(targetfolder, f);
+                    if (File.Exists(source))
+                        File.Copy(source, Path.Combine(backupname, f));
+                }
 			}
 			else
 			{
