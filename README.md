@@ -14,7 +14,7 @@ By leveraging the features of a modern C# IDE, such as Visual Studio, it becomes
 
 Most other VHDL generating tools, attempt to use a sequential programming model, and then extract as much concurrency from this as possible.
 
-With SME, the design is naturally concurrent, making it much simple to compare the source C# model with the resulting VHDL output, and thus also making it simpler to reason about final resource usage and performance.
+With SME, the design is naturally concurrent, making it much simpler to compare the source C# model with the resulting VHDL output, and thus also making it simpler to reason about final resource usage and performance.
 
 The concurrency in SME arises from the use of encapsulated processes as well as explict communication with latencies.
 
