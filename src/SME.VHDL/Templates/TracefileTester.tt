@@ -107,7 +107,8 @@ begin
             newfailures := 0;
 
 <# if (RS.DriverSignals.Count() > 0) { #>
-            -- Write all driver signals out
+            -- Write all driver signals out, just before the next clock tick
+            wait for <#= RS.ClockPulseLength - 1 #> NS;
 
 <#     foreach (var signal in RS.DriverSignals) { 
            var vhdltype = RS.VHDLType(signal);
@@ -138,7 +139,8 @@ begin
 <#     } #>
 <# } #>
 
-            wait until Rising_edge(CLOCK);
+            -- Wait until the signals are settled before veriying the results
+            wait until falling_edge(CLOCK);
 
             -- Compare each signal with the value in the CSV file
 <# foreach (var signal in RS.VerifySignals) { 

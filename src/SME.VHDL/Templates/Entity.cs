@@ -321,13 +321,13 @@ namespace SME.VHDL.Templates {
             #line hidden
             
             #line 58 ""
-            this.Write("    out_");
+            this.Write("    ");
             
             #line default
             #line hidden
             
             #line 58 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName(busname + "_" + signal.Name) ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("out_" + busname + "_" + signal.Name) ));
             
             #line default
             #line hidden
@@ -472,37 +472,37 @@ namespace SME.VHDL.Templates {
             
             #line 71 ""
             this.Write("\n    -- Clock signal\n    CLK : in Std_logic;\n\n    -- Ready signal\n    RDY : in St" +
-                    "d_logic;\n\n    -- Finished signal\n    FIN : out Std_logic;\n\n    -- Reset signal\n " +
-                    "   RST : in Std_logic\n );\nend ");
-            
-            #line default
-            #line hidden
-            
-            #line 84 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Process.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 84 ""
-            this.Write(";\n\narchitecture RTL of ");
-            
-            #line default
-            #line hidden
-            
-            #line 86 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Process.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 86 ""
-            this.Write(" is\n");
+                    "d_logic;\n\n    -- Finished signal\n    FIN : out Std_logic;\n\n    -- Enable signal\n" +
+                    "    ENB : in Std_logic;\n\n    -- Reset signal\n    RST : in Std_logic\n );\nend ");
             
             #line default
             #line hidden
             
             #line 87 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Process.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 87 ""
+            this.Write(";\n\narchitecture RTL of ");
+            
+            #line default
+            #line hidden
+            
+            #line 89 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Process.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 89 ""
+            this.Write(" is\n");
+            
+            #line default
+            #line hidden
+            
+            #line 90 ""
  foreach (var bus in Process.InternalBusses) {
        var busname = RS.GetLocalBusName(bus, Process);
 
@@ -510,164 +510,140 @@ namespace SME.VHDL.Templates {
             #line default
             #line hidden
             
-            #line 90 ""
+            #line 93 ""
             this.Write("  -- Internal bus ");
             
             #line default
             #line hidden
             
-            #line 90 ""
+            #line 93 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( busname ));
             
             #line default
             #line hidden
             
-            #line 90 ""
+            #line 93 ""
             this.Write(" signals\n");
             
             #line default
             #line hidden
             
-            #line 91 ""
+            #line 94 ""
      foreach (var signal in bus.Signals) { 
             
             #line default
             #line hidden
             
-            #line 92 ""
+            #line 95 ""
             this.Write("  signal ");
-            
-            #line default
-            #line hidden
-            
-            #line 92 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName(busname + "_" + signal.Name) ));
-            
-            #line default
-            #line hidden
-            
-            #line 92 ""
-            this.Write(": ");
-            
-            #line default
-            #line hidden
-            
-            #line 92 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( RS.VHDLWrappedTypeName(signal) ));
-            
-            #line default
-            #line hidden
-            
-            #line 92 ""
-            this.Write(";\n");
-            
-            #line default
-            #line hidden
-            
-            #line 93 ""
-     } 
-            
-            #line default
-            #line hidden
-            
-            #line 94 ""
-            this.Write("\n");
             
             #line default
             #line hidden
             
             #line 95 ""
- } 
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName(busname + "_" + signal.Name) ));
             
             #line default
             #line hidden
             
-            #line 96 ""
-            this.Write("\n");
+            #line 95 ""
+            this.Write(": ");
             
             #line default
             #line hidden
             
-            #line 97 ""
- if (Process.SharedSignals.Any()) { 
+            #line 95 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( RS.VHDLWrappedTypeName(signal) ));
             
             #line default
             #line hidden
             
-            #line 98 ""
-            this.Write("  -- Internal signals\n");
-            
-            #line default
-            #line hidden
-            
-            #line 99 ""
-     foreach (var s in Process.SharedSignals) { 
-            
-            #line default
-            #line hidden
-            
-            #line 100 ""
-            this.Write("  signal ");
-            
-            #line default
-            #line hidden
-            
-            #line 100 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( s.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 100 ""
-            this.Write(" : ");
-            
-            #line default
-            #line hidden
-            
-            #line 100 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( RS.VHDLWrappedTypeName(s) ));
-            
-            #line default
-            #line hidden
-            
-            #line 100 ""
+            #line 95 ""
             this.Write(";\n");
             
             #line default
             #line hidden
             
-            #line 101 ""
+            #line 96 ""
      } 
             
             #line default
             #line hidden
             
-            #line 102 ""
- } 
-            
-            #line default
-            #line hidden
-            
-            #line 103 ""
+            #line 97 ""
             this.Write("\n");
             
             #line default
             #line hidden
             
+            #line 98 ""
+ } 
+            
+            #line default
+            #line hidden
+            
+            #line 99 ""
+            this.Write("\n");
+            
+            #line default
+            #line hidden
+            
+            #line 100 ""
+ if (Process.SharedSignals.Any()) { 
+            
+            #line default
+            #line hidden
+            
+            #line 101 ""
+            this.Write("  -- Internal signals\n");
+            
+            #line default
+            #line hidden
+            
+            #line 102 ""
+     foreach (var s in Process.SharedSignals) { 
+            
+            #line default
+            #line hidden
+            
+            #line 103 ""
+            this.Write("  signal ");
+            
+            #line default
+            #line hidden
+            
+            #line 103 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( s.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 103 ""
+            this.Write(" : ");
+            
+            #line default
+            #line hidden
+            
+            #line 103 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( RS.VHDLWrappedTypeName(s) ));
+            
+            #line default
+            #line hidden
+            
+            #line 103 ""
+            this.Write(";\n");
+            
+            #line default
+            #line hidden
+            
             #line 104 ""
- if (RSP.IsComponent) { 
+     } 
             
             #line default
             #line hidden
             
             #line 105 ""
-            this.Write("  -- Component declaration and signals\n");
-            
-            #line default
-            #line hidden
-            
-            #line 106 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( RSP.ComponentSignals ));
+ } 
             
             #line default
             #line hidden
@@ -679,194 +655,240 @@ namespace SME.VHDL.Templates {
             #line hidden
             
             #line 107 ""
- } 
-            
-            #line default
-            #line hidden
-            
-            #line 108 ""
-            this.Write("\n");
-            
-            #line default
-            #line hidden
-            
-            #line 109 ""
- if (Process.Methods != null && Process.Methods.Any(x => !x.Ignore)) { 
-            
-            #line default
-            #line hidden
-            
-            #line 110 ""
-            this.Write("  -- Internal methods\n");
-            
-            #line default
-            #line hidden
-            
-            #line 111 ""
-     foreach (var s in Process.Methods.Where(x => !x.Ignore)) { 
-            
-            #line default
-            #line hidden
-            
-            #line 112 ""
-         foreach(var line in RSP.Helper.RenderMethod(s)) { 
-            
-            #line default
-            #line hidden
-            
-            #line 113 ""
-            this.Write("  ");
-            
-            #line default
-            #line hidden
-            
-            #line 113 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( line ));
-            
-            #line default
-            #line hidden
-            
-            #line 113 ""
-            this.Write("\n");
-            
-            #line default
-            #line hidden
-            
-            #line 114 ""
-         } 
-            
-            #line default
-            #line hidden
-            
-            #line 115 ""
-            this.Write("\n");
-            
-            #line default
-            #line hidden
-            
-            #line 116 ""
-     } 
-            
-            #line default
-            #line hidden
-            
-            #line 117 ""
- } 
-            
-            #line default
-            #line hidden
-            
-            #line 118 ""
-            this.Write("\n\n  -- User defined signals, procedures and components here\n  -- #### USER-DATA-S" +
-                    "IGNALS-START\n  -- #### USER-DATA-SIGNALS-END\n\nbegin\n\n    -- Custom processes go " +
-                    "here\n    -- #### USER-DATA-PROCESSES-START\n    -- #### USER-DATA-PROCESSES-END\n\n" +
-                    "");
-            
-            #line default
-            #line hidden
-            
-            #line 130 ""
  if (RSP.IsComponent) { 
             
             #line default
             #line hidden
             
-            #line 131 ""
-            this.Write("    -- Component instantiation\n");
+            #line 108 ""
+            this.Write("  -- Component declaration and signals\n");
             
             #line default
             #line hidden
             
-            #line 132 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( RSP.ComponentProcesses ));
+            #line 109 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( RSP.ComponentSignals ));
             
             #line default
             #line hidden
             
-            #line 132 ""
+            #line 109 ""
             this.Write("\n");
             
             #line default
             #line hidden
             
+            #line 110 ""
+ } 
+            
+            #line default
+            #line hidden
+            
+            #line 111 ""
+            this.Write("\n");
+            
+            #line default
+            #line hidden
+            
+            #line 112 ""
+ if (Process.Methods != null && Process.Methods.Any(x => !x.Ignore)) { 
+            
+            #line default
+            #line hidden
+            
+            #line 113 ""
+            this.Write("  -- Internal methods\n");
+            
+            #line default
+            #line hidden
+            
+            #line 114 ""
+     foreach (var s in Process.Methods.Where(x => !x.Ignore)) { 
+            
+            #line default
+            #line hidden
+            
+            #line 115 ""
+         foreach(var line in RSP.Helper.RenderMethod(s)) { 
+            
+            #line default
+            #line hidden
+            
+            #line 116 ""
+            this.Write("  ");
+            
+            #line default
+            #line hidden
+            
+            #line 116 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( line ));
+            
+            #line default
+            #line hidden
+            
+            #line 116 ""
+            this.Write("\n");
+            
+            #line default
+            #line hidden
+            
+            #line 117 ""
+         } 
+            
+            #line default
+            #line hidden
+            
+            #line 118 ""
+            this.Write("\n");
+            
+            #line default
+            #line hidden
+            
+            #line 119 ""
+     } 
+            
+            #line default
+            #line hidden
+            
+            #line 120 ""
+ } 
+            
+            #line default
+            #line hidden
+            
+            #line 121 ""
+            this.Write("\n  -- User defined signals, procedures and components here\n  -- #### USER-DATA-SI" +
+                    "GNALS-START\n  -- #### USER-DATA-SIGNALS-END\n\nbegin\n\n    -- Custom processes go h" +
+                    "ere\n    -- #### USER-DATA-PROCESSES-START\n    -- #### USER-DATA-PROCESSES-END\n\n");
+            
+            #line default
+            #line hidden
+            
+            #line 132 ""
+ if (RSP.IsComponent) { 
+            
+            #line default
+            #line hidden
+            
             #line 133 ""
- } else { 
+            this.Write("    -- Component instantiation\n");
             
             #line default
             #line hidden
             
             #line 134 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( RSP.ComponentProcesses ));
+            
+            #line default
+            #line hidden
+            
+            #line 134 ""
+            this.Write("\n");
+            
+            #line default
+            #line hidden
+            
+            #line 135 ""
+ } else { 
+            
+            #line default
+            #line hidden
+            
+            #line 136 ""
+            this.Write("\n");
+            
+            #line default
+            #line hidden
+            
+            #line 137 ""
+
+var sensitivity_signal = RSP.Process.IsClocked ? "CLK" : "RDY";
+
+            
+            #line default
+            #line hidden
+            
+            #line 140 ""
             this.Write("\n    process(\n        -- Custom sensitivity signals here\n        -- #### USER-DAT" +
-                    "A-SENSITIVITY-START\n        -- #### USER-DATA-SENSITIVITY-END\n        RDY,\n     " +
-                    "   RST\n    )\n");
-            
-            #line default
-            #line hidden
-            
-            #line 142 ""
-         if (RSP.Variables.Count() > 0) { 
-            
-            #line default
-            #line hidden
-            
-            #line 143 ""
-            this.Write("    -- Internal variables\n");
-            
-            #line default
-            #line hidden
-            
-            #line 144 ""
-         } 
+                    "A-SENSITIVITY-START\n        -- #### USER-DATA-SENSITIVITY-END\n        ");
             
             #line default
             #line hidden
             
             #line 145 ""
-         foreach(var s in RSP.Variables) { 
+            this.Write(this.ToStringHelper.ToStringWithCulture( sensitivity_signal ));
             
             #line default
             #line hidden
             
-            #line 146 ""
-            this.Write("    variable ");
-            
-            #line default
-            #line hidden
-            
-            #line 146 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( s.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 146 ""
-            this.Write(" : ");
-            
-            #line default
-            #line hidden
-            
-            #line 146 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( RS.VHDLWrappedTypeName(s) ));
-            
-            #line default
-            #line hidden
-            
-            #line 146 ""
-            this.Write(";\n");
-            
-            #line default
-            #line hidden
-            
-            #line 147 ""
-         } 
+            #line 145 ""
+            this.Write(",\n        RST\n    )\n");
             
             #line default
             #line hidden
             
             #line 148 ""
+         if (RSP.Variables.Count() > 0) { 
+            
+            #line default
+            #line hidden
+            
+            #line 149 ""
+            this.Write("    -- Internal variables\n");
+            
+            #line default
+            #line hidden
+            
+            #line 150 ""
+         } 
+            
+            #line default
+            #line hidden
+            
+            #line 151 ""
+         foreach(var s in RSP.Variables) { 
+            
+            #line default
+            #line hidden
+            
+            #line 152 ""
+            this.Write("    variable ");
+            
+            #line default
+            #line hidden
+            
+            #line 152 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( s.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 152 ""
+            this.Write(" : ");
+            
+            #line default
+            #line hidden
+            
+            #line 152 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( RS.VHDLWrappedTypeName(s) ));
+            
+            #line default
+            #line hidden
+            
+            #line 152 ""
+            this.Write(";\n");
+            
+            #line default
+            #line hidden
+            
+            #line 153 ""
+         } 
+            
+            #line default
+            #line hidden
+            
+            #line 154 ""
             this.Write(@"
-    variable reentry_guard : Std_logic;
-
     -- #### USER-DATA-NONCLOCKEDVARIABLES-START
     -- #### USER-DATA-NONCLOCKEDVARIABLES-END
 	begin
@@ -880,188 +902,199 @@ namespace SME.VHDL.Templates {
             #line default
             #line hidden
             
-            #line 159 ""
+            #line 163 ""
      foreach(var s in RSP.ProcessResetStaments) { 
             
             #line default
             #line hidden
             
-            #line 160 ""
+            #line 164 ""
             this.Write("            ");
-            
-            #line default
-            #line hidden
-            
-            #line 160 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( s ));
-            
-            #line default
-            #line hidden
-            
-            #line 160 ""
-            this.Write("\n");
-            
-            #line default
-            #line hidden
-            
-            #line 161 ""
-     } 
-            
-            #line default
-            #line hidden
-            
-            #line 162 ""
-     foreach(var variable in Process.SharedVariables) { 
-            
-            #line default
-            #line hidden
-            
-            #line 163 ""
-            this.Write("            ");
-            
-            #line default
-            #line hidden
-            
-            #line 163 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( variable.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 163 ""
-            this.Write(" := ");
-            
-            #line default
-            #line hidden
-            
-            #line 163 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("reset_" + variable.Name) ));
-            
-            #line default
-            #line hidden
-            
-            #line 163 ""
-            this.Write(";\n");
             
             #line default
             #line hidden
             
             #line 164 ""
-     } 
+            this.Write(this.ToStringHelper.ToStringWithCulture( s ));
             
             #line default
             #line hidden
             
-            #line 165 ""
-     foreach(var variable in Process.SharedSignals) { 
-            
-            #line default
-            #line hidden
-            
-            #line 166 ""
-            this.Write("            ");
-            
-            #line default
-            #line hidden
-            
-            #line 166 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( variable.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 166 ""
-            this.Write(" <= ");
-            
-            #line default
-            #line hidden
-            
-            #line 166 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("reset_" + variable.Name) ));
-            
-            #line default
-            #line hidden
-            
-            #line 166 ""
-            this.Write(";\n");
-            
-            #line default
-            #line hidden
-            
-            #line 167 ""
-     } 
-            
-            #line default
-            #line hidden
-            
-            #line 168 ""
-            this.Write(@"
-            reentry_guard := '0';
-            FIN <= '0';
-
-            -- Initialize code here
-            -- #### USER-DATA-NONCLOCKEDRESETCODE-START
-            -- #### USER-DATA-NONCLOCKEDRESETCODE-END
-
-        elsif RDY /= reentry_guard then
-
-                reentry_guard := RDY;
-
-                -- Initialize code here
-                -- #### USER-DATA-NONCLOCKEDINITIALIZECODE-START
-                -- #### USER-DATA-NONCLOCKEDINITIALIZECODE-END
-
-
-");
-            
-            #line default
-            #line hidden
-            
-            #line 185 ""
-     foreach(var line in RSP.Helper.RenderMethod(Process.MainMethod)) { 
-            
-            #line default
-            #line hidden
-            
-            #line 186 ""
-            this.Write("                ");
-            
-            #line default
-            #line hidden
-            
-            #line 186 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( line ));
-            
-            #line default
-            #line hidden
-            
-            #line 186 ""
+            #line 164 ""
             this.Write("\n");
             
             #line default
             #line hidden
             
-            #line 187 ""
+            #line 165 ""
      } 
             
             #line default
             #line hidden
             
-            #line 188 ""
-            this.Write("\n                FIN <= RDY;\n\n        end if;\n\n        -- Non-clocked process act" +
-                    "ions here\n\n        -- #### USER-DATA-CODE-START\n        -- #### USER-DATA-CODE-E" +
-                    "ND\n\n    end process;\n");
+            #line 166 ""
+     foreach(var variable in Process.SharedVariables) { 
             
             #line default
             #line hidden
             
-            #line 199 ""
+            #line 167 ""
+            this.Write("            ");
+            
+            #line default
+            #line hidden
+            
+            #line 167 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( variable.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 167 ""
+            this.Write(" := ");
+            
+            #line default
+            #line hidden
+            
+            #line 167 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("reset_" + variable.Name) ));
+            
+            #line default
+            #line hidden
+            
+            #line 167 ""
+            this.Write(";\n");
+            
+            #line default
+            #line hidden
+            
+            #line 168 ""
+     } 
+            
+            #line default
+            #line hidden
+            
+            #line 169 ""
+     foreach(var variable in Process.SharedSignals) { 
+            
+            #line default
+            #line hidden
+            
+            #line 170 ""
+            this.Write("            ");
+            
+            #line default
+            #line hidden
+            
+            #line 170 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( variable.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 170 ""
+            this.Write(" <= ");
+            
+            #line default
+            #line hidden
+            
+            #line 170 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("reset_" + variable.Name) ));
+            
+            #line default
+            #line hidden
+            
+            #line 170 ""
+            this.Write(";\n");
+            
+            #line default
+            #line hidden
+            
+            #line 171 ""
+     } 
+            
+            #line default
+            #line hidden
+            
+            #line 172 ""
+            this.Write("\n            FIN <= \'0\';\n\n            -- Initialize code here\n            -- ####" +
+                    " USER-DATA-NONCLOCKEDRESETCODE-START\n            -- #### USER-DATA-NONCLOCKEDRES" +
+                    "ETCODE-END\n\n        elsif rising_edge(");
+            
+            #line default
+            #line hidden
+            
+            #line 179 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( sensitivity_signal ));
+            
+            #line default
+            #line hidden
+            
+            #line 179 ""
+            this.Write(") then\n\n            -- Initialize code here\n            -- #### USER-DATA-NONCLOC" +
+                    "KEDINITIALIZECODE-START\n            -- #### USER-DATA-NONCLOCKEDINITIALIZECODE-E" +
+                    "ND\n\n\n");
+            
+            #line default
+            #line hidden
+            
+            #line 186 ""
+     foreach(var line in RSP.Helper.RenderMethod(Process.MainMethod)) { 
+            
+            #line default
+            #line hidden
+            
+            #line 187 ""
+            this.Write("            ");
+            
+            #line default
+            #line hidden
+            
+            #line 187 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( line ));
+            
+            #line default
+            #line hidden
+            
+            #line 187 ""
+            this.Write("\n");
+            
+            #line default
+            #line hidden
+            
+            #line 188 ""
+     } 
+            
+            #line default
+            #line hidden
+            
+            #line 189 ""
+            this.Write("\n            FIN <= \'1\';\n\n        elsif falling_edge(");
+            
+            #line default
+            #line hidden
+            
+            #line 192 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( sensitivity_signal ));
+            
+            #line default
+            #line hidden
+            
+            #line 192 ""
+            this.Write(") then\n            FIN <= \'0\';\n        end if;\n\n        -- Non-clocked process ac" +
+                    "tions here\n\n        -- #### USER-DATA-CODE-START\n        -- #### USER-DATA-CODE-" +
+                    "END\n\n    end process;\n\n");
+            
+            #line default
+            #line hidden
+            
+            #line 203 ""
  } 
             
             #line default
             #line hidden
             
-            #line 200 ""
+            #line 204 ""
             this.Write("\nend RTL;\n\n-- User defined architectures here\n-- #### USER-DATA-ARCH-START\n-- ###" +
                     "# USER-DATA-ARCH-END\n");
             

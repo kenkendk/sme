@@ -55,7 +55,7 @@ entity <#= Process.Name #> is
 <#     } #>
 
 <#     foreach (var signal in bus.Signals) { #>
-    out_<#= Naming.ToValidName(busname + "_" + signal.Name) #>: out <#= RS.VHDLWrappedTypeName(signal) #>;
+    <#= Naming.ToValidName("out_" + busname + "_" + signal.Name) #>: out <#= RS.VHDLWrappedTypeName(signal) #>;
 <#     } #>
 <# } #>
 
@@ -77,6 +77,9 @@ entity <#= Process.Name #> is
 
     -- Finished signal
     FIN : out Std_logic;
+
+    -- Enable signal
+    ENB : in Std_logic;
 
     -- Reset signal
     RST : in Std_logic
@@ -116,7 +119,6 @@ architecture RTL of <#= Process.Name #> is
 <#     } #>
 <# } #>
 
-
   -- User defined signals, procedures and components here
   -- #### USER-DATA-SIGNALS-START
   -- #### USER-DATA-SIGNALS-END
@@ -132,11 +134,15 @@ begin
 <#= RSP.ComponentProcesses #>
 <# } else { #>
 
+<#
+var sensitivity_signal = RSP.Process.IsClocked ? "CLK" : "RDY";
+#>
+
     process(
         -- Custom sensitivity signals here
         -- #### USER-DATA-SENSITIVITY-START
         -- #### USER-DATA-SENSITIVITY-END
-        RDY,
+        <#= sensitivity_signal #>,
         RST
     )
 <#         if (RSP.Variables.Count() > 0) { #>
@@ -145,8 +151,6 @@ begin
 <#         foreach(var s in RSP.Variables) { #>
     variable <#= s.Name #> : <#= RS.VHDLWrappedTypeName(s) #>;
 <#         } #>
-
-    variable reentry_guard : Std_logic;
 
     -- #### USER-DATA-NONCLOCKEDVARIABLES-START
     -- #### USER-DATA-NONCLOCKEDVARIABLES-END
@@ -166,28 +170,27 @@ begin
             <#= variable.Name #> <= <#= Naming.ToValidName("reset_" + variable.Name) #>;
 <#     } #>
 
-            reentry_guard := '0';
             FIN <= '0';
 
             -- Initialize code here
             -- #### USER-DATA-NONCLOCKEDRESETCODE-START
             -- #### USER-DATA-NONCLOCKEDRESETCODE-END
 
-        elsif RDY /= reentry_guard then
+        elsif rising_edge(<#= sensitivity_signal #>) then
 
-                reentry_guard := RDY;
-
-                -- Initialize code here
-                -- #### USER-DATA-NONCLOCKEDINITIALIZECODE-START
-                -- #### USER-DATA-NONCLOCKEDINITIALIZECODE-END
+            -- Initialize code here
+            -- #### USER-DATA-NONCLOCKEDINITIALIZECODE-START
+            -- #### USER-DATA-NONCLOCKEDINITIALIZECODE-END
 
 
 <#     foreach(var line in RSP.Helper.RenderMethod(Process.MainMethod)) { #>
-                <#= line #>
+            <#= line #>
 <#     } #>
 
-                FIN <= RDY;
+            FIN <= '1';
 
+        elsif falling_edge(<#= sensitivity_signal #>) then
+            FIN <= '0';
         end if;
 
         -- Non-clocked process actions here
@@ -196,6 +199,7 @@ begin
         -- #### USER-DATA-CODE-END
 
     end process;
+
 <# } #>
 
 end RTL;

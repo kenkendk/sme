@@ -26,25 +26,9 @@ entity <#= Network.Name #> is
 <#
 var feedbacks = RS.FeedbackBusses.ToArray();
 var processes = Network.Processes.Where(x => !x.IsSimulation).ToArray();
-var delayedoutputs = processes
-                        .Where(x => x.IsClocked)
-                        .SelectMany(x => x.OutputBusses)
-                        .Union(
-                            Network.Busses.Where(x => !x.IsInternal && x.IsClocked)
-                        )
-                        .Union(feedbacks)
-                        .SelectMany(x => x.Signals)
-                        .ToArray();
-
-var delayedinputs = processes
-                        .Where(x => x.IsClocked)
-                        .SelectMany(x => x.InputBusses)
-                        .SelectMany(x => x.Signals)
-                        .Distinct()
-                        .ToArray();
 #>
 
-<# foreach (var bus in Network.Busses.Where(x => !x.IsInternal)) { 
+<# foreach (var bus in Network.Busses.Where(x => x.IsTopLevelInput || x.IsTopLevelOutput)) { 
 	var signaltype = "inout"; 
 
 	if (bus.IsTopLevelInput && !bus.IsTopLevelOutput)
@@ -54,9 +38,16 @@ var delayedinputs = processes
 #>
     -- Top-level bus <#= bus.Name #> signals
 <#     foreach (var signal in bus.Signals) { #>
-    <#= bus.InstanceName #>_<#= signal.Name #>: <#= signaltype #> <#= RS.VHDLWrappedTypeName(signal) #>;
+    <#= Naming.ToValidName(bus.InstanceName + "_" + signal.Name) #>: <#= signaltype #> <#= RS.VHDLWrappedTypeName(signal) #>;
 <#     } #>
 
+<# } #>
+
+<# foreach (var bus in Network.Busses.Where(x => !(x.IsTopLevelInput || x.IsTopLevelOutput || x.IsInternal))) { #>
+    -- Interconnection bus <#= bus.Name #> signals
+<#     foreach (var signal in bus.Signals) { #>
+    <#= Naming.ToValidName(bus.InstanceName + "_" + signal.Name) #>: inout <#= RS.VHDLWrappedTypeName(signal) #>;
+<#     } #>
 <# } #>
 
     -- User defined signals here
@@ -82,18 +73,21 @@ architecture RTL of <#= Network.Name #> is
   -- #### USER-DATA-SIGNALS-START
   -- #### USER-DATA-SIGNALS-END
 
-<# if (delayedoutputs.Length > 0 || delayedinputs.Length > 0) { #>
-
-    -- Feedback signals
-<#     foreach (var signal in delayedoutputs.Union(delayedinputs)) { #>
-    signal <#= Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name + "_current") #>, <#= Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name + "_next") #>: <#= RS.VHDLWrappedTypeName(signal) #>;
+<# if (feedbacks.Any()) { #>
+  -- Feedback signals
+<#     foreach (var signal in feedbacks.SelectMany(x => x.Signals)) { #>
+    signal <#= Naming.ToValidName("current_" + (signal.Parent as AST.Bus).InstanceName + "_" + signal.Name) #>, <#= Naming.ToValidName("next_" + (signal.Parent as AST.Bus).InstanceName + "_" + signal.Name) #>: <#= RS.VHDLWrappedTypeName(signal) #>;
 <#     } #>
 <# } #>
 
   -- Process ready triggers
 <# foreach (var p in processes) { #>
-  signal <#= Naming.ToValidName("RDY_" + p.InstanceName) #>, <#= Naming.ToValidName("FIN_" + p.InstanceName) #> : std_logic;
+
+  signal <#= Naming.ToValidName("FIN_" + p.InstanceName) #><#= p.IsClocked ? string.Empty : ", " + Naming.ToValidName("RDY_" + p.InstanceName) #> : std_logic;
 <# } #>
+
+
+
 
   -- The primary ready driver signal
   signal RDY : std_logic;
@@ -105,7 +99,7 @@ begin
     -- Entity  <#= p.InstanceName #> signals
     <#= Naming.ToValidName(p.InstanceName) #>: entity work.<#= Naming.ToValidName(p.Name) #>
     port map (
-<#    foreach (var bus in p.InputBusses.Concat(p.OutputBusses).Distinct()) { 
+<#    foreach (var bus in p.InputBusses.Union(p.OutputBusses)) { 
 	      var isInput = p.InputBusses.Contains(bus);
 	      var isOutput = p.OutputBusses.Contains(bus);
 	      var isBoth = isInput && isOutput;
@@ -115,16 +109,10 @@ begin
 	      else if (isOutput && !isInput)
 	          type = "Output";
 
-	      var output_suffix = string.Empty;
-	      var input_suffix = string.Empty;
-          if (isInput && delayedoutputs.Any(x => x.Parent == bus))
-              input_suffix = "_next";
-	      if (isOutput && delayedoutputs.Any(x => x.Parent == bus))
-	          output_suffix = "_next";
+	      var output_prefix = string.Empty;
+	      var input_prefix = string.Empty;
           if (feedbacks.Contains(bus))
-              input_suffix = "_current";
-          if (isInput && delayedinputs.Any(x => x.Parent == bus))
-              input_suffix = "_current";
+              input_prefix = output_prefix = "current_";
 
           var busname = RS.GetLocalBusName(bus, p);
           var signals = bus.Signals.AsEnumerable();
@@ -135,15 +123,15 @@ begin
         -- <#= type #> bus <#= bus.Name #>
 <#		  foreach(var signal in signals) { #>
 <#              if (isInput || isBoth) { #>
-        <#= Naming.ToValidName(busname + "_" + signal.Name) #> => <#= Naming.ToValidName(bus.InstanceName + "_" + signal.Name + input_suffix) #>,
+        <#= Naming.ToValidName(busname + "_" + signal.Name) #> => <#= Naming.ToValidName(input_prefix + bus.InstanceName + "_" + signal.Name) #>,
 <#              } else { #>
-        <#= Naming.ToValidName(busname + "_" + signal.Name) #> => <#= Naming.ToValidName(bus.InstanceName + "_" + signal.Name + output_suffix) #>,
+        <#= Naming.ToValidName(busname + "_" + signal.Name) #> => <#= Naming.ToValidName(output_prefix + bus.InstanceName + "_" + signal.Name) #>,
 <#              } #>
 <#        } #>
 
 <#        if (isBoth) { #>
 <#		      foreach(var signal in bus.Signals) { #>
-        out_<#= Naming.ToValidName(busname + "_" + signal.Name) #> => <#= Naming.ToValidName(bus.InstanceName + "_" + signal.Name + output_suffix) #>,
+        <#= Naming.ToValidName("out_" + busname + "_" + signal.Name) #> => <#= Naming.ToValidName("next_" + bus.InstanceName + "_" + signal.Name) #>,
 <#            } #>
 <#        } #>
 
@@ -158,8 +146,9 @@ begin
 <#     } #>
 
         CLK => CLK,
-        RDY => RDY_<#= Naming.ToValidName(p.InstanceName) #>,
+        RDY => RDY<#= p.IsClocked ? string.Empty : "_" + Naming.ToValidName(p.InstanceName) #>,
         FIN => FIN_<#= Naming.ToValidName(p.InstanceName) #>,
+        ENB => ENB,
         RST => RST
     );
 
@@ -168,14 +157,16 @@ begin
     -- Connect ready signals
 <# foreach (var p in processes) { 
        var parents = RS.DependsOn(p).Select(x => x.InstanceName).Distinct().ToArray();
-       if (parents.Length == 0) { #>
+       if (parents.Length == 0) {
+           if (!p.IsClocked) { #>
     RDY_<#= p.InstanceName #> <= RDY;
-<#     } else if (parents.Length == 1) { #>
+<#         }
+       } else if (parents.Length == 1) { #>
     RDY_<#= p.InstanceName #> <= FIN_<#= parents.First() #>;
 <#     } else { #>
     -- Setup the RDY signal for <#= p.InstanceName #>
     process(
-      <#= string.Join(", " + Environment.NewLine + "      ", parents.Select(x => string.Format("FIN_{0}", x))) #>
+      <#= string.Join(", " + Environment.NewLine + "      ", parents.Select(x => string.Format(Naming.ToValidName("FIN_" + x)))) #>
     )
     begin
       if <#= string.Join(" AND ", parents.Skip(1).Select(x => string.Format("{0} = {1}", Naming.ToValidName("FIN_" + parents.First()), Naming.ToValidName("FIN_" + x)))) #> then
@@ -185,7 +176,7 @@ begin
 <#     } #>
 <# } #>
 
-    -- Setup the FIN feedback signal
+    -- Setup the FIN feedback signals
 <# if (processes.Length == 1) { #>
     FIN <= <#= Naming.ToValidName("FIN_" + processes.First().InstanceName) #>;
 <# } else { #>
@@ -199,39 +190,33 @@ begin
     end process;
 <# } #>
 
-    -- Propagate feedback and clocked signals immediately
-<# foreach(var signal in delayedoutputs) { #>
-    <#= Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name) #> <= <#= Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name + "_next") #>;
-<# } #>
-<# foreach(var signal in delayedinputs) { #>
-    <#= Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name + "_next") #> <= <#= Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name) #>;
-<# } #>
-
     -- Propagate all clocked and feedback signals
     process(
         CLK,
         RST)
     begin
         if RST = '1' then
-
-<# foreach(var signal in delayedoutputs) { #>
-            <#= Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name + "_current") #> <= <#= RS.DefaultValue(signal) #>;
-<# } #>
-
             RDY <= '0';
         elsif rising_edge(CLK) and ENB = '1' then
-
-<# foreach(var signal in delayedoutputs) { #>
-            <#= Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name + "_current") #> <= <#= Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name + "_next") #>;
+            RDY <= '1';
+<# if (feedbacks.Any()) { #>
+            -- Forward feedback signals
+<#     foreach (var signal in feedbacks.SelectMany(x => x.Signals)) { #>
+            current_<#= Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name) #> <= next_<#= Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name) #>;
+<#     } #>
 <# } #>
-<# foreach(var signal in delayedinputs) { #>
-            <#= Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name + "_current") #> <= <#= Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name + "_next") #>;
-<# } #>
-
-            RDY <= not RDY;
-
+        elsif falling_edge(CLK) then
+            RDY <= '0';
         end if;
     end process;
+
+<# if (feedbacks.Where(x => x.IsTopLevelOutput).Any()) { #>
+    -- Send feedback outputs to the actual output
+<#     foreach (var signal in feedbacks.Where(x => x.IsTopLevelOutput).SelectMany(x => x.Signals)) { #>
+    <#= Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name) #> <= <#= Naming.ToValidName("next_" + (signal.Parent as AST.Bus).InstanceName + "_" + signal.Name) #>;
+<#     } #>
+<# } #>
+
 
 -- User defined processes here
 -- #### USER-DATA-CODE-START

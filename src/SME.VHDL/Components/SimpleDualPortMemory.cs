@@ -260,27 +260,30 @@ port map (
 -- End of BRAM_SDP_MACRO_inst instantiation
 
 {self.InstanceName}_Helper: process(RST,CLK, RDY)
-    variable reentry_guard: std_logic;
 begin
     if RST = '1' then
-        reentry_guard := '0';
         FIN <= '0';                        
-    elsif rising_edge(CLK) then
         WREN_internal <= '0';
         RDEN_internal <= '0';
-        if RDY /= reentry_guard then
-            reentry_guard := RDY;
+    elsif rising_edge(CLK) then
+        if ENB = '1' then
             WREN_internal <= {Naming.ToValidName(renderer.Parent.GetLocalBusName(inwritebus, self) + "_Enabled") };
             RDEN_internal <= '1';
             DI_internal <= std_logic_vector({ Naming.ToValidName(renderer.Parent.GetLocalBusName(inwritebus, self) + "_Data") });
             RDADDR_internal <= std_logic_vector({ Naming.ToValidName(renderer.Parent.GetLocalBusName(inreadbus, self) + "_Address") });
             WRADDR_internal <= std_logic_vector({ Naming.ToValidName(renderer.Parent.GetLocalBusName(inwritebus, self) + "_Address") });
-            { Naming.ToValidName(renderer.Parent.GetLocalBusName(outbus, self) + "_Data") } <= {renderer.Parent.VHDLWrappedTypeName(outbus.Signals.First())}(DO_internal);
-            FIN <= RDY;
+        else
+            WREN_internal <= '0';
+            RDEN_internal <= '0';
         end if;
+        FIN <= '1';
+    elsif falling_edge(CLK) then
+        FIN <= '0';                        
     end if;
 end process;
-";
+
+{ Naming.ToValidName(renderer.Parent.GetLocalBusName(outbus, self) + "_Data") } <= {renderer.Parent.VHDLWrappedTypeName(outbus.Signals.First())}(DO_internal);
+                ";
                 return VHDLHelper.ReIndentTemplate(template, indentation);
             }
 		}

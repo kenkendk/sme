@@ -49,6 +49,9 @@ entity <#= Network.Name #>_export is
 	-- Reset signal
     RST : in STD_LOGIC;
 
+    -- Finished signal
+    FIN : out Std_logic;
+
     -- Clock signal
     CLK : in STD_LOGIC
   );
@@ -121,6 +124,7 @@ begin
 <#    } #>
         ENB => ENB,
         RST => RST,
+        FIN => FIN,
         CLK => CLK
     );
 
