@@ -67,7 +67,7 @@ TraceFileTester: process
     file F: TEXT;
     variable L: LINE;
     variable Status: FILE_OPEN_STATUS;
-    constant filename : string := "<#= RS.CSVTracename #>";
+    constant filename : string := "./trace.csv";
     variable clockcycle : integer := 0;
     variable tmp : CSV_LINE_T;
     variable readOK : boolean;
@@ -107,8 +107,8 @@ begin
             newfailures := 0;
 
 <# if (RS.DriverSignals.Count() > 0) { #>
-            -- Write all driver signals out, just before the next clock tick
-            wait for <#= RS.ClockPulseLength - 1 #> NS;
+            -- Write all driver signals out on the clock edge
+            wait until rising_edge(CLOCK);
 
 <#     foreach (var signal in RS.DriverSignals) { 
            var vhdltype = RS.VHDLType(signal);

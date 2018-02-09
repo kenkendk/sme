@@ -236,21 +236,17 @@ foreach (var signal in RS.AllSignals) {
             #line hidden
             
             #line 60 ""
-            this.Write(" NS;\n    end loop;\n    wait;\n  end process;\n\n\nTraceFileTester: process\n    file F" +
-                    ": TEXT;\n    variable L: LINE;\n    variable Status: FILE_OPEN_STATUS;\n    constan" +
-                    "t filename : string := \"");
-            
-            #line default
-            #line hidden
-            
-            #line 70 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( RS.CSVTracename ));
-            
-            #line default
-            #line hidden
-            
-            #line 70 ""
-            this.Write(@""";
+            this.Write(@" NS;
+    end loop;
+    wait;
+  end process;
+
+
+TraceFileTester: process
+    file F: TEXT;
+    variable L: LINE;
+    variable Status: FILE_OPEN_STATUS;
+    constant filename : string := ""./trace.csv"";
     variable clockcycle : integer := 0;
     variable tmp : CSV_LINE_T;
     variable readOK : boolean;
@@ -347,20 +343,8 @@ begin
             #line hidden
             
             #line 110 ""
-            this.Write("            -- Write all driver signals out, just before the next clock tick\n    " +
-                    "        wait for ");
-            
-            #line default
-            #line hidden
-            
-            #line 111 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( RS.ClockPulseLength - 1 ));
-            
-            #line default
-            #line hidden
-            
-            #line 111 ""
-            this.Write(" NS;\n\n");
+            this.Write("            -- Write all driver signals out on the clock edge\n            wait un" +
+                    "til rising_edge(CLOCK);\n\n");
             
             #line default
             #line hidden

@@ -69,6 +69,7 @@ $(WORKDIR)/TestBench_<#= RS.Network.Name #>.o: TestBench_<#= RS.Network.Name #>.
 	ghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) Export_<#= RS.Network.Name #>.vhdl
 
 test: <#= RS.Network.Name.ToLower() #>_tb
+	cp "<#= RS.CSVTracename #>" .
 	ghdl -r --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) <#= RS.Network.Name #>_tb --vcd=$(VCDFILE)
 
 clean:

@@ -18,7 +18,7 @@ namespace SME
 		/// <param name="backupfolder">The backup folder name.</param>
 		/// <param name="csvfile">The CSV file with simulation results</param>
 		/// <param name="customfiles">A list of VHDL files to include in the Makefile, without the VHDL extension</param>
-		public static Simulation BuildVHDL(this Simulation self, string targetfolder = "vhdl", string backupfolder = null, string csvfile = "../../../../../trace.csv", IEnumerable<string> customfiles = null)
+		public static Simulation BuildVHDL(this Simulation self, string targetfolder = "vhdl", string backupfolder = null, string csvfile = "../trace.csv", IEnumerable<string> customfiles = null)
 		{
 			self.AddPostloader(sim =>
 			{

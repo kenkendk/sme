@@ -75,6 +75,7 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
+      <File Path="$PPRDIR/<#= RS.CSVTracename #>"/>
 <# foreach (var p in Processes) { #>
       <File Path="$PPRDIR/<#= Naming.ProcessNameToFileName(p.SourceInstance.Instance) #>">
         <FileInfo>

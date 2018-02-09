@@ -92,30 +92,42 @@ namespace SME.VHDL.Templates {
           <Attr Name=""UsedIn"" Val=""simulation""/>
         </FileInfo>
       </File>
-");
+      <File Path=""$PPRDIR/");
             
             #line default
             #line hidden
             
             #line 78 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( RS.CSVTracename ));
+            
+            #line default
+            #line hidden
+            
+            #line 78 ""
+            this.Write("\"/>\n");
+            
+            #line default
+            #line hidden
+            
+            #line 79 ""
  foreach (var p in Processes) { 
             
             #line default
             #line hidden
             
-            #line 79 ""
+            #line 80 ""
             this.Write("      <File Path=\"$PPRDIR/");
             
             #line default
             #line hidden
             
-            #line 79 ""
+            #line 80 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ProcessNameToFileName(p.SourceInstance.Instance) ));
             
             #line default
             #line hidden
             
-            #line 79 ""
+            #line 80 ""
             this.Write("\">\n        <FileInfo>\n          <Attr Name=\"Library\" Val=\"xil_defaultlib\"/>\n     " +
                     "     <Attr Name=\"UsedIn\" Val=\"synthesis\"/>\n          <Attr Name=\"UsedIn\" Val=\"si" +
                     "mulation\"/>\n        </FileInfo>\n      </File>\n");
@@ -123,25 +135,25 @@ namespace SME.VHDL.Templates {
             #line default
             #line hidden
             
-            #line 86 ""
+            #line 87 ""
  } 
             
             #line default
             #line hidden
             
-            #line 87 ""
+            #line 88 ""
             this.Write("      <File Path=\"$PPRDIR/");
             
             #line default
             #line hidden
             
-            #line 87 ""
+            #line 88 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( Naming.AssemblyNameToFileName(Simulation) ));
             
             #line default
             #line hidden
             
-            #line 87 ""
+            #line 88 ""
             this.Write(@""">
         <FileInfo>
           <Attr Name=""Library"" Val=""xil_defaultlib""/>
@@ -156,13 +168,13 @@ namespace SME.VHDL.Templates {
             #line default
             #line hidden
             
-            #line 96 ""
+            #line 97 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( Network.Name ));
             
             #line default
             #line hidden
             
-            #line 96 ""
+            #line 97 ""
             this.Write(@"""/>
         <Option Name=""TopAutoSet"" Val=""TRUE""/>
       </Config>
@@ -187,13 +199,13 @@ namespace SME.VHDL.Templates {
             #line default
             #line hidden
             
-            #line 115 ""
+            #line 116 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( Naming.AssemblyNameToFileName(Simulation) ));
             
             #line default
             #line hidden
             
-            #line 115 ""
+            #line 116 ""
             this.Write(@""">
         <FileInfo>
           <Attr Name=""Library"" Val=""xil_defaultlib""/>
@@ -208,13 +220,13 @@ namespace SME.VHDL.Templates {
             #line default
             #line hidden
             
-            #line 124 ""
+            #line 125 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( Network.Name ));
             
             #line default
             #line hidden
             
-            #line 124 ""
+            #line 125 ""
             this.Write(@"_tb""/>
         <Option Name=""TopLib"" Val=""xil_defaultlib""/>
         <Option Name=""TransportPathDelay"" Val=""0""/>
@@ -225,13 +237,13 @@ namespace SME.VHDL.Templates {
             #line default
             #line hidden
             
-            #line 129 ""
+            #line 130 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( Runtime ));
             
             #line default
             #line hidden
             
-            #line 129 ""
+            #line 130 ""
             this.Write("\"/>\n      </Config>\n    </FileSet>\n  </FileSets>\n  <Simulators>\n    <Simulator Na" +
                     "me=\"XSim\">\n      <Option Name=\"Description\" Val=\"Vivado Simulator\"/>\n      <Opti" +
                     "on Name=\"CompiledLib\" Val=\"0\"/>\n    </Simulator>\n    <Simulator Name=\"ModelSim\">" +
