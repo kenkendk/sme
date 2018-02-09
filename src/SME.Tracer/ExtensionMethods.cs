@@ -19,6 +19,7 @@ namespace SME
 			var tracer = new Tracer.CSVTracer(filename, self.TargetFolder);
             self.AddPreRunner(tracer.BeforeRun);
             self.AddPostRunner(tracer.AfterRun);
+            self.AddPostClockRunner(tracer.AfterClockRun);
 			self.AddPostloader(_ => { tracer.Dispose(); });
 			return self;
 		}
@@ -34,6 +35,7 @@ namespace SME
 			var tracer = new Tracer.JsonTracer(filename, self.TargetFolder);
             self.AddPreRunner(tracer.BeforeRun);
             self.AddPostRunner(tracer.AfterRun);
+            self.AddPostClockRunner(tracer.AfterClockRun);
 			self.AddPostloader(_ => { tracer.Dispose(); });
 			return self;
 		}

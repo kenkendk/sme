@@ -24,6 +24,11 @@ namespace SME
         /// The methods to call each cycle before running the network during the simulation
         /// </summary>
         private readonly List<Action<Simulation>> m_postrunners = new List<Action<Simulation>>();
+        /// <summary>
+        /// The methods to call each cycle after clocked process propagation during the simulation
+        /// </summary>
+        private readonly List<Action<Simulation>> m_clockrunners = new List<Action<Simulation>>();
+
 		/// <summary>
 		/// The methods to call after the simulation
 		/// </summary>
@@ -139,6 +144,19 @@ namespace SME
                 throw new ArgumentNullException($"{postrunner}");
 
             m_postrunners.Add(postrunner);
+            return this;
+        }
+
+        /// <summary>
+        /// Adds post-clock-run handler.
+        /// </summary>
+        /// <param name="postrunner">The post-clock-runner method.</param>
+        public Simulation AddPostClockRunner(Action<Simulation> postrunner)
+        {
+            if (postrunner == null)
+                throw new ArgumentNullException($"{postrunner}");
+
+            m_clockrunners.Add(postrunner);
             return this;
         }
 
@@ -264,7 +282,12 @@ namespace SME
             try
             {
                 Tick = 0uL;
-                Graph = new DependencyGraph(m_processes.Keys);
+                Graph = new DependencyGraph(
+                    m_processes.Keys,
+                    g => m_prerunners.ForEach(x => x?.Invoke(this)),
+                    g => m_postrunners.ForEach(x => x?.Invoke(this)),
+                    g => m_clockrunners.ForEach(x => x?.Invoke(this))
+                );
 
                 foreach (var cfg in m_preloaders)
                     cfg(this);
@@ -279,14 +302,7 @@ namespace SME
 
                 while (!running_tasks.Any(x => x.IsCompleted))
                 {
-                    foreach (var clk in m_prerunners)
-                        clk(this);
-
                     Graph.Execute();
-
-                    foreach (var clk in m_postrunners)
-                        clk(this);
-
                     var crashes = running_tasks.Where(x => x.Exception != null).SelectMany(x => x.Exception.InnerExceptions);
                     if (crashes.Any())
                         throw new AggregateException(crashes);

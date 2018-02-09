@@ -106,7 +106,17 @@ namespace SME
         /// <summary>
         /// A callback method to invoke before each tick
         /// </summary>
-        private readonly Action<DependencyGraph> m_tickcallback;
+        private readonly Action<DependencyGraph> m_pretickcallback;
+
+        /// <summary>
+        /// A callback method to invoke before each tick
+        /// </summary>
+        private readonly Action<DependencyGraph> m_posttickcallback;
+
+        /// <summary>
+        /// A callback method to invoke after propagating clocked processes
+        /// </summary>
+        private readonly Action<DependencyGraph> m_clocktickcallback;
 
         /// <summary>
         /// List of all clocked busses
@@ -128,9 +138,11 @@ namespace SME
 		/// Initializes a new instance of the <see cref="SME.DependencyGraph"/> class.
 		/// </summary>
 		/// <param name="components">The components in the graph.</param>
-		public DependencyGraph(IEnumerable<IProcess> components, Action<DependencyGraph> tickcallback = null)
+        public DependencyGraph(IEnumerable<IProcess> components, Action<DependencyGraph> pretickcallback = null, Action<DependencyGraph> posttickcallback = null, Action<DependencyGraph> clocktickcallback = null)
 		{
-			m_tickcallback = tickcallback;
+            m_pretickcallback = pretickcallback;
+            m_posttickcallback = posttickcallback;
+            m_clocktickcallback = clocktickcallback;
 
 			// Wrap all processes in nodes
 			var nodeLookup = components.Select(x => new Node(x)).ToDictionary(k => k.Item, k => k);
@@ -260,11 +272,12 @@ namespace SME
             var clock = Scope.Current.Clock;			
             clock.Tick();
 
-			if (m_tickcallback != null)
-				m_tickcallback(this);
+            m_pretickcallback?.Invoke(this);
 
             foreach (var b in m_clockedBusses.Where(x => x.Clock == clock))
 				b.Propagate();
+
+            m_clocktickcallback?.Invoke(this);
 
 			foreach (var n in m_executionPlan)
 			{

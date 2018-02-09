@@ -135,6 +135,14 @@ namespace SME.Tracer
 		}
 
         /// <summary>
+        /// Callback handler invoked after the clocked processes are invoked
+        /// </summary>
+        /// <param name="parent">The simulation that controls the cycle.</param>
+        public void AfterClockRun(Simulation parent)
+        {
+        }
+
+        /// <summary>
         /// Dispose the current instance.
         /// </summary>
         /// <param name="disposing">If set to <c>true</c> the call originates from the dispose method.</param>
