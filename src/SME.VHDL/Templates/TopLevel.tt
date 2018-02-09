@@ -146,8 +146,8 @@ begin
 <#     } #>
 
         CLK => CLK,
-        RDY => RDY<#= p.IsClocked ? string.Empty : "_" + Naming.ToValidName(p.InstanceName) #>,
-        FIN => FIN_<#= Naming.ToValidName(p.InstanceName) #>,
+        RDY => <#= p.IsClocked ? "RDY" : Naming.ToValidName("RDY_" + p.InstanceName) #>,
+        FIN => <#= Naming.ToValidName("FIN_" + p.InstanceName) #>,
         ENB => ENB,
         RST => RST
     );
@@ -159,10 +159,10 @@ begin
        var parents = RS.DependsOn(p).Select(x => x.InstanceName).Distinct().ToArray();
        if (parents.Length == 0) {
            if (!p.IsClocked) { #>
-    RDY_<#= p.InstanceName #> <= RDY;
+    <#= Naming.ToValidName("RDY_" + p.InstanceName) #> <= RDY;
 <#         }
        } else if (parents.Length == 1) { #>
-    RDY_<#= p.InstanceName #> <= FIN_<#= parents.First() #>;
+    <#= Naming.ToValidName("RDY_" + p.InstanceName) #> <= <#= Naming.ToValidName("FIN_" + parents.First()) #>;
 <#     } else { #>
     -- Setup the RDY signal for <#= p.InstanceName #>
     process(
@@ -194,19 +194,23 @@ begin
     process(
         CLK,
         RST)
+
+        variable readyflag: std_logic;
     begin
         if RST = '1' then
             RDY <= '0';
-        elsif rising_edge(CLK) and ENB = '1' then
-            RDY <= '1';
+            readyflag := '1';
+        elsif rising_edge(CLK) then
+            if ENB = '1' then
+                readyflag := not readyflag;
+                RDY <= readyflag;
 <# if (feedbacks.Any()) { #>
-            -- Forward feedback signals
+                -- Forward feedback signals
 <#     foreach (var signal in feedbacks.SelectMany(x => x.Signals)) { #>
-            current_<#= Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name) #> <= next_<#= Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name) #>;
+                current_<#= Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name) #> <= next_<#= Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name) #>;
 <#     } #>
 <# } #>
-        elsif falling_edge(CLK) then
-            RDY <= '0';
+            end if;
         end if;
     end process;
 

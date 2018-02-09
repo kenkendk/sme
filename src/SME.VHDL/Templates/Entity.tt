@@ -152,6 +152,10 @@ var sensitivity_signal = RSP.Process.IsClocked ? "CLK" : "RDY";
     variable <#= s.Name #> : <#= RS.VHDLWrappedTypeName(s) #>;
 <#         } #>
 
+<# if (!RSP.Process.IsClocked) { #>
+    variable reentry_guard: std_logic;
+<# } #>
+
     -- #### USER-DATA-NONCLOCKEDVARIABLES-START
     -- #### USER-DATA-NONCLOCKEDVARIABLES-END
 	begin
@@ -169,14 +173,22 @@ var sensitivity_signal = RSP.Process.IsClocked ? "CLK" : "RDY";
 <#     foreach(var variable in Process.SharedSignals) { #>
             <#= variable.Name #> <= <#= Naming.ToValidName("reset_" + variable.Name) #>;
 <#     } #>
-
+            
+<#     if (!RSP.Process.IsClocked) { #>
+            reentry_guard := '0';
+<#     } #>
             FIN <= '0';
 
             -- Initialize code here
             -- #### USER-DATA-NONCLOCKEDRESETCODE-START
             -- #### USER-DATA-NONCLOCKEDRESETCODE-END
 
+<#     if (RSP.Process.IsClocked) { #>
         elsif rising_edge(<#= sensitivity_signal #>) then
+<#     } else { #>
+        elsif reentry_guard /= RDY then
+            reentry_guard := RDY;
+<#     } #>
 
             -- Initialize code here
             -- #### USER-DATA-NONCLOCKEDINITIALIZECODE-START
@@ -187,10 +199,7 @@ var sensitivity_signal = RSP.Process.IsClocked ? "CLK" : "RDY";
             <#= line #>
 <#     } #>
 
-            FIN <= '1';
-
-        elsif falling_edge(<#= sensitivity_signal #>) then
-            FIN <= '0';
+            FIN <= <#= sensitivity_signal #>;
         end if;
 
         -- Non-clocked process actions here
