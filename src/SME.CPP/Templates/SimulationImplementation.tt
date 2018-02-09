@@ -87,6 +87,9 @@ size_t <#= Naming.AssemblyNameToFileName(Network) #>::RunSimulation(const char* 
 {
     LoadTraceInput(inputfile);
 
+    // Ignore the reset cycle
+    DriveFromTraceInput();
+
     while(true) {
         if (!DriveFromTraceInput()) {
             size_t res = cycle;
