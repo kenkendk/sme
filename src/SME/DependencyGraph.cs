@@ -308,7 +308,10 @@ namespace SME
 					b.Propagate();
 				foreach (var b in n.Item.InternalBusses)
 					b.Propagate();
+
 			}
+
+            m_posttickcallback?.Invoke(this);
 		}
 	}
 }
