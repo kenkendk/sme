@@ -274,14 +274,24 @@ namespace SME
 
             m_pretickcallback?.Invoke(this);
 
+            // Start by propagating all tasks
+            System.Threading.Tasks.Task.WhenAll(
+                m_executionPlan
+                .Select(x => x.Item)
+                .Where(x => x.IsClockedProcess)
+                .Select(x => x.SignalInputReady()))
+            .Wait();
+
+            // Then forward all busses
             foreach (var b in m_clockedBusses.Where(x => x.Clock == clock))
-				b.Propagate();
+                b.Propagate();
 
             m_clocktickcallback?.Invoke(this);
 
 			foreach (var n in m_executionPlan)
 			{
-				n.Item.SignalInputReady().Wait();
+                if (!n.Item.IsClockedProcess)
+				    n.Item.SignalInputReady().Wait();
 
 				foreach (var b in n.Item.InputBusses.Where(x => !n.Item.OutputBusses.Contains(x)))
 					if (b.AnyStaged())
