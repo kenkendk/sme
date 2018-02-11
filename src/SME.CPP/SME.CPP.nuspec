@@ -2,21 +2,21 @@
 <package >
   <metadata>
     <id>SME.CPP</id>
-    <version>0.3.1</version>
+    <version>0.3.2</version>
     <authors>Kenneth Skovhede</authors>
     <owners>Kenneth Skovhede</owners>
     <licenseUrl>https://raw.githubusercontent.com/kenkendk/sme/master/LICENSE</licenseUrl>
     <projectUrl>https://github.com/kenkendk/sme</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>C++ transpiler for SME networks</description>
-    <releaseNotes>This is the updated versions that uses the SME AST to render VHDL output</releaseNotes>
+    <releaseNotes>Fixed a number of issues that caused incorrectly generated code</releaseNotes>
     <copyright>Copyright Kenneth Skovhede 2017</copyright>
     <tags>SME hardware simulation</tags>
     <dependencies>
       <dependency id="ICSharpCode.NRefactory" version="5.5.1" />
       <dependency id="Mono.Cecil" version="0.9.5.4" />
-      <dependency id="SME" version="0.3.1" />
-      <dependency id="SME.AST" version="0.3.1" />
+      <dependency id="SME" version="0.3.2" />
+      <dependency id="SME.AST" version="0.3.2" />
     </dependencies>
   </metadata>
   <files>
