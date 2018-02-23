@@ -32,6 +32,7 @@ architecture TestBench of <#= Network.Name #>_tb is
   signal CLOCK : Std_logic;
   signal StopClock : BOOLEAN;
   signal RESET : Std_logic;
+  signal ENABLE : Std_logic;
 
 <# foreach (var signal in RS.AllSignals) { #>
   signal <#= ((AST.Bus)signal.Parent).InstanceName#>_<#= signal.Name#> : <#= RS.VHDLWrappedTypeName(signal) #>;
@@ -46,7 +47,7 @@ begin
     <#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#> => <#= ((AST.Bus)signal.Parent).InstanceName#>_<#=signal.Name#>,
 <# } #>
 
-    ENB => '1',
+    ENB => ENABLE,
     RST => RESET,
     CLK => CLOCK
   );
@@ -75,6 +76,7 @@ TraceFileTester: process
     variable failures : integer := 0;
     variable newfailures: integer := 0;
     variable first_failure_tick : integer := -1;
+    variable first_round : boolean := true;
 
 begin
 
@@ -96,8 +98,10 @@ begin
 <# } #>
 
         RESET <= '1';
+        ENABLE <= '0';
         wait for <#= RS.ClockPulseLength #> NS;
         RESET <= '0';
+        ENABLE <= '1';
 
         -- Read a line each clock
         while not ENDFILE(F) loop
@@ -107,8 +111,12 @@ begin
             newfailures := 0;
 
 <# if (RS.DriverSignals.Count() > 0) { #>
-            -- Write all driver signals out on the clock edge
-            wait until rising_edge(CLOCK);
+            -- Write all driver signals out on the clock edge,
+            -- except on the first round, where we make sure the reset
+            -- values are propagated _before_ the initial clock edge
+            if not first_round then
+                wait until rising_edge(CLOCK);
+            end if;
 
 <#     foreach (var signal in RS.DriverSignals) { 
            var vhdltype = RS.VHDLType(signal);
@@ -138,6 +146,11 @@ begin
             fieldno := fieldno + 1;
 <#     } #>
 <# } #>
+
+            if first_round then
+                wait until rising_edge(CLOCK);
+                first_round := false;
+            end if;
 
             -- Wait until the signals are settled before veriying the results
             wait until falling_edge(CLOCK);
