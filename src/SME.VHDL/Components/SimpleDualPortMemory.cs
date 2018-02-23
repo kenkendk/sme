@@ -13,6 +13,8 @@ namespace SME.VHDL.Components
         {
             [InitialValue]
             TAddress Address { get; set; }
+            [InitialValue]
+            bool Enabled { get; set; }
         }
 
         public interface IReadOut : IBus
@@ -22,7 +24,7 @@ namespace SME.VHDL.Components
 
         public interface IWriteIn : IBus
         {
-            [InitialValue(false)]
+            [InitialValue]
             bool Enabled { get; set; }
             TAddress Address { get; set; }
             TData Data { get; set; }
@@ -80,11 +82,17 @@ namespace SME.VHDL.Components
 
         protected override void OnTick()
         {
-            if (WriteIn.Enabled)
-                m_memory[ConvertAddress(WriteIn.Address)] = WriteIn.Data;
-
             Console.WriteLine("Reading from {0}", ConvertAddress(ReadIn.Address));
-            ReadOut.Data = m_memory[ConvertAddress(ReadIn.Address)];
+            if (ReadIn.Enabled)
+                ReadOut.Data = m_memory[ConvertAddress(ReadIn.Address)];
+
+            if (WriteIn.Enabled)
+            {
+                if (ConvertAddress(WriteIn.Address) == ConvertAddress(ReadIn.Address) && ReadIn.Enabled)
+                    throw new ArgumentException("Cannot read and write to the same address in a dual-port setup");
+                    
+                m_memory[ConvertAddress(WriteIn.Address)] = WriteIn.Data;
+            }
         }
 
         string IVHDLComponent.IncludeRegion(RenderStateProcess renderer, int indentation)
@@ -230,7 +238,7 @@ generic map (
     READ_WIDTH => { DataWidth },     --Valid values are 1 - 72(37 - 72 only valid when BRAM_SIZE = ""36Kb"")
     DO_REG => 0, --Optional output register(0 or 1)
     INIT_FILE => ""NONE"",
-    SIM_COLLISION_CHECK => ""ALL"", --Collision check enable ""ALL"", ""WARNING_ONLY"",
+    SIM_COLLISION_CHECK => ""GENERATE_X_ONLY"", --Collision check enable ""ALL"", ""WARNING_ONLY"",
                                  --""GENERATE_X_ONLY"" or ""NONE""
     SRVAL => X""{ initialvalue}"", --Set / Reset value for port output
     WRITE_MODE => ""READ_FIRST"", --Specify ""READ_FIRST"" for same clock or synchronous clocks
@@ -268,13 +276,14 @@ begin
     end if;
 end process;
 
-WREN_internal <= ENB and {Naming.ToValidName(renderer.Parent.GetLocalBusName(inwritebus, self) + "_Enabled") };
-RDEN_internal <= ENB and '1';
-DI_internal <= std_logic_vector({ Naming.ToValidName(renderer.Parent.GetLocalBusName(inwritebus, self) + "_Data") });
+RDEN_internal <= ENB and {Naming.ToValidName(renderer.Parent.GetLocalBusName(inreadbus, self) + "_Enabled") };
 RDADDR_internal <= std_logic_vector({ Naming.ToValidName(renderer.Parent.GetLocalBusName(inreadbus, self) + "_Address") });
-WRADDR_internal <= std_logic_vector({ Naming.ToValidName(renderer.Parent.GetLocalBusName(inwritebus, self) + "_Address") });
-
 { Naming.ToValidName(renderer.Parent.GetLocalBusName(outbus, self) + "_Data") } <= {renderer.Parent.VHDLWrappedTypeName(outbus.Signals.First())}(DO_internal);
+
+WREN_internal <= ENB and {Naming.ToValidName(renderer.Parent.GetLocalBusName(inwritebus, self) + "_Enabled") };
+WRADDR_internal <= std_logic_vector({ Naming.ToValidName(renderer.Parent.GetLocalBusName(inwritebus, self) + "_Address") });
+DI_internal <= std_logic_vector({ Naming.ToValidName(renderer.Parent.GetLocalBusName(inwritebus, self) + "_Data") });
+
                 ";
                 return VHDLHelper.ReIndentTemplate(template, indentation);
             }
