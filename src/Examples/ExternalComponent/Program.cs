@@ -16,6 +16,16 @@ namespace ExternalComponent
                 .BuildVHDL()
                 //.BuildCPP()
                .Run(
+                    new SinglePortBlockRamTester<UInt10, UInt10>(rnd),
+                    new SinglePortBlockRamTester<UInt10, UInt11>(rnd),
+                    new SinglePortBlockRamTester<UInt10, UInt12>(rnd),
+                    new SinglePortBlockRamTester<UInt10, UInt13>(rnd),
+                    new SinglePortBlockRamTester<UInt10, UInt14>(rnd),
+                    new SinglePortBlockRamTester<UInt10, UInt15>(rnd),
+                    new SinglePortBlockRamTester<UInt10, UInt16>(rnd),
+                    new SinglePortBlockRamTester<UInt10, UInt17>(rnd),
+                    new SinglePortBlockRamTester<UInt10, UInt18>(rnd),
+
                     new SimpleDualPortBlockRamTester<UInt10, UInt10>(rnd),
                     new SimpleDualPortBlockRamTester<UInt10, UInt11>(rnd),
                     new SimpleDualPortBlockRamTester<UInt10, UInt12>(rnd),

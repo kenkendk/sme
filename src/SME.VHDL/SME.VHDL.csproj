@@ -116,6 +116,7 @@
       <DependentUpon>VivadoProject.tt</DependentUpon>
     </Compile>
     <Compile Include="Components\BlockRamConfig.cs" />
+    <Compile Include="Components\SinglePortMemory.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
