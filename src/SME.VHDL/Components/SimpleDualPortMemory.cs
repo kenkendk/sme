@@ -107,13 +107,16 @@ namespace SME.VHDL.Components
             var inreadbus = self.InputBusses.First(x => typeof(IReadIn).IsAssignableFrom(x.SourceInstance.BusType));
             var inwritebus = self.InputBusses.First(x => typeof(IWriteIn).IsAssignableFrom(x.SourceInstance.BusType));
 
+            var memsize = m_memory.Length * DataWidth;
+            var config = new BlockRamConfig(renderer, DataWidth, memsize, false);
+
             var template = $@"
 signal RDEN_internal: std_logic;
 signal WREN_internal: std_logic;
-signal DI_internal : { renderer.Parent.VHDLExportTypeName(inwritebus.Signals.FirstOrDefault(x => string.Equals(x.Name, nameof(IWriteIn.Data))) ) };
-signal DO_internal : { renderer.Parent.VHDLExportTypeName(outbus.Signals.FirstOrDefault(x => string.Equals(x.Name, nameof(IReadOut.Data)))) };
-signal RDADDR_internal : { renderer.Parent.VHDLExportTypeName(inreadbus.Signals.FirstOrDefault(x => string.Equals(x.Name, nameof(IReadIn.Address)))) };
-signal WRADDR_internal : { renderer.Parent.VHDLExportTypeName(inwritebus.Signals.FirstOrDefault(x => string.Equals(x.Name, nameof(IWriteIn.Address)))) };
+signal DI_internal : std_logic_vector({DataWidth - 1} downto 0);
+signal DO_internal : std_logic_vector({DataWidth - 1} downto 0);
+signal RDADDR_internal : std_logic_vector({config.realaddrwidth - 1} downto 0);
+signal WRADDR_internal : std_logic_vector({config.realaddrwidth - 1} downto 0);
 ";
             return VHDLHelper.ReIndentTemplate(template, indentation);
        }
@@ -121,119 +124,52 @@ signal WRADDR_internal : { renderer.Parent.VHDLExportTypeName(inwritebus.Signals
         string IVHDLComponent.ProcessRegion(RenderStateProcess renderer, int indentation)
 		{
             var memsize = m_memory.Length * DataWidth;
+            var config = new BlockRamConfig(renderer, DataWidth, memsize, false);
 
-            if (renderer.Parent.Config.DEVICE_VENDOR != FPGAVendor.Xilinx)
-            {
-                throw new Exception("Blockram is only supported on Xlinix devices for now");
-            }
-            else
-            {
-                //TODO: Support output register
-                //TODO: Support initial output value
+            var initlines = VHDLHelper.SplitDataBitStringToMemInit(
+                VHDLHelper.GetDataBitStrings(m_initial),
+                config.datawidth,
+                config.paritybits
+            );
 
-                if (memsize > 36 * 1024)
-                    throw new Exception($"Unable to generate block ram with {memsize} bits as the device only supports up to {36 * 1024} bits");
+            var memlines = string.Join(
+                "," + Environment.NewLine,
+                Enumerable.Range(0, int.MaxValue)
+                .Zip(
+                    initlines.Item1,
+                    (a, b) => string.Format("    INIT_{0:X2} => X\"{1}\"", a, b)
+                )
+            );
 
-                var use36k = (memsize > 18 * 1024) || DataWidth >= 37;
-                var instancemem = use36k ? 1024 * 36 : 1024 * 18;
+            var paritylines = string.Join(
+                "," + Environment.NewLine,
+                Enumerable.Range(0, int.MaxValue)
+                .Zip(
+                    initlines.Item2,
+                    (a, b) => string.Format("    INITP_{0:X2} => X\"{1}\"", a, b)
+                )
+            );
 
-                var targetdevice = "7SERIES";
-                var linewidth = 256;
+            var initialvalue = VHDLHelper.GetDataBitString(m_resetinitial, DataWidth);
 
-                int realaddrwidth;
-                int paritybits;
-                int wewidth;
+            var self = renderer.Process;
+            var outbus = self.OutputBusses.First();
+            var inreadbus = self.InputBusses.First(x => typeof(IReadIn).IsAssignableFrom(x.SourceInstance.BusType));
+            var inwritebus = self.InputBusses.First(x => typeof(IWriteIn).IsAssignableFrom(x.SourceInstance.BusType));
+            // Apparently, it does not work to do "(others => '1')"
+            var westring = new string('1', config.wewidth);
 
-                if (DataWidth == 1)
-                {
-                    paritybits = 0;
-                    wewidth = 1;
-                    realaddrwidth = use36k ? 15 : 14;
-                }
-                else if (DataWidth == 2)
-                {
-                    paritybits = 0;
-                    wewidth = 1;
-                    realaddrwidth = use36k ? 14 : 13;
-                }
-                else if (DataWidth <= 4)
-                {
-                    paritybits = 0;
-                    wewidth = 1;
-                    realaddrwidth = use36k ? 13 : 12;
+            var addrpadding =
+                AddressWidth == config.realaddrwidth
+                ? string.Empty
+                : string.Format("\"{0}\" & ", new string('0', (config.realaddrwidth - AddressWidth)));
 
-                }
-                else if (DataWidth <= 9)
-                {
-                    paritybits = Math.Max(DataWidth - 8, 0);
-                    wewidth = 1;
-                    realaddrwidth = use36k ? 12 : 11;
-                }
-                else if (DataWidth <= 18)
-                {
-                    paritybits = Math.Max(DataWidth - 16, 0);
-                    wewidth = 2;
-                    realaddrwidth = use36k ? 11 : 10;
-
-                }
-                else if (DataWidth <= 36)
-                {
-                    paritybits = Math.Max(DataWidth - 32, 0);
-                    wewidth = 4;
-                    realaddrwidth = use36k ? 10 : 9;
-
-                }
-                else if (DataWidth <= 72)
-                {
-                    paritybits = Math.Max(DataWidth - 64, 0);
-                    wewidth = 8;
-                    realaddrwidth = 9;
-                }
-                else
-                {
-                    // TODO: Fix this by adding multiple block ram devices
-                    throw new Exception("Xilinx devices do not support more than 72 bit data width");
-                }
-
-                var initlines = VHDLHelper.SplitDataBitStringToMemInit(
-                    VHDLHelper.GetDataBitStrings(m_initial),
-                    DataWidth,
-                    paritybits
-                );
-
-                var memlines = string.Join(
-                    "," + Environment.NewLine,
-                    Enumerable.Range(0, int.MaxValue)
-                    .Zip(
-                        initlines.Item1,
-                        (a, b) => string.Format("    INIT_{0:X2} => X\"{1}\"", a, b)
-                    )
-                );
-
-                var paritylines = string.Join(
-                    "," + Environment.NewLine,
-                    Enumerable.Range(0, int.MaxValue)
-                    .Zip(
-                        initlines.Item2,
-                        (a, b) => string.Format("    INITP_{0:X2} => X\"{1}\"", a, b)
-                    )
-                );
-
-                var initialvalue = VHDLHelper.GetDataBitString(m_resetinitial, DataWidth);
-
-                var self = renderer.Process;
-                var outbus = self.OutputBusses.First();
-                var inreadbus = self.InputBusses.First(x => typeof(IReadIn).IsAssignableFrom(x.SourceInstance.BusType));
-                var inwritebus = self.InputBusses.First(x => typeof(IWriteIn).IsAssignableFrom(x.SourceInstance.BusType));
-                // Apparently, it does not work to do "(others => '1')"
-                var westring = new string('1', wewidth);
-
-                var template =
-    $@"
+            var template =
+$@"
 {self.InstanceName}_inst : BRAM_SDP_MACRO
 generic map (
-    BRAM_SIZE => ""{(use36k ? "36Kb" : "18Kb")}"", -- Target BRAM, ""18Kb"" or ""36Kb""
-    DEVICE => ""{ targetdevice }"", --Target device: ""VIRTEX5"", ""VIRTEX6"", ""7SERIES"", ""SPARTAN6""
+    BRAM_SIZE => ""{(config.use36k ? "36Kb" : "18Kb")}"", -- Target BRAM, ""18Kb"" or ""36Kb""
+    DEVICE => ""{ config.targetdevice }"", --Target device: ""VIRTEX5"", ""VIRTEX6"", ""7SERIES"", ""SPARTAN6""
     WRITE_WIDTH => { DataWidth },    --Valid values are 1 - 72(37 - 72 only valid when BRAM_SIZE = ""36Kb"")
     READ_WIDTH => { DataWidth },     --Valid values are 1 - 72(37 - 72 only valid when BRAM_SIZE = ""36Kb"")
     DO_REG => 0, --Optional output register(0 or 1)
@@ -244,10 +180,10 @@ generic map (
     WRITE_MODE => ""READ_FIRST"", --Specify ""READ_FIRST"" for same clock or synchronous clocks
                                --  Specify ""WRITE_FIRST"" for asynchrononous clocks on ports
 
-    -- The following INIT_xx declarations specify the initial contents of the RAM
+-- The following INIT_xx declarations specify the initial contents of the RAM
 { memlines },
 
-    -- The next set of INITP_xx are for the parity bits
+-- The next set of INITP_xx are for the parity bits
 { paritylines },
 
     INIT => X""{ initialvalue}"" --Initial values on output port
@@ -269,24 +205,23 @@ port map (
 
 {self.InstanceName}_Helper: process(RST,CLK, RDY)
 begin
-    if RST = '1' then
-        FIN <= '0';                        
-    elsif rising_edge(CLK) then
-        FIN <= not RDY;
-    end if;
+if RST = '1' then
+    FIN <= '0';                        
+elsif rising_edge(CLK) then
+    FIN <= not RDY;
+end if;
 end process;
 
-RDEN_internal <= ENB and {Naming.ToValidName(renderer.Parent.GetLocalBusName(inreadbus, self) + "_Enabled") };
-RDADDR_internal <= std_logic_vector({ Naming.ToValidName(renderer.Parent.GetLocalBusName(inreadbus, self) + "_Address") });
-{ Naming.ToValidName(renderer.Parent.GetLocalBusName(outbus, self) + "_Data") } <= {renderer.Parent.VHDLWrappedTypeName(outbus.Signals.First())}(DO_internal);
+RDEN_internal <= ENB and {Naming.ToValidName(renderer.Parent.GetLocalBusName(inreadbus, self) + "_" + nameof(IReadIn.Enabled)) };
+RDADDR_internal <= { addrpadding }std_logic_vector({ Naming.ToValidName(renderer.Parent.GetLocalBusName(inreadbus, self) + "_" + nameof(IReadIn.Address)) });
+{ Naming.ToValidName(renderer.Parent.GetLocalBusName(outbus, self) + "+" + nameof(IReadOut.Data)) } <= {renderer.Parent.VHDLWrappedTypeName(outbus.Signals.First())}(DO_internal);
 
-WREN_internal <= ENB and {Naming.ToValidName(renderer.Parent.GetLocalBusName(inwritebus, self) + "_Enabled") };
-WRADDR_internal <= std_logic_vector({ Naming.ToValidName(renderer.Parent.GetLocalBusName(inwritebus, self) + "_Address") });
-DI_internal <= std_logic_vector({ Naming.ToValidName(renderer.Parent.GetLocalBusName(inwritebus, self) + "_Data") });
+WREN_internal <= ENB and {Naming.ToValidName(renderer.Parent.GetLocalBusName(inwritebus, self) + "_" + nameof(IWriteIn.Enabled)) };
+WRADDR_internal <= { addrpadding }std_logic_vector({ Naming.ToValidName(renderer.Parent.GetLocalBusName(inwritebus, self) + "_" + nameof(IWriteIn.Address)) });
+DI_internal <= std_logic_vector({ Naming.ToValidName(renderer.Parent.GetLocalBusName(inwritebus, self) + "_" + nameof(IWriteIn.Data)) });
 
-                ";
-                return VHDLHelper.ReIndentTemplate(template, indentation);
-            }
+            ";
+            return VHDLHelper.ReIndentTemplate(template, indentation);
 		}
 
 	}

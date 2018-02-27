@@ -33,7 +33,8 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="BlockRamTester.cs" />
+    <Compile Include="SimpleDualPortBlockRamTester.cs" />
+    <Compile Include="TrueDualPortBlockRamTester.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\SME\SME.csproj">

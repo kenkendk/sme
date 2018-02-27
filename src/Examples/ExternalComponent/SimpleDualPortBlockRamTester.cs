@@ -5,7 +5,7 @@ using SME.VHDL;
 
 namespace ExternalComponent
 {
-    public class BlockRamTester<TAddr, TData> : SimulationProcess
+    public class SimpleDualPortBlockRamTester<TAddr, TData> : SimulationProcess
     {
         private readonly SME.VHDL.Components.SimpleDualPortMemory<TAddr, TData> m_bram;
 
@@ -19,7 +19,7 @@ namespace ExternalComponent
         [OutputBus]
         private readonly SME.VHDL.Components.SimpleDualPortMemory<TAddr, TData>.IWriteIn m_wrcontrol;
 
-        public BlockRamTester(bool random = false, int seed = 42)
+        public SimpleDualPortBlockRamTester(bool random = false, int seed = 42)
         {
             var rndbuf = new byte[8];
 

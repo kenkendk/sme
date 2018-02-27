@@ -115,6 +115,7 @@
     <Compile Include="Templates\VivadoProject.cs">
       <DependentUpon>VivadoProject.tt</DependentUpon>
     </Compile>
+    <Compile Include="Components\BlockRamConfig.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

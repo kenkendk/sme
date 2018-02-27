@@ -16,15 +16,25 @@ namespace ExternalComponent
                 .BuildVHDL()
                 //.BuildCPP()
                .Run(
-                    new BlockRamTester<UInt10, UInt10>(rnd),
-                    new BlockRamTester<UInt10, UInt11>(rnd),
-                    new BlockRamTester<UInt10, UInt12>(rnd),
-                    new BlockRamTester<UInt10, UInt13>(rnd),
-                    new BlockRamTester<UInt10, UInt14>(rnd),
-                    new BlockRamTester<UInt10, UInt15>(rnd),
-                    new BlockRamTester<UInt10, UInt16>(rnd),
-                    new BlockRamTester<UInt10, UInt17>(rnd),
-                    new BlockRamTester<UInt10, UInt18>(rnd)
+                    new SimpleDualPortBlockRamTester<UInt10, UInt10>(rnd),
+                    new SimpleDualPortBlockRamTester<UInt10, UInt11>(rnd),
+                    new SimpleDualPortBlockRamTester<UInt10, UInt12>(rnd),
+                    new SimpleDualPortBlockRamTester<UInt10, UInt13>(rnd),
+                    new SimpleDualPortBlockRamTester<UInt10, UInt14>(rnd),
+                    new SimpleDualPortBlockRamTester<UInt10, UInt15>(rnd),
+                    new SimpleDualPortBlockRamTester<UInt10, UInt16>(rnd),
+                    new SimpleDualPortBlockRamTester<UInt10, UInt17>(rnd),
+                    new SimpleDualPortBlockRamTester<UInt10, UInt18>(rnd),
+
+                    new TrueDualPortBlockRamTester<UInt10, UInt10>(rnd),
+                    new TrueDualPortBlockRamTester<UInt10, UInt11>(rnd),
+                    new TrueDualPortBlockRamTester<UInt10, UInt12>(rnd),
+                    new TrueDualPortBlockRamTester<UInt10, UInt13>(rnd),
+                    new TrueDualPortBlockRamTester<UInt10, UInt14>(rnd),
+                    new TrueDualPortBlockRamTester<UInt10, UInt15>(rnd),
+                    new TrueDualPortBlockRamTester<UInt10, UInt16>(rnd),
+                    new TrueDualPortBlockRamTester<UInt10, UInt17>(rnd),
+                    new TrueDualPortBlockRamTester<UInt10, UInt18>(rnd)
                );
             }
         }
