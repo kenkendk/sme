@@ -196,7 +196,7 @@ signal WRADDR_internal : { renderer.Parent.VHDLExportTypeName(inwritebus.Signals
                 }
 
                 var initlines = VHDLHelper.SplitDataBitStringToMemInit(
-                    VHDLHelper.GetDataBitString(m_initial, instancemem),
+                    VHDLHelper.GetDataBitStrings(m_initial),
                     DataWidth,
                     paritybits
                 );
@@ -219,7 +219,7 @@ signal WRADDR_internal : { renderer.Parent.VHDLExportTypeName(inwritebus.Signals
                     )
                 );
 
-                var initialvalue = VHDLHelper.GetDataBitString(new TData[] { m_resetinitial }, DataWidth);
+                var initialvalue = VHDLHelper.GetDataBitString(m_resetinitial, DataWidth);
 
                 var self = renderer.Process;
                 var outbus = self.OutputBusses.First();
