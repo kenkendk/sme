@@ -34,6 +34,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExternalComponent", "Examples\ExternalComponent\ExternalComponent.csproj", "{979E169E-0BE1-4FEB-AEF2-5B42E3873ECD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StatedAdder", "Examples\StatedAdder\StatedAdder.csproj", "{1006B782-C1DF-4D0C-9D91-B940B03A53ED}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SME.Components", "SME.Components\SME.Components.csproj", "{3F409401-0FB3-4481-A860-6FFAD20E3EFA}"
 EndProject
 Global
