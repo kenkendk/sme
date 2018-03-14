@@ -65,7 +65,7 @@ namespace SME.AST
 				var lefttype = ResolveExpressionType(network, proc, method, statement, e.Left);
                 //var righttype = ResolveExpressionType(network, proc, method, statement, e.Right);
 
-                if (op.IsArithmeticOperator())
+                if (op.IsArithmeticOperator() || op.IsBitwiseOperator())
 				{
                     var righttype = ResolveExpressionType(network, proc, method, statement, e.Right);
 
