@@ -3,11 +3,11 @@ using SME;
 using SME.VHDL;
 using System.Linq;
 
-namespace SME.VHDL.Components
+namespace SME.VHDL.OldComponents
 {
 	[ClockedProcess]
 	[SuppressBody]
-    public sealed class TrueDualPortMemory<TAddress, TData> : SimpleProcess, IVHDLComponent
+    public sealed class TrueDualPortMemory<TAddress, TData> : SimpleProcess
 	{
 		public interface IInputA : IBus
 		{
@@ -66,11 +66,21 @@ namespace SME.VHDL.Components
 		/// Initializes a new instance of the <see cref="T:SME.VHDL.Components.TrueDualPortMemory`2"/> class.
 		/// </summary>
         /// <param name="initial">The initial memory contents</param>
-        public TrueDualPortMemory(TData[] initial = null)
+        /// <param name="initialvalue">The initial output value on the output port</param>
+        /// <param name="elementcount">The number of elements to use. This parameter is ignored unless the <typeparamref name="TAddress"/> parameter is an <see cref="int"/></param>
+        public TrueDualPortMemory(TData[] initial = null, TData initialvalue = default(TData), int elementcount = -1)
             : base()
         {
             var dataWidth = VHDLHelper.GetBitWidthFromType(typeof(TData));
-            var addrWidth = VHDLHelper.GetBitWidthFromType(typeof(TAddress));
+            int addrWidth;
+            if (typeof(TAddress) == typeof(int))
+            {
+                if (elementcount <= 0)
+                    throw new ArgumentOutOfRangeException(nameof(elementcount), elementcount, $"When using an {typeof(int)} address, the {nameof(elementcount)} parameter must be set");
+                addrWidth = (int)Math.Ceiling(Math.Log(elementcount, 2));
+            }
+            else
+                addrWidth = VHDLHelper.GetBitWidthFromType(typeof(TAddress));
 
             DataWidthA = dataWidth;
             AddressWidthA = addrWidth;
@@ -132,12 +142,12 @@ namespace SME.VHDL.Components
 
 		}
 
-        string IVHDLComponent.IncludeRegion(RenderStateProcess renderer, int indentation)
+        private string IncludeRegion(RenderStateProcess renderer, int indentation)
         {
             return VHDLHelper.CreateComponentInclude(renderer.Parent.Config, indentation);
         }
 
-        string IVHDLComponent.SignalRegion(RenderStateProcess renderer, int indentation)
+        private string SignalRegion(RenderStateProcess renderer, int indentation)
         {
             var memsize = m_memory.Length * DataWidthA;
             var config = new BlockRamConfig(renderer, DataWidthA, memsize, true);
@@ -148,7 +158,29 @@ namespace SME.VHDL.Components
             var inbusa = self.InputBusses.First(x => typeof(IInputA).IsAssignableFrom(x.SourceInstance.BusType));
             var inbusb = self.InputBusses.First(x => typeof(IInputB).IsAssignableFrom(x.SourceInstance.BusType));
 
-            var template = $@"
+            string template;
+
+            if (typeof(TAddress) == typeof(int))
+            {
+                template = $@"
+signal ENA_internal: std_logic;
+signal WEA_internal: std_logic_vector({config.wewidth - 1} downto 0);
+signal DIA_internal : std_logic_vector({DataWidthA - 1} downto 0);
+signal DOA_internal : std_logic_vector({DataWidthA - 1} downto 0);
+signal ADDRA_internal_partial : std_logic_vector({config.realaddrwidth - 1} downto 0);
+signal ADDRA_internal : std_logic_vector(31 downto 0);
+
+signal ENB_internal: std_logic;
+signal WEB_internal: std_logic_vector({config.wewidth - 1} downto 0);
+signal DIB_internal : std_logic_vector({DataWidthB - 1} downto 0);
+signal DOB_internal : std_logic_vector({DataWidthB - 1} downto 0);
+signal ADDRB_internal_partial : std_logic_vector({config.realaddrwidth - 1} downto 0);
+signal ADDRB_internal : std_logic_vector(31 downto 0);
+";
+            }
+            else
+            {
+                template = $@"
 signal ENA_internal: std_logic;
 signal WEA_internal: std_logic_vector({config.wewidth - 1} downto 0);
 signal DIA_internal : std_logic_vector({DataWidthA - 1} downto 0);
@@ -161,10 +193,11 @@ signal DIB_internal : std_logic_vector({DataWidthB - 1} downto 0);
 signal DOB_internal : std_logic_vector({DataWidthB - 1} downto 0);
 signal ADDRB_internal : std_logic_vector({config.realaddrwidth - 1} downto 0);
 ";
+            }
             return VHDLHelper.ReIndentTemplate(template, indentation);
         }
 
-        string IVHDLComponent.ProcessRegion(RenderStateProcess renderer, int indentation)
+        private string ProcessRegion(RenderStateProcess renderer, int indentation)
         {
             var memsize = m_memory.Length * DataWidthA;
             var config = new BlockRamConfig(renderer, DataWidthA, memsize, true);
@@ -202,9 +235,14 @@ signal ADDRB_internal : std_logic_vector({config.realaddrwidth - 1} downto 0);
             var inbusb = self.InputBusses.First(x => typeof(IInputB).IsAssignableFrom(x.SourceInstance.BusType));
 
             var addrpadding =
-                AddressWidthA == config.realaddrwidth
+                AddressWidthA < config.realaddrwidth
                 ? string.Empty
                 : string.Format("\"{0}\" & ", new string('0', (config.realaddrwidth - AddressWidthA)));
+
+            var partialaddrsuffix =
+                typeof(TAddress) == typeof(int)
+                ? "_partial"
+                : string.Empty;
 
             var template =
 $@"
@@ -238,8 +276,8 @@ generic map (
 port map (
     DOA => DOA_internal,         -- Output port-A, width defined by READ_WIDTH_A parameter
     DOB => DOB_internal,         -- Output port-B, width defined by READ_WIDTH_B parameter
-    ADDRA => ADDRA_internal,     -- Input port-A address, width defined by Port A depth
-    ADDRB => ADDRB_internal,     -- Input port-B address, width defined by Port B depth
+    ADDRA => ADDRA_internal{partialaddrsuffix},     -- Input port-A address, width defined by Port A depth
+    ADDRB => ADDRB_internal{partialaddrsuffix},     -- Input port-B address, width defined by Port B depth
     CLKA => CLK,                 -- 1-bit input port-A clock
     CLKB => CLK,                 -- 1-bit input port-B clock
     DIA => DIA_internal,         -- Input port-A data, width defined by WRITE_WIDTH_A parameter
@@ -275,8 +313,16 @@ WEB_internal <= (others => ENB_internal and {Naming.ToValidName(renderer.Parent.
 ADDRB_internal <= { addrpadding }std_logic_vector({ Naming.ToValidName(renderer.Parent.GetLocalBusName(inbusb, self) + "_" + nameof(IInputB.Address)) });
 DIB_internal <= std_logic_vector({ Naming.ToValidName(renderer.Parent.GetLocalBusName(inbusb, self) + "_" + nameof(IInputB.Data)) });
 { Naming.ToValidName(renderer.Parent.GetLocalBusName(outbusb, self) + "_" + nameof(IOutputB.Data)) } <= {renderer.Parent.VHDLWrappedTypeName(outbusa.Signals.First())}(DOB_internal);
+";
 
-            ";
+            if (partialaddrsuffix != string.Empty)
+            {
+                template +=
+$@"
+ADDRA_internal_partial <= ADDRA_internal({config.realaddrwidth} downto 0);
+ADDRB_internal_partial <= ADDRB_internal({config.realaddrwidth} downto 0);
+";
+            }
             return VHDLHelper.ReIndentTemplate(template, indentation);
         }
 	}

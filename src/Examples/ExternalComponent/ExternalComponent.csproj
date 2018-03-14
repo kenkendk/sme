@@ -62,6 +62,10 @@
       <Project>{E796351B-EB59-4686-9B54-DE4A284E0433}</Project>
       <Name>SME.VHDL</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\SME.Components\SME.Components.csproj">
+      <Project>{3F409401-0FB3-4481-A860-6FFAD20E3EFA}</Project>
+      <Name>SME.Components</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

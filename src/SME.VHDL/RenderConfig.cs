@@ -77,6 +77,25 @@ namespace SME.VHDL
     }
 
     /// <summary>
+    /// The strategy used to render components
+    /// </summary>
+    public enum ComponentRendererStrategy
+    {
+        /// <summary>
+        /// No special rendering is used, the SME code is transpiled as-is
+        /// </summary>
+        Direct,
+        /// <summary>
+        /// The components are generated with a pattern that is known to be inferrable by the VHDL compilers
+        /// </summary>
+        Inferred,
+        /// <summary>
+        /// The components are generated as native implementations for the target device
+        /// </summary>
+        Native
+    }
+
+    /// <summary>
     /// The configuration for the VHDL render
     /// </summary>
     public class RenderConfig
@@ -116,6 +135,11 @@ namespace SME.VHDL
         /// The target device
         /// </summary>
         /// <value>The target device.</value>
-        public FPGADevice TARGET_DEVICE { get; private set; } = FPGADevice.Zynq7000;    
+        public FPGADevice TARGET_DEVICE { get; private set; } = FPGADevice.Zynq7000;
+
+        /// <summary>
+        /// The rendering strategy
+        /// </summary>
+        public ComponentRendererStrategy COMPONENT_RENDERER_STRATEGY { get; private set; } = ComponentRendererStrategy.Inferred;
     }
 }

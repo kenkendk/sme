@@ -5,31 +5,32 @@ using SME.VHDL;
 
 namespace ExternalComponent
 {
-    public class TrueDualPortBlockRamTester<TAddr, TData> : SimulationProcess
+    public class TrueDualPortBlockRamTester<TData> : SimulationProcess
     {
-        private readonly SME.VHDL.Components.TrueDualPortMemory<TAddr, TData> m_bram;
+        private readonly SME.Components.TrueDualPortMemory<TData> m_bram;
 
         private readonly TData[] m_initial;
         private readonly TData[] m_rnd;
 
         [OutputBus]
-        private readonly SME.VHDL.Components.TrueDualPortMemory<TAddr, TData>.IInputA m_controla;
+        private readonly SME.Components.TrueDualPortMemory<TData>.IControlA m_controla;
 
         [InputBus]
-        private readonly SME.VHDL.Components.TrueDualPortMemory<TAddr, TData>.IOutputA m_rda;
+        private readonly SME.Components.TrueDualPortMemory<TData>.IReadResultA m_rda;
 
         [OutputBus]
-        private readonly SME.VHDL.Components.TrueDualPortMemory<TAddr, TData>.IInputB m_controlb;
+        private readonly SME.Components.TrueDualPortMemory<TData>.IControlB m_controlb;
 
         [InputBus]
-        private readonly SME.VHDL.Components.TrueDualPortMemory<TAddr, TData>.IOutputB m_rdb;
+        private readonly SME.Components.TrueDualPortMemory<TData>.IReadResultB m_rdb;
 
-        public TrueDualPortBlockRamTester(bool random = false, int seed = 42)
+        public TrueDualPortBlockRamTester(int memsize, bool random = false, int seed = 42)
         {
             var rndbuf = new byte[8];
 
             var rnd = new Random(seed);
-            m_initial = new TData[(int)Math.Pow(2, VHDLHelper.GetBitWidthFromType(typeof(TAddr)))];
+            m_initial = new TData[memsize];
+
             m_rnd = new TData[m_initial.Length];
             for (var i = 0; i < m_initial.Length; i++)
             {
@@ -47,11 +48,11 @@ namespace ExternalComponent
                 }
             }
 
-            m_bram = new SME.VHDL.Components.TrueDualPortMemory<TAddr, TData>(m_initial);
-            m_controla = m_bram.InA;
-            m_rda = m_bram.OutA;
-            m_controlb = m_bram.InB;
-            m_rdb = m_bram.OutB;
+            m_bram = new SME.Components.TrueDualPortMemory<TData>(memsize, m_initial);
+            m_controla = m_bram.ControlA;
+            m_rda = m_bram.ReadResultA;
+            m_controlb = m_bram.ControlB;
+            m_rdb = m_bram.ReadResultB;
 
             Simulation.Current.AddTopLevelInputs(m_controla, m_controlb);
             Simulation.Current.AddTopLevelOutputs(m_rda, m_rdb);
@@ -65,8 +66,8 @@ namespace ExternalComponent
             // Wait for initialization to complete
             await ClockAsync();
 
-            m_controla.Address = VHDLHelper.CreateIntType<TAddr>((ulong)0);
-            m_controlb.Address = VHDLHelper.CreateIntType<TAddr>((ulong)0);
+            m_controla.Address = 0;
+            m_controlb.Address = 0;
 
             m_controla.Enabled = true;
             m_controlb.Enabled = false;
@@ -78,10 +79,10 @@ namespace ExternalComponent
 
             for (var i = 1; i < m_initial.Length; i++)
             {
-                m_controla.Address = VHDLHelper.CreateIntType<TAddr>((ulong)i);
+                m_controla.Address = i;
                 await ClockAsync();
                 if (m_rda.Data.ToString() != VHDLHelper.CreateIntType<TData>((ulong)(i - 1)).ToString())
-                    Console.WriteLine($"Read problem at offset {i}, value is {m_rda.Data} but should be {VHDLHelper.CreateIntType<TData>((ulong)i)}");
+                    Console.WriteLine($"Read problem at offset {i}, value is {m_rda.Data} but should be {i}");
             }
 
             m_controla.Enabled = false;
@@ -91,10 +92,10 @@ namespace ExternalComponent
 
             for (var i = 1; i < m_initial.Length; i++)
             {
-                m_controlb.Address = VHDLHelper.CreateIntType<TAddr>((ulong)i);
+                m_controlb.Address = i;
                 await ClockAsync();
                 if (m_rdb.Data.ToString() != VHDLHelper.CreateIntType<TData>((ulong)(i - 1)).ToString())
-                    Console.WriteLine($"Read problem at offset {i}, value is {m_rdb.Data} but should be {VHDLHelper.CreateIntType<TData>((ulong)i)}");
+                    Console.WriteLine($"Read problem at offset {i}, value is {m_rdb.Data} but should be {i}");
             }
 
             m_controla.Enabled = false;
@@ -107,7 +108,7 @@ namespace ExternalComponent
 
             for (var i = 1; i < m_rnd.Length; i++)
             {
-                m_controla.Address = VHDLHelper.CreateIntType<TAddr>((ulong)i);
+                m_controla.Address = i;
                 m_controla.Data = m_rnd[i];
 
                 await ClockAsync();
@@ -118,16 +119,16 @@ namespace ExternalComponent
 
             await ClockAsync();
 
-            m_controlb.Address = VHDLHelper.CreateIntType<TAddr>((ulong)0);
+            m_controlb.Address = 0;
             m_controlb.IsWriting = false;
             m_controlb.Enabled = true;
 
             for (var i = 1; i < m_rnd.Length; i++)
             {
-                m_controlb.Address = VHDLHelper.CreateIntType<TAddr>((ulong)i);
+                m_controlb.Address = i;
                 await ClockAsync();
                 if (m_rdb.Data.ToString() != m_rnd[i - 1].ToString())
-                    Console.WriteLine($"Read problem at offset {i}, value is {m_rdb.Data} but should be {VHDLHelper.CreateIntType<TData>((ulong)i)}");
+                    Console.WriteLine($"Read problem at offset {i}, value is {m_rdb.Data} but should be {i}");
             }
 
             m_controlb.IsWriting = false;
@@ -140,7 +141,7 @@ namespace ExternalComponent
 
             for (var i = 1; i < m_rnd.Length; i++)
             {
-                m_controlb.Address = VHDLHelper.CreateIntType<TAddr>((ulong)i);
+                m_controlb.Address = i;
                 m_controlb.Data = m_rnd[i];
 
                 await ClockAsync();
@@ -151,16 +152,16 @@ namespace ExternalComponent
 
             await ClockAsync();
 
-            m_controla.Address = VHDLHelper.CreateIntType<TAddr>((ulong)0);
+            m_controla.Address = 0;
             m_controla.IsWriting = false;
             m_controla.Enabled = true;
 
             for (var i = 1; i < m_rnd.Length; i++)
             {
-                m_controla.Address = VHDLHelper.CreateIntType<TAddr>((ulong)i);
+                m_controla.Address = i;
                 await ClockAsync();
                 if (m_rda.Data.ToString() != m_rnd[i - 1].ToString())
-                    Console.WriteLine($"Read problem at offset {i}, value is {m_rda.Data} but should be {VHDLHelper.CreateIntType<TData>((ulong)i)}");
+                    Console.WriteLine($"Read problem at offset {i}, value is {m_rda.Data} but should be {i}");
             }
 
             m_controla.IsWriting = false;
