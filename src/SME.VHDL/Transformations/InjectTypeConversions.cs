@@ -49,76 +49,59 @@ namespace SME.VHDL.Transformations
 				return el;
 
 			var res = el;
-			if (el is AST.BinaryOperatorExpression)
-			{
-				var boe = ((AST.BinaryOperatorExpression)el);
-				var tvhdl = State.VHDLType(boe);
+            if (el is AST.BinaryOperatorExpression)
+            {
+                var boe = ((AST.BinaryOperatorExpression)el);
+                var tvhdl = State.VHDLType(boe);
 
-				var le = boe.Left;
-				var re = boe.Right;
+                var le = boe.Left;
+                var re = boe.Right;
 
-				var le_type = State.VHDLType(le);
-				var re_type = State.VHDLType(re);
+                var le_type = State.VHDLType(le);
+                var re_type = State.VHDLType(re);
 
-				Mono.Cecil.TypeReference tvhdlsource;
+                Mono.Cecil.TypeReference tvhdlsource = boe.SourceResultType;
 
-				if (le is AST.PrimitiveExpression && !(re is AST.PrimitiveExpression))
-				{
-					tvhdl = re_type;
-					tvhdlsource = re.SourceResultType;
-				}
-				else
-				{
-					tvhdl = le_type;
-					tvhdlsource = le.SourceResultType;
-				}
-
-				// As we are in depth-first post-order, we may not have acted on the type-cast yet
-				// so we peek up the tree to see if the result is forced to a particular type
-				var tp = boe.Parent;
-				if (tp is AST.ParenthesizedExpression)
-					tp = tp.Parent;
-				if (tp is AST.CastExpression)
-				{
-					// If we are being cast, make sure the cast is not narrowing,
-					// because we loose precision with that
-					// The cast expression will cut the precision for us later, if needed
-					var xt = State.TypeScope.GetVHDLType(((AST.CastExpression)tp).SourceResultType);
-                    if ((xt.IsSigned || xt.IsUnsigned || xt.IsStdLogicVector) && (tvhdl.IsSigned || tvhdl.IsUnsigned || tvhdl.IsStdLogicVector) && xt.Length > tvhdl.Length)
-					{
-						tvhdl = xt;
-						tvhdlsource = ((AST.CastExpression)tp).SourceResultType;
-					}
-				}
-
-				if ((boe.Operator.IsArithmeticOperator() || boe.Operator.IsCompareOperator()))
-				{
-					if (tvhdl != VHDLTypes.INTEGER)
-						tvhdl = State.TypeScope.NumericEquivalent(tvhdl, false) ?? tvhdl;
-				}
-				else if (boe.Operator == BinaryOperatorType.ShiftLeft || boe.Operator == BinaryOperatorType.ShiftRight)
-				{
-					// Handle later
-				}
-				else if (boe.Operator.IsBitwiseOperator())
-					tvhdl = State.TypeScope.SystemEquivalent(tvhdl);
+                if ((boe.Operator.IsArithmeticOperator() || boe.Operator.IsCompareOperator()))
+                {
+                    if (tvhdl != VHDLTypes.INTEGER)
+                        tvhdl = State.TypeScope.NumericEquivalent(tvhdl, false) ?? tvhdl;
+                }
+                else if (boe.Operator == BinaryOperatorType.ShiftLeft || boe.Operator == BinaryOperatorType.ShiftRight)
+                {
+                    // Handle later
+                }
+                else if (boe.Operator.IsBitwiseOperator())
+                    tvhdl = State.TypeScope.SystemEquivalent(tvhdl);
 
 
-				VHDLType lhstype, rhstype;
-				Mono.Cecil.TypeReference lhssource, rhssource;
+                var lhstype = le_type;
+                var rhstype = re_type;
 
-				if (boe.Operator.IsLogicalOperator())
-				{
-					lhstype = VHDLTypes.BOOL;
-					rhstype = VHDLTypes.BOOL;
-					lhssource = rhssource = boe.SourceResultType.LoadType(typeof(bool));
-				}
-				else
-				{
-					lhstype = tvhdl;
-					rhstype = tvhdl;
-					lhssource = rhssource = tvhdlsource;
-				}
+                var lhssource = boe.Left.SourceResultType;
+                var rhssource = boe.Right.SourceResultType;
+
+                if (boe.Operator.IsLogicalOperator())
+                {
+                    // Force both sides to booleans
+                    lhstype = VHDLTypes.BOOL;
+                    rhstype = VHDLTypes.BOOL;
+                    lhssource = rhssource = boe.SourceResultType.LoadType(typeof(bool));
+                }
+                else if (boe.Operator.IsArithmeticOperator() || boe.Operator.IsBitwiseOperator())
+                {
+                    // Force both sides to the result type
+                    lhstype = tvhdl;
+                    rhstype = tvhdl;
+                }
+                else if (boe.Operator.IsCompareOperator())
+                {
+                    // Use whatever is not unconstrained integer for the compare
+                    if (lhstype == VHDLTypes.INTEGER)
+                        lhstype = rhstype;
+                    else
+                        rhstype = lhstype;
+                }
 
 				if (boe.Operator == BinaryOperatorType.ShiftLeft || boe.Operator == BinaryOperatorType.ShiftRight)
 				{
