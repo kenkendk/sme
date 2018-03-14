@@ -230,12 +230,15 @@ namespace SME.VHDL.Transformations
 			else if (el is AST.InvocationExpression)
 			{
 				var ie = el as AST.InvocationExpression;
+                var method = (AST.Method)ie.Target;
 				var changed = false;
-				foreach (var a in ie.ArgumentExpressions)
+
+                for (var i = 0; i < ie.ArgumentExpressions.Length; i++)
 				{
+                    var a = ie.ArgumentExpressions[i];
 					if (a is AST.PrimitiveExpression)
 					{
-						var tvhdl = State.TypeScope.GetVHDLType(a.SourceResultType);
+                        var tvhdl = State.TypeScope.GetVHDLType(method.Parameters[i].CecilType);
 						changed |= VHDLTypeConversion.ConvertExpression(State, Method, a, tvhdl, a.SourceResultType, false) != a;
 					}
 				}
