@@ -51,26 +51,26 @@ namespace SME.AST
 		/// <param name="t">The interface to test for.</param>
 		public static bool HasInterface(this TypeDefinition td, Type t)
 		{
-			return HasInterface(td, td.Module.Import(t).Resolve());
+			return HasInterface(td, td.Module.ImportReference(t).Resolve());
 		}
 
-		/// <summary>
-		/// Returns <c>true</c> if the type definition implements the given interface
-		/// </summary>
-		/// <returns><c>true</c>, if interface was implemented, <c>false</c> otherwise.</returns>
-		/// <param name="td">The type definition to evaluate.</param>
-		/// <param name="b">The interface to test for.</param>
-		public static bool HasInterface(this TypeDefinition td, TypeDefinition b)
-		{
-			return td.Interfaces.Any(x => x.Resolve() == b);
-		}
+        /// <summary>
+        /// Returns <c>true</c> if the type definition implements the given interface
+        /// </summary>
+        /// <returns><c>true</c>, if interface was implemented, <c>false</c> otherwise.</returns>
+        /// <param name="td">The type definition to evaluate.</param>
+        /// <param name="b">The interface to test for.</param>
+        public static bool HasInterface(this TypeDefinition td, TypeDefinition b)
+        {
+        	return td.Interfaces.Any(x => x.InterfaceType.Resolve() == b);
+        }
 
-		/// <summary>
-		/// Returns a value indicating if the type is a Bus type
-		/// </summary>
-		/// <returns><c>true</c>, if the type reference is a bus type, <c>false</c> otherwise.</returns>
-		/// <param name="tr">The type to evaluate.</param>
-		public static bool IsBusType(this TypeReference tr)
+        /// <summary>
+        /// Returns a value indicating if the type is a Bus type
+        /// </summary>
+        /// <returns><c>true</c>, if the type reference is a bus type, <c>false</c> otherwise.</returns>
+        /// <param name="tr">The type to evaluate.</param>
+        public static bool IsBusType(this TypeReference tr)
 		{
 			return tr.HasInterface<IBus>();
 		}
@@ -170,7 +170,7 @@ namespace SME.AST
 		/// <param name="t">The type of attributes to find.</param>
 		public static IEnumerable<CustomAttribute> GetAttributes(this IMemberDefinition mr, Type t)
 		{
-			var n = mr.DeclaringType.Module.Import(t).Resolve();
+			var n = mr.DeclaringType.Module.ImportReference(t).Resolve();
 			return mr.CustomAttributes.Where(x => x.AttributeType.Resolve() == n);
 		}
 
@@ -258,7 +258,7 @@ namespace SME.AST
 		/// <param name="t">The type of attribute to find.</param>
 		public static CustomAttribute GetAttribute(this TypeDefinition td, Type t)
 		{
-			var n = td.Module.Import(t);
+			var n = td.Module.ImportReference(t);
 			return SelfAndBases(td).SelectMany(x => x.CustomAttributes).FirstOrDefault(x => x.AttributeType.IsSameTypeReference(n));
 		}
 
@@ -281,7 +281,7 @@ namespace SME.AST
 		/// <param name="t">The type of attribute to find.</param>
 		public static CustomAttribute GetAttribute(this ParameterDefinition td, Type t)
 		{
-			return td.CustomAttributes.FirstOrDefault(x => x.AttributeType.Resolve() == x.AttributeType.Module.Import(t).Resolve());
+			return td.CustomAttributes.FirstOrDefault(x => x.AttributeType.Resolve() == x.AttributeType.Module.ImportReference(t).Resolve());
 		}
 
 		/// <summary>
@@ -343,7 +343,7 @@ namespace SME.AST
 		/// <param name="t">The type to attempt to assign to.</param>
 		public static bool IsAssignableFrom(this TypeDefinition td, Type t)
 		{
-			return IsAssignableFrom(td, td.Module.Import(t));
+			return IsAssignableFrom(td, td.Module.ImportReference(t));
 		}
 
 		/// <summary>
@@ -409,7 +409,7 @@ namespace SME.AST
 		/// <param name="t">The type to test for equality with.</param>
 		public static bool IsType(this TypeReference tr, Type t)
 		{
-			return tr.Module.Import(t).FullName == tr.FullName;
+			return tr.Module.ImportReference(t).FullName == tr.FullName;
 		}
 
 		/// <summary>
@@ -420,7 +420,7 @@ namespace SME.AST
 		/// <param name="t">The type to test for equality with.</param>
 		public static bool IsType(this TypeDefinition td, Type t)
 		{
-			return td.Module.Import(t).Resolve().FullName == td.FullName;
+			return td.Module.ImportReference(t).Resolve().FullName == td.FullName;
 		}
 
 		/// <summary>
@@ -454,7 +454,7 @@ namespace SME.AST
 		/// <param name="b">The type to test for equality with.</param>
 		public static bool IsSameTypeReference(this TypeReference a, Type b)
 		{
-			return IsSameTypeReference(a, a.Module.Import(b));
+			return IsSameTypeReference(a, a.Module.ImportReference(b));
 		}
 
 		/// <summary>
@@ -523,9 +523,9 @@ namespace SME.AST
 				foreach (var f in x.Properties)
 					yield return f;
 
-				if (x.HasInterfaces)
+                if (x.HasInterfaces)
 					foreach (var n in x.Interfaces)
-						foreach (var f in n.Resolve().Properties)
+                        foreach (var f in n.InterfaceType.Resolve().Properties)
 							yield return f;
 
 				if (x.BaseType == null)
@@ -741,7 +741,7 @@ namespace SME.AST
 		/// <param name="t">The type to load.</param>
 		public static TypeReference LoadType(this TypeReference source, Type t)
 		{
-			return source.Module.Import(t);
+			return source.Module.ImportReference(t);
 		}
 
 		/// <summary>

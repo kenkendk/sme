@@ -94,10 +94,9 @@ namespace SME.VHDL.Transformations
 
 				var tmpstm = new ExpressionStatement()
 				{
-					SourceStatement = ase.SourceExpression.Clone(),
-					Expression = new AssignmentExpression()
+                    Expression = new AssignmentExpression()
 					{
-						Operator = ICSharpCode.NRefactory.CSharp.AssignmentOperatorType.Assign,
+						Operator = ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType.Assign,
 						Left = assignWith(),
 						Right = last.Right,
 						SourceExpression = ase.SourceExpression,
@@ -113,7 +112,7 @@ namespace SME.VHDL.Transformations
 				{
 					Expression = new AssignmentExpression()
 					{
-						Operator = ICSharpCode.NRefactory.CSharp.AssignmentOperatorType.Assign,
+						Operator = ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType.Assign,
 						Left = el,
 						Right = assignWith(),
 						SourceExpression = ase.SourceExpression,
@@ -126,7 +125,6 @@ namespace SME.VHDL.Transformations
 			var blstm = new BlockStatement()
 			{
 				Statements = statements.ToArray(),
-				SourceStatement = ase.SourceExpression.Clone()
 			};
 
 			ase.PrependStatement(blstm);
@@ -155,7 +153,7 @@ namespace SME.VHDL.Transformations
 
 				var nase = new AssignmentExpression()
 				{
-					Operator = ICSharpCode.NRefactory.CSharp.AssignmentOperatorType.Assign,
+					Operator = ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType.Assign,
 					Left = ase.Left,
 					Right = sue.Left,
 					SourceExpression = ase.SourceExpression,

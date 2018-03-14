@@ -73,7 +73,6 @@ namespace SME.VHDL.Transformations
 			// Inject the assignment
 			var nstm = new ExpressionStatement()
 			{
-				SourceStatement = stm.SourceStatement.Clone(),
 				Expression = new AssignmentExpression()
 				{
 					Left = new IdentifierExpression()
@@ -83,7 +82,7 @@ namespace SME.VHDL.Transformations
 						SourceExpression = exp,
 						SourceResultType = tmp.CecilType
 					},
-					Operator = ICSharpCode.NRefactory.CSharp.AssignmentOperatorType.Assign,
+					Operator = ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType.Assign,
 					Right = new BinaryOperatorExpression()
 					{
 						Left = new IdentifierExpression()
@@ -93,7 +92,7 @@ namespace SME.VHDL.Transformations
 							SourceExpression = exp,
 							SourceResultType = stm.LoopIndex.CecilType
 						},
-						Operator = ICSharpCode.NRefactory.CSharp.BinaryOperatorType.Multiply,
+						Operator = ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.Multiply,
 						Right = new PrimitiveExpression()
 						{
 							Value = incr,

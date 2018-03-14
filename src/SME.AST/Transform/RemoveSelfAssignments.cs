@@ -23,7 +23,7 @@ namespace SME.AST.Transform
 			var target_left = expression.Left.GetTarget();
 			var target_right = expression.Right.GetTarget();
 
-			if (target_left == target_right && target_left != null && expression.Parent is ExpressionStatement && expression.Operator == ICSharpCode.NRefactory.CSharp.AssignmentOperatorType.Assign)
+			if (target_left == target_right && target_left != null && expression.Parent is ExpressionStatement && expression.Operator == ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType.Assign)
 				return expression.ReplaceWith(new EmptyExpression()
 				{
 					SourceExpression = expression.SourceExpression,

@@ -37,10 +37,7 @@ namespace SME.AST.Transform
                 var last = cs.Item2.SelectMany(x => x.LeavesOnly()).LastOrDefault();
                 if (last is BreakStatement)
                 {
-                    var es = new EmptyStatement()
-                    {
-                        SourceStatement = (last as Statement).SourceStatement
-                    };
+                    var es = new EmptyStatement();
 
                     (last as Statement).ReplaceWith(es);
                     changed = true;

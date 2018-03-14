@@ -46,7 +46,6 @@ namespace SME.VHDL.Transformations
 
 			var stm = new ExpressionStatement()
 			{
-				SourceStatement = rs.SourceStatement.Clone(),
 				Expression = new AST.AssignmentExpression()
 				{
 					Left = new AST.MemberReferenceExpression()
@@ -59,7 +58,7 @@ namespace SME.VHDL.Transformations
 					Right = rs.ReturnExpression,
 					SourceExpression = rs.ReturnExpression.SourceExpression,
 					SourceResultType = Method.ReturnVariable.CecilType,
-					Operator = ICSharpCode.NRefactory.CSharp.AssignmentOperatorType.Assign
+					Operator = ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType.Assign
 				}
 			};
 
@@ -72,7 +71,6 @@ namespace SME.VHDL.Transformations
 					SourceExpression = rs.ReturnExpression.SourceExpression,
 					SourceResultType = Method.ReturnVariable.CecilType.LoadType(typeof(void))
 				},
-				SourceStatement = rs.SourceStatement.Clone()
 			});
 
 			return stm;

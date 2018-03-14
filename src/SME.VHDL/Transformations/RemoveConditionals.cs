@@ -64,7 +64,7 @@ namespace SME.VHDL.Transformations
 						var tvhdl = State.VHDLType(ase.Left);
 						var svhdl = State.VHDLType(ce);
 
-						if (tvhdl == VHDLTypes.SYSTEM_BOOL && svhdl == VHDLTypes.SYSTEM_BOOL && ase.Operator == ICSharpCode.NRefactory.CSharp.AssignmentOperatorType.Assign)
+						if (tvhdl == VHDLTypes.SYSTEM_BOOL && svhdl == VHDLTypes.SYSTEM_BOOL && ase.Operator == ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType.Assign)
 						{
 							var tg = ase.Left.GetTarget();
 							CreateIfElse(ce, tg);
@@ -125,13 +125,12 @@ namespace SME.VHDL.Transformations
 				};
 			}
 
-			var ies = new IfElseStatement()
-			{
-				Condition = sourceExp.ConditionExpression,
-				TrueStatement = new ExpressionStatement()
-				{
-					SourceStatement = sourceExp.SourceExpression.Clone(),
-					Expression = new AssignmentExpression()
+            var ies = new IfElseStatement()
+            {
+                Condition = sourceExp.ConditionExpression,
+                TrueStatement = new ExpressionStatement()
+                {
+                    Expression = new AssignmentExpression()
 					{
 						SourceResultType = targetExp.SourceResultType,
 						SourceExpression = sourceExp.SourceExpression,
@@ -141,8 +140,7 @@ namespace SME.VHDL.Transformations
 				},
 				FalseStatement = new ExpressionStatement()
 				{
-					SourceStatement = sourceExp.SourceExpression.Clone(),
-					Expression = new AssignmentExpression()
+                    Expression = new AssignmentExpression()
 					{
 						SourceResultType = targetExp.SourceResultType,
 						SourceExpression = sourceExp.SourceExpression,
@@ -150,7 +148,6 @@ namespace SME.VHDL.Transformations
 						Right = sourceExp.FalseExpression
 					}
 				},
-				SourceStatement = sourceExp.SourceExpression.Clone()
 			};
 						   
 			sourceExp.PrependStatement(ies);

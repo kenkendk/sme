@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleComponents", "Example
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExternalComponent", "Examples\ExternalComponent\ExternalComponent.csproj", "{979E169E-0BE1-4FEB-AEF2-5B42E3873ECD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StatedAdder", "Examples\StatedAdder\StatedAdder.csproj", "{1006B782-C1DF-4D0C-9D91-B940B03A53ED}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -95,6 +97,10 @@ Global
 		{979E169E-0BE1-4FEB-AEF2-5B42E3873ECD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{979E169E-0BE1-4FEB-AEF2-5B42E3873ECD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{979E169E-0BE1-4FEB-AEF2-5B42E3873ECD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1006B782-C1DF-4D0C-9D91-B940B03A53ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1006B782-C1DF-4D0C-9D91-B940B03A53ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1006B782-C1DF-4D0C-9D91-B940B03A53ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1006B782-C1DF-4D0C-9D91-B940B03A53ED}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -108,6 +114,7 @@ Global
 		{83BF7F48-BB3D-40C0-931D-B5BBCA93C92F} = {0F94E837-9D61-47FE-98A0-EDFA671A44FA}
 		{C1716AA9-45FF-4103-AD48-5333E325C9D9} = {0F94E837-9D61-47FE-98A0-EDFA671A44FA}
 		{979E169E-0BE1-4FEB-AEF2-5B42E3873ECD} = {0F94E837-9D61-47FE-98A0-EDFA671A44FA}
+		{1006B782-C1DF-4D0C-9D91-B940B03A53ED} = {0F94E837-9D61-47FE-98A0-EDFA671A44FA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {919EE0E7-607B-4DB0-9FD2-27B597206F06}

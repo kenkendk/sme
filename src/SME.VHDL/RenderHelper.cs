@@ -429,9 +429,9 @@ namespace SME.VHDL
         {
             if (Parent.Config.AVOID_SLL_AND_SRL)
             {
-                if (e.Operator == ICSharpCode.NRefactory.CSharp.BinaryOperatorType.ShiftLeft)
+                if (e.Operator == ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.ShiftLeft)
                     return string.Format("shift_left({0}, {1})", RenderExpression(e.Left), RenderExpression(e.Right));
-                else if (e.Operator == ICSharpCode.NRefactory.CSharp.BinaryOperatorType.ShiftRight)
+                else if (e.Operator == ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.ShiftRight)
                     return string.Format("shift_right({0}, {1})", RenderExpression(e.Left), RenderExpression(e.Right));
             }
 

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using ICSharpCode.NRefactory.CSharp;
+using ICSharpCode.Decompiler.CSharp.Syntax;
 
 namespace SME.AST
 {
@@ -15,30 +15,30 @@ namespace SME.AST
 		/// <param name="method">The method where the statement is found.</param>
 		/// <param name="statement">The statement where the expression is found.</param>
 		/// <param name="expression">The expression to decompile</param>
-		protected Expression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.NRefactory.CSharp.Expression expression)
+		protected Expression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.Decompiler.CSharp.Syntax.Expression expression)
 		{
-			if (expression is ICSharpCode.NRefactory.CSharp.AssignmentExpression)
-				return Decompile(network, proc, method, statement, expression as ICSharpCode.NRefactory.CSharp.AssignmentExpression);
-			else if (expression is ICSharpCode.NRefactory.CSharp.IdentifierExpression)
-				return Decompile(network, proc, method, statement, expression as ICSharpCode.NRefactory.CSharp.IdentifierExpression);
-			else if (expression is ICSharpCode.NRefactory.CSharp.MemberReferenceExpression)
-				return Decompile(network, proc, method, statement, expression as ICSharpCode.NRefactory.CSharp.MemberReferenceExpression);
-			else if (expression is ICSharpCode.NRefactory.CSharp.PrimitiveExpression)
-				return Decompile(network, proc, method, statement, expression as ICSharpCode.NRefactory.CSharp.PrimitiveExpression);
-			else if (expression is ICSharpCode.NRefactory.CSharp.BinaryOperatorExpression)
-				return Decompile(network, proc, method, statement, expression as ICSharpCode.NRefactory.CSharp.BinaryOperatorExpression);
-			else if (expression is ICSharpCode.NRefactory.CSharp.UnaryOperatorExpression)
-				return Decompile(network, proc, method, statement, expression as ICSharpCode.NRefactory.CSharp.UnaryOperatorExpression);
-			else if (expression is ICSharpCode.NRefactory.CSharp.IndexerExpression)
-				return Decompile(network, proc, method, statement, expression as ICSharpCode.NRefactory.CSharp.IndexerExpression);
-			else if (expression is ICSharpCode.NRefactory.CSharp.CastExpression)
-				return Decompile(network, proc, method, statement, expression as ICSharpCode.NRefactory.CSharp.CastExpression);
-			else if (expression is ICSharpCode.NRefactory.CSharp.ConditionalExpression)
-				return Decompile(network, proc, method, statement, expression as ICSharpCode.NRefactory.CSharp.ConditionalExpression);
-			else if (expression is ICSharpCode.NRefactory.CSharp.InvocationExpression)
+            if (expression is ICSharpCode.Decompiler.CSharp.Syntax.AssignmentExpression)
+                return Decompile(network, proc, method, statement, expression as ICSharpCode.Decompiler.CSharp.Syntax.AssignmentExpression);
+            else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.IdentifierExpression)
+                return Decompile(network, proc, method, statement, expression as ICSharpCode.Decompiler.CSharp.Syntax.IdentifierExpression);
+            else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.MemberReferenceExpression)
+                return Decompile(network, proc, method, statement, expression as ICSharpCode.Decompiler.CSharp.Syntax.MemberReferenceExpression);
+            else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression)
+                return Decompile(network, proc, method, statement, expression as ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression);
+            else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorExpression)
+                return Decompile(network, proc, method, statement, expression as ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorExpression);
+            else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorExpression)
+                return Decompile(network, proc, method, statement, expression as ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorExpression);
+            else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.IndexerExpression)
+                return Decompile(network, proc, method, statement, expression as ICSharpCode.Decompiler.CSharp.Syntax.IndexerExpression);
+            else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.CastExpression)
+                return Decompile(network, proc, method, statement, expression as ICSharpCode.Decompiler.CSharp.Syntax.CastExpression);
+            else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.ConditionalExpression)
+                return Decompile(network, proc, method, statement, expression as ICSharpCode.Decompiler.CSharp.Syntax.ConditionalExpression);
+            else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.InvocationExpression)
 			{
-				var si = expression as ICSharpCode.NRefactory.CSharp.InvocationExpression;
-				var mt = si.Target as ICSharpCode.NRefactory.CSharp.MemberReferenceExpression;
+                var si = expression as ICSharpCode.Decompiler.CSharp.Syntax.InvocationExpression;
+                var mt = si.Target as ICSharpCode.Decompiler.CSharp.Syntax.MemberReferenceExpression;
 
                 if (mt.ToString() == "base.PrintDebug" || mt.ToString() == "base.SimulationOnly")
 					return new EmptyExpression()
@@ -56,33 +56,33 @@ namespace SME.AST
 
 
 				// Catch common translations
-				if (mt != null && (expression as ICSharpCode.NRefactory.CSharp.InvocationExpression).Arguments.Count == 1)
+                if (mt != null && (expression as ICSharpCode.Decompiler.CSharp.Syntax.InvocationExpression).Arguments.Count == 1)
 				{
 
 					if (mt.MemberName == "op_Implicit" || mt.MemberName == "op_Explicit")
 					{
 						var mtm = Decompile(network, proc, method, statement, mt);
-						return Decompile(network, proc, method, statement, new ICSharpCode.NRefactory.CSharp.CastExpression(AstType.Create(mtm.SourceResultType.FullName), si.Arguments.First().Clone()));
+                        return Decompile(network, proc, method, statement, new ICSharpCode.Decompiler.CSharp.Syntax.CastExpression(AstType.Create(mtm.SourceResultType.FullName), si.Arguments.First().Clone()));
 					}
 					else if (mt.MemberName == "op_Increment")
-						return Decompile(network, proc, method, statement, new ICSharpCode.NRefactory.CSharp.UnaryOperatorExpression(UnaryOperatorType.Increment, si.Arguments.First().Clone()));
+                        return Decompile(network, proc, method, statement, new ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorExpression(UnaryOperatorType.Increment, si.Arguments.First().Clone()));
 					else if (mt.MemberName == "op_Decrement")
-						return Decompile(network, proc, method, statement, new ICSharpCode.NRefactory.CSharp.UnaryOperatorExpression(UnaryOperatorType.Decrement, si.Arguments.First().Clone()));
+                        return Decompile(network, proc, method, statement, new ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorExpression(UnaryOperatorType.Decrement, si.Arguments.First().Clone()));
 				}
 
-				return Decompile(network, proc, method, statement, expression as ICSharpCode.NRefactory.CSharp.InvocationExpression);
+                return Decompile(network, proc, method, statement, expression as ICSharpCode.Decompiler.CSharp.Syntax.InvocationExpression);
 			}
-			else if (expression is ICSharpCode.NRefactory.CSharp.ParenthesizedExpression)
-				return Decompile(network, proc, method, statement, expression as ICSharpCode.NRefactory.CSharp.ParenthesizedExpression);
-			else if (expression is ICSharpCode.NRefactory.CSharp.NullReferenceExpression)
-				return Decompile(network, proc, method, statement, expression as ICSharpCode.NRefactory.CSharp.NullReferenceExpression);
-			else if (expression is ICSharpCode.NRefactory.CSharp.ArrayCreateExpression)
-				return Decompile(network, proc, method, statement, expression as ICSharpCode.NRefactory.CSharp.ArrayCreateExpression);
-			else if (expression is ICSharpCode.NRefactory.CSharp.CheckedExpression)
-				return Decompile(network, proc, method, statement, expression as ICSharpCode.NRefactory.CSharp.CheckedExpression);
-			else if (expression is ICSharpCode.NRefactory.CSharp.UncheckedExpression)
-				return Decompile(network, proc, method, statement, expression as ICSharpCode.NRefactory.CSharp.UncheckedExpression);
-			else if (expression == ICSharpCode.NRefactory.CSharp.Expression.Null)
+            else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.ParenthesizedExpression)
+                return Decompile(network, proc, method, statement, expression as ICSharpCode.Decompiler.CSharp.Syntax.ParenthesizedExpression);
+            else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.NullReferenceExpression)
+                return Decompile(network, proc, method, statement, expression as ICSharpCode.Decompiler.CSharp.Syntax.NullReferenceExpression);
+            else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.ArrayCreateExpression)
+                return Decompile(network, proc, method, statement, expression as ICSharpCode.Decompiler.CSharp.Syntax.ArrayCreateExpression);
+            else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.CheckedExpression)
+                return Decompile(network, proc, method, statement, expression as ICSharpCode.Decompiler.CSharp.Syntax.CheckedExpression);
+            else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.UncheckedExpression)
+                return Decompile(network, proc, method, statement, expression as ICSharpCode.Decompiler.CSharp.Syntax.UncheckedExpression);
+            else if (expression == ICSharpCode.Decompiler.CSharp.Syntax.Expression.Null)
 				return new EmptyExpression() { SourceExpression = expression };
 			else
 				throw new Exception(string.Format("Unsupported expression: {0} ({1})", expression, expression.GetType().FullName));
@@ -97,7 +97,7 @@ namespace SME.AST
 		/// <param name="method">The method where the statement is found.</param>
 		/// <param name="statement">The statement where the expression is found.</param>
 		/// <param name="expression">The expression to decompile</param>
-		protected Expression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.NRefactory.CSharp.AssignmentExpression expression)
+        protected Expression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.Decompiler.CSharp.Syntax.AssignmentExpression expression)
 		{
 			if (expression.ToString().StartsWith("base.DebugOutput = ", StringComparison.Ordinal))
 				return new EmptyExpression()
@@ -140,7 +140,7 @@ namespace SME.AST
 		/// <param name="method">The method where the statement is found.</param>
 		/// <param name="statement">The statement where the expression is found.</param>
 		/// <param name="expression">The expression to decompile</param>
-		protected IdentifierExpression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.NRefactory.CSharp.IdentifierExpression expression)
+		protected IdentifierExpression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.Decompiler.CSharp.Syntax.IdentifierExpression expression)
 		{
 			return new IdentifierExpression()
 			{
@@ -159,7 +159,7 @@ namespace SME.AST
 		/// <param name="method">The method where the statement is found.</param>
 		/// <param name="statement">The statement where the expression is found.</param>
 		/// <param name="expression">The expression to decompile</param>
-		protected MemberReferenceExpression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.NRefactory.CSharp.MemberReferenceExpression expression)
+		protected MemberReferenceExpression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.Decompiler.CSharp.Syntax.MemberReferenceExpression expression)
 		{
 			return new MemberReferenceExpression()
 			{
@@ -178,7 +178,7 @@ namespace SME.AST
 		/// <param name="method">The method where the statement is found.</param>
 		/// <param name="statement">The statement where the expression is found.</param>
 		/// <param name="expression">The expression to decompile</param>
-		protected PrimitiveExpression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.NRefactory.CSharp.PrimitiveExpression expression)
+		protected PrimitiveExpression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression expression)
         {            
 			return new PrimitiveExpression()
 			{
@@ -197,7 +197,7 @@ namespace SME.AST
 		/// <param name="method">The method where the statement is found.</param>
 		/// <param name="statement">The statement where the expression is found.</param>
 		/// <param name="expression">The expression to decompile</param>
-		protected BinaryOperatorExpression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.NRefactory.CSharp.BinaryOperatorExpression expression)
+		protected BinaryOperatorExpression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorExpression expression)
 		{
 			var res = new BinaryOperatorExpression()
 			{
@@ -223,7 +223,7 @@ namespace SME.AST
 		/// <param name="method">The method where the statement is found.</param>
 		/// <param name="statement">The statement where the expression is found.</param>
 		/// <param name="expression">The expression to decompile</param>
-		protected UnaryOperatorExpression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.NRefactory.CSharp.UnaryOperatorExpression expression)
+		protected UnaryOperatorExpression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorExpression expression)
 		{
 			var res = new UnaryOperatorExpression()
 			{
@@ -247,7 +247,7 @@ namespace SME.AST
 		/// <param name="method">The method where the statement is found.</param>
 		/// <param name="statement">The statement where the expression is found.</param>
 		/// <param name="expression">The expression to decompile</param>
-		protected IndexerExpression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.NRefactory.CSharp.IndexerExpression expression)
+		protected IndexerExpression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.Decompiler.CSharp.Syntax.IndexerExpression expression)
 		{
 			if (expression.Arguments.Count != 1)
 				throw new Exception($"Indexer expression had {expression.Arguments.Count} index arguments, only one is supported");
@@ -276,7 +276,7 @@ namespace SME.AST
 		/// <param name="method">The method where the statement is found.</param>
 		/// <param name="statement">The statement where the expression is found.</param>
 		/// <param name="expression">The expression to decompile</param>
-		protected CastExpression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.NRefactory.CSharp.CastExpression expression)
+		protected CastExpression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.Decompiler.CSharp.Syntax.CastExpression expression)
 		{
 			var res = new CastExpression()
 			{
@@ -299,7 +299,7 @@ namespace SME.AST
 		/// <param name="method">The method where the statement is found.</param>
 		/// <param name="statement">The statement where the expression is found.</param>
 		/// <param name="expression">The expression to decompile</param>
-		protected ConditionalExpression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.NRefactory.CSharp.ConditionalExpression expression)
+		protected ConditionalExpression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.Decompiler.CSharp.Syntax.ConditionalExpression expression)
 		{
 			var res = new ConditionalExpression()
 			{
@@ -326,7 +326,7 @@ namespace SME.AST
 		/// <param name="method">The method where the statement is found.</param>
 		/// <param name="statement">The statement where the expression is found.</param>
 		/// <param name="expression">The expression to decompile</param>
-		protected InvocationExpression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.NRefactory.CSharp.InvocationExpression expression)
+		protected InvocationExpression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.Decompiler.CSharp.Syntax.InvocationExpression expression)
 		{
 			var res = new InvocationExpression()
 			{
@@ -355,7 +355,7 @@ namespace SME.AST
 		/// <param name="method">The method where the statement is found.</param>
 		/// <param name="statement">The statement where the expression is found.</param>
 		/// <param name="expression">The expression to decompile</param>
-		protected ParenthesizedExpression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.NRefactory.CSharp.ParenthesizedExpression expression)
+		protected ParenthesizedExpression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.Decompiler.CSharp.Syntax.ParenthesizedExpression expression)
 		{
 			var res = new ParenthesizedExpression()
 			{
@@ -377,7 +377,7 @@ namespace SME.AST
 		/// <param name="method">The method where the statement is found.</param>
 		/// <param name="statement">The statement where the expression is found.</param>
 		/// <param name="expression">The expression to decompile</param>
-		protected NullReferenceExpression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.NRefactory.CSharp.NullReferenceExpression expression)
+		protected NullReferenceExpression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.Decompiler.CSharp.Syntax.NullReferenceExpression expression)
 		{
 			return new NullReferenceExpression()
 			{
@@ -395,7 +395,7 @@ namespace SME.AST
 		/// <param name="method">The method where the statement is found.</param>
 		/// <param name="statement">The statement where the expression is found.</param>
 		/// <param name="expression">The expression to decompile</param>
-		protected ArrayCreateExpression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.NRefactory.CSharp.ArrayCreateExpression expression)
+		protected ArrayCreateExpression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.Decompiler.CSharp.Syntax.ArrayCreateExpression expression)
 		{
 			var res = new ArrayCreateExpression()
 			{
@@ -419,7 +419,7 @@ namespace SME.AST
 		/// <param name="method">The method where the statement is found.</param>
 		/// <param name="statement">The statement where the expression is found.</param>
 		/// <param name="expression">The expression to decompile</param>
-		protected CheckedExpression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.NRefactory.CSharp.CheckedExpression expression)
+		protected CheckedExpression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.Decompiler.CSharp.Syntax.CheckedExpression expression)
 		{
 			var res = new CheckedExpression()
 			{
@@ -442,7 +442,7 @@ namespace SME.AST
 		/// <param name="method">The method where the statement is found.</param>
 		/// <param name="statement">The statement where the expression is found.</param>
 		/// <param name="expression">The expression to decompile</param>
-		protected UncheckedExpression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.NRefactory.CSharp.UncheckedExpression expression)
+		protected UncheckedExpression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.Decompiler.CSharp.Syntax.UncheckedExpression expression)
 		{
 			var res = new UncheckedExpression()
 			{

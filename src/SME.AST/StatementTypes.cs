@@ -1,5 +1,4 @@
 ﻿using System;
-using ICSharpCode.NRefactory.CSharp;
 
 namespace SME.AST
 {
@@ -8,10 +7,7 @@ namespace SME.AST
 	/// </summary>
 	public abstract class Statement : ASTItem
 	{
-		/// <summary>
-		/// The source statement.
-		/// </summary>
-		public ICSharpCode.NRefactory.CSharp.Statement SourceStatement;
+        
 	}
 
 	/// <summary>

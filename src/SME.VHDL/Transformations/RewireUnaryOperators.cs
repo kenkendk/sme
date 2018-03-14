@@ -34,10 +34,10 @@ namespace SME.VHDL.Transformations
 
 			var incr =
 				new[] {
-					ICSharpCode.NRefactory.CSharp.UnaryOperatorType.Increment,
-					ICSharpCode.NRefactory.CSharp.UnaryOperatorType.Decrement,
-					ICSharpCode.NRefactory.CSharp.UnaryOperatorType.PostIncrement,
-					ICSharpCode.NRefactory.CSharp.UnaryOperatorType.PostDecrement
+					ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorType.Increment,
+					ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorType.Decrement,
+					ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorType.PostIncrement,
+					ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorType.PostDecrement
 				}.Contains(uoe.Operator);
 
 			if (!incr)
@@ -60,12 +60,12 @@ namespace SME.VHDL.Transformations
 				SourceExpression = uoe.SourceExpression,
 				SourceResultType = uoe.SourceResultType,
 				Operator =
-					uoe.Operator == ICSharpCode.NRefactory.CSharp.UnaryOperatorType.Decrement
+					uoe.Operator == ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorType.Decrement
 					||
-					uoe.Operator == ICSharpCode.NRefactory.CSharp.UnaryOperatorType.PostDecrement
+					uoe.Operator == ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorType.PostDecrement
 
-				   ? ICSharpCode.NRefactory.CSharp.BinaryOperatorType.Subtract
-				   : ICSharpCode.NRefactory.CSharp.BinaryOperatorType.Add
+				   ? ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.Subtract
+				   : ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.Add
 			};
 
 			State.TypeLookup[boe] = State.VHDLType(uoe.Operand);
@@ -75,20 +75,19 @@ namespace SME.VHDL.Transformations
 			{
 				Left = uoe.Operand.Clone(),
 				Right = boe,
-				Operator = ICSharpCode.NRefactory.CSharp.AssignmentOperatorType.Assign,
+				Operator = ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType.Assign,
 				SourceExpression = uoe.SourceExpression,
 				SourceResultType = uoe.SourceResultType
 			};
 
-			var exps = new ExpressionStatement()
-			{
-				Expression = ase,
-				SourceStatement = uoe.SourceExpression.Clone(),
+            var exps = new ExpressionStatement()
+            {
+                Expression = ase,
 			};
 
 			exps.UpdateParents();
 
-			if (uoe.Operator == ICSharpCode.NRefactory.CSharp.UnaryOperatorType.PostIncrement || uoe.Operator == ICSharpCode.NRefactory.CSharp.UnaryOperatorType.PostDecrement)
+			if (uoe.Operator == ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorType.PostIncrement || uoe.Operator == ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorType.PostDecrement)
 			{
 				if (uoe.Parent is ExpressionStatement)
 				{

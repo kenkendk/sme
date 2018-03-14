@@ -48,7 +48,7 @@ namespace SME.VHDL
                         SourceExpression = s.SourceExpression,
                         SourceResultType = s.SourceResultType.LoadType(typeof(bool)),
                         Left = s,
-                        Operator = ICSharpCode.NRefactory.CSharp.BinaryOperatorType.InEquality,
+                        Operator = ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.InEquality,
                         Right = zero
                     };
 
@@ -176,11 +176,10 @@ namespace SME.VHDL
                                         SourceResultType = targetsource,
                                         WrappingTemplate = wstr,
                                     },
-                                    Operator = ICSharpCode.NRefactory.CSharp.AssignmentOperatorType.Assign,
+                                    Operator = ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType.Assign,
                                     SourceExpression = s.SourceExpression,
                                     SourceResultType = targetsource
                                 },
-                                SourceStatement = s.SourceExpression.Clone()
                             };
 
                             s.PrependStatement(asstm);
@@ -271,7 +270,6 @@ namespace SME.VHDL
                             {
                                 Expression = aexp,
                                 Parent = method,
-                                SourceStatement = s.SourceExpression.Clone()
                             };
 
                             var iexp = new IdentifierExpression()
@@ -321,10 +319,7 @@ namespace SME.VHDL
 
                         s.ReplaceWith(iexp);
 
-                        var asstm = new ExpressionStatement()
-                        {
-                            SourceStatement = s.SourceExpression.Clone()
-                        };
+                        var asstm = new ExpressionStatement();
 
                         s.PrependStatement(asstm);
 
@@ -332,7 +327,7 @@ namespace SME.VHDL
                         var asexp = new AssignmentExpression()
                         {
                             Left = iexp.Clone(),
-                            Operator = ICSharpCode.NRefactory.CSharp.AssignmentOperatorType.Assign,
+                            Operator = ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType.Assign,
                             Right = new CustomNodes.ConversionExpression()
                             {
                                 Expression = s,
@@ -499,8 +494,8 @@ namespace SME.VHDL
         {
             if (e is PrimitiveExpression)
                 e = (e as PrimitiveExpression).Value;
-            if (e is ICSharpCode.NRefactory.CSharp.PrimitiveExpression)
-                e = (e as ICSharpCode.NRefactory.CSharp.PrimitiveExpression).Value;
+            if (e is ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression)
+                e = (e as ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression).Value;
 
             if (e == null)
                 return null;

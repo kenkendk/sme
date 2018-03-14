@@ -504,7 +504,7 @@ namespace SME.VHDL
 			else if (element is UnaryOperatorExpression)
 			{
 				var uoe = element as UnaryOperatorExpression;
-				if (uoe.Operator == ICSharpCode.NRefactory.CSharp.UnaryOperatorType.Not)
+				if (uoe.Operator == ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorType.Not)
 					return TypeLookup[element] = VHDLTypes.BOOL;
 				else
 					return TypeLookup[element] = VHDLType(uoe.Operand);
@@ -775,9 +775,9 @@ namespace SME.VHDL
 					{
 						if (nx != null && convm != null)
 						{
-                            if (nx is ICSharpCode.NRefactory.CSharp.ArrayCreateExpression)
+                            if (nx is ICSharpCode.Decompiler.CSharp.Syntax.ArrayCreateExpression)
                             {
-                                var arc = nx as ICSharpCode.NRefactory.CSharp.ArrayCreateExpression;
+                                var arc = nx as ICSharpCode.Decompiler.CSharp.Syntax.ArrayCreateExpression;
 
                                 var varname = Naming.ToValidName(n.Name);
                                 var eltype = n.CecilType.GetElementType();
@@ -1118,7 +1118,7 @@ namespace SME.VHDL
                 exp.Right = nae;
                 TypeLookup[nae] = tvhdl;
             }
-            else if (element.DefaultValue is ICSharpCode.NRefactory.CSharp.AstNode)
+            else if (element.DefaultValue is ICSharpCode.Decompiler.CSharp.Syntax.AstNode)
             {
                 var eltype = Type.GetType(element.CecilType.FullName);
                 var defaultvalue = eltype != null && element.CecilType.IsValueType ? Activator.CreateInstance(eltype) : null;

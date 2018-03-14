@@ -49,12 +49,6 @@ namespace SME.AST
 								jw.WriteValue(stm.Name);
 							}
 
-							if (stm.SourceStatement != null)
-							{
-								jw.WritePropertyName("source");
-								jw.WriteValue(stm.SourceStatement.ToString());
-							}
-
 							jw.WritePropertyName("children");
 							jw.WriteStartArray();
 						}

@@ -11,7 +11,7 @@ namespace SME.AST
 		/// <summary>
 		/// The source expression used in the statement
 		/// </summary>
-		public ICSharpCode.NRefactory.CSharp.Expression SourceExpression;
+        public ICSharpCode.Decompiler.CSharp.Syntax.Expression SourceExpression;
 
 		/// <summary>
 		/// The source result type 
@@ -96,7 +96,7 @@ namespace SME.AST
 		/// <summary>
 		/// The assignment operator
 		/// </summary>
-		public ICSharpCode.NRefactory.CSharp.AssignmentOperatorType Operator = ICSharpCode.NRefactory.CSharp.AssignmentOperatorType.Assign;
+        public ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType Operator = ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType.Assign;
 		/// <summary>
 		/// The left-hand-side of the assignment
 		/// </summary>
@@ -115,7 +115,7 @@ namespace SME.AST
 		/// <summary>
 		/// The operator being used
 		/// </summary>
-		public ICSharpCode.NRefactory.CSharp.BinaryOperatorType Operator;
+		public ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType Operator;
 		/// <summary>
 		/// The left-hand-side of the operation
 		/// </summary>
@@ -260,7 +260,7 @@ namespace SME.AST
 		/// <summary>
 		/// The operator being applied
 		/// </summary>
-		public ICSharpCode.NRefactory.CSharp.UnaryOperatorType Operator;
+		public ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorType Operator;
 		/// <summary>
 		/// The expression the operand is applied to
 		/// </summary>

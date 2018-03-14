@@ -77,7 +77,7 @@ namespace SME.VHDL.Transformations
                         Expression = new AST.AssignmentExpression()
                         {
                             Left = nvexp,
-                            Operator = ICSharpCode.NRefactory.CSharp.AssignmentOperatorType.Assign,
+                            Operator = ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType.Assign,
                             Right = ss.SwitchExpression,
                             SourceExpression = ss.SwitchExpression.SourceExpression,
                             SourceResultType = nvar.CecilType

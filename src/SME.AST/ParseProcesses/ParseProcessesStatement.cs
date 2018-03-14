@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using ICSharpCode.Decompiler;
-using ICSharpCode.Decompiler.Ast;
-using ICSharpCode.NRefactory.CSharp;
+using ICSharpCode.Decompiler.CSharp.Syntax;
 using Mono.Cecil;
 
 namespace SME.AST
@@ -20,35 +19,35 @@ namespace SME.AST
 		/// <param name="statement">The decompiler statement to process.</param>
 		protected virtual Statement Decompile(NetworkState network, ProcessState proc, MethodState method, AstNode statement)
 		{
-            if (statement is ICSharpCode.NRefactory.CSharp.ExpressionStatement)
-                return Decompile(network, proc, method, statement as ICSharpCode.NRefactory.CSharp.ExpressionStatement);
-            else if (statement is ICSharpCode.NRefactory.CSharp.IfElseStatement)
-                return Decompile(network, proc, method, statement as ICSharpCode.NRefactory.CSharp.IfElseStatement);
-            else if (statement is ICSharpCode.NRefactory.CSharp.BlockStatement)
-                return Decompile(network, proc, method, statement as ICSharpCode.NRefactory.CSharp.BlockStatement);
-            else if (statement is ICSharpCode.NRefactory.CSharp.VariableDeclarationStatement)
-                return Decompile(network, proc, method, statement as ICSharpCode.NRefactory.CSharp.VariableDeclarationStatement);
-            else if (statement is ICSharpCode.NRefactory.CSharp.SwitchStatement)
-                return Decompile(network, proc, method, statement as ICSharpCode.NRefactory.CSharp.SwitchStatement);
-            else if (statement is ICSharpCode.NRefactory.CSharp.ReturnStatement)
-                return Decompile(network, proc, method, statement as ICSharpCode.NRefactory.CSharp.ReturnStatement);
-            else if (statement is ICSharpCode.NRefactory.CSharp.ForStatement)
-                return Decompile(network, proc, method, statement as ICSharpCode.NRefactory.CSharp.ForStatement);
-            else if (statement is ICSharpCode.NRefactory.CSharp.BreakStatement)
-                return Decompile(network, proc, method, statement as ICSharpCode.NRefactory.CSharp.BreakStatement);
-            else if (statement is ICSharpCode.NRefactory.CSharp.CheckedStatement)
+            if (statement is ICSharpCode.Decompiler.CSharp.Syntax.ExpressionStatement)
+                return Decompile(network, proc, method, statement as ICSharpCode.Decompiler.CSharp.Syntax.ExpressionStatement);
+            else if (statement is ICSharpCode.Decompiler.CSharp.Syntax.IfElseStatement)
+                return Decompile(network, proc, method, statement as ICSharpCode.Decompiler.CSharp.Syntax.IfElseStatement);
+            else if (statement is ICSharpCode.Decompiler.CSharp.Syntax.BlockStatement)
+                return Decompile(network, proc, method, statement as ICSharpCode.Decompiler.CSharp.Syntax.BlockStatement);
+            else if (statement is ICSharpCode.Decompiler.CSharp.Syntax.VariableDeclarationStatement)
+                return Decompile(network, proc, method, statement as ICSharpCode.Decompiler.CSharp.Syntax.VariableDeclarationStatement);
+            else if (statement is ICSharpCode.Decompiler.CSharp.Syntax.SwitchStatement)
+                return Decompile(network, proc, method, statement as ICSharpCode.Decompiler.CSharp.Syntax.SwitchStatement);
+            else if (statement is ICSharpCode.Decompiler.CSharp.Syntax.ReturnStatement)
+                return Decompile(network, proc, method, statement as ICSharpCode.Decompiler.CSharp.Syntax.ReturnStatement);
+            else if (statement is ICSharpCode.Decompiler.CSharp.Syntax.ForStatement)
+                return Decompile(network, proc, method, statement as ICSharpCode.Decompiler.CSharp.Syntax.ForStatement);
+            else if (statement is ICSharpCode.Decompiler.CSharp.Syntax.BreakStatement)
+                return Decompile(network, proc, method, statement as ICSharpCode.Decompiler.CSharp.Syntax.BreakStatement);
+            else if (statement is ICSharpCode.Decompiler.CSharp.Syntax.CheckedStatement)
             {
                 Console.WriteLine("Warning: \"checked\" is not supported and will be ignored for statement: {0}", statement);
-                return Decompile(network, proc, method, (statement as ICSharpCode.NRefactory.CSharp.CheckedStatement).Body);
+                return Decompile(network, proc, method, (statement as ICSharpCode.Decompiler.CSharp.Syntax.CheckedStatement).Body);
             }
-            else if (statement is ICSharpCode.NRefactory.CSharp.UncheckedStatement)
-                return Decompile(network, proc, method, (statement as ICSharpCode.NRefactory.CSharp.UncheckedStatement).Body);
+            else if (statement is ICSharpCode.Decompiler.CSharp.Syntax.UncheckedStatement)
+                return Decompile(network, proc, method, (statement as ICSharpCode.Decompiler.CSharp.Syntax.UncheckedStatement).Body);
             else if (statement.IsNull)
                 return new EmptyStatement() { Parent = method };
-            else if (statement is ICSharpCode.NRefactory.CSharp.GotoStatement)
-                return Decompile(network, proc, method, statement as ICSharpCode.NRefactory.CSharp.GotoStatement);
-            else if (statement is ICSharpCode.NRefactory.CSharp.LabelStatement)
-                return Decompile(network, proc, method, statement as ICSharpCode.NRefactory.CSharp.LabelStatement);
+            else if (statement is ICSharpCode.Decompiler.CSharp.Syntax.GotoStatement)
+                return Decompile(network, proc, method, statement as ICSharpCode.Decompiler.CSharp.Syntax.GotoStatement);
+            else if (statement is ICSharpCode.Decompiler.CSharp.Syntax.LabelStatement)
+                return Decompile(network, proc, method, statement as ICSharpCode.Decompiler.CSharp.Syntax.LabelStatement);
 			else
 				throw new Exception(string.Format("Unsupported statement: {0} ({1})", statement, statement.GetType().FullName));
 		}
@@ -60,14 +59,13 @@ namespace SME.AST
 		/// <param name="proc">The process where the method is located.</param>
 		/// <param name="method">The method where the statement is found.</param>
 		/// <param name="statement">The decompiler statement to process.</param>
-		protected virtual ExpressionStatement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.NRefactory.CSharp.ExpressionStatement statement)
+		protected virtual ExpressionStatement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.Decompiler.CSharp.Syntax.ExpressionStatement statement)
 		{
-			if (statement.GetType() != typeof(ICSharpCode.NRefactory.CSharp.ExpressionStatement))
+			if (statement.GetType() != typeof(ICSharpCode.Decompiler.CSharp.Syntax.ExpressionStatement))
 				throw new Exception(string.Format("Unsupported expression statement: {0} ({1})", statement, statement.GetType().FullName));
 
 			var s = new ExpressionStatement()
 			{
-				SourceStatement = statement,
 				Parent = method
 			};
 
@@ -82,11 +80,10 @@ namespace SME.AST
 		/// <param name="proc">The process where the method is located.</param>
 		/// <param name="method">The method where the statement is found.</param>
 		/// <param name="statement">The decompiler statement to process.</param>
-		protected virtual IfElseStatement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.NRefactory.CSharp.IfElseStatement statement)
+		protected virtual IfElseStatement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.Decompiler.CSharp.Syntax.IfElseStatement statement)
 		{
 			var s = new IfElseStatement()
 			{
-				SourceStatement = statement,
 				TrueStatement = Decompile(network, proc, method, statement.TrueStatement),
 				FalseStatement = Decompile(network, proc, method, statement.FalseStatement),
 				Parent = method
@@ -106,12 +103,11 @@ namespace SME.AST
 		/// <param name="proc">The process where the method is located.</param>
 		/// <param name="method">The method where the statement is found.</param>
 		/// <param name="statement">The decompiler statement to process.</param>
-		protected virtual BlockStatement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.NRefactory.CSharp.BlockStatement statement)
+		protected virtual BlockStatement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.Decompiler.CSharp.Syntax.BlockStatement statement)
 		{
             
 			var s = new BlockStatement
 			{
-				SourceStatement = statement,
 				Parent = method
 			};
 
@@ -137,11 +133,11 @@ namespace SME.AST
 		/// <param name="proc">The process where the method is located.</param>
 		/// <param name="method">The method where the statement is found.</param>
 		/// <param name="statement">The decompiler statement to process.</param>
-		protected virtual Statement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.NRefactory.CSharp.VariableDeclarationStatement statement)
+		protected virtual Statement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.Decompiler.CSharp.Syntax.VariableDeclarationStatement statement)
 		{
 			TypeReference vartype = null;
 
-			var init = statement.Variables.FirstOrDefault(x => x.Initializer is ICSharpCode.NRefactory.CSharp.MemberReferenceExpression);
+			var init = statement.Variables.FirstOrDefault(x => x.Initializer is ICSharpCode.Decompiler.CSharp.Syntax.MemberReferenceExpression);
 			if (init != null)
 			{
 				var mt = TryLocateElement(network, proc, method, null, init.Initializer);
@@ -156,7 +152,7 @@ namespace SME.AST
 			{
 				foreach (var n in statement.Variables)
 				{
-					if (n.Initializer is ICSharpCode.NRefactory.CSharp.MemberReferenceExpression)
+					if (n.Initializer is ICSharpCode.Decompiler.CSharp.Syntax.MemberReferenceExpression)
 					{
 						proc.BusInstances[n.Name] = LocateBus(network, proc, method, n.Initializer);
 					}
@@ -172,7 +168,6 @@ namespace SME.AST
 
 				return new EmptyStatement()
 				{
-					SourceStatement = statement,
 					Parent = method
 				};
 			}
@@ -184,14 +179,13 @@ namespace SME.AST
 				{
 					RegisterVariable(network, proc, method, vartype, n);
 					if (!n.Initializer.IsNull)
-						statements.Add(Decompile(network, proc, method, new ICSharpCode.NRefactory.CSharp.ExpressionStatement(new ICSharpCode.NRefactory.CSharp.AssignmentExpression(new ICSharpCode.NRefactory.CSharp.IdentifierExpression(n.Name), n.Initializer.Clone()))));
+						statements.Add(Decompile(network, proc, method, new ICSharpCode.Decompiler.CSharp.Syntax.ExpressionStatement(new ICSharpCode.Decompiler.CSharp.Syntax.AssignmentExpression(new ICSharpCode.Decompiler.CSharp.Syntax.IdentifierExpression(n.Name), n.Initializer.Clone()))));
 				}
 
 				if (statements.Count == 0)
 				{
 					return new EmptyStatement()
 					{
-						SourceStatement = statement,
 						Parent = method
 					};
 				}
@@ -204,7 +198,6 @@ namespace SME.AST
 				{
 					var s = new BlockStatement()
 					{
-						SourceStatement = statement,
 						Statements = statements.ToArray(),
 						Parent = method						                       
 					};
@@ -224,11 +217,10 @@ namespace SME.AST
 		/// <param name="proc">The process where the method is located.</param>
 		/// <param name="method">The method where the statement is found.</param>
 		/// <param name="statement">The decompiler statement to process.</param>
-		protected virtual SwitchStatement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.NRefactory.CSharp.SwitchStatement statement)
+		protected virtual SwitchStatement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.Decompiler.CSharp.Syntax.SwitchStatement statement)
 		{
 			var s = new SwitchStatement()
 			{
-				SourceStatement = statement,
 				Parent = method
 			};
 
@@ -259,11 +251,10 @@ namespace SME.AST
 		/// <param name="proc">The process where the method is located.</param>
 		/// <param name="method">The method where the statement is found.</param>
 		/// <param name="statement">The decompiler statement to process.</param>
-		protected virtual Statement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.NRefactory.CSharp.ReturnStatement statement)
+		protected virtual Statement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.Decompiler.CSharp.Syntax.ReturnStatement statement)
 		{
 			var s = new ReturnStatement()
 			{
-				SourceStatement = statement,
 				Parent = method
 			};
 
@@ -280,15 +271,15 @@ namespace SME.AST
 		/// <param name="proc">The process where the method is located.</param>
 		/// <param name="method">The method where the statement is found.</param>
 		/// <param name="src">The expression to examine.</param>
-		protected virtual Constant ResolveArrayLengthOrPrimitive(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.NRefactory.CSharp.Expression src)
+		protected virtual Constant ResolveArrayLengthOrPrimitive(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.Decompiler.CSharp.Syntax.Expression src)
 		{
-			if (src is ICSharpCode.NRefactory.CSharp.PrimitiveExpression)
+			if (src is ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression)
 				try
 				{
 					return new Constant
 					{
 						Source = src,
-						DefaultValue = Convert.ToInt32((src as ICSharpCode.NRefactory.CSharp.PrimitiveExpression).Value),
+						DefaultValue = Convert.ToInt32((src as ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression).Value),
 						CecilType = LoadType(typeof(int)),
 						Parent = method
 					};
@@ -298,7 +289,7 @@ namespace SME.AST
 					throw new Exception(string.Format("Unable to resolve as a constant value: {0}", src), ex);
 				}
 
-			var ex_left = src as ICSharpCode.NRefactory.CSharp.MemberReferenceExpression;
+			var ex_left = src as ICSharpCode.Decompiler.CSharp.Syntax.MemberReferenceExpression;
 			if (ex_left.MemberName != "Length")
 				throw new Exception(string.Format("Only plain style for loops supported: {0}", src));
 
@@ -364,11 +355,11 @@ namespace SME.AST
 			}
 					
 
-			if (value is ICSharpCode.NRefactory.CSharp.ArrayCreateExpression)
+			if (value is ICSharpCode.Decompiler.CSharp.Syntax.ArrayCreateExpression)
 				return new Constant() 
 				{ 
 					Source = value, 
-					DefaultValue = (value as ICSharpCode.NRefactory.CSharp.ArrayCreateExpression).Initializer.Children.Count(),
+					DefaultValue = (value as ICSharpCode.Decompiler.CSharp.Syntax.ArrayCreateExpression).Initializer.Children.Count(),
 					CecilType = LoadType(typeof(int)),
 					Parent = method
 				};
@@ -387,7 +378,7 @@ namespace SME.AST
 				{
 					var mr = value as IMemberDefinition;
 					if (mr is FieldDefinition && network.ConstantLookup.ContainsKey(mr as FieldDefinition))
-						return ResolveArrayLengthOrPrimitive(network, proc, method, new ICSharpCode.NRefactory.CSharp.PrimitiveExpression(network.ConstantLookup[mr as FieldDefinition]));
+						return ResolveArrayLengthOrPrimitive(network, proc, method, new ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression(network.ConstantLookup[mr as FieldDefinition]));
 				}
 				catch (Exception ex)
 				{
@@ -416,12 +407,11 @@ namespace SME.AST
 		/// <param name="proc">The process where the method is located.</param>
 		/// <param name="method">The method where the statement is found.</param>
 		/// <param name="statement">The decompiler statement to process.</param>
-		protected virtual BreakStatement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.NRefactory.CSharp.BreakStatement statement)
+		protected virtual BreakStatement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.Decompiler.CSharp.Syntax.BreakStatement statement)
 		{
 			return new BreakStatement()
 			{
 				Parent = method,
-				SourceStatement = statement
 			};
 		}
 
@@ -432,12 +422,11 @@ namespace SME.AST
         /// <param name="proc">The process where the method is located.</param>
         /// <param name="method">The method where the statement is found.</param>
         /// <param name="statement">The decompiler statement to process.</param>
-        protected virtual GotoStatement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.NRefactory.CSharp.GotoStatement statement)
+        protected virtual GotoStatement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.Decompiler.CSharp.Syntax.GotoStatement statement)
         {
             return new GotoStatement()
             {
                 Parent = method,
-                SourceStatement = statement,
                 Label = statement.Label
             };
         }
@@ -449,12 +438,11 @@ namespace SME.AST
         /// <param name="proc">The process where the method is located.</param>
         /// <param name="method">The method where the statement is found.</param>
         /// <param name="statement">The decompiler statement to process.</param>
-        protected virtual LabelStatement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.NRefactory.CSharp.LabelStatement statement)
+        protected virtual LabelStatement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.Decompiler.CSharp.Syntax.LabelStatement statement)
         {
             return new LabelStatement()
             {
                 Parent = method,
-                SourceStatement = statement,
                 Label = statement.Label
             };
         }
@@ -465,7 +453,7 @@ namespace SME.AST
 		/// <param name="proc">The process where the method is located.</param>
 		/// <param name="method">The method where the statement is found.</param>
 		/// <param name="statement">The decompiler statement to process.</param>
-		protected virtual ForStatement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.NRefactory.CSharp.ForStatement statement)
+		protected virtual ForStatement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.Decompiler.CSharp.Syntax.ForStatement statement)
 		{
 			if (statement.Initializers.Count != 1)
 				throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
@@ -474,7 +462,7 @@ namespace SME.AST
 				throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
 
 
-			var init = statement.Initializers.First() as ICSharpCode.NRefactory.CSharp.VariableDeclarationStatement;
+			var init = statement.Initializers.First() as ICSharpCode.Decompiler.CSharp.Syntax.VariableDeclarationStatement;
 			if (init == null)
 				throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
 
@@ -482,7 +470,7 @@ namespace SME.AST
 				throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
 
 			var name = init.Variables.First().Name;
-			var initial = init.Variables.First().Initializer as ICSharpCode.NRefactory.CSharp.PrimitiveExpression;
+			var initial = init.Variables.First().Initializer as ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression;
 
 			if (initial == null || !(initial.Value is int))
 				throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
@@ -494,38 +482,38 @@ namespace SME.AST
 				CecilType = LoadType(typeof(int))
 			};
 
-			var cond = statement.Condition as ICSharpCode.NRefactory.CSharp.BinaryOperatorExpression;
+			var cond = statement.Condition as ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorExpression;
 			if (cond == null)
 				throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
 
 			if (cond.Operator != BinaryOperatorType.LessThan)
 				throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
 
-			var condleft = cond.Left as ICSharpCode.NRefactory.CSharp.IdentifierExpression;
-			var condright = cond.Right as ICSharpCode.NRefactory.CSharp.PrimitiveExpression;
+			var condleft = cond.Left as ICSharpCode.Decompiler.CSharp.Syntax.IdentifierExpression;
+			var condright = cond.Right as ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression;
 
 			// Handling cases where the upper limit is the length of an array
 			if (condright == null)
 			{
 				// Some plus/minus expression
-				if (cond.Right is ICSharpCode.NRefactory.CSharp.BinaryOperatorExpression)
+				if (cond.Right is ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorExpression)
 				{
-					var binop = cond.Right as ICSharpCode.NRefactory.CSharp.BinaryOperatorExpression;
+					var binop = cond.Right as ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorExpression;
 
 					var leftval = ResolveArrayLengthOrPrimitive(network, proc, method, binop.Left);
 					var righval = ResolveArrayLengthOrPrimitive(network, proc, method, binop.Right);
 
 					if (binop.Operator == BinaryOperatorType.Add)
-						condright = new ICSharpCode.NRefactory.CSharp.PrimitiveExpression((int)leftval.DefaultValue + (int)righval.DefaultValue);
+						condright = new ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression((int)leftval.DefaultValue + (int)righval.DefaultValue);
 					else if (binop.Operator == BinaryOperatorType.Subtract)
-						condright = new ICSharpCode.NRefactory.CSharp.PrimitiveExpression((int)leftval.DefaultValue - (int)righval.DefaultValue);
+						condright = new ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression((int)leftval.DefaultValue - (int)righval.DefaultValue);
 					else
 						throw new Exception(string.Format("Only add and subtract operations are supported in for loop bounds: {0}", statement));
 				}
 				// Plain limit
-				else if (cond.Right is ICSharpCode.NRefactory.CSharp.IdentifierExpression || cond.Right is ICSharpCode.NRefactory.CSharp.MemberReferenceExpression)
+				else if (cond.Right is ICSharpCode.Decompiler.CSharp.Syntax.IdentifierExpression || cond.Right is ICSharpCode.Decompiler.CSharp.Syntax.MemberReferenceExpression)
 				{
-					condright = new ICSharpCode.NRefactory.CSharp.PrimitiveExpression(ResolveArrayLengthOrPrimitive(network, proc, method, cond.Right).DefaultValue);
+					condright = new ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression(ResolveArrayLengthOrPrimitive(network, proc, method, cond.Right).DefaultValue);
 				}
 			}
 
@@ -546,18 +534,18 @@ namespace SME.AST
 				Source = cond
 			};
 
-			var itr = statement.Iterators.First() as ICSharpCode.NRefactory.CSharp.ExpressionStatement;
-            if (itr == null || !(itr.Expression is ICSharpCode.NRefactory.CSharp.UnaryOperatorExpression))
+			var itr = statement.Iterators.First() as ICSharpCode.Decompiler.CSharp.Syntax.ExpressionStatement;
+            if (itr == null || !(itr.Expression is ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorExpression))
             {
-                var ae = itr == null ? null : itr.Expression as ICSharpCode.NRefactory.CSharp.AssignmentExpression;
+                var ae = itr == null ? null : itr.Expression as ICSharpCode.Decompiler.CSharp.Syntax.AssignmentExpression;
 
-                if (ae != null && ae.Left is ICSharpCode.NRefactory.CSharp.IdentifierExpression && (ae.Left as ICSharpCode.NRefactory.CSharp.IdentifierExpression).Identifier == name && ae.Right is ICSharpCode.NRefactory.CSharp.PrimitiveExpression)
+                if (ae != null && ae.Left is ICSharpCode.Decompiler.CSharp.Syntax.IdentifierExpression && (ae.Left as ICSharpCode.Decompiler.CSharp.Syntax.IdentifierExpression).Identifier == name && ae.Right is ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression)
                 {
                     // Support for increments like "i += 2"
                     increment = new Constant()
                     {
                         Source = ae.Right,
-                        DefaultValue = ResolveArrayLengthOrPrimitive(network, proc, method, ae.Right as ICSharpCode.NRefactory.CSharp.PrimitiveExpression),
+                        DefaultValue = ResolveArrayLengthOrPrimitive(network, proc, method, ae.Right as ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression),
                         CecilType = LoadType(typeof(int))
                     };
                 }
@@ -566,8 +554,8 @@ namespace SME.AST
             }
             else
             {
-                var itre = itr.Expression as ICSharpCode.NRefactory.CSharp.UnaryOperatorExpression;
-                var itro = itre.Expression as ICSharpCode.NRefactory.CSharp.IdentifierExpression;
+                var itre = itr.Expression as ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorExpression;
+                var itro = itre.Expression as ICSharpCode.Decompiler.CSharp.Syntax.IdentifierExpression;
 
                 if (itro == null || itre.Operator != UnaryOperatorType.PostIncrement || itro.Identifier != name)
                     throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
@@ -583,7 +571,6 @@ namespace SME.AST
 
 			var res = new ForStatement()
 			{
-				SourceStatement = statement,
 				StartValue = startvalue,
 				EndValue = endvalue,
 				Increment = increment,

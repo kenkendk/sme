@@ -68,7 +68,7 @@ namespace SME.AST.Transform
 
                 var beo = ifs.Condition as BinaryOperatorExpression;
 
-                if (beo.Operator != ICSharpCode.NRefactory.CSharp.BinaryOperatorType.Equality) continue;
+                if (beo.Operator != ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.Equality) continue;
 
                 Expression casetarget;
 
@@ -88,7 +88,7 @@ namespace SME.AST.Transform
                     new Statement[] { ifs.TrueStatement }
                 ));
 
-                ifs.ReplaceWith(new EmptyStatement() { SourceStatement = ifs.SourceStatement });
+                ifs.ReplaceWith(new EmptyStatement());
 
                 ifs.TrueStatement.Parent = ss;
                 ifs.TrueStatement.UpdateParents();
@@ -192,9 +192,7 @@ namespace SME.AST.Transform
             // Rewrite all goto's into break statements, requery the cases as we may have changed them
             goto_statements = ss.Cases.SelectMany(x => x.Item2).SelectMany(x => x.All()).OfType<GotoStatement>().ToList();
             foreach (var n in goto_statements)
-                n.ReplaceWith(new EmptyStatement() {
-                    SourceStatement = n.SourceStatement
-                });
+                n.ReplaceWith(new EmptyStatement());
 
             return null;
         }

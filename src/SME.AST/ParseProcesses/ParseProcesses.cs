@@ -56,7 +56,7 @@ namespace SME.AST
 			/// <summary>
 			/// The decompiler context.
 			/// </summary>
-			public ICSharpCode.Decompiler.DecompilerContext DecompilerContext;
+			public ICSharpCode.Decompiler.CSharp.CSharpDecompiler DecompilerContext;
 			/// <summary>
 			/// The import statements
 			/// </summary>

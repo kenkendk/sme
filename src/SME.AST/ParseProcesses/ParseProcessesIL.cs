@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using ICSharpCode.Decompiler;
-using ICSharpCode.Decompiler.Ast;
-using ICSharpCode.NRefactory.CSharp;
+using ICSharpCode.Decompiler.CSharp;
+using ICSharpCode.Decompiler.CSharp.Syntax;
 using Mono.Cecil;
 
 namespace SME.AST
@@ -19,10 +19,7 @@ namespace SME.AST
 		/// <param name="method">The method to decompile.</param>
 		protected virtual Statement[] Decompile(NetworkState network, ProcessState proc, MethodState method)
 		{
-			var astbuilder = new AstBuilder(proc.DecompilerContext);
-			astbuilder.AddMethod(method.SourceMethod);
-			astbuilder.RunTransformations();
-			var sx = astbuilder.SyntaxTree;
+            var sx = proc.DecompilerContext.Decompile(method.SourceMethod);
 
 			foreach (var s in sx.Members.Where(x => x is UsingDeclaration).Cast<UsingDeclaration>())
 				proc.Imports.Add(s.Import.ToString());
@@ -69,7 +66,7 @@ namespace SME.AST
 				proc.CecilType = LoadType(proc.SourceType);
 
 			var proctype = proc.CecilType.Resolve();
-			proc.DecompilerContext = new DecompilerContext(proc.CecilType.Module) { CurrentType = proctype };
+            proc.DecompilerContext = new CSharpDecompiler(proc.CecilType.Module, new DecompilerSettings());
 
 			var m = proctype.Methods.FirstOrDefault(x => x.Name == method.Name && x.Parameters.Count == method.GetParameters().Length);
 			if (m == null)
@@ -91,8 +88,8 @@ namespace SME.AST
 				var tp = proc.MethodTargets.Dequeue();
 				var ix = tp.Item3;
 
-				var ic = (ix.SourceExpression as ICSharpCode.NRefactory.CSharp.InvocationExpression);
-				var r = ic.Target as ICSharpCode.NRefactory.CSharp.MemberReferenceExpression;
+				var ic = (ix.SourceExpression as ICSharpCode.Decompiler.CSharp.Syntax.InvocationExpression);
+				var r = ic.Target as ICSharpCode.Decompiler.CSharp.Syntax.MemberReferenceExpression;
 
 				// TODO: Maybe we can support overloads here as well
 				var dm = methods.FirstOrDefault(x => x.Name == r.MemberName);

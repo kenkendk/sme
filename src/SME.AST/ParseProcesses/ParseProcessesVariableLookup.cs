@@ -17,11 +17,11 @@ namespace SME.AST
 		/// <param name="method">The method where the statement is found.</param>
 		/// <param name="statement">The statement where the expression is found.</param>
 		/// <param name="expression">The expression to examine.</param>
-		protected virtual DataElement LocateDataElement(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.NRefactory.CSharp.Expression expression)
+		protected virtual DataElement LocateDataElement(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.Decompiler.CSharp.Syntax.Expression expression)
 		{
 			var res = TryLocateDataElement(network, proc, method, statement, expression);
 			if (res == null)
-				throw new Exception($"Unable to locate item for {expression} in {statement.SourceStatement}");
+				throw new Exception($"Unable to locate item for {expression}");
 
 			return res;
 		}
@@ -35,23 +35,23 @@ namespace SME.AST
 		/// <param name="method">The method where the statement is found.</param>
 		/// <param name="statement">The statement where the expression is found.</param>
 		/// <param name="expression">The expression to examine.</param>
-		protected ASTItem TryLocateElement(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.NRefactory.CSharp.Expression expression)
+		protected ASTItem TryLocateElement(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.Decompiler.CSharp.Syntax.Expression expression)
 		{
-			if (expression is ICSharpCode.NRefactory.CSharp.InvocationExpression)
+			if (expression is ICSharpCode.Decompiler.CSharp.Syntax.InvocationExpression)
 			{
-				var e = expression as ICSharpCode.NRefactory.CSharp.InvocationExpression;
+				var e = expression as ICSharpCode.Decompiler.CSharp.Syntax.InvocationExpression;
 				var target = e.Target;
 				return LocateDataElement(network, proc, method, statement, target);
 			}
-			else if (expression is ICSharpCode.NRefactory.CSharp.IndexerExpression)
+			else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.IndexerExpression)
 			{
-				var e = expression as ICSharpCode.NRefactory.CSharp.IndexerExpression;
+				var e = expression as ICSharpCode.Decompiler.CSharp.Syntax.IndexerExpression;
 				var target = e.Target;
 				return LocateDataElement(network, proc, method, statement, target);
 			}
-			else if (expression is ICSharpCode.NRefactory.CSharp.IdentifierExpression)
+			else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.IdentifierExpression)
 			{
-				var e = expression as ICSharpCode.NRefactory.CSharp.IdentifierExpression;
+				var e = expression as ICSharpCode.Decompiler.CSharp.Syntax.IdentifierExpression;
 				var name = e.Identifier;
 
 				Variable variable;
@@ -74,34 +74,34 @@ namespace SME.AST
 
 				return null;
 			}
-			else if (expression is ICSharpCode.NRefactory.CSharp.MemberReferenceExpression)
+			else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.MemberReferenceExpression)
 			{
-				var e = expression as ICSharpCode.NRefactory.CSharp.MemberReferenceExpression;
+				var e = expression as ICSharpCode.Decompiler.CSharp.Syntax.MemberReferenceExpression;
 
 				ASTItem current = null;
 
 				var parts = new List<string>();
-				ICSharpCode.NRefactory.CSharp.Expression ec = e;
+				ICSharpCode.Decompiler.CSharp.Syntax.Expression ec = e;
 				while (ec != null)
 				{
-					if (ec is ICSharpCode.NRefactory.CSharp.MemberReferenceExpression)
+					if (ec is ICSharpCode.Decompiler.CSharp.Syntax.MemberReferenceExpression)
 					{
-						parts.Add(((ICSharpCode.NRefactory.CSharp.MemberReferenceExpression)ec).MemberName);
-						ec = ((ICSharpCode.NRefactory.CSharp.MemberReferenceExpression)ec).Target;
+						parts.Add(((ICSharpCode.Decompiler.CSharp.Syntax.MemberReferenceExpression)ec).MemberName);
+						ec = ((ICSharpCode.Decompiler.CSharp.Syntax.MemberReferenceExpression)ec).Target;
 					}
-					else if (ec is ICSharpCode.NRefactory.CSharp.ThisReferenceExpression)
+					else if (ec is ICSharpCode.Decompiler.CSharp.Syntax.ThisReferenceExpression)
 					{
 						//parts.Add("this");
 						ec = null;
 						break;
 					}
-					else if (ec is ICSharpCode.NRefactory.CSharp.IdentifierExpression)
+					else if (ec is ICSharpCode.Decompiler.CSharp.Syntax.IdentifierExpression)
 					{
-						parts.Add(((ICSharpCode.NRefactory.CSharp.IdentifierExpression)ec).Identifier);
+						parts.Add(((ICSharpCode.Decompiler.CSharp.Syntax.IdentifierExpression)ec).Identifier);
 						ec = null;
 						break;
 					}
-					else if (ec is ICSharpCode.NRefactory.CSharp.TypeReferenceExpression)
+					else if (ec is ICSharpCode.Decompiler.CSharp.Syntax.TypeReferenceExpression)
 					{
 						TypeDefinition dc = null;
 						if (method != null)
@@ -355,7 +355,7 @@ namespace SME.AST
 		/// <param name="method">The method where the statement is found.</param>
 		/// <param name="statement">The statement where the expression is found.</param>
 		/// <param name="expression">The expression to examine.</param>
-		protected DataElement TryLocateDataElement(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.NRefactory.CSharp.Expression expression)
+		protected DataElement TryLocateDataElement(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.Decompiler.CSharp.Syntax.Expression expression)
 		{
 			var el = TryLocateElement(network, proc, method, statement, expression);
 			if (el == null)
@@ -399,7 +399,7 @@ namespace SME.AST
 		/// <param name="method">The method where the initializer is found</param>
 		/// <param name="vartype">The variable type</param>
 		/// <param name="variable">The field to parse.</param>
-		protected virtual DataElement RegisterVariable(NetworkState network, ProcessState proc, MethodState method, TypeReference vartype, ICSharpCode.NRefactory.CSharp.VariableInitializer variable)
+		protected virtual DataElement RegisterVariable(NetworkState network, ProcessState proc, MethodState method, TypeReference vartype, ICSharpCode.Decompiler.CSharp.Syntax.VariableInitializer variable)
 		{
 			var c = new Variable()
 			{
@@ -559,7 +559,7 @@ namespace SME.AST
 		/// <param name="proc">The process where the method is located.</param>
 		/// <param name="method">The method the expression is found.</param>
 		/// <param name="expression">The expression used to initialize the bus.</param>
-		protected virtual Bus LocateBus(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.NRefactory.CSharp.Expression expression)
+		protected virtual Bus LocateBus(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.Decompiler.CSharp.Syntax.Expression expression)
 		{
 			var de = TryLocateElement(network, proc, method, null, expression);
 			if (de is AST.Bus)

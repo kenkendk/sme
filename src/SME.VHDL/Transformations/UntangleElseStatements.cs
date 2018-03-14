@@ -47,24 +47,19 @@ namespace SME.VHDL.Transformations
 
                 m_handled.Add(item);
 
-                object pos = ((ReturnStatement)item).SourceStatement;
-                if (item.Parent is AST.BlockStatement)
-                    pos = ((AST.BlockStatement)item.Parent).SourceStatement;
-
                 var parentif = item.Parent;
                 while (parentif != null && !(parentif is AST.IfElseStatement))
                     parentif = parentif.Parent;
 
                 if (parentif == null)
                 {                    
-                    Console.WriteLine("Unable to transform return statement in main method, try building the source program in Debug mode. Statement location is: {0}", pos);
+                    Console.WriteLine("Unable to transform return statement in main method, try building the source program in Debug mode.");
                     return item;
                 }
 
-                pos = ((AST.IfElseStatement)parentif).SourceStatement;
                 if (!(((AST.IfElseStatement)parentif).FalseStatement is EmptyStatement))
                 {
-                    Console.WriteLine("Unable to transform return statement in main method, try building the source program in Debug mode. Statement location is: {0}", pos);
+                    Console.WriteLine("Unable to transform return statement in main method, try building the source program in Debug mode.");
                     return item;
                 }
 
@@ -79,14 +74,14 @@ namespace SME.VHDL.Transformations
                 }
                 else
                 {
-                    Console.WriteLine("Unable to transform return statement in main method, try building the source program in Debug mode. Statement location is: {0}", pos);
+                    Console.WriteLine("Unable to transform return statement in main method, try building the source program in Debug mode.");
                     return item;
                 }
 
                 var ix = Array.IndexOf(blocksource, parentif);
                 if (ix < 0)
                 {
-                    Console.WriteLine("Unable to transform return statement in main method, try building the source program in Debug mode. Statement location is: {0}", pos);
+                    Console.WriteLine("Unable to transform return statement in main method, try building the source program in Debug mode.");
                     return item;
                 }
 
@@ -121,7 +116,6 @@ namespace SME.VHDL.Transformations
                         {
                             Parent = parentif,
                             Statements = remain,
-                            SourceStatement = ((AST.IfElseStatement)parentif).SourceStatement
                         };
                     }
 

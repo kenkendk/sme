@@ -340,9 +340,9 @@ namespace SME.VHDL
 			}
 
 			m_stringTypes = new Dictionary<string, VHDLType>(m_builtins, StringComparer.OrdinalIgnoreCase);
-			m_numericTypes = NUMERIC_TYPES.Select(x => resolveModule.Import(x)).ToArray();
-			m_signedNumericTypes = SIGNED_NUMERIC_TYPES.Select(x => resolveModule.Import(x)).ToArray();
-			m_unsignedNumericTypes = UNSIGNED_NUMERIC_TYPES.Select(x => resolveModule.Import(x)).ToArray();
+			m_numericTypes = NUMERIC_TYPES.Select(x => resolveModule.ImportReference(x)).ToArray();
+			m_signedNumericTypes = SIGNED_NUMERIC_TYPES.Select(x => resolveModule.ImportReference(x)).ToArray();
+			m_unsignedNumericTypes = UNSIGNED_NUMERIC_TYPES.Select(x => resolveModule.ImportReference(x)).ToArray();
 
 			m_resolvedNumericTypes = m_numericTypes.Select(x => x.Resolve()).ToArray();
 		}
@@ -643,12 +643,12 @@ namespace SME.VHDL
 		{
 			var customtype = pi.GetCustomAttributes(typeof(VHDLTypeAttribute), true).FirstOrDefault() as VHDLTypeAttribute;
 			if (customtype != null)
-				return GetVHDLType(customtype, m_resolveModule.Import(pi.PropertyType));
+				return GetVHDLType(customtype, m_resolveModule.ImportReference(pi.PropertyType));
 
 			// Try on-type declaration
 			customtype = pi.PropertyType.GetCustomAttributes(typeof(VHDLTypeAttribute), true).FirstOrDefault() as VHDLTypeAttribute;
 			if (customtype != null)
-				return GetVHDLType(customtype, m_resolveModule.Import(pi.PropertyType));
+				return GetVHDLType(customtype, m_resolveModule.ImportReference(pi.PropertyType));
 
 			if (!pi.PropertyType.IsArrayType())
 				return GetVHDLType(pi.PropertyType);
@@ -881,7 +881,7 @@ namespace SME.VHDL
 			else if (type == typeof(bool))
 				return VHDLTypes.SYSTEM_BOOL;
 			else
-				return GetVHDLType(type.FullName, null, m_resolveModule.Import(type));
+				return GetVHDLType(type.FullName, null, m_resolveModule.ImportReference(type));
 			//throw new Exception(string.Format("Unsupported type: {0}", type.FullName));
 		}
 

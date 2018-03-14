@@ -350,7 +350,7 @@ namespace SME.CPP
                 if (target.CecilType.IsFixedArrayType())
                     tg += ", ";
 
-                if (e.Operator != ICSharpCode.NRefactory.CSharp.AssignmentOperatorType.Assign)
+                if (e.Operator != ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType.Assign)
                     return string.Format("{0}{1}{2}{3})", tg, lx, e.Operator.ToBinaryOperator().ToCpp(), RenderExpression(e.Right));
                 else
                     return string.Format("{0}{1})", tg, RenderExpression(e.Right));
@@ -545,7 +545,7 @@ namespace SME.CPP
         /// <param name="e">The expression to render</param>
         private string RenderExpression(AST.UnaryOperatorExpression e)
         {
-            if (e.Operator == ICSharpCode.NRefactory.CSharp.UnaryOperatorType.PostDecrement || e.Operator == ICSharpCode.NRefactory.CSharp.UnaryOperatorType.PostIncrement)
+            if (e.Operator == ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorType.PostDecrement || e.Operator == ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorType.PostIncrement)
                 return string.Format("{1} {0}", e.Operator.ToCpp(), RenderExpression(e.Operand));
 			else
                 return string.Format("{0} {1}", e.Operator.ToCpp(), RenderExpression(e.Operand));
@@ -615,7 +615,7 @@ namespace SME.CPP
                 return RenderExpression(nae);
 
             }
-			else if (element.DefaultValue is ICSharpCode.NRefactory.CSharp.AstNode)
+			else if (element.DefaultValue is ICSharpCode.Decompiler.CSharp.Syntax.AstNode)
 			{
 				var eltype = Type.GetType(element.CecilType.FullName);
 				var defaultvalue = eltype != null && element.CecilType.IsValueType ? Activator.CreateInstance(eltype) : null;

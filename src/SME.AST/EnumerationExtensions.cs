@@ -940,7 +940,6 @@ namespace SME.AST
 				var blst = new BlockStatement()
 				{
 					Parent = source.Parent,
-					SourceStatement = source.SourceStatement,
 					Statements = new Statement[] { target, source }
 				};
 
@@ -989,7 +988,6 @@ namespace SME.AST
 				var blst = new BlockStatement()
 				{
 					Parent = source.Parent,
-					SourceStatement = source.SourceStatement,
 					Statements = new Statement[] { source, target }
 				};
 
