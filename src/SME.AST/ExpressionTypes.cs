@@ -3,281 +3,589 @@ using System.Collections.Generic;
 
 namespace SME.AST
 {
-	/// <summary>
-	/// An expression found in a statement
-	/// </summary>
-	public abstract class Expression : ASTItem
-	{
-		/// <summary>
-		/// The source expression used in the statement
-		/// </summary>
-		public ICSharpCode.NRefactory.CSharp.Expression SourceExpression;
+    /// <summary>
+    /// An expression found in a statement
+    /// </summary>
+    public abstract class Expression : ASTItem
+    {
+        /// <summary>
+        /// The source expression used in the statement
+        /// </summary>
+        public ICSharpCode.NRefactory.CSharp.Expression SourceExpression;
 
-		/// <summary>
-		/// The source result type 
-		/// </summary>
-		public Mono.Cecil.TypeReference SourceResultType;
-	}
+        /// <summary>
+        /// The source result type 
+        /// </summary>
+        public Mono.Cecil.TypeReference SourceResultType;
+    }
 
-	/// <summary>
-	/// Base class for custom defined expressions that can enter into a the normal tree
-	/// </summary>
-	public abstract class CustomExpression : Expression
-	{
-		/// <summary>
-		/// Visits the element, optionally with a visitor callback
-		/// </summary>
-		/// <returns>The elements in this element and its children.</returns>
-		/// <param name="visitor">An optional visitor function.</param>
-		public virtual IEnumerable<ASTItem> Visit(Func<ASTItem, VisitorState, bool> visitor = null)
-		{
-			visitor = visitor ?? ((a, b) => true);
+    /// <summary>
+    /// Base class for custom defined expressions that can enter into a the normal tree
+    /// </summary>
+    public abstract class CustomExpression : Expression
+    {
+        /// <summary>
+        /// Visits the element, optionally with a visitor callback
+        /// </summary>
+        /// <returns>The elements in this element and its children.</returns>
+        /// <param name="visitor">An optional visitor function.</param>
+        public virtual IEnumerable<ASTItem> Visit(Func<ASTItem, VisitorState, bool> visitor = null)
+        {
+            visitor = visitor ?? ((a, b) => true);
 
-			if (!visitor(this, VisitorState.Enter))
-				yield break;
+            if (!visitor(this, VisitorState.Enter))
+                yield break;
 
-			if (!visitor(this, VisitorState.Visit))
-				yield break;
-			yield return this;
-			if (!visitor(this, VisitorState.Visited))
-				yield break;
+            if (!visitor(this, VisitorState.Visit))
+                yield break;
+            yield return this;
+            if (!visitor(this, VisitorState.Visited))
+                yield break;
 
-			if (this.Children != null)
-				foreach (var p in this.Children)
-					foreach (var x in p.All(visitor))
-						yield return x;
+            if (this.Children != null)
+                foreach (var p in this.Children)
+                    foreach (var x in p.All(visitor))
+                        yield return x;
 
-			if (!visitor(this, VisitorState.Leave))
-				yield break;
+            if (!visitor(this, VisitorState.Leave))
+                yield break;
 
-		}
+        }
 
-		/// <summary>
-		/// List the children of this element
-		/// </summary>
-		public abstract Expression[] Children { get; set; }
-	}
+        /// <summary>
+        /// List the children of this element
+        /// </summary>
+        public abstract Expression[] Children { get; set; }
+    }
 
-	/// <summary>
-	/// Base class for an expression that wraps another expression
-	/// </summary>
-	public abstract class WrappingExpression : Expression
-	{
-		public Expression Expression;
-	}
+    /// <summary>
+    /// Base class for an expression that wraps another expression
+    /// </summary>
+    public abstract class WrappingExpression : Expression
+    {
+        public Expression Expression;
+    }
 
-	/// <summary>
-	/// An expression that creates an array
-	/// </summary>
-	public class ArrayCreateExpression : Expression
-	{
-		/// <summary>
-		/// The elements in the array
-		/// </summary>
-		public Expression[] ElementExpressions;
-	}
+    /// <summary>
+    /// An expression that creates an array
+    /// </summary>
+    public class ArrayCreateExpression : Expression
+    {
+        /// <summary>
+        /// The elements in the array
+        /// </summary>
+        public Expression[] ElementExpressions;
 
-	/// <summary>
-	/// An expression that indicates that the array is created with default values
-	/// </summary>
-	public class EmptyArrayCreateExpression : Expression
-	{
-		/// <summary>
-		/// The expression used to indicate the size of the array
-		/// </summary>
-		public Expression SizeExpression;
-	}
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public ArrayCreateExpression()
+        {
+        }
 
-	/// <summary>
-	/// Assignment expression.
-	/// </summary>
-	public class AssignmentExpression : Expression
-	{
-		/// <summary>
-		/// The assignment operator
-		/// </summary>
-		public ICSharpCode.NRefactory.CSharp.AssignmentOperatorType Operator = ICSharpCode.NRefactory.CSharp.AssignmentOperatorType.Assign;
-		/// <summary>
-		/// The left-hand-side of the assignment
-		/// </summary>
-		public Expression Left;
-		/// <summary>
-		/// The right hand side of the assignment
-		/// </summary>
-		public Expression Right;
-	}
+        /// <summary>
+        /// Specialized helper constructor
+        /// </summary>
+        /// <param name="ElementExpressions">The elements to assign</param>
+        public ArrayCreateExpression(Expression[] ElementExpressions)
+        {
+            this.ElementExpressions = ElementExpressions;
+            foreach (var e in this.ElementExpressions ?? new Expression[0])
+                e.Parent = this;
+        }
+    }
 
-	/// <summary>
-	/// A binary operator expression.
-	/// </summary>
-	public class BinaryOperatorExpression : Expression
-	{
-		/// <summary>
-		/// The operator being used
-		/// </summary>
-		public ICSharpCode.NRefactory.CSharp.BinaryOperatorType Operator;
-		/// <summary>
-		/// The left-hand-side of the operation
-		/// </summary>
-		public Expression Left;
-		/// <summary>
-		/// The left-hand-side of the operation
-		/// </summary>
-		public Expression Right;
-	}
+    /// <summary>
+    /// An expression that indicates that the array is created with default values
+    /// </summary>
+    public class EmptyArrayCreateExpression : Expression
+    {
+        /// <summary>
+        /// The expression used to indicate the size of the array
+        /// </summary>
+        public Expression SizeExpression;
 
-	/// <summary>
-	/// A type case expression
-	/// </summary>
-	public class CastExpression : WrappingExpression
-	{
-	}
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public EmptyArrayCreateExpression()
+        {
+        }
 
-	/// <summary>
-	/// A checked expression
-	/// </summary>
-	public class CheckedExpression : WrappingExpression
-	{ 
-	}
+        /// <summary>
+        /// Specialized helper constructor
+        /// </summary>
+        /// <param name="SizeExpression">The expression that gives the size of the empty array</param>
+        public EmptyArrayCreateExpression(Expression SizeExpression)
+        {
+            this.SizeExpression = SizeExpression;
+            this.SizeExpression.Parent = this;
+        }    
+    }
 
-	/// <summary>
-	/// A ternary conditional expression
-	/// </summary>
-	public class ConditionalExpression : Expression
-	{
-		/// <summary>
-		/// The condition to evaluate
-		/// </summary>
-		public Expression ConditionExpression;
-		/// <summary>
-		/// The expression to use if the condition is true
-		/// </summary>
-		public Expression TrueExpression;
-		/// <summary>
-		/// The expression to use if the condition is false
-		/// </summary>
-		public Expression FalseExpression;
-	}
 
-	/// <summary>
-	/// An empty expression.
-	/// </summary>
-	public class EmptyExpression : Expression
-	{
-	}
+    /// <summary>
+    /// Assignment expression.
+    /// </summary>
+    public class AssignmentExpression : Expression
+    {
+        /// <summary>
+        /// The assignment operator
+        /// </summary>
+        public ICSharpCode.NRefactory.CSharp.AssignmentOperatorType Operator = ICSharpCode.NRefactory.CSharp.AssignmentOperatorType.Assign;
+        /// <summary>
+        /// The left-hand-side of the assignment
+        /// </summary>
+        public Expression Left;
+        /// <summary>
+        /// The right hand side of the assignment
+        /// </summary>
+        public Expression Right;
 
-	/// <summary>
-	/// An expression that uses an identifier
-	/// </summary>
-	public class IdentifierExpression : Expression
-	{
-		/// <summary>
-		/// The item the identifier points to
-		/// </summary>
-		public DataElement Target;
-	}
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public AssignmentExpression()
+        {
+        }
 
-	/// <summary>
-	/// An index expression
-	/// </summary>
-	public class IndexerExpression : Expression
-	{
-		/// <summary>
-		/// The item being indexed
-		/// </summary>
-		public DataElement Target;
-		/// <summary>
-		/// The expression used to find the target
-		/// </summary>
-		public Expression TargetExpression;
-		/// <summary>
-		/// The index expression
-		/// </summary>
-		public Expression IndexExpression;
-	}
+        /// <summary>
+        /// Specialized helper constructor
+        /// </summary>
+        /// <param name="left">The left-hand-side expression</param>
+        /// <param name="op">The operator to use</param>
+        /// <param name="right">The right-hand-size expression</param>
+        public AssignmentExpression(Expression left, ICSharpCode.NRefactory.CSharp.AssignmentOperatorType op, Expression right)
+        {
+            this.Left = left;
+            this.Operator = op;
+            this.Right = right;
 
-	/// <summary>
-	/// An expression that performs a function invocation
-	/// </summary>
-	public class InvocationExpression : Expression
-	{
-		/// <summary>
-		/// The method being accessed
-		/// </summary>
-		public Method Target;
-		/// <summary>
-		/// The expression for the method
-		/// </summary>
-		public Expression TargetExpression;
-		/// <summary>
-		/// The expressions for the arguments
-		/// </summary>
-		public Expression[] ArgumentExpressions;
-	}
+            this.Left.Parent = this;
+            this.Right.Parent = this;
+        }
 
-	/// <summary>
-	/// An expression targeting a member
-	/// </summary>
-	public class MemberReferenceExpression : Expression
-	{
-		/// <summary>
-		/// The item being targeted
-		/// </summary>
-		public DataElement Target;
-	}
+        /// <summary>
+        /// Specialized helper constructor
+        /// </summary>
+        /// <param name="left">The left-hand-side expression</param>
+        /// <param name="right">The right-hand-size expression</param>
+        public AssignmentExpression(Expression left, Expression right)
+            : this(left, ICSharpCode.NRefactory.CSharp.AssignmentOperatorType.Assign, right)
+        {
+        }
+    }
 
-	/// <summary>
-	/// An expression targeting a member
-	/// </summary>
-	public class MethodReferenceExpression : Expression
-	{
-		/// <summary>
-		/// The item being targeted
-		/// </summary>
-		public Method Target;
-	}
+    /// <summary>
+    /// A binary operator expression.
+    /// </summary>
+    public class BinaryOperatorExpression : Expression
+    {
+        /// <summary>
+        /// The operator being used
+        /// </summary>
+        public ICSharpCode.NRefactory.CSharp.BinaryOperatorType Operator;
+        /// <summary>
+        /// The left-hand-side of the operation
+        /// </summary>
+        public Expression Left;
+        /// <summary>
+        /// The left-hand-side of the operation
+        /// </summary>
+        public Expression Right;
 
-	/// <summary>
-	/// An expression that wraps another expression in parenthesis
-	/// </summary>
-	public class ParenthesizedExpression : WrappingExpression
-	{
-	}
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public BinaryOperatorExpression()
+        {
+        }
 
-	/// <summary>
-	/// A primitive expression.
-	/// </summary>
-	public class PrimitiveExpression : Expression
-	{
-		public object Value;
-	}
+        /// <summary>
+        /// Specialized helper constructor
+        /// </summary>
+        /// <param name="left">The left-hand-side expression</param>
+        /// <param name="op">The operator to use</param>
+        /// <param name="right">The right-hand-size expression</param>
+        public BinaryOperatorExpression(Expression left, ICSharpCode.NRefactory.CSharp.BinaryOperatorType op, Expression right)
+        {
+            this.Left = left;
+            this.Operator = op;
+            this.Right = right;
 
-	/// <summary>
-	/// A unary operator expression.
-	/// </summary>
-	public class UnaryOperatorExpression : Expression
-	{
-		/// <summary>
-		/// The operator being applied
-		/// </summary>
-		public ICSharpCode.NRefactory.CSharp.UnaryOperatorType Operator;
-		/// <summary>
-		/// The expression the operand is applied to
-		/// </summary>
-		public Expression Operand;
-	}
+            this.Left.Parent = this;
+            this.Right.Parent = this;
+        }
+    }
 
-	/// <summary>
-	/// An unchecked expression.
-	/// </summary>
-	public class UncheckedExpression : WrappingExpression
-	{
-	}
+    /// <summary>
+    /// A type case expression
+    /// </summary>
+    public class CastExpression : WrappingExpression
+    {
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public CastExpression()
+        {
+        }
 
-	/// <summary>
-	/// A null reference expression.
-	/// </summary>
-	public class NullReferenceExpression : Expression
-	{
-	}
+        /// <summary>
+        /// Specialized helper constructor
+        /// </summary>
+        /// <param name="source">The cast source</param>
+        public CastExpression(Expression source)
+        {
+            this.Expression = source;
+            this.Expression.Parent = this;
+        }
+    }
+
+    /// <summary>
+    /// A checked expression
+    /// </summary>
+    public class CheckedExpression : WrappingExpression
+    {
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public CheckedExpression()
+        {
+        }
+
+        /// <summary>
+        /// Specialized helper constructor
+        /// </summary>
+        /// <param name="source">The checked source</param>
+        public CheckedExpression(Expression source)
+        {
+            this.Expression = source;
+            this.Expression.Parent = this;
+        }
+    }
+
+    /// <summary>
+    /// A ternary conditional expression
+    /// </summary>
+    public class ConditionalExpression : Expression
+    {
+        /// <summary>
+        /// The condition to evaluate
+        /// </summary>
+        public Expression ConditionExpression;
+        /// <summary>
+        /// The expression to use if the condition is true
+        /// </summary>
+        public Expression TrueExpression;
+        /// <summary>
+        /// The expression to use if the condition is false
+        /// </summary>
+        public Expression FalseExpression;
+
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public ConditionalExpression()
+        {
+        }
+
+        /// <summary>
+        /// Specialized helper constructor
+        /// </summary>
+        /// <param name="condition">The condition expression</param>
+        /// <param name="trueExpression">The truth expression</param>
+        /// <param name="falseExpression">The false expression</param>
+        public ConditionalExpression(Expression condition, Expression trueExpression, Expression falseExpression)
+        {
+            this.ConditionExpression = condition;
+            this.TrueExpression = trueExpression;
+            this.FalseExpression = falseExpression;
+        }
+    }
+
+    /// <summary>
+    /// An empty expression.
+    /// </summary>
+    public partial class EmptyExpression : Expression
+    {
+    }
+
+    /// <summary>
+    /// An expression that uses an identifier
+    /// </summary>
+    public partial class IdentifierExpression : Expression
+    {
+        /// <summary>
+        /// The item the identifier points to
+        /// </summary>
+        public DataElement Target;
+
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public IdentifierExpression()
+        {
+        }
+
+        /// <summary>
+        /// Specialized helper constructor
+        /// </summary>
+        /// <param name="target">The item the identifier resolves to</param>
+        public IdentifierExpression(DataElement target)
+        {
+            this.Target = target;
+        }    
+    }
+
+    /// <summary>
+    /// An index expression
+    /// </summary>
+    public class IndexerExpression : Expression
+    {
+        /// <summary>
+        /// The item being indexed
+        /// </summary>
+        public DataElement Target;
+        /// <summary>
+        /// The expression used to find the target
+        /// </summary>
+        public Expression TargetExpression;
+        /// <summary>
+        /// The index expression
+        /// </summary>
+        public Expression IndexExpression;
+
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public IndexerExpression()
+        {
+        }
+
+        /// <summary>
+        /// Specialized helper constructor
+        /// </summary>
+        /// <param name="target">The element that is being indexed</param>
+        /// <param name="targetExpression">The expression that is being indexed</param>
+        /// <param name="indexExpression">The expression that computes the index</param>
+        public IndexerExpression(DataElement target, Expression targetExpression, Expression indexExpression)
+        {
+            this.Target = target;
+            this.TargetExpression = targetExpression;
+            this.IndexExpression = indexExpression;
+            this.TargetExpression.Parent = this;
+            this.IndexExpression.Parent = this;
+        }
+    }
+
+    /// <summary>
+    /// An expression that performs a function invocation
+    /// </summary>
+    public class InvocationExpression : Expression
+    {
+        /// <summary>
+        /// The method being accessed
+        /// </summary>
+        public Method Target;
+        /// <summary>
+        /// The expression for the method
+        /// </summary>
+        public Expression TargetExpression;
+        /// <summary>
+        /// The expressions for the arguments
+        /// </summary>
+        public Expression[] ArgumentExpressions;
+
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public InvocationExpression()
+        {
+        }
+
+        /// <summary>
+        /// Specialized helper constructor
+        /// </summary>
+        /// <param name="target">The method being invoked</param>
+        /// <param name="targetExpression">The expression for the target method</param>
+        /// <param name="argumentExpressions">The arguments to the method invocation</param>
+        public InvocationExpression(Method target, Expression targetExpression, params Expression[] argumentExpressions)
+        {
+            this.Target = target;
+            this.TargetExpression = targetExpression;
+            this.ArgumentExpressions = argumentExpressions;
+
+            this.Target.Parent = this;
+            foreach (var e in this.ArgumentExpressions ?? new Expression[0])
+                e.Parent = this;
+        }
+    }
+
+    /// <summary>
+    /// An expression targeting a member
+    /// </summary>
+    public class MemberReferenceExpression : Expression
+    {
+        /// <summary>
+        /// The item being targeted
+        /// </summary>
+        public DataElement Target;
+
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public MemberReferenceExpression()
+        {
+        }
+
+        /// <summary>
+        /// Specialized helper constructor
+        /// </summary>
+        /// <param name="target">The member that is being referenced</param>
+        public MemberReferenceExpression(DataElement target)
+        {
+            this.Target = target;
+        }
+    }
+
+    /// <summary>
+    /// An expression targeting a member
+    /// </summary>
+    public partial class MethodReferenceExpression : Expression
+    {
+        /// <summary>
+        /// The item being targeted
+        /// </summary>
+        public Method Target;
+
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public MethodReferenceExpression()
+        {
+        }
+
+        /// <summary>
+        /// Specialized helper constructor
+        /// </summary>
+        /// <param name="target">The method that is being referenced</param>
+        public MethodReferenceExpression(Method target)
+        {
+            this.Target = target;
+        }
+    }
+
+    /// <summary>
+    /// An expression that wraps another expression in parenthesis
+    /// </summary>
+    public class ParenthesizedExpression : WrappingExpression
+    {
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public ParenthesizedExpression()
+        {
+        }
+
+        /// <summary>
+        /// Specialized helper constructor
+        /// </summary>
+        /// <param name="target">The expression inside the parenthesis</param>
+        public ParenthesizedExpression(Expression target)
+        {
+            this.Expression = target;
+            this.Expression.Parent = this;
+        }
+    }
+
+    /// <summary>
+    /// A primitive expression.
+    /// </summary>
+    public class PrimitiveExpression : Expression
+    {
+        /// <summary>
+        /// The object in the primitive expression
+        /// </summary>
+        public object Value;
+
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public PrimitiveExpression()
+        {
+        }
+
+        /// <summary>
+        /// Specialized helper constructor
+        /// </summary>
+        /// <param name="value">The item to use as the value</param>
+        public PrimitiveExpression(object value)
+        {
+            this.Value = value;
+        }
+    }
+
+    /// <summary>
+    /// A unary operator expression.
+    /// </summary>
+    public class UnaryOperatorExpression : Expression
+    {
+        /// <summary>
+        /// The operator being applied
+        /// </summary>
+        public ICSharpCode.NRefactory.CSharp.UnaryOperatorType Operator;
+        /// <summary>
+        /// The expression the operand is applied to
+        /// </summary>
+        public Expression Operand;
+
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public UnaryOperatorExpression()
+        {
+        }
+
+        /// <summary>
+        /// Specialized helper constructor
+        /// </summary>
+        /// <param name="op">The operation to apply</param>
+        /// <param name="operand">The operand to apply the operation to</param>
+        public UnaryOperatorExpression(ICSharpCode.NRefactory.CSharp.UnaryOperatorType op, Expression operand)
+        {
+            this.Operator = op;
+            this.Operand = operand;
+            this.Operand.Parent = this;
+        }    
+    }
+
+    /// <summary>
+    /// An unchecked expression.
+    /// </summary>
+    public class UncheckedExpression : WrappingExpression
+    {
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public UncheckedExpression()
+        {
+        }
+
+        /// <summary>
+        /// Specialized helper constructor
+        /// </summary>
+        /// <param name="target">The expression being performed unchecked</param>
+        public UncheckedExpression(Expression target)
+        {
+            this.Expression = target;
+            this.Expression.Parent = this;
+        }
+    }
+
+    /// <summary>
+    /// A null reference expression.
+    /// </summary>
+    public class NullReferenceExpression : Expression
+    {
+    }
 }

@@ -90,53 +90,47 @@ namespace SME.VHDL
 			return Parent.WrittenSignals(Process, bus);
 		}
 
-		/// <summary>
-		/// Gets a value indicating if the process is a component
-		/// </summary>
-		public bool IsComponent
-		{
-            get { return Process.SourceInstance.Instance is IVHDLComponent; }
-		}
+        /// <summary>
+        /// Gets the custom renderer for this instance, or null
+        /// </summary>
+        /// <returns>The custom renderer.</returns>
+        private ICustomRenderer GetCustomRenderer()
+        {
+            return Parent.GetCustomRenderer(Process);
+        }
 
         /// <summary>
-        /// Gets the signals in the component
+        /// Gets a value indicating if the process has a custom renderer
         /// </summary>
-        public string ComponentInclude
+        public bool HasCustomRenderer => GetCustomRenderer() != null;
+
+        /// <summary>
+        /// Gets the include region for a custom renderer
+        /// </summary>
+        public string CustomRendererInclude
         {
             get
             {
-                if (!IsComponent)
+                var renderer = GetCustomRenderer();
+                if (renderer == null)
                     return null;
 
-                return (Process.SourceInstance.Instance as IVHDLComponent).IncludeRegion(this, 0);
+                return renderer.IncludeRegion(this, 0);
             }
         }
 
 		/// <summary>
-		/// Gets the signals in the component
+		/// Gets the custom renderer body
 		/// </summary>
-		public string ComponentSignals
+		public string CustomRendererBody
 		{
 			get
 			{
-				if (!IsComponent)
-					return null;
+                var renderer = GetCustomRenderer();
+                if (renderer == null)
+                    return null;
 
-                return (Process.SourceInstance.Instance as IVHDLComponent).SignalRegion(this, 2);
-			}
-		}
-
-		/// <summary>
-		/// Gets the processes in the component
-		/// </summary>
-		public string ComponentProcesses
-		{
-			get
-			{
-				if (!IsComponent)
-					return null;
-
-                return (Process.SourceInstance.Instance as IVHDLComponent).ProcessRegion(this, 4);
+                return renderer.BodyRegion(this, 0);
 			}
 		}
 

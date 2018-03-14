@@ -1,5 +1,5 @@
 ﻿using System;
-namespace SME.VHDL.Components
+namespace SME.VHDL.OldComponents
 {
     public class BlockRamConfig
     {

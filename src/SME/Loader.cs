@@ -24,8 +24,41 @@ namespace SME
 		/// <param name="t">The type to examine.</param>
 		public static IEnumerable<FieldInfo> GetBusFields(Type t)
 		{
-			return t.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy).Where(n => typeof(IBus).IsAssignableFrom(n.FieldType));
+			return t
+                .GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy)
+                .Where(n =>
+                {
+                    if (typeof(IBus).IsAssignableFrom(n.FieldType))
+                        return true;
+
+                    if (n.FieldType.IsArray && typeof(IBus).IsAssignableFrom(n.FieldType.GetElementType()))
+                        return true;
+
+                    return false;
+                });
 		}
+
+        /// <summary>
+        /// Gets all IBus instances from the specified field
+        /// </summary>
+        /// <returns>The bus instances.</returns>
+        /// <param name="source">The object to extract the instances from.</param>
+        /// <param name="field">The field to extract the instances from</param>
+        public static IEnumerable<IBus> GetBusInstances(object source, FieldInfo field)
+        {
+            var v = field.GetValue(source);
+            if (v == null)
+                yield break;
+            
+            if (v.GetType().IsArray)
+            {
+                var a = (Array)v;
+                for (var i = 0; i < a.GetLength(0); i++)
+                    yield return (IBus)a.GetValue(i);
+            }
+            else
+                yield return (IBus)field.GetValue(source);
+        }
 
 		/// <summary>
 		/// Loads all IBus interface fields for the given object

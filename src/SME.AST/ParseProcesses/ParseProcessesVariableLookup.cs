@@ -420,7 +420,7 @@ namespace SME.AST
 		/// <param name="network">The top-level network.</param>
 		/// <param name="proc">The process where the method is located.</param>
 		/// <param name="field">The field to parse.</param>
-		protected virtual Bus RegisterBusReference(NetworkState network, ProcessState proc, FieldDefinition field)
+		protected virtual void RegisterBusReference(NetworkState network, ProcessState proc, FieldDefinition field)
 		{
             var fd = proc.SourceType.GetField(field.Name, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.FlattenHierarchy);
             if (fd == null)
@@ -428,14 +428,29 @@ namespace SME.AST
             
             var businstance = fd.GetValue(proc.SourceInstance.Instance);
             if (businstance == null)
-                return null;
+                return;
 
-            var bus = proc.InputBusses.Concat(proc.OutputBusses).Concat(proc.InternalBusses).FirstOrDefault(x => x.SourceInstance == businstance);
-			if (bus == null)
-				throw new Exception($"No such bus: {field.FieldType.FullName}");
+            var allBusses = proc.InputBusses.Concat(proc.OutputBusses).Concat(proc.InternalBusses);
+            if (businstance.GetType().IsArray)
+            {
+                var a = (Array)businstance;
+                for (var i = 0; i < a.Length; i++)
+                {
+                    var v = a.GetValue(i);
+                    var bus = allBusses.FirstOrDefault(x => x.SourceInstance == v);
+                    if (bus == null)
+                        throw new Exception($"No such bus: {field.FieldType.FullName}[{i}]");
+                    proc.BusInstances.Add(field.Name + $"[{i}]", bus);
+                }
+            }
+            else
+            {
+                var bus = allBusses.FirstOrDefault(x => x.SourceInstance == businstance);
+                if (bus == null)
+                    throw new Exception($"No such bus: {field.FieldType.FullName}");
 
-			proc.BusInstances.Add(field.Name, bus);
-			return bus;
+                proc.BusInstances.Add(field.Name, bus);
+            }
 		}
 
 

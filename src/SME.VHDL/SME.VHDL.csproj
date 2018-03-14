@@ -64,7 +64,6 @@
     <Compile Include="Naming.cs" />
     <Compile Include="RenderState.cs" />
     <Compile Include="VHDLType.cs" />
-    <Compile Include="IComponent.cs" />
     <Compile Include="Attributes.cs" />
     <Compile Include="Templates\CustomTypes.cs">
       <DependentUpon>CustomTypes.tt</DependentUpon>
@@ -100,9 +99,9 @@
       <DependentUpon>ExportTopLevel.tt</DependentUpon>
     </Compile>
     <Compile Include="Transformations\RewireUnaryOperators.cs" />
-    <Compile Include="Components\DSP48E1.cs" />
-    <Compile Include="Components\SimpleDualPortMemory.cs" />
-    <Compile Include="Components\TrueDualPortMemory.cs" />
+    <Compile Include="OldComponents\DSP48E1.cs" />
+    <Compile Include="OldComponents\SimpleDualPortMemory.cs" />
+    <Compile Include="OldComponents\TrueDualPortMemory.cs" />
     <Compile Include="Renderer.cs" />
     <Compile Include="Transformations\InsertReturnAssignments.cs" />
     <Compile Include="Transformations\WrapIfComposite.cs" />
@@ -115,8 +114,16 @@
     <Compile Include="Templates\VivadoProject.cs">
       <DependentUpon>VivadoProject.tt</DependentUpon>
     </Compile>
-    <Compile Include="Components\BlockRamConfig.cs" />
-    <Compile Include="Components\SinglePortMemory.cs" />
+    <Compile Include="OldComponents\BlockRamConfig.cs" />
+    <Compile Include="OldComponents\SinglePortMemory.cs" />
+    <Compile Include="ICustomRenderer.cs" />
+    <Compile Include="CustomRenders\Native\BlockRamConfig.cs" />
+    <Compile Include="CustomRenders\Native\XilinxSinglePortRam.cs" />
+    <Compile Include="CustomRenders\Inferred\SinglePortRam.cs" />
+    <Compile Include="CustomRenders\Inferred\SimpleDualPortRam.cs" />
+    <Compile Include="CustomRenders\Inferred\TrueDualPortRam.cs" />
+    <Compile Include="CustomRenders\Native\XilinxSimpleDualPortRam.cs" />
+    <Compile Include="CustomRenders\Native\XilinxTrueDualPortRam.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -171,6 +178,10 @@
       <Project>{325E539D-9BA8-4EAE-BE6E-D7226A8E8B45}</Project>
       <Name>SME.Tracer</Name>
     </ProjectReference>
+    <ProjectReference Include="..\SME.Components\SME.Components.csproj">
+      <Project>{3F409401-0FB3-4481-A860-6FFAD20E3EFA}</Project>
+      <Name>SME.Components</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Templates\system_types.vhdl">
@@ -182,7 +193,10 @@
     <Folder Include="Templates\" />
     <Folder Include="Transformations\" />
     <Folder Include="CustomNodes\" />
-    <Folder Include="Components\" />
+    <Folder Include="OldComponents\" />
+    <Folder Include="CustomRenders\" />
+    <Folder Include="CustomRenders\Native\" />
+    <Folder Include="CustomRenders\Inferred\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

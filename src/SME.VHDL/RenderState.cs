@@ -90,6 +90,16 @@ namespace SME.VHDL
         /// </summary>
         public readonly Dictionary<VHDLType, Dictionary<string, object>> CustomEnumValues = new Dictionary<VHDL.VHDLType, Dictionary<string, object>>();
 
+        /// <summary>
+        /// The fully custom renderers to use
+        /// </summary>
+        public readonly Dictionary<Type, IFullCustomRenderer> FullCustomRenderers = new Dictionary<Type, IFullCustomRenderer>();
+
+        /// <summary>
+        /// The custom renderers to use
+        /// </summary>
+        public readonly Dictionary<Type, ICustomRenderer> CustomRenderers = new Dictionary<Type, ICustomRenderer>();
+
 		/// <summary>
 		/// The type scope used to resolve VHDL types
 		/// </summary>
@@ -176,7 +186,41 @@ namespace SME.VHDL
                     new SME.AST.Transform.RemoveExtraParenthesis()
                 }
             );
+
+            SetupCustomRenderers(Config.COMPONENT_RENDERER_STRATEGY);
 		}
+
+        /// <summary>
+        /// Resets the custom renderers to fit the desired rendering strategy
+        /// </summary>
+        /// <param name="strategy">Strategy.</param>
+        public void SetupCustomRenderers(ComponentRendererStrategy strategy)
+        {
+            CustomRenderers.Clear();
+
+            if (strategy == ComponentRendererStrategy.Inferred)
+            {
+                CustomRenderers[typeof(SME.Components.SinglePortMemory<>)] = new CustomRenders.Inferred.SinglePortRam();
+                CustomRenderers[typeof(SME.Components.SimpleDualPortMemory<>)] = new CustomRenders.Inferred.SimpleDualPortRam();
+                CustomRenderers[typeof(SME.Components.TrueDualPortMemory<>)] = new CustomRenders.Inferred.TrueDualPortRam();
+            }
+            else if (strategy == ComponentRendererStrategy.Native)
+            {
+                if (Config.DEVICE_VENDOR == FPGAVendor.Xilinx)
+                {
+                    CustomRenderers[typeof(SME.Components.SinglePortMemory<>)] = new CustomRenders.Native.XilinxSinglePortRam();
+                    CustomRenderers[typeof(SME.Components.SimpleDualPortMemory<>)] = new CustomRenders.Native.XilinxSimpleDualPortRam();
+                    CustomRenderers[typeof(SME.Components.TrueDualPortMemory<>)] = new CustomRenders.Native.XilinxTrueDualPortRam();
+                }
+                else
+                {
+                    CustomRenderers[typeof(SME.Components.SinglePortMemory<>)] = new CustomRenders.Inferred.SinglePortRam();
+                    CustomRenderers[typeof(SME.Components.SimpleDualPortMemory<>)] = new CustomRenders.Inferred.SimpleDualPortRam();
+                    CustomRenderers[typeof(SME.Components.TrueDualPortMemory<>)] = new CustomRenders.Inferred.TrueDualPortRam();
+                }
+
+            }
+        }
 
 		/// <summary>
 		/// Performs some checks to see if the network uses features that are not supported by the VHDL render
@@ -1006,9 +1050,10 @@ namespace SME.VHDL
 		/// <param name="bus">The bus to get the signals for.</param>
 		public IEnumerable<BusSignal> WrittenSignals(AST.Process proc, AST.Bus bus)
 		{
-			// Components are assumed to use their outputs
-            if (proc.SourceInstance.Instance is IVHDLComponent)
-				return bus.Signals;
+            // TODO: Apply this logic?
+            // Components are assumed to write their outputs
+            //if (proc.SourceInstance.Instance is IVHDLComponent)
+				//return bus.Signals;
 
 			return proc
 				.All()
@@ -1173,16 +1218,17 @@ namespace SME.VHDL
                     SourceResultType = element.CecilType
                 };
 
+                var primitiveVHDL = TypeScope.GetVHDLType(exp.Right.SourceResultType);
                 var n = new[] { typeof(byte), typeof(sbyte), typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong) };
 
-                if (n.Any(x => exp.Right.SourceResultType.IsSameTypeReference(x)))
+                if (primitiveVHDL.IsVHDLSigned || primitiveVHDL.IsVHDLUnsigned)
                     TypeLookup[exp.Right] = VHDLTypes.INTEGER;
                 else if (element.DefaultValue != null && !element.DefaultValue.GetType().IsEnum && element.DefaultValue.GetType() != typeof(bool))
                     TypeLookup[exp.Right] = VHDLTypes.INTEGER;
             }
 
             res.UpdateParents();
-            if (tvhdl.IsArray && !tvhdl.IsNumeric && !tvhdl.IsStdLogicVector && !tvhdl.IsSystemType && (exp.Right is PrimitiveExpression || exp.Right is EmptyArrayCreateExpression))
+            if ((tvhdl.IsArray && !(tvhdl.IsStdLogicVector || tvhdl.IsSigned || tvhdl.IsUnsigned)) && !tvhdl.IsNumeric && !tvhdl.IsStdLogicVector && !tvhdl.IsSystemType && (exp.Right is PrimitiveExpression || exp.Right is EmptyArrayCreateExpression))
             {
 
             }
@@ -1269,5 +1315,28 @@ namespace SME.VHDL
                 return process.LocalBusNames[bus];
             return bus.Name;
         }
+
+        /// <summary>
+        /// Gets the custom renderer for this instance, or null
+        /// </summary>
+        /// <returns>The custom renderer.</returns>
+        internal ICustomRenderer GetCustomRenderer(AST.Process process)
+        {
+            if (CustomRenderers.TryGetValue(process.SourceType, out var customRenderer))
+                return customRenderer;
+            if (process.SourceType.IsGenericType && CustomRenderers.TryGetValue(process.SourceType.GetGenericTypeDefinition(), out customRenderer))
+                return customRenderer;
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets a value indicating if the process has a custom renderer
+        /// </summary>
+        public bool HasCustomRenderer(AST.Process process)
+        {
+            return GetCustomRenderer(process) != null;
+        }
+
 	}
 }

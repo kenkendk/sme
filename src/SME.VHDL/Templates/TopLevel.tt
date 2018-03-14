@@ -98,6 +98,18 @@ begin
 
     -- Entity  <#= p.InstanceName #> signals
     <#= Naming.ToValidName(p.InstanceName) #>: entity work.<#= Naming.ToValidName(p.Name) #>
+<# var lastel = p.SharedVariables.Cast<object>().Concat(p.SharedSignals).LastOrDefault();
+   if (lastel != null) {
+#>
+    generic map(
+<#     foreach (var variable in p.SharedVariables) { #>
+        <#= Naming.ToValidName("reset_" + variable.Name) #> => <#= RS.GetResetExpression(variable) #><#= variable == lastel ? "" : "," #>
+<#     } #>
+<#     foreach (var variable in p.SharedSignals) { #>
+        <#= Naming.ToValidName("reset_" + variable.Name) #> => <#= RS.GetResetExpression(variable) #><#= variable == lastel ? "" : "," #>
+<#     } #>
+    )
+<# } #>
     port map (
 <#    foreach (var bus in p.InputBusses.Union(p.OutputBusses)) { 
 	      var isInput = p.InputBusses.Contains(bus);
@@ -136,14 +148,6 @@ begin
 <#        } #>
 
 <#    } #>
-
-        -- Initialization values
-<#     foreach (var variable in p.SharedVariables) { #>
-        <#= Naming.ToValidName("reset_" + variable.Name) #> => <#= RS.GetResetExpression(variable) #>,
-<#     } #>
-<#     foreach (var variable in p.SharedSignals) { #>
-        <#= Naming.ToValidName("reset_" + variable.Name) #> => <#= RS.GetResetExpression(variable) #>,
-<#     } #>
 
         CLK => CLK,
         RDY => <#= p.IsClocked ? "RDY" : Naming.ToValidName("RDY_" + p.InstanceName) #>,

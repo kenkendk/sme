@@ -116,6 +116,23 @@ namespace SME.AST
 	/// </summary>
 	public class Signal : DataElement
 	{
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public Signal()
+        {
+        }
+
+        /// <summary>
+        /// Constructs a new signal
+        /// </summary>
+        /// <param name="name">The signal name.</param>
+        /// <param name="defaultValue">The default value</param>
+        public Signal(string name, object defaultValue = null)
+        {
+            this.Name = name;
+            this.DefaultValue = defaultValue;
+        }
 	}
 
 		/// <summary>
@@ -123,21 +140,72 @@ namespace SME.AST
 	/// </summary>
 	public class BusSignal : Signal
 	{
-	}
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public BusSignal()
+        {
+        }
+
+        /// <summary>
+        /// Constructs a new signal
+        /// </summary>
+        /// <param name="name">The signal name.</param>
+        /// <param name="defaultValue">The default value</param>
+        public BusSignal(string name, object defaultValue = null)
+        {
+            this.Name = name;
+            this.DefaultValue = defaultValue;
+        }
+    }
 
 	/// <summary>
 	/// A parameter that is the input to a function
 	/// </summary>
 	public class Parameter : DataElement
 	{
-	}
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public Parameter()
+        {
+        }
+
+        /// <summary>
+        /// Constructs a new parameter
+        /// </summary>
+        /// <param name="name">The parameter name.</param>
+        /// <param name="defaultValue">The default value</param>
+        public Parameter(string name, object defaultValue = null)
+        {
+            this.Name = name;
+            this.DefaultValue = defaultValue;
+        }
+    }
 
 	/// <summary>
 	/// A variable used in code
 	/// </summary>
 	public class Variable : DataElement
 	{
-	}
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public Variable()
+        {
+        }
+
+        /// <summary>
+        /// Constructs a new variable
+        /// </summary>
+        /// <param name="name">The variable name.</param>
+        /// <param name="defaultValue">The default value</param>
+        public Variable(string name, object defaultValue = null)
+        {
+            this.Name = name;
+            this.DefaultValue = defaultValue;
+        }
+    }
 
 	/// <summary>
 	/// A constant used in code
@@ -149,6 +217,26 @@ namespace SME.AST
 		/// reference to an array length
 		/// </summary>
 		public DataElement ArrayLengthSource;
+
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public Constant()
+        {
+        }
+
+        /// <summary>
+        /// Constructs a new variable
+        /// </summary>
+        /// <param name="name">The variable name.</param>
+        /// <param name="defaultValue">The default value</param>
+        /// <param name="arrayLengthSource">The item indicating the array length source, if this constant references an array length</param>
+        public Constant(string name, object defaultValue = null, DataElement arrayLengthSource = null)
+        {
+            this.Name = name;
+            this.DefaultValue = defaultValue;
+            this.ArrayLengthSource = arrayLengthSource;
+        }
 	}
 
 	/// <summary>

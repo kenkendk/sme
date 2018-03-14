@@ -105,6 +105,30 @@ namespace SME.VHDL
         /// </summary>
         /// <returns>The data bit string.</returns>
         /// <param name="data">The data to convert.</param>
+        /// <param name="start">The offset into the array</param>
+        /// <param name="length">The number of elements to extract</param>
+        /// <typeparam name="TData">The data type parameter.</typeparam>
+        public static IEnumerable<string> GetDataBitStrings(Array data, int start = 0, int length = -1)
+        {
+            var elsize = GetBitWidthFromType(data.GetType().GetElementType());
+            var sb = new System.Text.StringBuilder();
+            if (length < 0)
+                length = data.Length;
+
+            for (var i = start; i < length + start; i++)
+            {
+                var td = Convert.ToString((long)ulong.Parse(data.GetValue(i).ToString()), 2).PadLeft(64, '0');
+                td = td.Substring(td.Length - elsize);
+                yield return td;
+            }
+
+        }
+
+        /// <summary>
+        /// Converts the entire input array into a bitstring
+        /// </summary>
+        /// <returns>The data bit string.</returns>
+        /// <param name="data">The data to convert.</param>
         /// <typeparam name="TData">The data type parameter.</typeparam>
         public static IEnumerable<string> GetDataBitStrings<TData>(TData[] data)
         {
@@ -125,12 +149,13 @@ namespace SME.VHDL
         /// Converts the entire input array into a bitstring
         /// </summary>
         /// <returns>The data bit string.</returns>
+        /// <param name="datatype">The data type</param>
         /// <param name="data">The data to convert.</param>
         /// <param name="paddedsize">The number of bits in the result string</param>
         /// <typeparam name="TData">The data type parameter.</typeparam>
-        public static string GetDataBitString<TData>(TData data, int paddedsize = 0)
+        public static string GetDataBitString(Type datatype, object data, int paddedsize = 0)
         {
-            var elsize = GetBitWidthFromType(typeof(TData));
+            var elsize = GetBitWidthFromType(datatype);
             var sb = new System.Text.StringBuilder();
 
             var td = Convert.ToString((long)ulong.Parse(data.ToString()), 2).PadLeft(64, '0');
@@ -139,6 +164,18 @@ namespace SME.VHDL
 
             sb.Append(new string('0', Math.Max(paddedsize - sb.Length, 0)));
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// Converts the entire input array into a bitstring
+        /// </summary>
+        /// <returns>The data bit string.</returns>
+        /// <param name="data">The data to convert.</param>
+        /// <param name="paddedsize">The number of bits in the result string</param>
+        /// <typeparam name="TData">The data type parameter.</typeparam>
+        public static string GetDataBitString<TData>(TData data, int paddedsize = 0)
+        {
+            return GetDataBitString(typeof(TData), data, paddedsize);
         }
 
         /// <summary>
@@ -285,6 +322,51 @@ use unimacro.Vcomponents.all;
             }
 
             return ReIndentTemplate(template, indentation);
+        }
+
+        /// <summary>
+        /// Returns all elements from a non-empty array as a VHDL initialization list
+        /// </summary>
+        /// <returns>The array as assignment list.</returns>
+        /// <param name="data">Data.</param>
+        /// <param name="typecasttemplate">A template to use for casting the string representation to the desired type</param>
+        /// <param name="inverse">A flag used to inverse the element order</param>
+        public static string GetArrayAsAssignmentList(Array data, string typecasttemplate = "std_logic_vector(to_unsigned({0}, {1}))", bool inverse = false)
+        {
+            if (inverse)
+            {
+                var tmp = Array.CreateInstance(data.GetType().GetElementType(), data.Length);
+                for (var i = 0; i < data.Length; i++)
+                    tmp.SetValue(data.GetValue(i), data.Length - i - 1);
+                data = tmp;
+            }
+
+            var last = data.GetValue(data.Length - 1);
+           var datawidth = GetBitWidthFromType(data.GetType().GetElementType());
+
+            int first_trailing_element;
+            for (first_trailing_element = data.Length - 1; first_trailing_element >= 0; first_trailing_element--)
+                if (data.GetValue(first_trailing_element) != last)
+                    break;
+
+            first_trailing_element++;
+            var sb = new StringBuilder();
+            for (var i = 0; i < first_trailing_element; i++)
+            {
+                if (sb.Length != 0)
+                    sb.Append(", ");
+                sb.Append(string.Format(typecasttemplate, data.GetValue(i), datawidth));
+            }
+
+            if (first_trailing_element != data.Length - 1)
+            {
+                if (sb.Length != 0)
+                    sb.Append(", ");
+                sb.Append("others => ");
+                sb.Append(string.Format(typecasttemplate, last, datawidth));
+            }
+
+            return "(" + sb + ")";        
         }
     }
 }

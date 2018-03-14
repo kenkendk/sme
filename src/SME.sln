@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleComponents", "Example
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExternalComponent", "Examples\ExternalComponent\ExternalComponent.csproj", "{979E169E-0BE1-4FEB-AEF2-5B42E3873ECD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SME.Components", "SME.Components\SME.Components.csproj", "{3F409401-0FB3-4481-A860-6FFAD20E3EFA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -95,6 +97,10 @@ Global
 		{979E169E-0BE1-4FEB-AEF2-5B42E3873ECD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{979E169E-0BE1-4FEB-AEF2-5B42E3873ECD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{979E169E-0BE1-4FEB-AEF2-5B42E3873ECD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3F409401-0FB3-4481-A860-6FFAD20E3EFA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F409401-0FB3-4481-A860-6FFAD20E3EFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F409401-0FB3-4481-A860-6FFAD20E3EFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F409401-0FB3-4481-A860-6FFAD20E3EFA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

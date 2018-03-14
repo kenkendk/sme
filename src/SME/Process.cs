@@ -110,34 +110,39 @@ namespace SME
 		/// </summary>
 		protected void ReloadBusMaps()
 		{
-			m_internalbusses = 
-				(from n in Loader.GetBusFields(this.GetType())
-					let attrInternal = n.GetCustomAttributes(typeof(InternalBusAttribute), true).FirstOrDefault()
-					where attrInternal != null
-					select (IBus)n.GetValue(this))
-                    .Where(x => x != null)
-                    .ToArray();
+            m_internalbusses =
+                Loader.GetBusFields(this.GetType())
+                      .Where(n => n.GetCustomAttributes(typeof(InternalBusAttribute), true).Any())
+                      .SelectMany(n => Loader.GetBusInstances(this, n))
+                      .Where(n => n != null)
+                      .Distinct()
+                      .ToArray();
 
 			m_outputbusses = 
-				(from n in Loader.GetBusFields(this.GetType())
-					let attrIn = n.GetCustomAttributes(typeof(InputBusAttribute), true).FirstOrDefault()
-					let attrOut = n.GetCustomAttributes(typeof(OutputBusAttribute), true).FirstOrDefault()
-					let attrInternal = n.GetCustomAttributes(typeof(InternalBusAttribute), true).FirstOrDefault()
-					where attrInternal == null && (attrOut != null || ((attrIn == null) == (attrOut == null)))
-					select (IBus)n.GetValue(this))
-                    .Where(x => x != null)
-                    .ToArray();
+                Loader.GetBusFields(this.GetType())
+                      .Where(n => {
+                          var attrIn = n.GetCustomAttributes(typeof(InputBusAttribute), true).FirstOrDefault();
+                          var attrOut = n.GetCustomAttributes(typeof(OutputBusAttribute), true).FirstOrDefault();
+                          var attrInternal = n.GetCustomAttributes(typeof(InternalBusAttribute), true).FirstOrDefault();
+                          return attrInternal == null && (attrOut != null || ((attrIn == null) == (attrOut == null)));
+                      })
+                      .SelectMany(n => Loader.GetBusInstances(this, n))
+                      .Where(n => n != null)
+                      .Distinct()
+                      .ToArray();
 
 			var inputList = 
-				(from n in Loader.GetBusFields(this.GetType())
-					let attrIn = n.GetCustomAttributes(typeof(InputBusAttribute), true).FirstOrDefault()
-					let attrOut = n.GetCustomAttributes(typeof(OutputBusAttribute), true).FirstOrDefault()
-					let attrInternal = n.GetCustomAttributes(typeof(InternalBusAttribute), true).FirstOrDefault()
-				    where attrInternal == null && (attrOut == null || ((attrIn == null)  == (attrOut == null)))
-					select (IBus)n.GetValue(this))
-                    .Where(x => x != null)
-                    .ToArray();
-
+                Loader.GetBusFields(this.GetType())
+                      .Where(n => {
+                          var attrIn = n.GetCustomAttributes(typeof(InputBusAttribute), true).FirstOrDefault();
+                          var attrOut = n.GetCustomAttributes(typeof(OutputBusAttribute), true).FirstOrDefault();
+                          var attrInternal = n.GetCustomAttributes(typeof(InternalBusAttribute), true).FirstOrDefault();
+                          return attrInternal == null && (attrOut == null || ((attrIn == null) == (attrOut == null)));
+                      })
+                      .SelectMany(n => Loader.GetBusInstances(this, n))
+                      .Where(n => n != null)
+                      .Distinct()
+                      .ToArray();
 
 			var violator = m_internalbusses.FirstOrDefault(x => x.BusType.GetCustomAttributes(typeof(TopLevelInputBusAttribute), true).FirstOrDefault() != null);
 			if (violator != null)
@@ -158,6 +163,28 @@ namespace SME
 				m_inputbusses = inputList;
 			}
 		}
+
+        /// <summary>
+        /// Manually register the busses in this instance, overrides the automatic bus detection system
+        /// </summary>
+        /// <param name="inputBusses">The input busses.</param>
+        /// <param name="outputBusses">The output busses.</param>
+        /// <param name="internalBusses">The internal busses.</param>
+        protected void RegisterBusses(IBus[] inputBusses, IBus[] outputBusses, IBus[] internalBusses)
+        {
+            m_internalbusses = internalBusses ?? new IBus[0];
+            m_outputbusses = outputBusses ?? new IBus[0];
+            if (((IProcess)this).IsClockedProcess)
+            {
+                m_inputbusses = new IBus[0];
+                m_clockedinputbusses = inputBusses ?? new IBus[0];
+            }
+            else
+            {
+                m_clockedinputbusses = new IBus[0];
+                m_inputbusses = inputBusses ?? new IBus[0];
+            }
+        }
 
 		/// <summary>
 		/// Returns an awaitable task that is signaled when the process can run
