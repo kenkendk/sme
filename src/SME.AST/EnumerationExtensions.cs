@@ -666,6 +666,16 @@ namespace SME.AST
 						return replacement;
 					}
 				}
+                else if (parent is ReturnStatement)
+                {
+                    var rs = parent as ReturnStatement;
+                    if (rs.ReturnExpression == self)
+                    {
+                        rs.ReturnExpression = replacement;
+                        replacement.Parent = parent;
+                        return replacement;
+                    }
+                }
 				else if (parent is SwitchStatement)
 				{
 					var ts = parent as SwitchStatement;
