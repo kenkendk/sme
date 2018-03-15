@@ -297,23 +297,27 @@ namespace SME
                     .Select(x =>
                     {
                         SME.Loader.AutoloadBusses(x);
-                        return x.Run();
+                        return new
+                        {
+                            Task = x.Run(),
+                            Proc = x,
+                            HasOutputs = x.OutputBusses.Any()
+                        };
                     }).ToArray();
 
-                while (!running_tasks.Any(x => x.IsCompleted))
+                // Keep running until all simulation (stimulation) processes have finished
+                while (running_tasks.Any(x => x.Proc is SimulationProcess && x.HasOutputs && !x.Task.IsCompleted))
                 {
                     Graph.Execute();
-                    var crashes = running_tasks.Where(x => x.Exception != null).SelectMany(x => x.Exception.InnerExceptions);
+                    var crashes = running_tasks.Where(x => x.Task.Exception != null).SelectMany(x => x.Task.Exception.InnerExceptions);
                     if (crashes.Any())
                         throw new AggregateException(crashes);
 
                     Tick++;
-
                 }
 
                 foreach (var cfg in m_postloaders)
                     cfg(this);
-
             }
             finally
             {
