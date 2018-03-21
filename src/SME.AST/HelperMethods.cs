@@ -767,6 +767,27 @@ namespace SME.AST
 			return null;
 		}
 
+        /// <summary>
+        /// Removes parenthesis and type casts to get the underlying item
+        /// </summary>
+        /// <returns>The unwrapped expression.</returns>
+        /// <param name="self">The expression to unwrap.</param>
+        public static Expression GetUnwrapped(this Expression self)
+        {
+            var cur = self;
+            while (cur != null)
+            {
+                if (cur is WrappingExpression)
+                    cur = ((WrappingExpression)cur).Expression;
+                else if (cur is CustomExpression && ((CustomExpression)cur).Children.Length == 1)
+                    cur = ((CustomExpression)cur).Children[0];
+                else
+                    break;
+            }
+
+            return cur ?? self;
+        }
+
 		/// <summary>
 		/// Sets the target value
 		/// </summary>
