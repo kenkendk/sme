@@ -28,13 +28,34 @@ namespace SME.AST
 			if (methodnode == null)
 				return null;
 
-			method.ReturnVariable = method.SourceMethod.ReturnType.FullName == "System.Void" ? null : RegisterTemporaryVariable(network, proc, method, method.SourceMethod.ReturnType, method.SourceMethod);
+			method.ReturnVariable = 
+                (
+                    method.SourceMethod.ReturnType.FullName == typeof(void).FullName
+                    ||
+                    method.SourceMethod.ReturnType.FullName == typeof(System.Threading.Tasks.Task).FullName
+                ) 
+                ? null 
+                : RegisterTemporaryVariable(network, proc, method, method.SourceMethod.ReturnType, method.SourceMethod);
+            
 			if (method.ReturnVariable != null)
 				method.ReturnVariable.Parent = method;
 				      
 			var statements = new List<Statement>();
+            var instructions = methodnode.Body.Children;
 
-			foreach (var n in methodnode.Body.Children)
+            //if (method.IsStateMachine)
+            //{
+            //    var initial = instructions.FirstOrDefault(x => x.NodeType == NodeType.Statement);
+            //    if (!(initial is ICSharpCode. .WhileStatement))
+            //        throw new Exception("The first statement in a state process must be a while statement");
+
+            //    instructions = (initial as AST.WhileStatement).Children.Skip(1);
+            //    if (instructions.First() is ICSharpCode.Decompiler.CSharp.Syntax.BlockStatement && instructions.Count() == 1)
+            //        instructions = instructions.First().Children;
+                    
+            //}
+
+            foreach (var n in instructions)
 				if (n.NodeType == NodeType.Statement)
 				{
 					try
@@ -66,7 +87,15 @@ namespace SME.AST
 				proc.CecilType = LoadType(proc.SourceType);
 
 			var proctype = proc.CecilType.Resolve();
-            proc.DecompilerContext = new CSharpDecompiler(proc.CecilType.Module, new DecompilerSettings());
+            proc.DecompilerContext = 
+                new CSharpDecompiler(
+                    proc.CecilType.Module, 
+                    new DecompilerSettings() 
+                    { 
+                        AsyncAwait = true,
+                        UseDebugSymbols = true,
+                    }
+            );
 
 			var m = proctype.Methods.FirstOrDefault(x => x.Name == method.Name && x.Parameters.Count == method.GetParameters().Length);
 			if (m == null)
@@ -133,7 +162,8 @@ namespace SME.AST
 				Name = method.Name,
 				SourceMethod = method,
 				Parent = proc,
-				Ignore = method.GetAttribute<IgnoreAttribute>() != null
+				Ignore = method.GetAttribute<IgnoreAttribute>() != null,
+                IsStateMachine = proc.SourceInstance.Instance is StateProcess
 			};
 
 			res.Parameters = method.Parameters.Select(x => ParseParameter(network, proc, res, x)).ToArray();

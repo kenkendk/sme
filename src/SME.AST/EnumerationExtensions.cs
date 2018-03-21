@@ -191,6 +191,17 @@ namespace SME.AST
 					visitor(p, VisitorState.Leave);
 				}
 
+            foreach (var p in proc.InternalDataElements)
+                if (visitor(p, VisitorState.Enter))
+                {
+                    if (!visitor(proc, VisitorState.Visit))
+                        yield break;
+                    yield return p;
+                    if (!visitor(proc, VisitorState.Visited))
+                        yield break;
+                    visitor(p, VisitorState.Leave);
+                }
+
 			if (proc.MainMethod != null)
 				foreach (var x in proc.MainMethod.All(visitor))
 					yield return x;
@@ -359,39 +370,31 @@ namespace SME.AST
 					foreach (var p in e.ReturnExpression.All(visitor))
 						yield return p;
 			}
+            else if (statement is WhileStatement)
+            {
+                var e = statement as WhileStatement;
+                if (e.Condition != null)
+                    foreach (var p in e.Condition.All(visitor))
+                        yield return p;
+
+                if (e.Body != null)
+                    foreach (var p in e.Body.All(visitor))
+                        yield return p;
+            }
 			else if (statement is ForStatement)
 			{
 				var e = statement as ForStatement;
+                if (e.Initializer != null)
+                    foreach (var p in e.Initializer.All(visitor))
+                        yield return p;
 
-				if (visitor(e.StartValue, VisitorState.Enter))
-				{
-					if (!visitor(e.StartValue, VisitorState.Visit))
-						yield break;
-					yield return e.StartValue;
-					if (!visitor(e.StartValue, VisitorState.Visited))
-						yield break;
-					visitor(e.StartValue, VisitorState.Leave);
-				}
+                if (e.Condition != null)
+                    foreach (var p in e.Condition.All(visitor))
+                        yield return p;
 
-				if (visitor(e.EndValue, VisitorState.Enter))
-				{
-					if (!visitor(e.EndValue, VisitorState.Visit))
-						yield break;
-					yield return e.EndValue;
-					if (!visitor(e.EndValue, VisitorState.Visited))
-						yield break;
-					visitor(e.EndValue, VisitorState.Leave);
-				}
-
-				if (visitor(e.Increment, VisitorState.Enter))
-				{
-					if (!visitor(e.Increment, VisitorState.Visit))
-						yield break;
-					yield return e.Increment;
-					if (!visitor(e.Increment, VisitorState.Visited))
-						yield break;
-					visitor(e.Increment, VisitorState.Leave);
-				}
+                if (e.Increment != null)
+                    foreach (var p in e.Increment.All(visitor))
+                        yield return p;
 
 				if (visitor(e.LoopIndex, VisitorState.Enter))
 				{
@@ -544,6 +547,11 @@ namespace SME.AST
 					foreach (var x in ((WrappingExpression)expression).Expression.All(visitor))
 						yield return x;
 				}
+                else if (expression is AwaitExpression)
+                {
+                    if (((AwaitExpression)expression).Expression != null)
+                        yield return ((AwaitExpression)expression).Expression;
+                }
 				else if (expression is CustomExpression)
 				{
 					foreach (var x in ((CustomExpression)expression).Visit(visitor))
@@ -631,6 +639,17 @@ namespace SME.AST
 						return;
 					}
 				}
+                else if (parent is WhileStatement)
+                {
+                    var ts = parent as WhileStatement;
+                    if (ts.Body == self)
+                    {
+                        ts.Body = replacement;
+                        replacement.Parent = ts;
+                        return;
+                    }
+                }
+
 			}
 
 			throw new Exception("Item not found in parent");
@@ -672,6 +691,38 @@ namespace SME.AST
                     if (rs.ReturnExpression == self)
                     {
                         rs.ReturnExpression = replacement;
+                        replacement.Parent = parent;
+                        return replacement;
+                    }
+                }
+                else if (parent is WhileStatement)
+                {
+                    var rs = parent as WhileStatement;
+                    if (rs.Condition == self)
+                    {
+                        rs.Condition = replacement;
+                        replacement.Parent = parent;
+                        return replacement;
+                    }
+                }
+                else if (parent is ForStatement)
+                {
+                    var rs = parent as ForStatement;
+                    if (rs.Condition == self)
+                    {
+                        rs.Condition = replacement;
+                        replacement.Parent = parent;
+                        return replacement;
+                    }
+                    if (rs.Increment == self)
+                    {
+                        rs.Increment = replacement;
+                        replacement.Parent = parent;
+                        return replacement;
+                    }
+                    if (rs.Initializer == self)
+                    {
+                        rs.Initializer = replacement;
                         replacement.Parent = parent;
                         return replacement;
                     }
@@ -830,6 +881,16 @@ namespace SME.AST
 						return replacement;
 					}
 				}
+                else if (parent is AwaitExpression)
+                {
+                    var ap = ((AwaitExpression)parent);
+                    if (ap.Expression == self)
+                    {
+                        ap.Expression = replacement;
+                        replacement.Parent = parent;
+                        return replacement;
+                    }
+                }
 				else if (
 					parent.GetType() == typeof(WrappingExpression)
 					|| parent is UncheckedExpression

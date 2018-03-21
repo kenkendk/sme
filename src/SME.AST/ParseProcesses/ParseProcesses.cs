@@ -240,12 +240,27 @@ namespace SME.AST
 			{
 				foreach (var pr in network.Processes.Cast<ProcessState>().Where(x => x.Decompile))
 				{
-					var st = pr.SourceType;
-					var method = st.GetMethod("OnTick", BindingFlags.Instance | BindingFlags.NonPublic, null, CallingConventions.Any, new Type[] { }, null);
-					if (method == null)
-						throw new Exception($"Could not find the \"OnTick\" method in class: {st.FullName}");
+                    if (pr.SourceInstance.Instance is SimpleProcess)
+                    {
 
-					Decompile(network, pr, method);
+                        var st = pr.SourceType;
+                        var method = st.GetMethod("OnTick", BindingFlags.Instance | BindingFlags.NonPublic, null, CallingConventions.Any, new Type[] { }, null);
+                        if (method == null)
+                            throw new Exception($"Could not find the \"OnTick\" method in class: {st.FullName}");
+
+                        Decompile(network, pr, method);
+                    }
+                    else if (pr.SourceInstance.Instance is StateProcess)
+                    {
+                        var st = pr.SourceType;
+                        var method = st.GetMethod("OnTickAsync", BindingFlags.Instance | BindingFlags.NonPublic, null, CallingConventions.Any, new Type[] { }, null);
+                        if (method == null)
+                            throw new Exception($"Could not find the \"OnTickAsync\" method in class: {st.FullName}");
+
+                        Decompile(network, pr, method);
+                    }
+                    else
+                        throw new Exception("Unexpected decompile flag on unsupported process type");
 				}
 			}
 			network.Constants = network.ConstantLookup.Values.ToArray();
@@ -316,7 +331,12 @@ namespace SME.AST
 				Parent = network,
                 IsSimulation = process.Instance is SimulationProcess,
 				IsClocked = st.GetCustomAttribute<ClockedProcessAttribute>() != null,
-				Decompile = typeof(SimpleProcess).IsAssignableFrom(st)
+				Decompile = 
+                    (
+                        typeof(SimpleProcess).IsAssignableFrom(st)
+                        ||
+                        typeof(StateProcess).IsAssignableFrom(st)
+                    )
 					&&
 					!st.HasAttribute<SuppressOutputAttribute>()
 					&&
@@ -380,6 +400,7 @@ namespace SME.AST
 
 			res.SharedSignals = res.Signals.Values.ToArray();
 			res.SharedVariables = res.Variables.Values.ToArray();
+            res.InternalDataElements = new DataElement[0];
 			return res;
 		}
 

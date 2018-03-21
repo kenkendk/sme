@@ -80,6 +80,18 @@ namespace SME.VHDL
 			return Parent.DefaultValue(element);
 		}
 
+        /// <summary>
+        /// Gets the finite state method, if any for this process
+        /// </summary>
+        /// <value>The finite state method.</value>
+        public Method FiniteStateMethod
+        {
+            get
+            {
+                return Process.Methods.FirstOrDefault(x => x.IsStateMachine);
+            }
+        }
+
 		/// <summary>
 		/// Returns all signals written to a bus from within this process
 		/// </summary>
@@ -143,10 +155,20 @@ namespace SME.VHDL
 		{
 			get
 			{
-                foreach (var bus in Process.OutputBusses.Concat(Process.InternalBusses).Distinct())
-					foreach (var signal in WrittenSignals(bus))
-						foreach (var s in Helper.RenderStatement(null, Parent.GetResetStatement(signal), 0))
-							yield return s;
+                // We do these in the FSM method
+                if (FiniteStateMethod == null)
+                {
+                    foreach (var bus in Process.OutputBusses.Concat(Process.InternalBusses).Distinct())
+                        foreach (var signal in WrittenSignals(bus))
+                            foreach (var s in Helper.RenderStatement(null, Parent.GetResetStatement(signal), 0))
+                                yield return s;
+                }
+                // For FSM, we reset the current state
+                else
+                {
+                    foreach (var s in Helper.RenderStatement(null, Parent.GetResetStatement(Process.InternalDataElements[Process.InternalDataElements.Length - 2]), 0))
+                        yield return s;
+                }
 
 				foreach (var signal in Process.SharedSignals)
 					if (!(signal.Source is Mono.Cecil.IMemberDefinition) || ((Mono.Cecil.IMemberDefinition)signal.Source).GetAttribute<IgnoreAttribute>() == null)
@@ -186,18 +208,28 @@ namespace SME.VHDL
 			}
 		}
 
+        /// <summary>
+        /// Gets a sequence of the shared variables found in the process
+        /// </summary>
+        /// <value>The shared variables.</value>
+        public IEnumerable<Variable> SharedVariables
+        {
+            get
+            {
+                foreach (var v in Process.SharedVariables)
+                    if (!(v.Source is Mono.Cecil.IMemberDefinition) || ((Mono.Cecil.IMemberDefinition)v.Source).GetAttribute<IgnoreAttribute>() == null)
+                        yield return v;
+            }
+        }
+
 		/// <summary>
-		/// Gets a sequence of the variables found in the process
+		/// Gets a sequence of the variables found in the main method
 		/// </summary>
 		/// <value>The variables.</value>
 		public IEnumerable<Variable> Variables
 		{
 			get
 			{
-				foreach (var v in Process.SharedVariables)
-					if (!(v.Source is Mono.Cecil.IMemberDefinition) || ((Mono.Cecil.IMemberDefinition)v.Source).GetAttribute<IgnoreAttribute>() == null)
-						yield return v;
-
 				if (Process.MainMethod != null)
 					foreach (var v in Process.MainMethod.AllVariables)
 						yield return v;

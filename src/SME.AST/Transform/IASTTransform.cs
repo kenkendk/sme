@@ -4,7 +4,7 @@ namespace SME.AST.Transform
 	/// <summary>
 	/// Interface for performing a transformation on the AST
 	/// </summary>
-	public interface IASTTransform
+    public interface IASTTransform
 	{
 		/// <summary>
 		/// Applies the transformation

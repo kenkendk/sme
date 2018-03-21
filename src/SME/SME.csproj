@@ -52,6 +52,7 @@
     <Compile Include="Simulation.cs" />
     <Compile Include="Scope.cs" />
     <Compile Include="ProcessMetadata.cs" />
+    <Compile Include="StateProcess.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

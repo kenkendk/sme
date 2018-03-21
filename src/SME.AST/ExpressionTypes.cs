@@ -161,6 +161,8 @@ namespace SME.AST
             this.Operator = op;
             this.Right = right;
 
+            this.SourceResultType = this.Left.SourceResultType;
+
             this.Left.Parent = this;
             this.Right.Parent = this;
         }
@@ -237,6 +239,7 @@ namespace SME.AST
         public CastExpression(Expression source)
         {
             this.Expression = source;
+            this.SourceResultType = this.Expression.SourceResultType;
             this.Expression.Parent = this;
         }
     }
@@ -260,6 +263,7 @@ namespace SME.AST
         public CheckedExpression(Expression source)
         {
             this.Expression = source;
+            this.SourceResultType = this.Expression.SourceResultType;
             this.Expression.Parent = this;
         }
     }
@@ -300,6 +304,7 @@ namespace SME.AST
             this.ConditionExpression = condition;
             this.TrueExpression = trueExpression;
             this.FalseExpression = falseExpression;
+            this.SourceResultType = trueExpression is EmptyExpression ? falseExpression.SourceResultType : trueExpression.SourceResultType;
         }
     }
 
@@ -334,6 +339,7 @@ namespace SME.AST
         public IdentifierExpression(DataElement target)
         {
             this.Target = target;
+            this.SourceResultType = target.CecilType;
         }    
     }
 
@@ -373,6 +379,7 @@ namespace SME.AST
             this.Target = target;
             this.TargetExpression = targetExpression;
             this.IndexExpression = indexExpression;
+            this.SourceResultType = targetExpression.SourceResultType.GetArrayElementType();
             this.TargetExpression.Parent = this;
             this.IndexExpression.Parent = this;
         }
@@ -414,6 +421,10 @@ namespace SME.AST
             this.Target = target;
             this.TargetExpression = targetExpression;
             this.ArgumentExpressions = argumentExpressions;
+            if (target.SourceMethod == null)
+                this.SourceResultType = target.ReturnVariable == null ? target.GetNearestParent<Process>().CecilType.Module.ImportReference(typeof(void)) : target.ReturnVariable.CecilType;
+            else
+                this.SourceResultType = target.SourceMethod.ReturnType;
 
             this.Target.Parent = this;
             foreach (var e in this.ArgumentExpressions ?? new Expression[0])
@@ -445,6 +456,7 @@ namespace SME.AST
         public MemberReferenceExpression(DataElement target)
         {
             this.Target = target;
+            this.SourceResultType = target.CecilType;
         }
     }
 
@@ -472,6 +484,10 @@ namespace SME.AST
         public MethodReferenceExpression(Method target)
         {
             this.Target = target;
+            if (target.SourceMethod == null)
+                this.SourceResultType = target.ReturnVariable == null ? target.GetNearestParent<Process>().CecilType.Module.ImportReference(typeof(void)) : target.ReturnVariable.CecilType;
+            else
+                this.SourceResultType = target.SourceMethod.ReturnType;
         }
     }
 
@@ -494,6 +510,7 @@ namespace SME.AST
         public ParenthesizedExpression(Expression target)
         {
             this.Expression = target;
+            this.SourceResultType = this.Expression.SourceResultType;
             this.Expression.Parent = this;
         }
     }
@@ -519,9 +536,13 @@ namespace SME.AST
         /// Specialized helper constructor
         /// </summary>
         /// <param name="value">The item to use as the value</param>
-        public PrimitiveExpression(object value)
+        /// <param name="sourcetype">The data element type</param>
+        public PrimitiveExpression(object value, Mono.Cecil.TypeReference sourcetype)
         {
             this.Value = value;
+            this.SourceResultType = sourcetype;
+            if (sourcetype == null)
+                throw new ArgumentNullException(nameof(sourcetype));
         }
     }
 
@@ -555,6 +576,7 @@ namespace SME.AST
         {
             this.Operator = op;
             this.Operand = operand;
+            this.SourceResultType = this.Operand.SourceResultType;
             this.Operand.Parent = this;
         }    
     }
@@ -578,6 +600,7 @@ namespace SME.AST
         public UncheckedExpression(Expression target)
         {
             this.Expression = target;
+            this.SourceResultType = this.Expression.SourceResultType;
             this.Expression.Parent = this;
         }
     }
@@ -588,4 +611,30 @@ namespace SME.AST
     public class NullReferenceExpression : Expression
     {
     }
+
+    /// <summary>
+    /// An await statement for clock or condition
+    /// </summary>
+    public class AwaitExpression : Expression
+    {
+        /// <summary>
+        /// The expression to wait for or null if we are awaiting the clock
+        /// </summary>
+        public Expression Expression;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:SME.AST.AwaitStatement"/> class.
+        /// </summary>
+        public AwaitExpression() { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:SME.AST.AwaitExpression"/> class.
+        /// </summary>
+        /// <param name="expression">The expression to await.</param>
+        public AwaitExpression(Expression expression) 
+        {
+            Expression = expression;    
+        }
+    }
+
 }

@@ -267,6 +267,11 @@ namespace SME.AST
 		/// </summary>
 		public Signal[] SharedSignals;
 
+        /// <summary>
+        /// The list of internal class-wide data elements
+        /// </summary>
+        public DataElement[] InternalDataElements;
+
 		/// <summary>
 		/// The main method.
 		/// </summary>
@@ -345,5 +350,9 @@ namespace SME.AST
 		/// A flag indicating if this method should be ignored
 		/// </summary>
 		public bool Ignore;
+        /// <summary>
+        /// A flag indicating if the method is a state machine
+        /// </summary>
+        public bool IsStateMachine;
 	}
 }

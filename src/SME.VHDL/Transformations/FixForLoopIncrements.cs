@@ -44,13 +44,17 @@ namespace SME.VHDL.Transformations
 			if (stm == null)
 				return item;
 
-			var incr = 1;
-			var defincr = stm.Increment.DefaultValue;
-			if (defincr is AST.Constant)
-				incr = (int)((Constant)(defincr)).DefaultValue;
-			else 			
-				incr = (int)stm.Increment.DefaultValue;
-			
+            Tuple<int, int, int> loopedges = null;
+            try
+            {
+                loopedges = stm.GetStaticForLoopValues();
+            }
+            catch
+            {
+                return item;
+            }
+
+            var incr = loopedges.Item3;			
 			if (incr == 1)
 				return item;
 
@@ -114,22 +118,25 @@ namespace SME.VHDL.Transformations
 			stm.LoopBody.PrependStatement(nstm);
 
 			//Do not fix again
-			stm.Increment = new Constant()
-			{
-				DefaultValue = 1,
-				CecilType = tmp.CecilType,
-				Source = stm,
-				Parent = stm					
-			};
+            stm.Increment = new AssignmentExpression(
+                new IdentifierExpression(stm.LoopIndex),
+                new BinaryOperatorExpression(
+                    new IdentifierExpression(stm.LoopIndex),
+                    ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.Add,
+                    new PrimitiveExpression(new Constant()
+            		{
+        				DefaultValue = 1,
+        				Source = stm,
+        				Parent = stm
+                    }, tmp.CecilType)
+                )
+            );
 
-            stm.EndValue = new Constant() {
-                CecilType = stm.EndValue.CecilType,
-                DefaultValue = ((int) stm.EndValue.DefaultValue)/ incr,
-                Name = stm.EndValue.Name,
-                Parent = stm.EndValue.Parent,
-                Source = stm.EndValue.Source,
-                Type = stm.EndValue.Type
-            };
+            stm.Condition = new BinaryOperatorExpression(
+                new IdentifierExpression(stm.LoopIndex),
+                ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.LessThan,
+                new PrimitiveExpression(loopedges.Item2 / loopedges.Item3, tmp.CecilType.Module.ImportReference(typeof(int)))
+            );
 
 			return nstm;
 		}

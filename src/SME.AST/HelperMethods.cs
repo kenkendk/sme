@@ -812,6 +812,80 @@ namespace SME.AST
 
             return p;
         }
+
+        /// <summary>
+        /// Returns the start, end and increment integer values for a statically sized for loop
+        /// </summary>
+        /// <returns>The static for loop start, end and increment values.</returns>
+        /// <param name="self">The statement to extract the values for.</param>
+        public static Tuple<int, int, int> GetStaticForLoopValues(this AST.ForStatement self)
+        {
+            int start, end, incr;
+
+            if (!(self.Initializer is AST.PrimitiveExpression))
+                throw new Exception($"Unable to statically expand loop initializer: {self.Initializer.SourceExpression}");
+            if (!(self.Condition is AST.BinaryOperatorExpression))
+                throw new Exception($"Unable to statically expand loop initializer: {self.Condition.SourceExpression}");
+            if (((BinaryOperatorExpression)self.Condition).Operator != ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.LessThan)
+                throw new Exception($"Can only statically expand loops with a less-than operator: {self.Condition.SourceExpression}");
+
+            start = (int)Convert.ChangeType(((AST.PrimitiveExpression)self.Initializer).Value, typeof(int));
+
+            var cond_left = ((BinaryOperatorExpression)self.Condition).Left;
+            var cond_right = ((BinaryOperatorExpression)self.Condition).Right;
+            if (cond_left.GetTarget() != self.LoopIndex)
+                throw new Exception($"Can only statically expand loops where the left side of the condition is the loop variable");
+
+            if (cond_right is PrimitiveExpression)
+                end = (int)Convert.ChangeType(((AST.PrimitiveExpression)self.Condition).Value, typeof(int));
+            else if (cond_right is BinaryOperatorExpression)
+            {
+                var boe = cond_right as BinaryOperatorExpression;
+                if (boe.Operator != ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.Add && boe.Operator != ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.Subtract )
+                    throw new Exception($"Can only statically expand loops if the condition is a simple add/subtract operation: {boe.SourceExpression}");
+
+                var lefttarget = boe.Left.GetTarget();
+                var righttarget = boe.Right.GetTarget();
+                if (lefttarget == null || righttarget == null)    
+                    throw new Exception($"Can only statically expand loops if the condition is a simple add/subtract operation: {boe.SourceExpression}");
+
+                var left_opr = (int)Convert.ChangeType(lefttarget.DefaultValue, typeof(int));
+                var right_opr = (int)Convert.ChangeType(lefttarget.DefaultValue, typeof(int));
+                if (boe.Operator == ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.Add)
+                    end = left_opr + right_opr;
+                else
+                    end = left_opr - right_opr;
+            }
+            else
+                throw new Exception($"Can only statically expand loops if the condition is a simple add/subtract operation: {self.Condition.SourceExpression}");
+
+            if (self.Increment is UnaryOperatorExpression)
+            {
+                var uoe = self.Increment as UnaryOperatorExpression;
+                if (uoe.Operand.GetTarget() != self.LoopIndex)
+                    throw new Exception($"The item in the loop increment must be the loop variable: {self.Increment.SourceExpression}");
+                if (uoe.Operator != ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorType.PostIncrement)
+                    throw new Exception($"The item in the loop increment must be the loop variable with post increment: {self.Increment.SourceExpression}");
+                incr = 1;
+            }
+            else if (self.Increment is AssignmentExpression)
+            {
+                var boe = self.Increment as AssignmentExpression;
+                if (boe.Left.GetTarget() != self.LoopIndex)
+                    throw new Exception($"The item in the loop increment must be the loop variable: {self.Increment.SourceExpression}");
+                if (boe.Operator != ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType.Add)
+                    throw new Exception($"The item in the loop increment must be a simple addition: {self.Increment.SourceExpression}");
+                var incrtarget = boe.Right.GetTarget();
+                if (!(incrtarget is Constant))
+                    throw new Exception($"The item in the loop increment must be a simple addition: {self.Increment.SourceExpression}");
+
+                incr = (int)Convert.ChangeType(incrtarget.DefaultValue, typeof(int));
+            }
+            else
+                throw new Exception($"Can only statically expand loops if the increment is a simple constant: {self.Condition.SourceExpression}");
+
+            return new Tuple<int, int, int>(start, end, incr);
+        }
 	}
 }
 

@@ -48,6 +48,8 @@ namespace SME.AST
                 return Decompile(network, proc, method, statement as ICSharpCode.Decompiler.CSharp.Syntax.GotoStatement);
             else if (statement is ICSharpCode.Decompiler.CSharp.Syntax.LabelStatement)
                 return Decompile(network, proc, method, statement as ICSharpCode.Decompiler.CSharp.Syntax.LabelStatement);
+            else if (statement is ICSharpCode.Decompiler.CSharp.Syntax.WhileStatement)
+                return Decompile(network, proc, method, statement as ICSharpCode.Decompiler.CSharp.Syntax.WhileStatement);
 			else
 				throw new Exception(string.Format("Unsupported statement: {0} ({1})", statement, statement.GetType().FullName));
 		}
@@ -271,7 +273,7 @@ namespace SME.AST
 		/// <param name="proc">The process where the method is located.</param>
 		/// <param name="method">The method where the statement is found.</param>
 		/// <param name="src">The expression to examine.</param>
-		protected virtual Constant ResolveArrayLengthOrPrimitive(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.Decompiler.CSharp.Syntax.Expression src)
+        protected virtual DataElement ResolveArrayLengthOrPrimitive(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.Decompiler.CSharp.Syntax.Expression src)
 		{
 			if (src is ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression)
 				try
@@ -288,12 +290,22 @@ namespace SME.AST
 				{
 					throw new Exception(string.Format("Unable to resolve as a constant value: {0}", src), ex);
 				}
-
+            DataElement member;
 			var ex_left = src as ICSharpCode.Decompiler.CSharp.Syntax.MemberReferenceExpression;
-			if (ex_left.MemberName != "Length")
-				throw new Exception(string.Format("Only plain style for loops supported: {0}", src));
+            if (ex_left != null)
+            {
+                if (ex_left.MemberName != "Length")
+                    throw new Exception(string.Format("Only plain style for loops supported: {0}", src));
+                member = LocateDataElement(network, proc, method, null, ex_left.Target);
+            }
+            else
+            {
+                var ex_id = src as ICSharpCode.Decompiler.CSharp.Syntax.IdentifierExpression;
+                if (ex_id == null)
+                    throw new ArgumentException(string.Format("Unable to resolve loop limit: {0}", src));
+                return LocateDataElement(network, proc, method, null, ex_id);
+            }
 
-			var member = LocateDataElement(network, proc, method, null, ex_left.Target);
 			if (member.CecilType.IsFixedArrayType())
 			{
 				if (member.Source is IMemberDefinition)
@@ -386,6 +398,8 @@ namespace SME.AST
 				}
 			}
 
+
+
 			try
 			{
 				return new Constant() { 
@@ -446,6 +460,29 @@ namespace SME.AST
                 Label = statement.Label
             };
         }
+
+        /// <summary>
+        /// Processes a single statement from the decompiler and returns an AST entry for it
+        /// </summary>
+        /// <param name="network">The top-level network.</param>
+        /// <param name="proc">The process where the method is located.</param>
+        /// <param name="method">The method where the statement is found.</param>
+        /// <param name="statement">The decompiler statement to process.</param>
+        protected virtual WhileStatement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.Decompiler.CSharp.Syntax.WhileStatement statement)
+        {
+            var res = new WhileStatement()
+            {
+                Parent = method
+            };
+
+
+            res.Condition = Decompile(network, proc, method, res, statement.Condition);
+            res.Body = Decompile(network, proc, method, statement.EmbeddedStatement);
+            res.Body.Parent = res;
+
+            return res;
+        }
+
 		/// <summary>
 		/// Processes a single statement from the decompiler and returns an AST entry for it
 		/// </summary>
@@ -453,7 +490,7 @@ namespace SME.AST
 		/// <param name="proc">The process where the method is located.</param>
 		/// <param name="method">The method where the statement is found.</param>
 		/// <param name="statement">The decompiler statement to process.</param>
-		protected virtual ForStatement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.Decompiler.CSharp.Syntax.ForStatement statement)
+		/*protected virtual ForStatement DecompileOld(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.Decompiler.CSharp.Syntax.ForStatement statement)
 		{
 			if (statement.Initializers.Count != 1)
 				throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
@@ -501,19 +538,19 @@ namespace SME.AST
 					var binop = cond.Right as ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorExpression;
 
 					var leftval = ResolveArrayLengthOrPrimitive(network, proc, method, binop.Left);
-					var righval = ResolveArrayLengthOrPrimitive(network, proc, method, binop.Right);
+					var rightval = ResolveArrayLengthOrPrimitive(network, proc, method, binop.Right);
 
 					if (binop.Operator == BinaryOperatorType.Add)
-						condright = new ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression((int)leftval.DefaultValue + (int)righval.DefaultValue);
+                        condright = new ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression((int)leftval.DefaultValue + (int)rightval.DefaultValue);
 					else if (binop.Operator == BinaryOperatorType.Subtract)
-						condright = new ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression((int)leftval.DefaultValue - (int)righval.DefaultValue);
+						condright = new ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression((int)leftval.DefaultValue - (int)rightval.DefaultValue);
 					else
 						throw new Exception(string.Format("Only add and subtract operations are supported in for loop bounds: {0}", statement));
 				}
 				// Plain limit
 				else if (cond.Right is ICSharpCode.Decompiler.CSharp.Syntax.IdentifierExpression || cond.Right is ICSharpCode.Decompiler.CSharp.Syntax.MemberReferenceExpression)
 				{
-					condright = new ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression(ResolveArrayLengthOrPrimitive(network, proc, method, cond.Right).DefaultValue);
+                    condright = new ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression(ResolveArrayLengthOrPrimitive(network, proc, method, cond.Right));
 				}
 			}
 
@@ -589,6 +626,68 @@ namespace SME.AST
             method.FinishScope(res);
 
 			return res;
-		}
+		}*/
+
+
+        /// <summary>
+        /// Processes a single statement from the decompiler and returns an AST entry for it
+        /// </summary>
+        /// <param name="network">The top-level network.</param>
+        /// <param name="proc">The process where the method is located.</param>
+        /// <param name="method">The method where the statement is found.</param>
+        /// <param name="statement">The decompiler statement to process.</param>
+        protected virtual ForStatement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.Decompiler.CSharp.Syntax.ForStatement statement)
+        {
+            if (statement.Initializers.Count != 1)
+                throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
+
+            if (statement.Iterators.Count != 1)
+                throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
+
+
+            var init = statement.Initializers.First() as ICSharpCode.Decompiler.CSharp.Syntax.VariableDeclarationStatement;
+            if (init == null)
+                throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
+
+            if (init.Variables.Count != 1)
+                throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
+
+            var name = init.Variables.First().Name;
+            var initial = init.Variables.First().Initializer;
+
+            var itr = statement.Iterators.First() as ICSharpCode.Decompiler.CSharp.Syntax.ExpressionStatement;
+            if (itr == null)
+                throw new Exception($"Unsupported iterator expression: {statement.Iterators.First()}");
+            
+            var loopvar = new Variable()
+            {
+                CecilType = LoadType(typeof(int)),
+                Name = name,
+                Source = statement.Clone(),
+            };
+
+            if (initial is ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression)
+                loopvar.DefaultValue = (initial as ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression).Value;
+
+            var res = new ForStatement()
+            {
+                LoopIndex = loopvar,
+                Parent = method
+            };
+
+            method.StartScope(res);
+            method.AddVariable(loopvar);
+
+            loopvar.Parent = res;
+            res.Initializer = Decompile(network, proc, method, res, initial);
+            res.Condition = Decompile(network, proc, method, res, statement.Condition);
+            res.Increment = Decompile(network, proc, method, res, itr.Expression);
+            res.LoopBody = Decompile(network, proc, method, statement.EmbeddedStatement);
+
+            res.LoopBody.Parent = res;
+            method.FinishScope(res);
+
+            return res;
+        }
 	}
 }
