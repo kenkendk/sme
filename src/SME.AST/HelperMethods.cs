@@ -839,6 +839,29 @@ namespace SME.AST
         }
 
         /// <summary>
+        /// Extracts an integer value from a data element
+        /// </summary>
+        /// <returns>The integer value.</returns>
+        /// <param name="expression">The expression to extract the value from.</param>
+        private static int ResolveIntegerValue(Expression expression)
+        {
+            expression = expression.GetUnwrapped();
+            if (expression is PrimitiveExpression)
+                return (int)Convert.ChangeType(((AST.PrimitiveExpression)expression).Value, typeof(int));
+            var target = expression.GetTarget();
+            if (target.DefaultValue != null)
+                return (int)Convert.ChangeType(target.DefaultValue, typeof(int));
+            if (target is Constant && ((Constant)target).ArrayLengthSource != null)
+            {
+                var al = ((Constant)target).ArrayLengthSource;
+                var len = (al.DefaultValue as Array).Length;
+                return len;                    
+            }
+
+            throw new Exception($"Cannot extract integer value from: {expression.SourceExpression}");
+        }
+
+        /// <summary>
         /// Returns the start, end and increment integer values for a statically sized for loop
         /// </summary>
         /// <returns>The static for loop start, end and increment values.</returns>
@@ -854,15 +877,15 @@ namespace SME.AST
             if (((BinaryOperatorExpression)self.Condition).Operator != ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.LessThan)
                 throw new Exception($"Can only statically expand loops with a less-than operator: {self.Condition.SourceExpression}");
 
-            start = (int)Convert.ChangeType(((AST.PrimitiveExpression)self.Initializer).Value, typeof(int));
+            start = ResolveIntegerValue(self.Initializer);
 
-            var cond_left = ((BinaryOperatorExpression)self.Condition).Left;
-            var cond_right = ((BinaryOperatorExpression)self.Condition).Right;
+            var cond_left = ((BinaryOperatorExpression)self.Condition).Left.GetUnwrapped();
+            var cond_right = ((BinaryOperatorExpression)self.Condition).Right.GetUnwrapped();
             if (cond_left.GetTarget() != self.LoopIndex)
                 throw new Exception($"Can only statically expand loops where the left side of the condition is the loop variable");
 
-            if (cond_right is PrimitiveExpression)
-                end = (int)Convert.ChangeType(((AST.PrimitiveExpression)cond_right).Value, typeof(int));
+            if (cond_right is PrimitiveExpression || cond_right.GetTarget() != null)
+                end = ResolveIntegerValue(cond_right);
             else if (cond_right is BinaryOperatorExpression)
             {
                 var boe = cond_right as BinaryOperatorExpression;
@@ -870,12 +893,12 @@ namespace SME.AST
                     throw new Exception($"Can only statically expand loops if the condition is a simple add/subtract operation: {boe.SourceExpression}");
 
                 var lefttarget = boe.Left.GetTarget();
-                var righttarget = boe.Right.GetTarget();
-                if (lefttarget == null || righttarget == null)    
+                if (lefttarget == null)    
                     throw new Exception($"Can only statically expand loops if the condition is a simple add/subtract operation: {boe.SourceExpression}");
 
-                var left_opr = (int)Convert.ChangeType(lefttarget.DefaultValue, typeof(int));
-                var right_opr = (int)Convert.ChangeType(lefttarget.DefaultValue, typeof(int));
+                var left_opr = ResolveIntegerValue(boe.Left);
+                var right_opr = ResolveIntegerValue(boe.Right);
+
                 if (boe.Operator == ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.Add)
                     end = left_opr + right_opr;
                 else
@@ -905,35 +928,14 @@ namespace SME.AST
                         throw new Exception($"The item in the loop increment must be a simple addition: {self.Increment.SourceExpression}");
                     if (boee.Left.GetTarget() != self.LoopIndex)
                         throw new Exception($"The item in the loop increment must be the loop variable: {self.Increment.SourceExpression}");
-                    if (boee.Right is PrimitiveExpression)
-                    {
-                        incr = (int)Convert.ChangeType(((PrimitiveExpression)boee.Right).Value, typeof(int));
-                    }
-                    else
-                    {
-                        var incrtarget = boee.Right.GetTarget();
-                        if (!(incrtarget is Constant))
-                            throw new Exception($"The item in the loop increment must be a simple addition: {self.Increment.SourceExpression}");
 
-                        incr = (int)Convert.ChangeType(incrtarget.DefaultValue, typeof(int));
-                    }
+                    incr = ResolveIntegerValue(boee.Right);
                 }
                 else
                 {
                     if (boe.Operator != ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType.Add)
                         throw new Exception($"The item in the loop increment must be a simple addition: {self.Increment.SourceExpression}");
-                    if (boe.Right is PrimitiveExpression)
-                    {
-                        incr = (int)Convert.ChangeType(((PrimitiveExpression)boe.Right).Value, typeof(int));
-                    }
-                    else
-                    {
-                        var incrtarget = boe.Right.GetTarget();
-                        if (!(incrtarget is Constant))
-                            throw new Exception($"The item in the loop increment must be a simple addition: {self.Increment.SourceExpression}");
-
-                        incr = (int)Convert.ChangeType(incrtarget.DefaultValue, typeof(int));
-                    }
+                    incr = ResolveIntegerValue(boe.Right);
                 }
             }
             else
