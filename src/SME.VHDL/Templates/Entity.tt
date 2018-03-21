@@ -107,11 +107,7 @@ architecture RTL of <#= Process.Name #> is
 <#         foreach (var s in Process.SharedSignals) { #>
     signal <#= s.Name #> : <#= RS.VHDLWrappedTypeName(s) #>;
 <#         } #>
-<#         if (RSP.FiniteStateMethod == null) { #>
-<#              foreach (var s in RSP.SharedVariables) { #>
-    variable <#= s.Name #> : <#= RS.VHDLWrappedTypeName(s) #> := <#= Naming.ToValidName("reset_" + s.Name) #>;
-<#             } #>
-<#         } else { #>
+<#         if (RSP.FiniteStateMethod != null) { #>
     signal FSM_Trigger : Std_logic := '0';
 <#         } #>
 
@@ -163,7 +159,7 @@ var sensitivity_signal = RSP.Process.IsClocked ? "CLK" : "RDY";
     )
 <#     if (RSP.Variables.Count() > 0) { #>
     -- Internal variables
-<#          foreach(var s in RSP.Variables) { #>
+<#          foreach(var s in RSP.Variables.Concat(RSP.FiniteStateMethod == null ? RSP.SharedVariables : new Variable[0])) { #>
     variable <#= s.Name #> : <#= RS.VHDLWrappedTypeName(s) #><#= Process.SharedVariables.Contains(s) ? " := " + Naming.ToValidName("reset_" + s.Name) : "" #>;
 <#          } #>
 <#     } #>
@@ -183,7 +179,7 @@ var sensitivity_signal = RSP.Process.IsClocked ? "CLK" : "RDY";
 <#     foreach(var s in RSP.ProcessResetStaments) { #>
             <#= s #>
 <#     } #>
-<#     foreach(var variable in RSP.Variables) { #>
+<#     foreach(var variable in RSP.FiniteStateMethod == null ? RSP.SharedVariables : RSP.Variables) { #>
             <#= variable.Name #> := <#= Naming.ToValidName("reset_" + variable.Name) #>;
 <#     } #>
 <#     foreach(var variable in Process.SharedSignals) { #>
