@@ -125,26 +125,26 @@ namespace SME.VHDL.Transformations
 
 			stm.LoopBody.PrependStatement(nstm);
 
-			//Do not fix again
+            //Do not fix again
             stm.Increment = new AssignmentExpression(
                 new IdentifierExpression(stm.LoopIndex),
                 new BinaryOperatorExpression(
                     new IdentifierExpression(stm.LoopIndex),
                     ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.Add,
-                    new PrimitiveExpression(new Constant()
-            		{
-        				DefaultValue = 1,
-        				Source = stm,
-        				Parent = stm
-                    }, tmp.CecilType)
+                    new PrimitiveExpression(1, tmp.CecilType)
                 )
-            );
+                { SourceResultType = tmp.CecilType }
+            ) { Parent = stm, SourceResultType = tmp.CecilType };
 
             stm.Condition = new BinaryOperatorExpression(
                 new IdentifierExpression(stm.LoopIndex),
                 ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.LessThan,
                 new PrimitiveExpression(loopedges.Item2 / loopedges.Item3, tmp.CecilType.Module.ImportReference(typeof(int)))
-            );
+            )
+            { 
+                Parent = stm,
+                SourceResultType = tmp.CecilType.Module.ImportReference(typeof(bool))
+            };
 
 			return nstm;
 		}

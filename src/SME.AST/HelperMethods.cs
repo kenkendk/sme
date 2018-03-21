@@ -733,6 +733,30 @@ namespace SME.AST
 			return attr.Length;
 		}
 
+        /// <summary>
+        /// Gets the length of a fixed-length array
+        /// </summary>
+        /// <returns>The fixed array length.</returns>
+        /// <param name="element">The element to get the length for.</param>
+        public static int GetArrayLength(DataElement element)
+        {
+            if (element is Constant)
+                element = ((Constant)element).ArrayLengthSource ?? element;
+
+            if (element.DefaultValue is Array)
+                return ((Array)element.DefaultValue).Length;
+            else if (element.DefaultValue is EmptyArrayCreateExpression)
+                return ResolveIntegerValue(((EmptyArrayCreateExpression)element.DefaultValue).SizeExpression);
+            else if (element.DefaultValue is ArrayCreateExpression)
+                return ((ArrayCreateExpression)element.DefaultValue).ElementExpressions.Length;
+            else if (element.Source is System.Reflection.MemberInfo)
+                return GetFixedArrayLength((System.Reflection.MemberInfo)element.Source);
+            else if (element.Source is IMemberDefinition)
+                return GetFixedArrayLength((IMemberDefinition)element.Source);
+
+            throw new Exception($"Unable to get size of array: {element.Name}");
+        }
+
 		/// <summary>
 		/// Loads the specified reflection Type and returns the equivalent CeCil TypeDefinition
 		/// </summary>
@@ -796,17 +820,16 @@ namespace SME.AST
 		/// <param name="target">The value to set</param>
 		public static void SetTarget(this ASTItem self, DataElement target)
 		{
-			if (self is IdentifierExpression)
-			{
-				((IdentifierExpression)self).Target = target;
-				return;
-			}
-			if (self is MemberReferenceExpression)
-			{
-				((MemberReferenceExpression)self).Target = target;
-			}
-
-			throw new Exception($"Unable to set target on item of type {self.GetType().FullName}");
+            if (self is IdentifierExpression)
+                ((IdentifierExpression)self).Target = target;
+            else if (self is MemberReferenceExpression)
+                ((MemberReferenceExpression)self).Target = target;
+            else if (self is WrappingExpression)
+                SetTarget(((WrappingExpression)self).Expression, target);
+            else if (self is Expression && self != ((Expression)self).GetUnwrapped())
+                SetTarget(((Expression)self).GetUnwrapped(), target);
+            else
+                throw new Exception($"Unable to set target on item of type {self.GetType().FullName}");
 		}
 
         /// <summary>
@@ -852,11 +875,7 @@ namespace SME.AST
             if (target.DefaultValue != null)
                 return (int)Convert.ChangeType(target.DefaultValue, typeof(int));
             if (target is Constant && ((Constant)target).ArrayLengthSource != null)
-            {
-                var al = ((Constant)target).ArrayLengthSource;
-                var len = (al.DefaultValue as Array).Length;
-                return len;                    
-            }
+                return GetArrayLength(target);
 
             throw new Exception($"Cannot extract integer value from: {expression.SourceExpression}");
         }
@@ -921,9 +940,9 @@ namespace SME.AST
                 var boe = self.Increment as AssignmentExpression;
                 if (boe.Left.GetTarget() != self.LoopIndex)
                     throw new Exception($"The item in the loop increment must be the loop variable: {self.Increment.SourceExpression}");
-                if (boe.Operator == ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType.Assign && boe.Right is BinaryOperatorExpression)
+                if (boe.Operator == ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType.Assign && boe.Right.GetUnwrapped() is BinaryOperatorExpression)
                 {
-                    var boee = boe.Right as BinaryOperatorExpression;
+                    var boee = boe.Right.GetUnwrapped() as BinaryOperatorExpression;
                     if (boee.Operator != ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.Add)
                         throw new Exception($"The item in the loop increment must be a simple addition: {self.Increment.SourceExpression}");
                     if (boee.Left.GetTarget() != self.LoopIndex)
