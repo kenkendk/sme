@@ -21,6 +21,10 @@ namespace SME.VHDL.Transformations
 		/// The method being transformed
 		/// </summary>
 		private readonly Method Method;
+        /// <summary>
+        /// Cache of already processed statements
+        /// </summary>
+        private readonly HashSet<AST.ForStatement> m_processed = new HashSet<ForStatement>();
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="T:SME.VHDL.Transformations.FixForLoopIncrements"/> class.
@@ -43,6 +47,10 @@ namespace SME.VHDL.Transformations
 			var stm = item as AST.ForStatement;
 			if (stm == null)
 				return item;
+
+            if (m_processed.Contains(stm))
+                return item;
+            m_processed.Add(stm);
 
             Tuple<int, int, int> loopedges = null;
             try
