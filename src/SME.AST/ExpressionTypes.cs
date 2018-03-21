@@ -56,6 +56,11 @@ namespace SME.AST
         /// List the children of this element
         /// </summary>
         public abstract Expression[] Children { get; set; }
+
+        /// <summary>
+        /// Gets the target for the item or null
+        /// </summary>
+        public abstract DataElement GetTarget();
     }
 
     /// <summary>

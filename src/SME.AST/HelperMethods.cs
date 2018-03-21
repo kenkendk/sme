@@ -759,6 +759,10 @@ namespace SME.AST
 				return ((IdentifierExpression)self).Target;
 			if (self is MemberReferenceExpression)
 				return ((MemberReferenceExpression)self).Target;
+            if (self is WrappingExpression)
+                return GetTarget(((WrappingExpression)self).Expression);
+            if (self is CustomExpression)
+                return ((CustomExpression)self).GetTarget();
 
 			return null;
 		}
