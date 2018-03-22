@@ -83,13 +83,13 @@ namespace StatedAdder
 
     public class Tester : SimulationProcess 
     {
-        readonly Adder manual_state_adder = new Adder();
+        //readonly Adder manual_state_adder = new Adder();
         readonly Adder2 auto_state_adder = new Adder2();
 
-        [OutputBus]
-        readonly IControl control_manual;
-        [InputBus]
-        readonly IResult result_manual;
+        //[OutputBus]
+        //readonly IControl control_manual;
+        //[InputBus]
+        //readonly IResult result_manual;
         [OutputBus]
         readonly IControl control_auto;
         [InputBus]
@@ -97,8 +97,8 @@ namespace StatedAdder
 
         public Tester()
         {
-            control_manual = manual_state_adder.input;
-            result_manual = manual_state_adder.output;
+            //control_manual = manual_state_adder.input;
+            //result_manual = manual_state_adder.output;
             control_auto = auto_state_adder.input;
             result_auto = auto_state_adder.output;
         }
@@ -107,21 +107,25 @@ namespace StatedAdder
         {
 
             await ClockAsync();
-            control_manual.a = control_auto.a = 1;
-            control_manual.b = control_auto.b = 2;
-            control_manual.c = control_auto.c = 3;
+            //control_manual.a = control_auto.a = 1;
+            //control_manual.b = control_auto.b = 2;
+            //control_manual.c = control_auto.c = 3;
+
+            control_auto.a = 1;
+            control_auto.b = 2;
+            control_auto.c = 3;
 
             await ClockAsync();
-            System.Diagnostics.Debug.Assert(result_manual.sum == 0, string.Format("sum is {0}, expected {1}", result_manual.sum, 0));
+            //System.Diagnostics.Debug.Assert(result_manual.sum == 0, string.Format("sum is {0}, expected {1}", result_manual.sum, 0));
             System.Diagnostics.Debug.Assert(result_auto.sum == 0, string.Format("sum is {0}, expected {1}", result_auto.sum, 0));
             await ClockAsync();
-            System.Diagnostics.Debug.Assert(result_manual.sum == 0, string.Format("sum is {0}, expected {1}", result_manual.sum, 0));
+            //System.Diagnostics.Debug.Assert(result_manual.sum == 0, string.Format("sum is {0}, expected {1}", result_manual.sum, 0));
             System.Diagnostics.Debug.Assert(result_auto.sum == 0, string.Format("sum is {0}, expected {1}", result_auto.sum, 0));
             await ClockAsync();
-            System.Diagnostics.Debug.Assert(result_manual.sum == 0, string.Format("sum is {0}, expected {1}", result_manual.sum, 0));
+            //System.Diagnostics.Debug.Assert(result_manual.sum == 0, string.Format("sum is {0}, expected {1}", result_manual.sum, 0));
             System.Diagnostics.Debug.Assert(result_auto.sum == 0, string.Format("sum is {0}, expected {1}", result_auto.sum, 0));
             await ClockAsync();
-            System.Diagnostics.Debug.Assert(result_manual.sum == 6, string.Format("sum is {0}, expected {1}", result_manual.sum, 6));
+            //System.Diagnostics.Debug.Assert(result_manual.sum == 6, string.Format("sum is {0}, expected {1}", result_manual.sum, 6));
             System.Diagnostics.Debug.Assert(result_auto.sum == 6, string.Format("sum is {0}, expected {1}", result_auto.sum, 6));
         }
     }
