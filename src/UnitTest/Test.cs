@@ -1,6 +1,7 @@
 ﻿using NUnit.Framework;
 using System;
 using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace UnitTest
@@ -44,35 +45,6 @@ namespace UnitTest
             }
         }
 
-        private int RunCPP(string vhdlfolder)
-        {
-            var psi = new System.Diagnostics.ProcessStartInfo("make", "test")
-            {
-                WorkingDirectory = vhdlfolder,
-                RedirectStandardError = true,
-                RedirectStandardOutput = true,
-                UseShellExecute = false
-            };
-
-            var ps = System.Diagnostics.Process.Start(psi);
-
-            var tasks = Task.WhenAny(
-                ps.StandardOutput.BaseStream.CopyToAsync(Console.OpenStandardOutput()),
-                ps.StandardError.BaseStream.CopyToAsync(Console.OpenStandardError())
-            );
-
-            ps.WaitForExit((int)TimeSpan.FromMinutes(5).TotalMilliseconds);
-            if (ps.HasExited)
-            {
-                tasks.Wait(TimeSpan.FromSeconds(100));
-                return ps.ExitCode;
-            }
-            else
-            {
-                ps.Kill();
-                throw new Exception($"Failed to run process within the time limit");
-            }
-        }
 
         private static async Task CopyStreamAsync(TextReader source, TextWriter target)
         {
@@ -93,7 +65,7 @@ namespace UnitTest
 
             var ps = System.Diagnostics.Process.Start(psi);
 
-            var tasks = Task.WhenAny(
+            var tasks = Task.WhenAll(
                 CopyStreamAsync(ps.StandardOutput, Console.Out),
                 CopyStreamAsync(ps.StandardError, Console.Out)
             );
@@ -114,7 +86,7 @@ namespace UnitTest
         [Test()]
         public void RunAES256()
         {
-            RunTest(typeof(AES256CBC.Tester), true, true);
+            RunTest(typeof(AES256CBC.Tester), true, false);
         }
 
         [Test()]
@@ -135,6 +107,41 @@ namespace UnitTest
             RunTest(typeof(NoiseFilter.ImageInputSimulator), true, false);
         }
 
+        [Test()]
+        public void RunSimpleComponents()
+        {
+            RunTest(typeof(SimpleComponents.ComponentTester), true, false);
+        }
+
+        //[Test()]
+        //public void RunSimpleMemoryBus()
+        //{
+        //    RunTest(typeof(SimpleMemoryBus.MemoryTester), true, false);
+        //}
+
+        //[Test()]
+        //public void RunSimpleNestedComponent()
+        //{
+        //    RunTest(typeof(SimpleNestedComponent.TestDriver), true, false);
+        //}
+
+        [Test()]
+        public void RunSimpleTrader()
+        {
+            RunTest(typeof(SimpleTrader.ITraderInput), true, false);
+        }
+
+        [Test()]
+        public void RunStatebasedCounter()
+        {
+            RunTest(typeof(StatebasedCounter.MainClass), true, false);
+        }
+
+        [Test()]
+        public void RunStatedAdder()
+        {
+            RunTest(typeof(StatedAdder.Adder), true, false);
+        }
 
     }
 }
