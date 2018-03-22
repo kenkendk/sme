@@ -322,6 +322,7 @@ namespace SME
             finally
             {
 				Scope.Current.Clock.Clear();
+                this.Dispose();
 			}
 		}
 
