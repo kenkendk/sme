@@ -733,6 +733,30 @@ namespace SME.AST
 			return attr.Length;
 		}
 
+        /// <summary>
+        /// Gets the length of a fixed-length array
+        /// </summary>
+        /// <returns>The fixed array length.</returns>
+        /// <param name="element">The element to get the length for.</param>
+        public static int GetArrayLength(DataElement element)
+        {
+            if (element is Constant)
+                element = ((Constant)element).ArrayLengthSource ?? element;
+
+            if (element.DefaultValue is Array)
+                return ((Array)element.DefaultValue).Length;
+            else if (element.DefaultValue is EmptyArrayCreateExpression)
+                return ResolveIntegerValue(((EmptyArrayCreateExpression)element.DefaultValue).SizeExpression);
+            else if (element.DefaultValue is ArrayCreateExpression)
+                return ((ArrayCreateExpression)element.DefaultValue).ElementExpressions.Length;
+            else if (element.Source is System.Reflection.MemberInfo)
+                return GetFixedArrayLength((System.Reflection.MemberInfo)element.Source);
+            else if (element.Source is IMemberDefinition)
+                return GetFixedArrayLength((IMemberDefinition)element.Source);
+
+            throw new Exception($"Unable to get size of array: {element.Name}");
+        }
+
 		/// <summary>
 		/// Loads the specified reflection Type and returns the equivalent CeCil TypeDefinition
 		/// </summary>
@@ -759,9 +783,34 @@ namespace SME.AST
 				return ((IdentifierExpression)self).Target;
 			if (self is MemberReferenceExpression)
 				return ((MemberReferenceExpression)self).Target;
+            if (self is WrappingExpression)
+                return GetTarget(((WrappingExpression)self).Expression);
+            if (self is CustomExpression)
+                return ((CustomExpression)self).GetTarget();
 
 			return null;
 		}
+
+        /// <summary>
+        /// Removes parenthesis and type casts to get the underlying item
+        /// </summary>
+        /// <returns>The unwrapped expression.</returns>
+        /// <param name="self">The expression to unwrap.</param>
+        public static Expression GetUnwrapped(this Expression self)
+        {
+            var cur = self;
+            while (cur != null)
+            {
+                if (cur is WrappingExpression)
+                    cur = ((WrappingExpression)cur).Expression;
+                else if (cur is CustomExpression && ((CustomExpression)cur).Children.Length == 1)
+                    cur = ((CustomExpression)cur).Children[0];
+                else
+                    break;
+            }
+
+            return cur ?? self;
+        }
 
 		/// <summary>
 		/// Sets the target value
@@ -771,17 +820,16 @@ namespace SME.AST
 		/// <param name="target">The value to set</param>
 		public static void SetTarget(this ASTItem self, DataElement target)
 		{
-			if (self is IdentifierExpression)
-			{
-				((IdentifierExpression)self).Target = target;
-				return;
-			}
-			if (self is MemberReferenceExpression)
-			{
-				((MemberReferenceExpression)self).Target = target;
-			}
-
-			throw new Exception($"Unable to set target on item of type {self.GetType().FullName}");
+            if (self is IdentifierExpression)
+                ((IdentifierExpression)self).Target = target;
+            else if (self is MemberReferenceExpression)
+                ((MemberReferenceExpression)self).Target = target;
+            else if (self is WrappingExpression)
+                SetTarget(((WrappingExpression)self).Expression, target);
+            else if (self is Expression && self != ((Expression)self).GetUnwrapped())
+                SetTarget(((Expression)self).GetUnwrapped(), target);
+            else
+                throw new Exception($"Unable to set target on item of type {self.GetType().FullName}");
 		}
 
         /// <summary>
@@ -811,6 +859,108 @@ namespace SME.AST
                 p = p.Parent;
 
             return p;
+        }
+
+        /// <summary>
+        /// Extracts an integer value from a data element
+        /// </summary>
+        /// <returns>The integer value.</returns>
+        /// <param name="expression">The expression to extract the value from.</param>
+        private static int ResolveIntegerValue(Expression expression)
+        {
+            expression = expression.GetUnwrapped();
+            if (expression is PrimitiveExpression)
+                return (int)Convert.ChangeType(((AST.PrimitiveExpression)expression).Value, typeof(int));
+            var target = expression.GetTarget();
+            if (target.DefaultValue != null)
+                return (int)Convert.ChangeType(target.DefaultValue, typeof(int));
+            if (target is Constant && ((Constant)target).ArrayLengthSource != null)
+                return GetArrayLength(target);
+
+            throw new Exception($"Cannot extract integer value from: {expression.SourceExpression}");
+        }
+
+        /// <summary>
+        /// Returns the start, end and increment integer values for a statically sized for loop
+        /// </summary>
+        /// <returns>The static for loop start, end and increment values.</returns>
+        /// <param name="self">The statement to extract the values for.</param>
+        public static Tuple<int, int, int> GetStaticForLoopValues(this AST.ForStatement self)
+        {
+            int start, end, incr;
+
+            if (!(self.Initializer is AST.PrimitiveExpression))
+                throw new Exception($"Unable to statically expand loop initializer: {self.Initializer.SourceExpression}");
+            if (!(self.Condition is AST.BinaryOperatorExpression))
+                throw new Exception($"Unable to statically expand loop initializer: {self.Condition.SourceExpression}");
+            if (((BinaryOperatorExpression)self.Condition).Operator != ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.LessThan)
+                throw new Exception($"Can only statically expand loops with a less-than operator: {self.Condition.SourceExpression}");
+
+            start = ResolveIntegerValue(self.Initializer);
+
+            var cond_left = ((BinaryOperatorExpression)self.Condition).Left.GetUnwrapped();
+            var cond_right = ((BinaryOperatorExpression)self.Condition).Right.GetUnwrapped();
+            if (cond_left.GetTarget() != self.LoopIndex)
+                throw new Exception($"Can only statically expand loops where the left side of the condition is the loop variable");
+
+            if (cond_right is PrimitiveExpression || cond_right.GetTarget() != null)
+                end = ResolveIntegerValue(cond_right);
+            else if (cond_right is BinaryOperatorExpression)
+            {
+                var boe = cond_right as BinaryOperatorExpression;
+                if (boe.Operator != ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.Add && boe.Operator != ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.Subtract )
+                    throw new Exception($"Can only statically expand loops if the condition is a simple add/subtract operation: {boe.SourceExpression}");
+
+                var lefttarget = boe.Left.GetTarget();
+                if (lefttarget == null)    
+                    throw new Exception($"Can only statically expand loops if the condition is a simple add/subtract operation: {boe.SourceExpression}");
+
+                var left_opr = ResolveIntegerValue(boe.Left);
+                var right_opr = ResolveIntegerValue(boe.Right);
+
+                if (boe.Operator == ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.Add)
+                    end = left_opr + right_opr;
+                else
+                    end = left_opr - right_opr;
+            }
+            else
+                throw new Exception($"Can only statically expand loops if the condition is a simple add/subtract operation: {self.Condition.SourceExpression}");
+
+            if (self.Increment is UnaryOperatorExpression)
+            {
+                var uoe = self.Increment as UnaryOperatorExpression;
+                if (uoe.Operand.GetTarget() != self.LoopIndex)
+                    throw new Exception($"The item in the loop increment must be the loop variable: {self.Increment.SourceExpression}");
+                if (uoe.Operator != ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorType.PostIncrement)
+                    throw new Exception($"The item in the loop increment must be the loop variable with post increment: {self.Increment.SourceExpression}");
+                incr = 1;
+            }
+            else if (self.Increment is AssignmentExpression)
+            {
+                var boe = self.Increment as AssignmentExpression;
+                if (boe.Left.GetTarget() != self.LoopIndex)
+                    throw new Exception($"The item in the loop increment must be the loop variable: {self.Increment.SourceExpression}");
+                if (boe.Operator == ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType.Assign && boe.Right.GetUnwrapped() is BinaryOperatorExpression)
+                {
+                    var boee = boe.Right.GetUnwrapped() as BinaryOperatorExpression;
+                    if (boee.Operator != ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.Add)
+                        throw new Exception($"The item in the loop increment must be a simple addition: {self.Increment.SourceExpression}");
+                    if (boee.Left.GetTarget() != self.LoopIndex)
+                        throw new Exception($"The item in the loop increment must be the loop variable: {self.Increment.SourceExpression}");
+
+                    incr = ResolveIntegerValue(boee.Right);
+                }
+                else
+                {
+                    if (boe.Operator != ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType.Add)
+                        throw new Exception($"The item in the loop increment must be a simple addition: {self.Increment.SourceExpression}");
+                    incr = ResolveIntegerValue(boe.Right);
+                }
+            }
+            else
+                throw new Exception($"Can only statically expand loops if the increment is a simple constant: {self.Condition.SourceExpression}");
+
+            return new Tuple<int, int, int>(start, end, incr);
         }
 	}
 }

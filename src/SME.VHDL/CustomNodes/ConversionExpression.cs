@@ -34,5 +34,13 @@ namespace SME.VHDL.CustomNodes
 					throw new Exception("Conversion can only have a single child");
 			}
 		}
+
+        /// <summary>
+        /// Gets the target of the conversion operation, or null
+        /// </summary>
+		public override DataElement GetTarget()
+		{
+            return Expression.GetTarget();
+		}
 	}
 }

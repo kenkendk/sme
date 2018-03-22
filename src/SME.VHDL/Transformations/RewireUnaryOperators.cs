@@ -89,7 +89,7 @@ namespace SME.VHDL.Transformations
 
 			if (uoe.Operator == ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorType.PostIncrement || uoe.Operator == ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorType.PostDecrement)
 			{
-				if (uoe.Parent is ExpressionStatement)
+                if (uoe.Parent is ExpressionStatement || uoe.Parent is ForStatement)
 				{
 					// Simple "i++;" statements are replaced with i = i + 1
 					uoe.ReplaceWith(ase);

@@ -22,7 +22,18 @@ namespace SME.AST
             else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.IdentifierExpression)
                 return Decompile(network, proc, method, statement, expression as ICSharpCode.Decompiler.CSharp.Syntax.IdentifierExpression);
             else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.MemberReferenceExpression)
+            {
+                var mr = expression as ICSharpCode.Decompiler.CSharp.Syntax.MemberReferenceExpression;
+
+                if (mr.ToString() == "base.ShouldContinue")
+                    return new PrimitiveExpression(true, method.SourceMethod.Module.ImportReference(typeof(bool)))
+                    {
+                        SourceExpression = mr,
+                        Parent = statement,
+                    };
+
                 return Decompile(network, proc, method, statement, expression as ICSharpCode.Decompiler.CSharp.Syntax.MemberReferenceExpression);
+            }
             else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression)
                 return Decompile(network, proc, method, statement, expression as ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression);
             else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorExpression)
@@ -58,7 +69,6 @@ namespace SME.AST
 				// Catch common translations
                 if (mt != null && (expression as ICSharpCode.Decompiler.CSharp.Syntax.InvocationExpression).Arguments.Count == 1)
 				{
-
 					if (mt.MemberName == "op_Implicit" || mt.MemberName == "op_Explicit")
 					{
 						var mtm = Decompile(network, proc, method, statement, mt);
@@ -223,20 +233,38 @@ namespace SME.AST
 		/// <param name="method">The method where the statement is found.</param>
 		/// <param name="statement">The statement where the expression is found.</param>
 		/// <param name="expression">The expression to decompile</param>
-		protected UnaryOperatorExpression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorExpression expression)
+        protected Expression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorExpression expression)
 		{
-			var res = new UnaryOperatorExpression()
-			{
-				SourceResultType = ResolveExpressionType(network, proc, method, statement, expression),
-				SourceExpression = expression,
-				Operator = expression.Operator,
-				Operand = Decompile(network, proc, method, statement, expression.Expression),
-				Parent = statement
-			};
+            if (expression.Operator == UnaryOperatorType.Await)
+            {
+                var res = new AwaitExpression()
+                {
+                    SourceResultType = method.SourceMethod.Module.ImportReference(typeof(void)),
+                    SourceExpression = expression,
+                    Parent = statement
+                };
 
-			res.Operand.Parent = res;
+                if (expression.Expression.ToString() != "base.ClockAsync ()")
+                    throw new Exception("Only clock waits are supported for now");
 
-			return res;
+                return res;
+            }
+            else
+            {
+
+                var res = new UnaryOperatorExpression()
+                {
+                    SourceResultType = ResolveExpressionType(network, proc, method, statement, expression),
+                    SourceExpression = expression,
+                    Operator = expression.Operator,
+                    Operand = Decompile(network, proc, method, statement, expression.Expression),
+                    Parent = statement
+                };
+
+                res.Operand.Parent = res;
+
+                return res;
+            }
 		}
 
 		/// <summary>

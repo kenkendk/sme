@@ -33,6 +33,50 @@ namespace SME.VHDL
         }
 
         /// <summary>
+        /// Renders all the statements in a state machine method as VHDL
+        /// </summary>
+        /// <returns>The statements in the method.</returns>
+        /// <param name="method">The method to render.</param>
+        public IEnumerable<string> RenderStateMachine(AST.Method method, RenderStateProcess rsp)
+        {
+            var proc = method.GetNearestParent<SME.AST.Process>();
+            var statesignal = proc.InternalDataElements[proc.InternalDataElements.Length - 2];
+            var runvariable = method.Variables.Last();
+
+            yield return $"{method.Name}: process (RST, FSM_Trigger)";
+            foreach(var n in method.Variables.Union(proc.SharedVariables).Where(x => x != runvariable))
+                yield return $"    variable {n.Name}: {Parent.VHDLWrappedTypeName(n)} := reset_{n.Name};";
+            yield return $"    variable {runvariable.Name}: {Parent.VHDLWrappedTypeName(runvariable)} := {RenderExpression(new PrimitiveExpression("State0", runvariable.CecilType))};";
+            yield return "begin";
+
+            // The first statement is the state reset call
+            foreach (var s in method.Statements.Take(1).SelectMany(x => RenderStatement(method, x, 4)))
+                yield return s;
+
+            yield return "    if RST = '1' then";
+
+            foreach (var bus in Process.OutputBusses.Concat(Process.InternalBusses).Distinct())
+                foreach (var signal in rsp.WrittenSignals(bus))
+                    foreach (var s in RenderStatement(null, Parent.GetResetStatement(signal), 8))
+                        yield return s;
+
+            foreach (var variable in method.AllVariables.Union(proc.SharedVariables).Where(x => x != statesignal))
+                yield return $"        {variable.Name} := {Naming.ToValidName("reset_" + variable.Name)};";
+
+            yield return "        FIN <= '0';";
+
+            yield return "    else";
+
+            foreach (var s in method.Statements.Skip(1).SelectMany(x => RenderStatement(method, x, 8)))
+                yield return s;
+
+            yield return "        FIN <= RDY;";
+            yield return "    end if;";
+
+            yield return "end process;";
+        }
+
+        /// <summary>
         /// Renders all the statements in a method as VHDL
         /// </summary>
         /// <returns>The statements in the method.</returns>
@@ -121,19 +165,15 @@ namespace SME.VHDL
         /// <param name="indentation">The indentation to use.</param>
         private IEnumerable<string> RenderStatement(AST.Method method, AST.ForStatement s, int indentation)
         {
-            var endval = (int)s.EndValue.DefaultValue;
+            var edges = s.GetStaticForLoopValues();
+
+            var endval = edges.Item2;
             endval--;
 
             var indent = new string(' ', indentation);
-            yield return $"{indent}for {s.LoopIndex.Name} in {s.StartValue.DefaultValue} to {endval} loop";
+            yield return $"{indent}for {s.LoopIndex.Name} in {edges.Item1} to {endval} loop";
 
-            var incr = 1;
-            var defincr = s.Increment.DefaultValue;
-            if (defincr is AST.Constant)
-                incr = (int)((Constant)(defincr)).DefaultValue;
-            else
-                incr = (int)s.Increment.DefaultValue;
-
+            var incr = edges.Item3;
             if (incr != 1)
                 throw new Exception($"Expected the for loop to have an increment of 1, it has {incr}");
 
@@ -520,11 +560,16 @@ namespace SME.VHDL
         {
             if (e.Target.Parent is AST.Bus)
             {
+                var bus = e.Target.Parent as AST.Bus;
                 var busname = e.Target.Parent.Name;
-                if (Process != null && Process.LocalBusNames.ContainsKey(e.Target.Parent as AST.Bus))
-                    busname = Process.LocalBusNames[e.Target.Parent as AST.Bus];
-                
+                if (Process != null && Process.LocalBusNames.ContainsKey(bus))
+                    busname = Process.LocalBusNames[bus];
+
+                if (Process.IsClocked && Process.Methods.Any(x => x.IsStateMachine) && Process.InputBusses.Contains(bus))
+                    return Naming.ToValidName("capture_" + busname + "_" + e.Target.Name);
+
                 return Naming.ToValidName(busname + "_" + e.Target.Name);
+
             }
             else if (e.Target is AST.Constant)
             {

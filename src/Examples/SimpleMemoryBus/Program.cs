@@ -3,9 +3,9 @@ using System;
 using System.IO;
 using System.Linq;
 
-namespace Tester
+namespace SimpleMemoryBus
 {
-	class MainClass
+	public class MainClass
 	{
 		public static void Main(string[] args)
 		{

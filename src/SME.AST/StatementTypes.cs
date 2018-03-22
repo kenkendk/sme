@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace SME.AST
 {
@@ -201,15 +202,15 @@ namespace SME.AST
         /// <summary>
         /// The initial value for the loop index
         /// </summary>
-        public Constant StartValue;
+        public Expression Initializer;
         /// <summary>
         /// The final value for the loop index
         /// </summary>
-        public Constant EndValue;
+        public Expression Condition;
         /// <summary>
         /// The increment for each loop iteration.
         /// </summary>
-        public Constant Increment;
+        public Expression Increment;
         /// <summary>
         /// The variable used to hold the loop value
         /// </summary>
@@ -221,6 +222,11 @@ namespace SME.AST
         public Statement LoopBody;
 
         /// <summary>
+        /// A variable indicating if the for loop has a statically known size
+        /// </summary>
+        public bool HasStaticSize;
+
+        /// <summary>
         /// Default constructor
         /// </summary>
         public ForStatement()
@@ -230,19 +236,22 @@ namespace SME.AST
         /// <summary>
         /// Creates a new loop statement
         /// </summary>
-        /// <param name="startValue">The start value.</param>
-        /// <param name="endValue">The end value.</param>
-        /// <param name="increment">The loop increment.</param>
+        /// <param name="initializer">The initial expression.</param>
+        /// <param name="condition">The condition expression value.</param>
+        /// <param name="increment">The loop increment expression.</param>
         /// <param name="loopIndex">The loop index.</param>
         /// <param name="body">The loop body.</param>
-        public ForStatement(Constant startValue, Constant endValue, Constant increment, Variable loopIndex, Statement body)
+        public ForStatement(Expression initializer, Expression condition, Expression increment, Variable loopIndex, Statement body)
         {
-            this.StartValue = startValue;
-            this.EndValue = endValue;
+            this.Initializer = initializer;
+            this.Condition = condition;
             this.Increment = increment;
             this.LoopIndex = loopIndex;
             this.LoopBody = body;
             this.LoopBody.Parent = this;
+            this.HasStaticSize =
+                new[] { initializer, condition, increment }
+                .Count(x => (x as PrimitiveExpression)?.GetTarget() is Constant) == 3;
         }
 	}
 
@@ -315,4 +324,40 @@ namespace SME.AST
 		}
 	}
 
+    /// <summary>
+    /// A while statement
+    /// </summary>
+    public class WhileStatement : Statement
+    {
+        /// <summary>
+        /// The while condition expression
+        /// </summary>
+        public Expression Condition;
+
+        /// <summary>
+        /// The while loop body statement
+        /// </summary>
+        public Statement Body;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:SME.AST.WhileStatement"/> class.
+        /// </summary>
+        public WhileStatement() { }
+
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:SME.AST.WhileStatement"/> class.
+        /// </summary>
+        /// <param name="condition">The while condition.</param>
+        /// <param name="body">The while loop body.</param>
+        public WhileStatement(Expression condition, Statement body)
+        {
+            Condition = condition;
+            Body = body;
+            if (Condition != null)
+                Condition.Parent = this;
+            if (Body != null)
+                Body.Parent = this;
+        }
+    }
 }

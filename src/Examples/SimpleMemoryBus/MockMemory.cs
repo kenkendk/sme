@@ -2,7 +2,7 @@
 using SME;
 using System.Threading.Tasks;
 
-namespace Tester
+namespace SimpleMemoryBus
 {
 	public class MockMemory : Process
 	{

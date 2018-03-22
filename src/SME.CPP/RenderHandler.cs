@@ -99,18 +99,13 @@ namespace SME.CPP
         /// <param name="indentation">The indentation to use.</param>
         private IEnumerable<string> RenderStatement(AST.Method method, AST.ForStatement s, int indentation)
         {
-            var endval = (int)s.EndValue.DefaultValue;
+            var edges = s.GetStaticForLoopValues();
+            var endval = edges.Item2;
+            var incr = edges.Item3;
 
             var indent = new string(' ', indentation);
 
-			var incr = 1;
-			var defincr = s.Increment.DefaultValue;
-			if (defincr is AST.Constant)
-				incr = (int)((Constant)(defincr)).DefaultValue;
-			else
-				incr = (int)s.Increment.DefaultValue;
-
-            yield return $"{indent}for (size_t {s.LoopIndex.Name} = {s.StartValue.DefaultValue}; {s.LoopIndex.Name} < {endval}; {s.LoopIndex.Name} += {incr}) {{";
+            yield return $"{indent}for (size_t {s.LoopIndex.Name} = {edges.Item1}; {s.LoopIndex.Name} < {endval}; {s.LoopIndex.Name} += {incr}) {{";
 
             foreach (var n in RenderStatement(method, s.LoopBody, indentation + 4))
                 yield return n;

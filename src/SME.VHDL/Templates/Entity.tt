@@ -30,62 +30,62 @@ entity <#= Process.Name #> is
 <# var lastel = Process.SharedVariables.Cast<object>().Concat(Process.SharedSignals).LastOrDefault();
    if (lastel != null) {
 #>
-  generic(
+    generic(
 <#     foreach (var variable in Process.SharedVariables) { #>
-    <#= Naming.ToValidName("reset_" + variable.Name) #>: in <#= RS.VHDLWrappedTypeName(variable) #><#= variable == lastel ? "" : ";" #>
+        <#= Naming.ToValidName("reset_" + variable.Name) #>: in <#= RS.VHDLWrappedTypeName(variable) #><#= variable == lastel ? "" : ";" #>
 <#     } #>
 <#     foreach (var variable in Process.SharedSignals) { #>
-    <#= Naming.ToValidName("reset_" + variable.Name) #>: in <#= RS.VHDLWrappedTypeName(variable) #><#= variable == lastel ? "" : ";" #>
+        <#= Naming.ToValidName("reset_" + variable.Name) #>: in <#= RS.VHDLWrappedTypeName(variable) #><#= variable == lastel ? "" : ";" #>
 <#     } #>
-  );
+    );
 <# } #>
-  port(
+    port(
 <# foreach (var bus in Process.InputBusses.Where(x => !Process.OutputBusses.Contains(x))) { 
        var busname = RS.GetLocalBusName(bus, Process);
 #>
-    -- Input bus <#= busname #> signals
+        -- Input bus <#= busname #> signals
 <#     foreach (var signal in bus.Signals) { #>
-    <#= Naming.ToValidName(busname + "_" + signal.Name) #>: in <#= RS.VHDLWrappedTypeName(signal) #>;
+        <#= Naming.ToValidName(busname + "_" + signal.Name) #>: in <#= RS.VHDLWrappedTypeName(signal) #>;
 <#     } #>
 <# } #>
 
 <# foreach (var bus in Process.OutputBusses.Where(x => !Process.InputBusses.Contains(x))) {
        var busname = RS.GetLocalBusName(bus, Process);
 #>
-    -- Output bus <#= busname #> signals
+        -- Output bus <#= busname #> signals
 <#     foreach (var signal in RSP.WrittenSignals(bus)) { #>
-    <#= Naming.ToValidName(busname + "_" + signal.Name) #>: out <#= RS.VHDLWrappedTypeName(signal) #>;
+        <#= Naming.ToValidName(busname + "_" + signal.Name) #>: out <#= RS.VHDLWrappedTypeName(signal) #>;
 <#     } #>
 <# } #>
 
 <# foreach (var bus in Process.InputBusses.Where(x => Process.OutputBusses.Contains(x))) {
        var busname = RS.GetLocalBusName(bus, Process);
 #>
-    -- Input/output bus <#= busname #> signals
+        -- Input/output bus <#= busname #> signals
 <#     foreach (var signal in bus.Signals) { #>
-    <#= Naming.ToValidName(busname + "_" + signal.Name) #>: in <#= RS.VHDLWrappedTypeName(signal) #>;
+        <#= Naming.ToValidName(busname + "_" + signal.Name) #>: in <#= RS.VHDLWrappedTypeName(signal) #>;
 <#     } #>
 
 <#     foreach (var signal in bus.Signals) { #>
-    <#= Naming.ToValidName("out_" + busname + "_" + signal.Name) #>: out <#= RS.VHDLWrappedTypeName(signal) #>;
+        <#= Naming.ToValidName("out_" + busname + "_" + signal.Name) #>: out <#= RS.VHDLWrappedTypeName(signal) #>;
 <#     } #>
 <# } #>
 
-    -- Clock signal
-    CLK : in Std_logic;
+        -- Clock signal
+        CLK : in Std_logic;
 
-    -- Ready signal
-    RDY : in Std_logic;
+        -- Ready signal
+        RDY : in Std_logic;
 
-    -- Finished signal
-    FIN : out Std_logic;
+        -- Finished signal
+        FIN : out Std_logic;
 
-    -- Enable signal
-    ENB : in Std_logic;
+        -- Enable signal
+        ENB : in Std_logic;
 
-    -- Reset signal
-    RST : in Std_logic
- );
+        -- Reset signal
+        RST : in Std_logic
+    );
 end <#= Process.Name #>;
 
 architecture RTL of <#= Process.Name #> is
@@ -95,33 +95,52 @@ architecture RTL of <#= Process.Name #> is
 <#     foreach (var bus in Process.InternalBusses) {
            var busname = RS.GetLocalBusName(bus, Process);
 #>
-  -- Internal bus <#= busname #> signals
+    -- Internal bus <#= busname #> signals
 <#         foreach (var signal in bus.Signals) { #>
-  signal <#= Naming.ToValidName(busname + "_" + signal.Name) #>: <#= RS.VHDLWrappedTypeName(signal) #>;
+    signal <#= Naming.ToValidName(busname + "_" + signal.Name) #>: <#= RS.VHDLWrappedTypeName(signal) #>;
 <#         } #>
 
 <#     } #>
 
-<#     if (Process.SharedSignals.Any()) { #>
-  -- Internal signals
+<#     if (Process.SharedSignals.Any() || Process.InternalDataElements.Any()) { #>
+    -- Internal signals
 <#         foreach (var s in Process.SharedSignals) { #>
-  signal <#= s.Name #> : <#= RS.VHDLWrappedTypeName(s) #>;
+    signal <#= s.Name #> : <#= RS.VHDLWrappedTypeName(s) #>;
+<#         } #>
+<#         if (RSP.FiniteStateMethod != null) { #>
+    signal FSM_Trigger : Std_logic := '0';
+<#         } #>
+
+<#         foreach (var s in Process.InternalDataElements) { #>
+    <#= s is AST.Signal ? "signal" : "shared variable" #> <#= s.Name #> : <#= RS.VHDLWrappedTypeName(s) #> := <#= RS.GetResetExpression(s) #>;
 <#         } #>
 <# } #>
 
-<#     if (Process.Methods != null && Process.Methods.Any(x => !x.Ignore)) { #>
-  -- Internal methods
-<#         foreach (var s in Process.Methods.Where(x => !x.Ignore)) { #>
+<#     if (Process.Methods != null && Process.Methods.Any(x => !(x.Ignore || x.IsStateMachine))) { #>
+    -- Internal methods
+<#         foreach (var s in Process.Methods.Where(x => !(x.Ignore || x.IsStateMachine))) { #>
 <#             foreach(var line in RSP.Helper.RenderMethod(s)) { #>
-  <#= line #>
+    <#= line #>
 <#             } #>
 
 <#         } #>
 <#     } #>
 
-  -- User defined signals, procedures and components here
-  -- #### USER-DATA-SIGNALS-START
-  -- #### USER-DATA-SIGNALS-END
+<#     if (Process.IsClocked && RSP.FiniteStateMethod != null) { #>
+    -- Clock-edge capture signals
+<#         foreach (var bus in Process.InputBusses) { 
+               var busname = RS.GetLocalBusName(bus, Process);
+#>
+    -- Input bus <#= busname #> signals
+<#             foreach (var signal in bus.Signals) { #>
+    signal <#= Naming.ToValidName("capture_" + busname + "_" + signal.Name) #>: <#= RS.VHDLWrappedTypeName(signal) #> := <#= RS.GetResetExpression(signal) #>;
+<#             } #>
+<#         } #>
+<#     } #>
+
+      -- User defined signals, procedures and components here
+      -- #### USER-DATA-SIGNALS-START
+      -- #### USER-DATA-SIGNALS-END
 
 begin
 
@@ -129,9 +148,19 @@ begin
     -- #### USER-DATA-PROCESSES-START
     -- #### USER-DATA-PROCESSES-END
 
+<#     if (Process.Methods != null && Process.Methods.Any(x => !x.Ignore && x.IsStateMachine)) { #>
+    -- State machine process
+<#         foreach (var s in Process.Methods.Where(x => !x.Ignore && x.IsStateMachine)) { #>
+<#             foreach(var line in RSP.Helper.RenderStateMachine(s, RSP)) { #>
+    <#= line #>
+<#             } #>
+<#         } #>
+<#     } #>
+
 
 <#
 var sensitivity_signal = RSP.Process.IsClocked ? "CLK" : "RDY";
+var variables = RSP.Variables.Concat(RSP.FiniteStateMethod == null ? RSP.SharedVariables : new Variable[0]);
 #>
 
     process(
@@ -141,11 +170,9 @@ var sensitivity_signal = RSP.Process.IsClocked ? "CLK" : "RDY";
         <#= sensitivity_signal #>,
         RST
     )
-<#     if (RSP.Variables.Count() > 0) { 
-          var with_reset = Process.SharedVariables;
-#>
+<#     if (variables.Count() > 0) { #>
     -- Internal variables
-<#          foreach(var s in RSP.Variables) { #>
+<#          foreach(var s in variables) { #>
     variable <#= s.Name #> : <#= RS.VHDLWrappedTypeName(s) #><#= Process.SharedVariables.Contains(s) ? " := " + Naming.ToValidName("reset_" + s.Name) : "" #>;
 <#          } #>
 <#     } #>
@@ -165,17 +192,33 @@ var sensitivity_signal = RSP.Process.IsClocked ? "CLK" : "RDY";
 <#     foreach(var s in RSP.ProcessResetStaments) { #>
             <#= s #>
 <#     } #>
-<#     foreach(var variable in Process.SharedVariables) { #>
+<#     foreach(var variable in RSP.FiniteStateMethod == null ? RSP.SharedVariables : RSP.Variables) { #>
             <#= variable.Name #> := <#= Naming.ToValidName("reset_" + variable.Name) #>;
 <#     } #>
 <#     foreach(var variable in Process.SharedSignals) { #>
             <#= variable.Name #> <= <#= Naming.ToValidName("reset_" + variable.Name) #>;
 <#     } #>
-            
+
+<#     if (Process.IsClocked && RSP.FiniteStateMethod != null) { #>
+            -- Clock-edge capture signals
+<#         foreach (var bus in Process.InputBusses) { 
+               var busname = RS.GetLocalBusName(bus, Process);
+#>
+            -- Input bus <#= busname #> signals
+<#             foreach (var signal in bus.Signals) { #>
+            <#= Naming.ToValidName("capture_" + busname + "_" + signal.Name) #> <= <#= RS.GetResetExpression(signal) #>;
+<#             } #>
+<#         } #>
+<#     } #>
+                                    
 <#     if (!RSP.Process.IsClocked) { #>
             reentry_guard := '0';
 <#     } #>
+<#     if (RSP.FiniteStateMethod == null) { #>
             FIN <= '0';
+<#     } else { #>
+            FSM_Trigger <= '0';
+<#     } #>
 
             -- Initialize code here
             -- #### USER-DATA-NONCLOCKEDRESETCODE-START
@@ -197,7 +240,27 @@ var sensitivity_signal = RSP.Process.IsClocked ? "CLK" : "RDY";
             <#= line #>
 <#     } #>
 
+<#     if (Process.IsClocked && RSP.FiniteStateMethod != null) { #>
+            -- Clock-edge capture signals
+<#         foreach (var bus in Process.InputBusses) { 
+               var busname = RS.GetLocalBusName(bus, Process);
+#>
+            -- Input bus <#= busname #> signals
+<#             foreach (var signal in bus.Signals) { #>
+            <#= Naming.ToValidName("capture_" + busname + "_" + signal.Name) #> <= <#= Naming.ToValidName(busname + "_" + signal.Name) #>;
+<#             } #>
+<#         } #>
+<#     } #>
+
+
+<#     if (RSP.FiniteStateMethod == null) { #>
             FIN <= <#= sensitivity_signal #>;
+<#     } else if (RSP.Process.IsClocked) { #>
+            FSM_Trigger <= not FSM_Trigger;
+<#     } else { #>
+            FSM_Trigger <= reentry_guard;
+<#     } #>
+
         end if;
 
         -- Non-clocked process actions here

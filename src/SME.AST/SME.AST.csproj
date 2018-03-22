@@ -86,6 +86,8 @@
     <Compile Include="Transform\RemoveExtraParenthesis.cs" />
     <Compile Include="Transform\RenameDuplicateVariables.cs" />
     <Compile Include="Transform\RecontructSwitchStatement.cs" />
+    <Compile Include="Transform\BuildStateMachine.cs" />
+    <Compile Include="Transform\ForLoopToWhile.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SME\SME.csproj">

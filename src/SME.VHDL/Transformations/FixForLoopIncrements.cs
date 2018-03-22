@@ -21,6 +21,10 @@ namespace SME.VHDL.Transformations
 		/// The method being transformed
 		/// </summary>
 		private readonly Method Method;
+        /// <summary>
+        /// Cache of already processed statements
+        /// </summary>
+        private readonly HashSet<AST.ForStatement> m_processed = new HashSet<ForStatement>();
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="T:SME.VHDL.Transformations.FixForLoopIncrements"/> class.
@@ -44,13 +48,21 @@ namespace SME.VHDL.Transformations
 			if (stm == null)
 				return item;
 
-			var incr = 1;
-			var defincr = stm.Increment.DefaultValue;
-			if (defincr is AST.Constant)
-				incr = (int)((Constant)(defincr)).DefaultValue;
-			else 			
-				incr = (int)stm.Increment.DefaultValue;
-			
+            if (m_processed.Contains(stm))
+                return item;
+            m_processed.Add(stm);
+
+            Tuple<int, int, int> loopedges = null;
+            try
+            {
+                loopedges = stm.GetStaticForLoopValues();
+            }
+            catch
+            {
+                return item;
+            }
+
+            var incr = loopedges.Item3;			
 			if (incr == 1)
 				return item;
 
@@ -113,22 +125,25 @@ namespace SME.VHDL.Transformations
 
 			stm.LoopBody.PrependStatement(nstm);
 
-			//Do not fix again
-			stm.Increment = new Constant()
-			{
-				DefaultValue = 1,
-				CecilType = tmp.CecilType,
-				Source = stm,
-				Parent = stm					
-			};
+            //Do not fix again
+            stm.Increment = new AssignmentExpression(
+                new IdentifierExpression(stm.LoopIndex),
+                new BinaryOperatorExpression(
+                    new IdentifierExpression(stm.LoopIndex),
+                    ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.Add,
+                    new PrimitiveExpression(1, tmp.CecilType)
+                )
+                { SourceResultType = tmp.CecilType }
+            ) { Parent = stm, SourceResultType = tmp.CecilType };
 
-            stm.EndValue = new Constant() {
-                CecilType = stm.EndValue.CecilType,
-                DefaultValue = ((int) stm.EndValue.DefaultValue)/ incr,
-                Name = stm.EndValue.Name,
-                Parent = stm.EndValue.Parent,
-                Source = stm.EndValue.Source,
-                Type = stm.EndValue.Type
+            stm.Condition = new BinaryOperatorExpression(
+                new IdentifierExpression(stm.LoopIndex),
+                ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.LessThan,
+                new PrimitiveExpression(loopedges.Item2 / loopedges.Item3, tmp.CecilType.Module.ImportReference(typeof(int)))
+            )
+            { 
+                Parent = stm,
+                SourceResultType = tmp.CecilType.Module.ImportReference(typeof(bool))
             };
 
 			return nstm;
