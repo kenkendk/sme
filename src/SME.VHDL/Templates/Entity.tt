@@ -126,6 +126,18 @@ architecture RTL of <#= Process.Name #> is
 <#         } #>
 <#     } #>
 
+<#     if (Process.IsClocked && RSP.FiniteStateMethod != null) { #>
+    -- Clock-edge capture signals
+<#         foreach (var bus in Process.InputBusses) { 
+               var busname = RS.GetLocalBusName(bus, Process);
+#>
+    -- Input bus <#= busname #> signals
+<#             foreach (var signal in bus.Signals) { #>
+    signal <#= Naming.ToValidName("capture_" + busname + "_" + signal.Name) #>: <#= RS.VHDLWrappedTypeName(signal) #> := <#= RS.GetResetExpression(signal) #>;
+<#             } #>
+<#         } #>
+<#     } #>
+
       -- User defined signals, procedures and components here
       -- #### USER-DATA-SIGNALS-START
       -- #### USER-DATA-SIGNALS-END
@@ -186,7 +198,19 @@ var variables = RSP.Variables.Concat(RSP.FiniteStateMethod == null ? RSP.SharedV
 <#     foreach(var variable in Process.SharedSignals) { #>
             <#= variable.Name #> <= <#= Naming.ToValidName("reset_" + variable.Name) #>;
 <#     } #>
-            
+
+<#     if (Process.IsClocked && RSP.FiniteStateMethod != null) { #>
+            -- Clock-edge capture signals
+<#         foreach (var bus in Process.InputBusses) { 
+               var busname = RS.GetLocalBusName(bus, Process);
+#>
+            -- Input bus <#= busname #> signals
+<#             foreach (var signal in bus.Signals) { #>
+            <#= Naming.ToValidName("capture_" + busname + "_" + signal.Name) #> <= <#= RS.GetResetExpression(signal) #>;
+<#             } #>
+<#         } #>
+<#     } #>
+                                    
 <#     if (!RSP.Process.IsClocked) { #>
             reentry_guard := '0';
 <#     } #>
@@ -216,11 +240,27 @@ var variables = RSP.Variables.Concat(RSP.FiniteStateMethod == null ? RSP.SharedV
             <#= line #>
 <#     } #>
 
+<#     if (Process.IsClocked && RSP.FiniteStateMethod != null) { #>
+            -- Clock-edge capture signals
+<#         foreach (var bus in Process.InputBusses) { 
+               var busname = RS.GetLocalBusName(bus, Process);
+#>
+            -- Input bus <#= busname #> signals
+<#             foreach (var signal in bus.Signals) { #>
+            <#= Naming.ToValidName("capture_" + busname + "_" + signal.Name) #> <= <#= Naming.ToValidName(busname + "_" + signal.Name) #>;
+<#             } #>
+<#         } #>
+<#     } #>
+
+
 <#     if (RSP.FiniteStateMethod == null) { #>
             FIN <= <#= sensitivity_signal #>;
+<#     } else if (RSP.Process.IsClocked) { #>
+            FSM_Trigger <= not FSM_Trigger;
 <#     } else { #>
             FSM_Trigger <= reentry_guard;
 <#     } #>
+
         end if;
 
         -- Non-clocked process actions here

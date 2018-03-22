@@ -44,7 +44,7 @@ namespace SME.VHDL
             var runvariable = method.Variables.Last();
 
             yield return $"{method.Name}: process (RST, FSM_Trigger)";
-            foreach(var n in method.Variables.Where(x => x != runvariable))
+            foreach(var n in method.Variables.Union(proc.SharedVariables).Where(x => x != runvariable))
                 yield return $"    variable {n.Name}: {Parent.VHDLWrappedTypeName(n)} := reset_{n.Name};";
             yield return $"    variable {runvariable.Name}: {Parent.VHDLWrappedTypeName(runvariable)} := {RenderExpression(new PrimitiveExpression("State0", runvariable.CecilType))};";
             yield return "begin";
@@ -60,7 +60,7 @@ namespace SME.VHDL
                     foreach (var s in RenderStatement(null, Parent.GetResetStatement(signal), 8))
                         yield return s;
 
-            foreach (var variable in method.AllVariables.Where(x => x != statesignal))
+            foreach (var variable in method.AllVariables.Union(proc.SharedVariables).Where(x => x != statesignal))
                 yield return $"        {variable.Name} := {Naming.ToValidName("reset_" + variable.Name)};";
 
             yield return "        FIN <= '0';";
@@ -560,11 +560,16 @@ namespace SME.VHDL
         {
             if (e.Target.Parent is AST.Bus)
             {
+                var bus = e.Target.Parent as AST.Bus;
                 var busname = e.Target.Parent.Name;
-                if (Process != null && Process.LocalBusNames.ContainsKey(e.Target.Parent as AST.Bus))
-                    busname = Process.LocalBusNames[e.Target.Parent as AST.Bus];
-                
+                if (Process != null && Process.LocalBusNames.ContainsKey(bus))
+                    busname = Process.LocalBusNames[bus];
+
+                if (Process.IsClocked && Process.Methods.Any(x => x.IsStateMachine) && Process.InputBusses.Contains(bus))
+                    return Naming.ToValidName("capture_" + busname + "_" + e.Target.Name);
+
                 return Naming.ToValidName(busname + "_" + e.Target.Name);
+
             }
             else if (e.Target is AST.Constant)
             {

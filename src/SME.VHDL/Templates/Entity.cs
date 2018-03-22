@@ -869,6 +869,116 @@ end ");
             #line hidden
             
             #line 128 ""
+            this.Write("\n");
+            
+            #line default
+            #line hidden
+            
+            #line 129 ""
+     if (Process.IsClocked && RSP.FiniteStateMethod != null) { 
+            
+            #line default
+            #line hidden
+            
+            #line 130 ""
+            this.Write("    -- Clock-edge capture signals\n");
+            
+            #line default
+            #line hidden
+            
+            #line 131 ""
+         foreach (var bus in Process.InputBusses) { 
+               var busname = RS.GetLocalBusName(bus, Process);
+
+            
+            #line default
+            #line hidden
+            
+            #line 134 ""
+            this.Write("    -- Input bus ");
+            
+            #line default
+            #line hidden
+            
+            #line 134 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( busname ));
+            
+            #line default
+            #line hidden
+            
+            #line 134 ""
+            this.Write(" signals\n");
+            
+            #line default
+            #line hidden
+            
+            #line 135 ""
+             foreach (var signal in bus.Signals) { 
+            
+            #line default
+            #line hidden
+            
+            #line 136 ""
+            this.Write("    signal ");
+            
+            #line default
+            #line hidden
+            
+            #line 136 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("capture_" + busname + "_" + signal.Name) ));
+            
+            #line default
+            #line hidden
+            
+            #line 136 ""
+            this.Write(": ");
+            
+            #line default
+            #line hidden
+            
+            #line 136 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( RS.VHDLWrappedTypeName(signal) ));
+            
+            #line default
+            #line hidden
+            
+            #line 136 ""
+            this.Write(" := ");
+            
+            #line default
+            #line hidden
+            
+            #line 136 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( RS.GetResetExpression(signal) ));
+            
+            #line default
+            #line hidden
+            
+            #line 136 ""
+            this.Write(";\n");
+            
+            #line default
+            #line hidden
+            
+            #line 137 ""
+             } 
+            
+            #line default
+            #line hidden
+            
+            #line 138 ""
+         } 
+            
+            #line default
+            #line hidden
+            
+            #line 139 ""
+     } 
+            
+            #line default
+            #line hidden
+            
+            #line 140 ""
             this.Write("\n      -- User defined signals, procedures and components here\n      -- #### USER" +
                     "-DATA-SIGNALS-START\n      -- #### USER-DATA-SIGNALS-END\n\nbegin\n\n    -- Custom pr" +
                     "ocesses go here\n    -- #### USER-DATA-PROCESSES-START\n    -- #### USER-DATA-PROC" +
@@ -877,73 +987,73 @@ end ");
             #line default
             #line hidden
             
-            #line 139 ""
+            #line 151 ""
      if (Process.Methods != null && Process.Methods.Any(x => !x.Ignore && x.IsStateMachine)) { 
             
             #line default
             #line hidden
             
-            #line 140 ""
+            #line 152 ""
             this.Write("    -- State machine process\n");
             
             #line default
             #line hidden
             
-            #line 141 ""
+            #line 153 ""
          foreach (var s in Process.Methods.Where(x => !x.Ignore && x.IsStateMachine)) { 
             
             #line default
             #line hidden
             
-            #line 142 ""
+            #line 154 ""
              foreach(var line in RSP.Helper.RenderStateMachine(s, RSP)) { 
             
             #line default
             #line hidden
             
-            #line 143 ""
+            #line 155 ""
             this.Write("    ");
             
             #line default
             #line hidden
             
-            #line 143 ""
+            #line 155 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( line ));
             
             #line default
             #line hidden
             
-            #line 143 ""
+            #line 155 ""
             this.Write("\n");
             
             #line default
             #line hidden
             
-            #line 144 ""
+            #line 156 ""
              } 
             
             #line default
             #line hidden
             
-            #line 145 ""
+            #line 157 ""
          } 
             
             #line default
             #line hidden
             
-            #line 146 ""
+            #line 158 ""
      } 
             
             #line default
             #line hidden
             
-            #line 147 ""
+            #line 159 ""
             this.Write("\n\n");
             
             #line default
             #line hidden
             
-            #line 149 ""
+            #line 161 ""
 
 var sensitivity_signal = RSP.Process.IsClocked ? "CLK" : "RDY";
 var variables = RSP.Variables.Concat(RSP.FiniteStateMethod == null ? RSP.SharedVariables : new Variable[0]);
@@ -952,116 +1062,116 @@ var variables = RSP.Variables.Concat(RSP.FiniteStateMethod == null ? RSP.SharedV
             #line default
             #line hidden
             
-            #line 153 ""
+            #line 165 ""
             this.Write("\n    process(\n        -- Custom sensitivity signals here\n        -- #### USER-DAT" +
                     "A-SENSITIVITY-START\n        -- #### USER-DATA-SENSITIVITY-END\n        ");
             
             #line default
             #line hidden
             
-            #line 158 ""
+            #line 170 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( sensitivity_signal ));
             
             #line default
             #line hidden
             
-            #line 158 ""
+            #line 170 ""
             this.Write(",\n        RST\n    )\n");
             
             #line default
             #line hidden
             
-            #line 161 ""
+            #line 173 ""
      if (variables.Count() > 0) { 
             
             #line default
             #line hidden
             
-            #line 162 ""
+            #line 174 ""
             this.Write("    -- Internal variables\n");
             
             #line default
             #line hidden
             
-            #line 163 ""
+            #line 175 ""
           foreach(var s in variables) { 
             
             #line default
             #line hidden
             
-            #line 164 ""
+            #line 176 ""
             this.Write("    variable ");
             
             #line default
             #line hidden
             
-            #line 164 ""
+            #line 176 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( s.Name ));
             
             #line default
             #line hidden
             
-            #line 164 ""
+            #line 176 ""
             this.Write(" : ");
             
             #line default
             #line hidden
             
-            #line 164 ""
+            #line 176 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( RS.VHDLWrappedTypeName(s) ));
             
             #line default
             #line hidden
             
-            #line 164 ""
+            #line 176 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( Process.SharedVariables.Contains(s) ? " := " + Naming.ToValidName("reset_" + s.Name) : "" ));
             
             #line default
             #line hidden
             
-            #line 164 ""
+            #line 176 ""
             this.Write(";\n");
             
             #line default
             #line hidden
             
-            #line 165 ""
+            #line 177 ""
           } 
             
             #line default
             #line hidden
             
-            #line 166 ""
+            #line 178 ""
      } 
             
             #line default
             #line hidden
             
-            #line 167 ""
+            #line 179 ""
             this.Write("\n");
             
             #line default
             #line hidden
             
-            #line 168 ""
+            #line 180 ""
      if (!RSP.Process.IsClocked) { 
             
             #line default
             #line hidden
             
-            #line 169 ""
+            #line 181 ""
             this.Write("    variable reentry_guard: std_logic;\n");
             
             #line default
             #line hidden
             
-            #line 170 ""
+            #line 182 ""
      } 
             
             #line default
             #line hidden
             
-            #line 171 ""
+            #line 183 ""
             this.Write(@"
     -- #### USER-DATA-NONCLOCKEDVARIABLES-START
     -- #### USER-DATA-NONCLOCKEDVARIABLES-END
@@ -1076,164 +1186,68 @@ var variables = RSP.Variables.Concat(RSP.FiniteStateMethod == null ? RSP.SharedV
             #line default
             #line hidden
             
-            #line 180 ""
+            #line 192 ""
      foreach(var s in RSP.ProcessResetStaments) { 
             
             #line default
             #line hidden
             
-            #line 181 ""
+            #line 193 ""
             this.Write("            ");
-            
-            #line default
-            #line hidden
-            
-            #line 181 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( s ));
-            
-            #line default
-            #line hidden
-            
-            #line 181 ""
-            this.Write("\n");
-            
-            #line default
-            #line hidden
-            
-            #line 182 ""
-     } 
-            
-            #line default
-            #line hidden
-            
-            #line 183 ""
-     foreach(var variable in RSP.FiniteStateMethod == null ? RSP.SharedVariables : RSP.Variables) { 
-            
-            #line default
-            #line hidden
-            
-            #line 184 ""
-            this.Write("            ");
-            
-            #line default
-            #line hidden
-            
-            #line 184 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( variable.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 184 ""
-            this.Write(" := ");
-            
-            #line default
-            #line hidden
-            
-            #line 184 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("reset_" + variable.Name) ));
-            
-            #line default
-            #line hidden
-            
-            #line 184 ""
-            this.Write(";\n");
-            
-            #line default
-            #line hidden
-            
-            #line 185 ""
-     } 
-            
-            #line default
-            #line hidden
-            
-            #line 186 ""
-     foreach(var variable in Process.SharedSignals) { 
-            
-            #line default
-            #line hidden
-            
-            #line 187 ""
-            this.Write("            ");
-            
-            #line default
-            #line hidden
-            
-            #line 187 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( variable.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 187 ""
-            this.Write(" <= ");
-            
-            #line default
-            #line hidden
-            
-            #line 187 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("reset_" + variable.Name) ));
-            
-            #line default
-            #line hidden
-            
-            #line 187 ""
-            this.Write(";\n");
-            
-            #line default
-            #line hidden
-            
-            #line 188 ""
-     } 
-            
-            #line default
-            #line hidden
-            
-            #line 189 ""
-            this.Write("            \n");
-            
-            #line default
-            #line hidden
-            
-            #line 190 ""
-     if (!RSP.Process.IsClocked) { 
-            
-            #line default
-            #line hidden
-            
-            #line 191 ""
-            this.Write("            reentry_guard := \'0\';\n");
-            
-            #line default
-            #line hidden
-            
-            #line 192 ""
-     } 
             
             #line default
             #line hidden
             
             #line 193 ""
-     if (RSP.FiniteStateMethod == null) { 
+            this.Write(this.ToStringHelper.ToStringWithCulture( s ));
+            
+            #line default
+            #line hidden
+            
+            #line 193 ""
+            this.Write("\n");
             
             #line default
             #line hidden
             
             #line 194 ""
-            this.Write("            FIN <= \'0\';\n");
+     } 
             
             #line default
             #line hidden
             
             #line 195 ""
-     } else { 
+     foreach(var variable in RSP.FiniteStateMethod == null ? RSP.SharedVariables : RSP.Variables) { 
             
             #line default
             #line hidden
             
             #line 196 ""
-            this.Write("            FSM_Trigger <= \'0\';\n");
+            this.Write("            ");
+            
+            #line default
+            #line hidden
+            
+            #line 196 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( variable.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 196 ""
+            this.Write(" := ");
+            
+            #line default
+            #line hidden
+            
+            #line 196 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("reset_" + variable.Name) ));
+            
+            #line default
+            #line hidden
+            
+            #line 196 ""
+            this.Write(";\n");
             
             #line default
             #line hidden
@@ -1245,153 +1259,457 @@ var variables = RSP.Variables.Concat(RSP.FiniteStateMethod == null ? RSP.SharedV
             #line hidden
             
             #line 198 ""
+     foreach(var variable in Process.SharedSignals) { 
+            
+            #line default
+            #line hidden
+            
+            #line 199 ""
+            this.Write("            ");
+            
+            #line default
+            #line hidden
+            
+            #line 199 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( variable.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 199 ""
+            this.Write(" <= ");
+            
+            #line default
+            #line hidden
+            
+            #line 199 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("reset_" + variable.Name) ));
+            
+            #line default
+            #line hidden
+            
+            #line 199 ""
+            this.Write(";\n");
+            
+            #line default
+            #line hidden
+            
+            #line 200 ""
+     } 
+            
+            #line default
+            #line hidden
+            
+            #line 201 ""
+            this.Write("\n");
+            
+            #line default
+            #line hidden
+            
+            #line 202 ""
+     if (Process.IsClocked && RSP.FiniteStateMethod != null) { 
+            
+            #line default
+            #line hidden
+            
+            #line 203 ""
+            this.Write("            -- Clock-edge capture signals\n");
+            
+            #line default
+            #line hidden
+            
+            #line 204 ""
+         foreach (var bus in Process.InputBusses) { 
+               var busname = RS.GetLocalBusName(bus, Process);
+
+            
+            #line default
+            #line hidden
+            
+            #line 207 ""
+            this.Write("            -- Input bus ");
+            
+            #line default
+            #line hidden
+            
+            #line 207 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( busname ));
+            
+            #line default
+            #line hidden
+            
+            #line 207 ""
+            this.Write(" signals\n");
+            
+            #line default
+            #line hidden
+            
+            #line 208 ""
+             foreach (var signal in bus.Signals) { 
+            
+            #line default
+            #line hidden
+            
+            #line 209 ""
+            this.Write("            ");
+            
+            #line default
+            #line hidden
+            
+            #line 209 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("capture_" + busname + "_" + signal.Name) ));
+            
+            #line default
+            #line hidden
+            
+            #line 209 ""
+            this.Write(" <= ");
+            
+            #line default
+            #line hidden
+            
+            #line 209 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( RS.GetResetExpression(signal) ));
+            
+            #line default
+            #line hidden
+            
+            #line 209 ""
+            this.Write(";\n");
+            
+            #line default
+            #line hidden
+            
+            #line 210 ""
+             } 
+            
+            #line default
+            #line hidden
+            
+            #line 211 ""
+         } 
+            
+            #line default
+            #line hidden
+            
+            #line 212 ""
+     } 
+            
+            #line default
+            #line hidden
+            
+            #line 213 ""
+            this.Write("                                    \n");
+            
+            #line default
+            #line hidden
+            
+            #line 214 ""
+     if (!RSP.Process.IsClocked) { 
+            
+            #line default
+            #line hidden
+            
+            #line 215 ""
+            this.Write("            reentry_guard := \'0\';\n");
+            
+            #line default
+            #line hidden
+            
+            #line 216 ""
+     } 
+            
+            #line default
+            #line hidden
+            
+            #line 217 ""
+     if (RSP.FiniteStateMethod == null) { 
+            
+            #line default
+            #line hidden
+            
+            #line 218 ""
+            this.Write("            FIN <= \'0\';\n");
+            
+            #line default
+            #line hidden
+            
+            #line 219 ""
+     } else { 
+            
+            #line default
+            #line hidden
+            
+            #line 220 ""
+            this.Write("            FSM_Trigger <= \'0\';\n");
+            
+            #line default
+            #line hidden
+            
+            #line 221 ""
+     } 
+            
+            #line default
+            #line hidden
+            
+            #line 222 ""
             this.Write("\n            -- Initialize code here\n            -- #### USER-DATA-NONCLOCKEDRESE" +
                     "TCODE-START\n            -- #### USER-DATA-NONCLOCKEDRESETCODE-END\n\n");
             
             #line default
             #line hidden
             
-            #line 203 ""
+            #line 227 ""
      if (RSP.Process.IsClocked) { 
             
             #line default
             #line hidden
             
-            #line 204 ""
+            #line 228 ""
             this.Write("        elsif rising_edge(");
             
             #line default
             #line hidden
             
-            #line 204 ""
+            #line 228 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( sensitivity_signal ));
             
             #line default
             #line hidden
             
-            #line 204 ""
+            #line 228 ""
             this.Write(") then\n");
             
             #line default
             #line hidden
             
-            #line 205 ""
+            #line 229 ""
      } else { 
             
             #line default
             #line hidden
             
-            #line 206 ""
+            #line 230 ""
             this.Write("        elsif reentry_guard /= RDY then\n            reentry_guard := RDY;\n");
             
             #line default
             #line hidden
             
-            #line 208 ""
+            #line 232 ""
      } 
             
             #line default
             #line hidden
             
-            #line 209 ""
+            #line 233 ""
             this.Write("\n            -- Initialize code here\n            -- #### USER-DATA-NONCLOCKEDINIT" +
                     "IALIZECODE-START\n            -- #### USER-DATA-NONCLOCKEDINITIALIZECODE-END\n\n\n");
             
             #line default
             #line hidden
             
-            #line 215 ""
+            #line 239 ""
      foreach(var line in RSP.Helper.RenderMethod(Process.MainMethod)) { 
             
             #line default
             #line hidden
             
-            #line 216 ""
+            #line 240 ""
             this.Write("            ");
             
             #line default
             #line hidden
             
-            #line 216 ""
+            #line 240 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( line ));
             
             #line default
             #line hidden
             
-            #line 216 ""
+            #line 240 ""
             this.Write("\n");
             
             #line default
             #line hidden
             
-            #line 217 ""
+            #line 241 ""
      } 
             
             #line default
             #line hidden
             
-            #line 218 ""
+            #line 242 ""
             this.Write("\n");
             
             #line default
             #line hidden
             
-            #line 219 ""
-     if (RSP.FiniteStateMethod == null) { 
+            #line 243 ""
+     if (Process.IsClocked && RSP.FiniteStateMethod != null) { 
             
             #line default
             #line hidden
             
-            #line 220 ""
-            this.Write("            FIN <= ");
+            #line 244 ""
+            this.Write("            -- Clock-edge capture signals\n");
             
             #line default
             #line hidden
             
-            #line 220 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( sensitivity_signal ));
+            #line 245 ""
+         foreach (var bus in Process.InputBusses) { 
+               var busname = RS.GetLocalBusName(bus, Process);
+
             
             #line default
             #line hidden
             
-            #line 220 ""
+            #line 248 ""
+            this.Write("            -- Input bus ");
+            
+            #line default
+            #line hidden
+            
+            #line 248 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( busname ));
+            
+            #line default
+            #line hidden
+            
+            #line 248 ""
+            this.Write(" signals\n");
+            
+            #line default
+            #line hidden
+            
+            #line 249 ""
+             foreach (var signal in bus.Signals) { 
+            
+            #line default
+            #line hidden
+            
+            #line 250 ""
+            this.Write("            ");
+            
+            #line default
+            #line hidden
+            
+            #line 250 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("capture_" + busname + "_" + signal.Name) ));
+            
+            #line default
+            #line hidden
+            
+            #line 250 ""
+            this.Write(" <= ");
+            
+            #line default
+            #line hidden
+            
+            #line 250 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName(busname + "_" + signal.Name) ));
+            
+            #line default
+            #line hidden
+            
+            #line 250 ""
             this.Write(";\n");
             
             #line default
             #line hidden
             
-            #line 221 ""
-     } else { 
+            #line 251 ""
+             } 
             
             #line default
             #line hidden
             
-            #line 222 ""
-            this.Write("            FSM_Trigger <= reentry_guard;\n");
+            #line 252 ""
+         } 
             
             #line default
             #line hidden
             
-            #line 223 ""
+            #line 253 ""
      } 
             
             #line default
             #line hidden
             
-            #line 224 ""
-            this.Write("        end if;\n\n        -- Non-clocked process actions here\n\n        -- #### USE" +
-                    "R-DATA-CODE-START\n        -- #### USER-DATA-CODE-END\n\n    end process;\n\n");
+            #line 254 ""
+            this.Write("\n\n");
             
             #line default
             #line hidden
             
-            #line 233 ""
+            #line 256 ""
+     if (RSP.FiniteStateMethod == null) { 
+            
+            #line default
+            #line hidden
+            
+            #line 257 ""
+            this.Write("            FIN <= ");
+            
+            #line default
+            #line hidden
+            
+            #line 257 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( sensitivity_signal ));
+            
+            #line default
+            #line hidden
+            
+            #line 257 ""
+            this.Write(";\n");
+            
+            #line default
+            #line hidden
+            
+            #line 258 ""
+     } else if (RSP.Process.IsClocked) { 
+            
+            #line default
+            #line hidden
+            
+            #line 259 ""
+            this.Write("            FSM_Trigger <= not FSM_Trigger;\n");
+            
+            #line default
+            #line hidden
+            
+            #line 260 ""
+     } else { 
+            
+            #line default
+            #line hidden
+            
+            #line 261 ""
+            this.Write("            FSM_Trigger <= reentry_guard;\n");
+            
+            #line default
+            #line hidden
+            
+            #line 262 ""
+     } 
+            
+            #line default
+            #line hidden
+            
+            #line 263 ""
+            this.Write("\n        end if;\n\n        -- Non-clocked process actions here\n\n        -- #### US" +
+                    "ER-DATA-CODE-START\n        -- #### USER-DATA-CODE-END\n\n    end process;\n\n");
+            
+            #line default
+            #line hidden
+            
+            #line 273 ""
  } 
             
             #line default
             #line hidden
             
-            #line 234 ""
+            #line 274 ""
             this.Write("\nend RTL;\n\n-- User defined architectures here\n-- #### USER-DATA-ARCH-START\n-- ###" +
                     "# USER-DATA-ARCH-END\n");
             
