@@ -88,7 +88,7 @@ namespace SME.VHDL
         {
             get
             {
-                return Process.Methods.FirstOrDefault(x => x.IsStateMachine);
+                return Process.Methods?.FirstOrDefault(x => x.IsStateMachine);
             }
         }
 
