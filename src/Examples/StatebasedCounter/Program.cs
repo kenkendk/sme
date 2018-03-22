@@ -4,7 +4,7 @@ using SME;
 
 namespace StatebasedCounter
 {
-    class MainClass
+    public class MainClass
     {
         public static void Main(string[] args)
         {
