@@ -306,7 +306,7 @@ namespace SME
                     }).ToArray();
 
                 // Keep running until all simulation (stimulation) processes have finished
-                while (running_tasks.Any(x => x.Proc is SimulationProcess && x.HasOutputs && !x.Task.IsCompleted))
+                while (running_tasks.Any(x => x.Proc is SimulationProcess /*&& x.HasOutputs*/ && !x.Task.IsCompleted))
                 {
                     Graph.Execute();
                     var crashes = running_tasks.Where(x => x.Task.Exception != null).SelectMany(x => x.Task.Exception.InnerExceptions);
