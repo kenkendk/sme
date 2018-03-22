@@ -1,7 +1,7 @@
 ﻿using System;
 using SME;
 
-namespace Tester
+namespace SimpleMemoryBus
 {
 	public class SimpleMockMemory : SimpleProcess
 	{

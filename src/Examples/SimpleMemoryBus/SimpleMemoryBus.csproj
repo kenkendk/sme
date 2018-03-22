@@ -5,7 +5,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{2BAC28BE-A503-4534-BA59-171FE4313317}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>Tester</RootNamespace>
+    <RootNamespace>SimpleMemoryBus</RootNamespace>
     <AssemblyName>SimpleMemoryBus</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <ReleaseVersion>0.3.2</ReleaseVersion>
