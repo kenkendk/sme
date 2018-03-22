@@ -1,25 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <package >
   <metadata>
-    <id>SME.AST</id>
+    <id>SME.Components</id>
     <version>0.3.3-beta</version>
     <authors>Kenneth Skovhede</authors>
     <owners>Kenneth Skovhede</owners>
     <licenseUrl>https://raw.githubusercontent.com/kenkendk/sme/master/LICENSE</licenseUrl>
     <projectUrl>https://github.com/kenkendk/sme</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Abstract syntax tree builder for SME networks</description>
+    <description>Optional hardware components SME networks</description>
     <releaseNotes>Experimental build with async support</releaseNotes>
     <copyright>Copyright Kenneth Skovhede 2017</copyright>
     <tags>SME hardware simulation</tags>
     <dependencies>
-      <dependency id="ICSharpCode.Decompiler" version="3.0.2.3465" />
-      <dependency id="Mono.Cecil" version="0.10.0-beta7" />
-      <dependency id="Newtonsoft.Json" version="11.0.1" />
       <dependency id="SME" version="0.3.3-beta" />
     </dependencies>
   </metadata>
   <files>
-    <file src="bin/Release/SME.AST.dll" target="lib/net45" />
+    <file src="bin/Release/SME.Components.dll" target="lib/net45" />
   </files>
 </package>

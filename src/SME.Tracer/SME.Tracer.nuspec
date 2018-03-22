@@ -2,19 +2,19 @@
 <package >
   <metadata>
     <id>SME.Tracer</id>
-    <version>0.3.2</version>
+    <version>0.3.3-beta</version>
     <authors>Kenneth Skovhede</authors>
     <owners>Kenneth Skovhede</owners>
     <licenseUrl>https://raw.githubusercontent.com/kenkendk/sme/master/LICENSE</licenseUrl>
     <projectUrl>https://github.com/kenkendk/sme</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Tracing module for SME networks</description>
-    <releaseNotes>Updated versions with some minor bugfixes</releaseNotes>
+    <releaseNotes>Experimental build with async support</releaseNotes>
     <copyright>Copyright Kenneth Skovhede 2016</copyright>
     <tags>SME hardware simulation</tags>
     <dependencies>
-      <dependency id="Newtonsoft.Json" version="10.0.3" />
-      <dependency id="SME" version="0.3.2" />
+      <dependency id="Newtonsoft.Json" version="11.0.1" />
+      <dependency id="SME" version="0.3.3-beta" />
     </dependencies>
   </metadata>
   <files>

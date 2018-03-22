@@ -8,7 +8,7 @@
     <RootNamespace>SME.CPP</RootNamespace>
     <AssemblyName>SME.CPP</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <ReleaseVersion>0.3.2</ReleaseVersion>
+    <ReleaseVersion>0.3.3</ReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -103,6 +103,10 @@
     <ProjectReference Include="..\SME.AST\SME.AST.csproj">
       <Project>{B1C84452-3FA5-4176-BAB6-EF27DE76D452}</Project>
       <Name>SME.AST</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SME.Components\SME.Components.csproj">
+      <Project>{3F409401-0FB3-4481-A860-6FFAD20E3EFA}</Project>
+      <Name>SME.Components</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

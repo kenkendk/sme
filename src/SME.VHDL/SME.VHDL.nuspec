@@ -2,21 +2,22 @@
 <package >
   <metadata>
     <id>SME.VHDL</id>
-    <version>0.3.2</version>
+    <version>0.3.3-beta</version>
     <authors>Kenneth Skovhede</authors>
     <owners>Kenneth Skovhede</owners>
     <licenseUrl>https://raw.githubusercontent.com/kenkendk/sme/master/LICENSE</licenseUrl>
     <projectUrl>https://github.com/kenkendk/sme</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>VHDL transpiler for SME networks</description>
-    <releaseNotes>Update with a new code generation model</releaseNotes>
+    <releaseNotes>Experimental build with async support</releaseNotes>
     <copyright>Copyright Kenneth Skovhede 2017</copyright>
     <tags>SME hardware simulation</tags>
     <dependencies>
-      <dependency id="ICSharpCode.NRefactory" version="5.5.1" />
-      <dependency id="Mono.Cecil" version="0.9.5.4" />
-      <dependency id="SME" version="0.3.2" />
-      <dependency id="SME.AST" version="0.3.2" />
+      <dependency id="ICSharpCode.Decompiler" version="3.0.2.3465" />
+      <dependency id="Mono.Cecil" version="0.10.0-beta7" />
+      <dependency id="SME" version="0.3.3-beta" />
+      <dependency id="SME.AST" version="0.3.3-beta" />
+      <dependency id="SME.Components" version="0.3.3-beta" />
     </dependencies>
   </metadata>
   <files>

@@ -8,7 +8,7 @@
     <RootNamespace>SME.Components</RootNamespace>
     <AssemblyName>SME.Components</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <ReleaseVersion>0.3.2</ReleaseVersion>
+    <ReleaseVersion>0.3.3</ReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -41,6 +41,9 @@
       <Project>{CDC88908-F9B8-40CB-B746-86C8A4C1871B}</Project>
       <Name>SME</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="SME.Components.nuspec" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

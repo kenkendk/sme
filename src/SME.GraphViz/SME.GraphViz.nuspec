@@ -2,18 +2,18 @@
 <package >
   <metadata>
     <id>SME.GraphViz</id>
-    <version>0.3.2</version>
+    <version>0.3.3-beta</version>
     <authors>Kenneth Skovhede</authors>
     <owners>Kenneth Skovhede</owners>
     <licenseUrl>https://raw.githubusercontent.com/kenkendk/sme/master/LICENSE</licenseUrl>
     <projectUrl>https://github.com/kenkendk/sme</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>GraphViz renderer for Synchronous Message Exchange</description>
-    <releaseNotes>Updated the render to fit into the updated SME library namespaces</releaseNotes>
+    <releaseNotes>Experimental build with async support</releaseNotes>
     <copyright>Copyright Kenneth Skovhede 2017</copyright>
     <tags>SME hardware simulation GraphViz</tags>
     <dependencies>
-      <dependency id="SME" version="0.3.2" />
+      <dependency id="SME" version="0.3.3-beta" />
     </dependencies>
   </metadata>
   <files>

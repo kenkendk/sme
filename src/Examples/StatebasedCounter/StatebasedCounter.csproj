@@ -8,7 +8,7 @@
     <RootNamespace>StatebasedCounter</RootNamespace>
     <AssemblyName>StatebasedCounter</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
-    <ReleaseVersion>0.3.2</ReleaseVersion>
+    <ReleaseVersion>0.3.3</ReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
