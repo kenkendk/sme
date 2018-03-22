@@ -58,7 +58,7 @@ namespace SME.AST.Transform
                 return SplitStatement((ForStatement)statement, collected, fragments);
             else if (statement is ExpressionStatement && ((ExpressionStatement)statement).Expression is AwaitExpression)
             {
-                EndFragment(collected, fragments, fragments.Count, false);
+                EndFragment(collected, fragments, fragments.Count + 1, false);
                 return 1;
             }
             else
@@ -289,6 +289,31 @@ namespace SME.AST.Transform
         }
 
         /// <summary>
+        /// Wraps the cases in a switch statement
+        /// </summary>
+        /// <returns>The fragments with label guards.</returns>
+        /// <param name="fragments">The input fragments.</param>
+        /// <param name="statelabel">The current state variable.</param>
+        /// <param name="enumfields">The enum values for each state.</param>
+        private Statement CreateSwitchStatement(List<List<Statement>> fragments, DataElement statelabel, DataElement[] enumfields)
+        {
+            var res = new List<Tuple<Expression[], Statement[]>>();
+
+            for (var i = 0; i < fragments.Count; i++)
+            {
+                res.Add(new Tuple<Expression[], Statement[]>(
+                    new Expression[] { new PrimitiveExpression(enumfields[i].GetTarget().Name, enumfields[i].CecilType) },
+                    fragments[i].ToArray()
+                ));
+            }
+
+            return new SwitchStatement(
+                new IdentifierExpression(statelabel),
+                res.ToArray()
+            );
+        }
+
+        /// <summary>
         /// Removes all <see cref="CaseGotoStatement"/>'s and inserts appropriate variables updates instead
         /// </summary>
         /// <returns>The statements without goto-statemtns.</returns>
@@ -394,13 +419,29 @@ namespace SME.AST.Transform
 
             var enumdataitems = enumfields.Select(x => new Constant(x.Name, x) { CecilType = enumtype }).ToArray();
 
-            var cases = WrapFragmentsWithLabels(fragments, run_state_var, enumdataitems);
-            cases.Insert(0, new ExpressionStatement(
-                new AssignmentExpression(
-                    new IdentifierExpression(run_state_var),
-                    new IdentifierExpression(current_state_signal)
-                )
-            ));
+            var isSimpleStatePossible = fragments.SelectMany(x => x.SelectMany(y => y.All().OfType<CaseGotoStatement>())).All(x => !x.FallThrough);
+
+            List<Statement> cases;
+
+            // If we have no fallthrough states, we build a switch
+            if (isSimpleStatePossible)
+            {
+                cases = new List<Statement>(new[] { 
+                    new EmptyStatement(),
+                    CreateSwitchStatement(fragments, current_state_signal, enumdataitems) 
+                });
+            }
+            // Otherwise, we build an if-based state machine
+            else
+            {
+                cases = WrapFragmentsWithLabels(fragments, run_state_var, enumdataitems);
+                cases.Insert(0, new ExpressionStatement(
+                    new AssignmentExpression(
+                        new IdentifierExpression(run_state_var),
+                        new IdentifierExpression(current_state_signal)
+                    )
+                ));
+            }
 
             stateMachineProcess.Statements = cases.ToArray();
             foreach (var v in stateMachineProcess.Statements)
