@@ -647,7 +647,7 @@ end ");
             #line hidden
             
             #line 105 ""
-     if (Process.SharedSignals.Any() || Process.SharedVariables.Any() || Process.InternalDataElements.Any()) { 
+     if (Process.SharedSignals.Any() || Process.InternalDataElements.Any()) { 
             
             #line default
             #line hidden
@@ -869,9 +869,10 @@ end ");
             #line hidden
             
             #line 128 ""
-            this.Write("\n  -- User defined signals, procedures and components here\n  -- #### USER-DATA-SI" +
-                    "GNALS-START\n  -- #### USER-DATA-SIGNALS-END\n\nbegin\n\n    -- Custom processes go h" +
-                    "ere\n    -- #### USER-DATA-PROCESSES-START\n    -- #### USER-DATA-PROCESSES-END\n\n");
+            this.Write("\n      -- User defined signals, procedures and components here\n      -- #### USER" +
+                    "-DATA-SIGNALS-START\n      -- #### USER-DATA-SIGNALS-END\n\nbegin\n\n    -- Custom pr" +
+                    "ocesses go here\n    -- #### USER-DATA-PROCESSES-START\n    -- #### USER-DATA-PROC" +
+                    "ESSES-END\n\n");
             
             #line default
             #line hidden
@@ -945,121 +946,122 @@ end ");
             #line 149 ""
 
 var sensitivity_signal = RSP.Process.IsClocked ? "CLK" : "RDY";
+var variables = RSP.Variables.Concat(RSP.FiniteStateMethod == null ? RSP.SharedVariables : new Variable[0]);
 
             
             #line default
             #line hidden
             
-            #line 152 ""
+            #line 153 ""
             this.Write("\n    process(\n        -- Custom sensitivity signals here\n        -- #### USER-DAT" +
                     "A-SENSITIVITY-START\n        -- #### USER-DATA-SENSITIVITY-END\n        ");
             
             #line default
             #line hidden
             
-            #line 157 ""
+            #line 158 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( sensitivity_signal ));
             
             #line default
             #line hidden
             
-            #line 157 ""
+            #line 158 ""
             this.Write(",\n        RST\n    )\n");
             
             #line default
             #line hidden
             
-            #line 160 ""
-     if (RSP.Variables.Count() > 0) { 
-            
-            #line default
-            #line hidden
-            
             #line 161 ""
-            this.Write("    -- Internal variables\n");
+     if (variables.Count() > 0) { 
             
             #line default
             #line hidden
             
             #line 162 ""
-          foreach(var s in RSP.Variables.Concat(RSP.FiniteStateMethod == null ? RSP.SharedVariables : new Variable[0])) { 
+            this.Write("    -- Internal variables\n");
             
             #line default
             #line hidden
             
             #line 163 ""
-            this.Write("    variable ");
-            
-            #line default
-            #line hidden
-            
-            #line 163 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( s.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 163 ""
-            this.Write(" : ");
-            
-            #line default
-            #line hidden
-            
-            #line 163 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( RS.VHDLWrappedTypeName(s) ));
-            
-            #line default
-            #line hidden
-            
-            #line 163 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Process.SharedVariables.Contains(s) ? " := " + Naming.ToValidName("reset_" + s.Name) : "" ));
-            
-            #line default
-            #line hidden
-            
-            #line 163 ""
-            this.Write(";\n");
+          foreach(var s in variables) { 
             
             #line default
             #line hidden
             
             #line 164 ""
-          } 
+            this.Write("    variable ");
+            
+            #line default
+            #line hidden
+            
+            #line 164 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( s.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 164 ""
+            this.Write(" : ");
+            
+            #line default
+            #line hidden
+            
+            #line 164 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( RS.VHDLWrappedTypeName(s) ));
+            
+            #line default
+            #line hidden
+            
+            #line 164 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Process.SharedVariables.Contains(s) ? " := " + Naming.ToValidName("reset_" + s.Name) : "" ));
+            
+            #line default
+            #line hidden
+            
+            #line 164 ""
+            this.Write(";\n");
             
             #line default
             #line hidden
             
             #line 165 ""
-     } 
+          } 
             
             #line default
             #line hidden
             
             #line 166 ""
-            this.Write("\n");
-            
-            #line default
-            #line hidden
-            
-            #line 167 ""
-     if (!RSP.Process.IsClocked) { 
-            
-            #line default
-            #line hidden
-            
-            #line 168 ""
-            this.Write("    variable reentry_guard: std_logic;\n");
-            
-            #line default
-            #line hidden
-            
-            #line 169 ""
      } 
             
             #line default
             #line hidden
             
+            #line 167 ""
+            this.Write("\n");
+            
+            #line default
+            #line hidden
+            
+            #line 168 ""
+     if (!RSP.Process.IsClocked) { 
+            
+            #line default
+            #line hidden
+            
+            #line 169 ""
+            this.Write("    variable reentry_guard: std_logic;\n");
+            
+            #line default
+            #line hidden
+            
             #line 170 ""
+     } 
+            
+            #line default
+            #line hidden
+            
+            #line 171 ""
             this.Write(@"
     -- #### USER-DATA-NONCLOCKEDVARIABLES-START
     -- #### USER-DATA-NONCLOCKEDVARIABLES-END
@@ -1074,322 +1076,322 @@ var sensitivity_signal = RSP.Process.IsClocked ? "CLK" : "RDY";
             #line default
             #line hidden
             
-            #line 179 ""
+            #line 180 ""
      foreach(var s in RSP.ProcessResetStaments) { 
             
             #line default
             #line hidden
             
-            #line 180 ""
+            #line 181 ""
             this.Write("            ");
-            
-            #line default
-            #line hidden
-            
-            #line 180 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( s ));
-            
-            #line default
-            #line hidden
-            
-            #line 180 ""
-            this.Write("\n");
             
             #line default
             #line hidden
             
             #line 181 ""
-     } 
+            this.Write(this.ToStringHelper.ToStringWithCulture( s ));
+            
+            #line default
+            #line hidden
+            
+            #line 181 ""
+            this.Write("\n");
             
             #line default
             #line hidden
             
             #line 182 ""
+     } 
+            
+            #line default
+            #line hidden
+            
+            #line 183 ""
      foreach(var variable in RSP.FiniteStateMethod == null ? RSP.SharedVariables : RSP.Variables) { 
             
             #line default
             #line hidden
             
-            #line 183 ""
+            #line 184 ""
             this.Write("            ");
-            
-            #line default
-            #line hidden
-            
-            #line 183 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( variable.Name ));
-            
-            #line default
-            #line hidden
-            
-            #line 183 ""
-            this.Write(" := ");
-            
-            #line default
-            #line hidden
-            
-            #line 183 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("reset_" + variable.Name) ));
-            
-            #line default
-            #line hidden
-            
-            #line 183 ""
-            this.Write(";\n");
             
             #line default
             #line hidden
             
             #line 184 ""
-     } 
-            
-            #line default
-            #line hidden
-            
-            #line 185 ""
-     foreach(var variable in Process.SharedSignals) { 
-            
-            #line default
-            #line hidden
-            
-            #line 186 ""
-            this.Write("            ");
-            
-            #line default
-            #line hidden
-            
-            #line 186 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( variable.Name ));
             
             #line default
             #line hidden
             
-            #line 186 ""
-            this.Write(" <= ");
+            #line 184 ""
+            this.Write(" := ");
             
             #line default
             #line hidden
             
-            #line 186 ""
+            #line 184 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("reset_" + variable.Name) ));
             
             #line default
             #line hidden
             
-            #line 186 ""
+            #line 184 ""
             this.Write(";\n");
             
             #line default
             #line hidden
             
-            #line 187 ""
+            #line 185 ""
      } 
+            
+            #line default
+            #line hidden
+            
+            #line 186 ""
+     foreach(var variable in Process.SharedSignals) { 
+            
+            #line default
+            #line hidden
+            
+            #line 187 ""
+            this.Write("            ");
+            
+            #line default
+            #line hidden
+            
+            #line 187 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( variable.Name ));
+            
+            #line default
+            #line hidden
+            
+            #line 187 ""
+            this.Write(" <= ");
+            
+            #line default
+            #line hidden
+            
+            #line 187 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("reset_" + variable.Name) ));
+            
+            #line default
+            #line hidden
+            
+            #line 187 ""
+            this.Write(";\n");
             
             #line default
             #line hidden
             
             #line 188 ""
-            this.Write("            \n");
+     } 
             
             #line default
             #line hidden
             
             #line 189 ""
-     if (!RSP.Process.IsClocked) { 
+            this.Write("            \n");
             
             #line default
             #line hidden
             
             #line 190 ""
-            this.Write("            reentry_guard := \'0\';\n");
+     if (!RSP.Process.IsClocked) { 
             
             #line default
             #line hidden
             
             #line 191 ""
-     } 
+            this.Write("            reentry_guard := \'0\';\n");
             
             #line default
             #line hidden
             
             #line 192 ""
-     if (RSP.FiniteStateMethod == null) { 
-            
-            #line default
-            #line hidden
-            
-            #line 193 ""
-            this.Write("            FIN <= \'0\';\n");
-            
-            #line default
-            #line hidden
-            
-            #line 194 ""
-     } else { 
-            
-            #line default
-            #line hidden
-            
-            #line 195 ""
-            this.Write("            FSM_Trigger <= \'0\';\n");
-            
-            #line default
-            #line hidden
-            
-            #line 196 ""
      } 
             
             #line default
             #line hidden
             
+            #line 193 ""
+     if (RSP.FiniteStateMethod == null) { 
+            
+            #line default
+            #line hidden
+            
+            #line 194 ""
+            this.Write("            FIN <= \'0\';\n");
+            
+            #line default
+            #line hidden
+            
+            #line 195 ""
+     } else { 
+            
+            #line default
+            #line hidden
+            
+            #line 196 ""
+            this.Write("            FSM_Trigger <= \'0\';\n");
+            
+            #line default
+            #line hidden
+            
             #line 197 ""
+     } 
+            
+            #line default
+            #line hidden
+            
+            #line 198 ""
             this.Write("\n            -- Initialize code here\n            -- #### USER-DATA-NONCLOCKEDRESE" +
                     "TCODE-START\n            -- #### USER-DATA-NONCLOCKEDRESETCODE-END\n\n");
             
             #line default
             #line hidden
             
-            #line 202 ""
+            #line 203 ""
      if (RSP.Process.IsClocked) { 
             
             #line default
             #line hidden
             
-            #line 203 ""
+            #line 204 ""
             this.Write("        elsif rising_edge(");
             
             #line default
             #line hidden
             
-            #line 203 ""
+            #line 204 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( sensitivity_signal ));
             
             #line default
             #line hidden
             
-            #line 203 ""
+            #line 204 ""
             this.Write(") then\n");
             
             #line default
             #line hidden
             
-            #line 204 ""
+            #line 205 ""
      } else { 
             
             #line default
             #line hidden
             
-            #line 205 ""
+            #line 206 ""
             this.Write("        elsif reentry_guard /= RDY then\n            reentry_guard := RDY;\n");
             
             #line default
             #line hidden
             
-            #line 207 ""
+            #line 208 ""
      } 
             
             #line default
             #line hidden
             
-            #line 208 ""
+            #line 209 ""
             this.Write("\n            -- Initialize code here\n            -- #### USER-DATA-NONCLOCKEDINIT" +
                     "IALIZECODE-START\n            -- #### USER-DATA-NONCLOCKEDINITIALIZECODE-END\n\n\n");
             
             #line default
             #line hidden
             
-            #line 214 ""
+            #line 215 ""
      foreach(var line in RSP.Helper.RenderMethod(Process.MainMethod)) { 
             
             #line default
             #line hidden
             
-            #line 215 ""
+            #line 216 ""
             this.Write("            ");
             
             #line default
             #line hidden
             
-            #line 215 ""
+            #line 216 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( line ));
             
             #line default
             #line hidden
             
-            #line 215 ""
-            this.Write("\n");
-            
-            #line default
-            #line hidden
-            
             #line 216 ""
-     } 
+            this.Write("\n");
             
             #line default
             #line hidden
             
             #line 217 ""
-            this.Write("\n");
-            
-            #line default
-            #line hidden
-            
-            #line 218 ""
-     if (RSP.FiniteStateMethod == null) { 
-            
-            #line default
-            #line hidden
-            
-            #line 219 ""
-            this.Write("            FIN <= ");
-            
-            #line default
-            #line hidden
-            
-            #line 219 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( sensitivity_signal ));
-            
-            #line default
-            #line hidden
-            
-            #line 219 ""
-            this.Write(";\n");
-            
-            #line default
-            #line hidden
-            
-            #line 220 ""
-     } else { 
-            
-            #line default
-            #line hidden
-            
-            #line 221 ""
-            this.Write("            FSM_Trigger <= reentry_guard;\n");
-            
-            #line default
-            #line hidden
-            
-            #line 222 ""
      } 
             
             #line default
             #line hidden
             
+            #line 218 ""
+            this.Write("\n");
+            
+            #line default
+            #line hidden
+            
+            #line 219 ""
+     if (RSP.FiniteStateMethod == null) { 
+            
+            #line default
+            #line hidden
+            
+            #line 220 ""
+            this.Write("            FIN <= ");
+            
+            #line default
+            #line hidden
+            
+            #line 220 ""
+            this.Write(this.ToStringHelper.ToStringWithCulture( sensitivity_signal ));
+            
+            #line default
+            #line hidden
+            
+            #line 220 ""
+            this.Write(";\n");
+            
+            #line default
+            #line hidden
+            
+            #line 221 ""
+     } else { 
+            
+            #line default
+            #line hidden
+            
+            #line 222 ""
+            this.Write("            FSM_Trigger <= reentry_guard;\n");
+            
+            #line default
+            #line hidden
+            
             #line 223 ""
+     } 
+            
+            #line default
+            #line hidden
+            
+            #line 224 ""
             this.Write("        end if;\n\n        -- Non-clocked process actions here\n\n        -- #### USE" +
                     "R-DATA-CODE-START\n        -- #### USER-DATA-CODE-END\n\n    end process;\n\n");
             
             #line default
             #line hidden
             
-            #line 232 ""
+            #line 233 ""
  } 
             
             #line default
             #line hidden
             
-            #line 233 ""
+            #line 234 ""
             this.Write("\nend RTL;\n\n-- User defined architectures here\n-- #### USER-DATA-ARCH-START\n-- ###" +
                     "# USER-DATA-ARCH-END\n");
             

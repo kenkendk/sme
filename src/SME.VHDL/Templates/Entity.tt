@@ -102,7 +102,7 @@ architecture RTL of <#= Process.Name #> is
 
 <#     } #>
 
-<#     if (Process.SharedSignals.Any() || Process.SharedVariables.Any() || Process.InternalDataElements.Any()) { #>
+<#     if (Process.SharedSignals.Any() || Process.InternalDataElements.Any()) { #>
     -- Internal signals
 <#         foreach (var s in Process.SharedSignals) { #>
     signal <#= s.Name #> : <#= RS.VHDLWrappedTypeName(s) #>;
@@ -126,9 +126,9 @@ architecture RTL of <#= Process.Name #> is
 <#         } #>
 <#     } #>
 
-  -- User defined signals, procedures and components here
-  -- #### USER-DATA-SIGNALS-START
-  -- #### USER-DATA-SIGNALS-END
+      -- User defined signals, procedures and components here
+      -- #### USER-DATA-SIGNALS-START
+      -- #### USER-DATA-SIGNALS-END
 
 begin
 
@@ -148,6 +148,7 @@ begin
 
 <#
 var sensitivity_signal = RSP.Process.IsClocked ? "CLK" : "RDY";
+var variables = RSP.Variables.Concat(RSP.FiniteStateMethod == null ? RSP.SharedVariables : new Variable[0]);
 #>
 
     process(
@@ -157,9 +158,9 @@ var sensitivity_signal = RSP.Process.IsClocked ? "CLK" : "RDY";
         <#= sensitivity_signal #>,
         RST
     )
-<#     if (RSP.Variables.Count() > 0) { #>
+<#     if (variables.Count() > 0) { #>
     -- Internal variables
-<#          foreach(var s in RSP.Variables.Concat(RSP.FiniteStateMethod == null ? RSP.SharedVariables : new Variable[0])) { #>
+<#          foreach(var s in variables) { #>
     variable <#= s.Name #> : <#= RS.VHDLWrappedTypeName(s) #><#= Process.SharedVariables.Contains(s) ? " := " + Naming.ToValidName("reset_" + s.Name) : "" #>;
 <#          } #>
 <#     } #>
