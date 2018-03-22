@@ -39,6 +39,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SME.Components", "SME.Compo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StatebasedCounter", "Examples\StatebasedCounter\StatebasedCounter.csproj", "{09EF6B4D-E422-471B-BCA9-C976E75A190E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTest", "UnitTest\UnitTest.csproj", "{CCC467E5-94DD-4028-9F78-2CAF31BD64E5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -113,6 +115,10 @@ Global
 		{09EF6B4D-E422-471B-BCA9-C976E75A190E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{09EF6B4D-E422-471B-BCA9-C976E75A190E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{09EF6B4D-E422-471B-BCA9-C976E75A190E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CCC467E5-94DD-4028-9F78-2CAF31BD64E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CCC467E5-94DD-4028-9F78-2CAF31BD64E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CCC467E5-94DD-4028-9F78-2CAF31BD64E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CCC467E5-94DD-4028-9F78-2CAF31BD64E5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

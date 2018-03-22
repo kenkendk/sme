@@ -5,16 +5,12 @@ before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y ghdl
 install:
+  - nuget install NUnit.Runners -Version 3.5.0 -OutputDirectory testrunner
   - nuget restore src/SME.sln
 script:
   - xbuild /p:Configuration=Release src/SME.sln
-  - cd "$TRAVIS_BUILD_DIR/src/Examples/ColorBin/bin/Release" && mono ColorBin.exe
-  - cd "$TRAVIS_BUILD_DIR/src/Examples/SimpleTrader/bin/Release" && mono SimpleTrader.exe
-  - cd "$TRAVIS_BUILD_DIR/src/Examples/NoiseFilter/bin/Release" && mono NoiseFilter.exe
-  - cd "$TRAVIS_BUILD_DIR/src/Examples/AES256CBC/bin/Release" && mono AES256CBC.exe
-  - cd "$TRAVIS_BUILD_DIR/src/Examples/SimpleComponents/bin/Release" && mono SimpleComponents.exe
-  - cd "$TRAVIS_BUILD_DIR/src/Examples/ColorBin/bin/Release/output/vhdl" && make test
-  - cd "$TRAVIS_BUILD_DIR/src/Examples/SimpleTrader/bin/Release/output/vhdl" && make test
-  - cd "$TRAVIS_BUILD_DIR/src/Examples/NoiseFilter/bin/Release/output/vhdl" && make test
-  - cd "$TRAVIS_BUILD_DIR/src/Examples/AES256CBC/bin/Release/output/vhdl" && make test
-  - cd "$TRAVIS_BUILD_DIR/src/Examples/SimpleComponents/bin/Release/output/vhdl" && make test
+  - echo "travis_fold:start:unit_test"
+  - mono ./testrunner/NUnit.ConsoleRunner.3.5.0/tools/nunit3-console.exe ./src/UnitTest/bin/Release/UnitTest.dll --workers=1
+  - echo "travis_fold:end:unit_test"
+
+
