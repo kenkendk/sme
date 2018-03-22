@@ -9,6 +9,8 @@ namespace SimpleNestedComponent
 		{
             new Simulation()
                 .AddTicker(ticks => Console.WriteLine("Ticked {0}", ticks))
+                .BuildCSVFile()
+                .BuildVHDL()
                 .Run(
                     new TestDriver(),
 				    new CompositeItem.CounterTicker(),

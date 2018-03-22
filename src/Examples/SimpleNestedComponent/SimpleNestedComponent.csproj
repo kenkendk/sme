@@ -44,5 +44,9 @@
       <Project>{E796351B-EB59-4686-9B54-DE4A284E0433}</Project>
       <Name>SME.VHDL</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\SME.CPP\SME.CPP.csproj">
+      <Project>{9F28DC04-2A0C-4F87-9E82-D6679DE94017}</Project>
+      <Name>SME.CPP</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>
