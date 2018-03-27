@@ -234,7 +234,8 @@ namespace SimpleMIPS
                             case Funcs.sltu:
                                 registers[rd] = (uint) (registers[rs] < registers[rt] ? 1 : 0); break;
                             default:
-                                throw new Exception($"Funct not found: {funct}");
+                                //throw new Exception($"Funct not found: {funct}");
+                                Console.WriteLine($"Funct not found: {funct}"); break;
                         }
                         break;
                     case Opcodes.beq:
@@ -278,7 +279,8 @@ namespace SimpleMIPS
                         terminate.flg = true;
                         return;
                     default:
-                        throw new Exception($"Opcode not found: {opcode}");
+                        Console.WriteLine($"Opcode not found: {opcode}"); break;
+                        //throw new Exception($"Opcode not found: {opcode}");
                 }
             //}
         }
