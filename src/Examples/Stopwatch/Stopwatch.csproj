@@ -33,7 +33,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="BusDefinitions.cs" />
-    <Compile Include="Stopwatchhh.cs" />
+    <Compile Include="Stopwatch.cs" />
     <Compile Include="Tester.cs" />
   </ItemGroup>
   <ItemGroup>

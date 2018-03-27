@@ -11,7 +11,7 @@ namespace Stopwatch
                 .BuildCSVFile()
                 .BuildVHDL()
                 .Run(
-                    new Stopwatchhh(),
+                    new Stopwatch(),
                     new Tester());
         }
     }
