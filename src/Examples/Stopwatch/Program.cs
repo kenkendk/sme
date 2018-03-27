@@ -12,6 +12,7 @@ namespace Stopwatch
                 .BuildVHDL()
                 .Run(
                     new Stopwatch(),
+                    new Counter(),
                     new Tester());
         }
     }

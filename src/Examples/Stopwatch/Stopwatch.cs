@@ -15,7 +15,7 @@ namespace Stopwatch
         protected async override System.Threading.Tasks.Task OnTickAsync()
         {
             // Zero
-            while (!buttons.startstop) 
+            while (!buttons.startstop)
             {
                 output.running = false;
                 output.reset = false;
