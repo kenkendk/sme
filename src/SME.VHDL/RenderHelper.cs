@@ -644,6 +644,12 @@ namespace SME.VHDL
             }
             else if (e.SourceResultType.Resolve().IsEnum)
             {
+                /* 
+                 * TODO tmp fix. In state machines, local variables becomes "global" in the processes scope. As such, it also needs a reset value.
+                 * However, since the variable is declared and set at the same time, it does not have a value in the outer scope. This can be 
+                 * fixed by either moving the variable out into the processes scope (not just the methods) and give it a reset value. Or this fix, 
+                 * which just casts 0 to the target enum. 
+                 */
                 if (e.Value == null)
                     return Naming.ToValidName(e.SourceResultType.FullName) + "'VAL(0)";
                 else
