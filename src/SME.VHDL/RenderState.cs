@@ -1256,6 +1256,21 @@ namespace SME.VHDL
             if (ae == null)
                 return string.Empty;
 
+            if (ae.Right is PrimitiveExpression && ae.Right.SourceResultType.Resolve().IsEnum)
+            {
+                var pe = ae.Right as PrimitiveExpression;
+                var rs = ae.Right.SourceResultType.Resolve();
+                if (pe.Value == null)
+                {
+                    var c = rs.Fields
+                              .Where(x => !x.IsSpecialName && !x.IsRuntimeSpecialName)
+                              .OrderBy(x => x.Constant)
+                              .First()
+                              .Constant;
+                    return new RenderHelper(this, null).RenderExpression(new PrimitiveExpression(c, rs));
+                }
+            }
+
             return new RenderHelper(this, null).RenderExpression(ae.Right);
         }
 
