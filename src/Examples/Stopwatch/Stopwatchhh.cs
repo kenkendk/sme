@@ -3,8 +3,8 @@ using SME;
 
 namespace Stopwatch
 {
-    [ClockedProcess]
-    public class Stopwatchhh : Process
+    //[ClockedProcess]
+    public class Stopwatchhh : StateProcess
     {
         [InputBus]
         Buttons buttons = Scope.CreateOrLoadBus<Buttons>();
@@ -12,61 +12,57 @@ namespace Stopwatch
         [OutputBus]
         WatchOutput output = Scope.CreateOrLoadBus<WatchOutput>();
 
-        public async override System.Threading.Tasks.Task Run()
+        protected async override System.Threading.Tasks.Task OnTickAsync()
         {
-            await ClockAsync();
-            while (true) 
+            // Zero
+            while (!buttons.startstop) 
             {
-                // Zero
-                while (!buttons.startstop) 
+                output.running = false;
+                output.reset = false;
+                await ClockAsync();
+            }
+
+            while (!(!buttons.startstop && buttons.reset))
+            {
+                // Start
+                while (!(!buttons.reset && !buttons.startstop))
+                {
+                    output.running = true;
+                    output.reset = false;
+                    await ClockAsync();
+                }
+
+                // Running
+                while (!buttons.startstop)
+                {
+                    output.running = true;
+                    output.reset = false;
+                    await ClockAsync();
+                }
+
+                // Stop
+                while (!(!buttons.reset && !buttons.startstop))
                 {
                     output.running = false;
                     output.reset = false;
                     await ClockAsync();
                 }
 
-                while (!(!buttons.startstop && buttons.reset))
-                {
-                    // Start
-                    while (!(!buttons.reset && !buttons.startstop))
-                    {
-                        output.running = true;
-                        output.reset = false;
-                        await ClockAsync();
-                    }
-
-                    // Running
-                    while (!buttons.startstop)
-                    {
-                        output.running = true;
-                        output.reset = false;
-                        await ClockAsync();
-                    }
-
-                    // Stop
-                    while (!(!buttons.reset && !buttons.startstop))
-                    {
-                        output.running = false;
-                        output.reset = false;
-                        await ClockAsync();
-                    }
-
-                    // Stopped 
-                    while (!buttons.reset && !buttons.startstop)
-                    {
-                        output.running = false;
-                        output.reset = false;
-                        await ClockAsync();
-                    }
-                }
-
-                // Reset
-                while (!(!buttons.reset && !buttons.startstop))
+                // Stopped 
+                while (!buttons.reset && !buttons.startstop)
                 {
                     output.running = false;
-                    output.reset = true;
+                    output.reset = false;
                     await ClockAsync();
                 }
+            }
+
+            // Reset
+            while (!(!buttons.reset && !buttons.startstop))
+            {
+                output.running = false;
+                output.reset = true;
+                await ClockAsync();
             }
         }
     }
