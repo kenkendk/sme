@@ -644,7 +644,10 @@ namespace SME.VHDL
             }
             else if (e.SourceResultType.Resolve().IsEnum)
             {
-                return Naming.ToValidName(e.SourceResultType.FullName + "_" + e.Value.ToString());
+                if (e.Value == null)
+                    return Naming.ToValidName(e.SourceResultType.FullName) + "'VAL(0)";
+                else
+                    return Naming.ToValidName(e.SourceResultType.FullName + "_" + e.Value.ToString());
             }
             else
             {
