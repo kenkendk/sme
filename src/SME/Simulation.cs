@@ -207,8 +207,20 @@ namespace SME
         /// <summary>
         /// Run the specified processes.
         /// </summary>
+        /// <param name="processes">The processes to run</param>
         /// <returns>The awaitable task.</returns>
         public void Run(params IProcess[] processes)
+        {
+            Run(processes, null);
+        }
+
+        /// <summary>
+        /// Run the specified processes.
+        /// </summary>
+        /// <param name="processes">The processes to run</param>
+        /// <param name="exitMethod">The exit method, return true to keep running</param>
+        /// <returns>The awaitable task.</returns>
+        public void Run(IProcess[] processes, Func<bool> exitMethod = null)
         {
             if (processes != null)
                 foreach (var p in processes)
@@ -305,8 +317,22 @@ namespace SME
                         };
                     }).ToArray();
 
+                // Determine when to quit
+                if (exitMethod == null)
+                {
+                    // If we have simulation processes that write, wait until all are done
+                    if (running_tasks.Any(x => x.Proc is SimulationProcess && x.HasOutputs))
+                        exitMethod = () => running_tasks.Any(x => x.Proc is SimulationProcess && x.HasOutputs && !x.Task.IsCompleted);
+                    // If we have only have simulation tasks, wait until they are all completed
+                    else if (running_tasks.Any(x => x.Proc is SimulationProcess))
+                        exitMethod = () => running_tasks.Any(x => x.Proc is SimulationProcess && !x.Task.IsCompleted);
+                    // Otherwise, wait until one of them completes
+                    else
+                        exitMethod = () => running_tasks.All(x => !x.Task.IsCompleted);
+                }
+
                 // Keep running until all simulation (stimulation) processes have finished
-                while (running_tasks.Any(x => x.Proc is SimulationProcess /*&& x.HasOutputs*/ && !x.Task.IsCompleted))
+                while (exitMethod())
                 {
                     Graph.Execute();
                     var crashes = running_tasks.Where(x => x.Task.Exception != null).SelectMany(x => x.Task.Exception.InnerExceptions);
