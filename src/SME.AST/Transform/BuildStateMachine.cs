@@ -69,6 +69,24 @@ namespace SME.AST.Transform
         }
 
         /// <summary>
+        /// Examines a statement and determines if all branches end with a control flow statement
+        /// </summary>
+        /// <returns><c>true</c>, if control flow was handled, <c>false</c> otherwise.</returns>
+        /// <param name="statement">The statement to examine.</param>
+        private bool HandlesControlFlow(AST.Statement statement)
+        {
+            if (statement is CaseGotoStatement || (statement is ExpressionStatement && ((ExpressionStatement)statement).Expression is AwaitExpression))
+                return true;
+            else if (statement is BlockStatement)
+                return HandlesControlFlow(((BlockStatement)statement).Statements.Last());
+            else if (statement is IfElseStatement)
+                return HandlesControlFlow(((IfElseStatement)statement).TrueStatement) && HandlesControlFlow(((IfElseStatement)statement).FalseStatement);
+            else
+                return false;
+
+        }
+
+        /// <summary>
         /// Splits a <see cref="WhileStatement"/> into a set of cases
         /// </summary>
         /// <returns>The number of new fragments.</returns>
@@ -102,10 +120,10 @@ namespace SME.AST.Transform
             }
 
             // TODO: Handle if we fall out of the loop
-            if (!(trueStatements.Last() is CaseGotoStatement))
+            if (!HandlesControlFlow(trueStatements.Last()))
                 trueStatements.Add(new CaseGotoStatement(selflabel, true));            
             // Jump to self, not next at the end of the loop
-            else
+            else if (trueStatements.Last() is CaseGotoStatement)
                 trueStatements[trueStatements.Count - 1] = new CaseGotoStatement(selflabel, false);
 
             ifs.TrueStatement = ToBlockStatement(trueStatements);
@@ -170,10 +188,10 @@ namespace SME.AST.Transform
             }
 
             // TODO: Handle if we fall out of the loop
-            if (!(trueStatements.Last() is CaseGotoStatement))
+            if (!HandlesControlFlow(trueStatements.Last()))
                 trueStatements.Add(new CaseGotoStatement(selflabel - 1, true));
             // Jump to self, not next at the end of the loop
-            else
+            else if (trueStatements.Last() is CaseGotoStatement)
                 trueStatements[trueStatements.Count - 1] = new CaseGotoStatement(selflabel - 1, false);
 
             ifs.TrueStatement = ToBlockStatement(trueStatements);
