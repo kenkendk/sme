@@ -450,7 +450,7 @@ end ");
             #line hidden
             
             #line 100 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName(p.Name) ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ProcessNameToValidName(p.SourceInstance.Instance) ));
             
             #line default
             #line hidden

@@ -97,7 +97,7 @@ begin
 <# foreach (var p in processes) { #>
 
     -- Entity  <#= p.InstanceName #> signals
-    <#= Naming.ToValidName(p.InstanceName) #>: entity work.<#= Naming.ToValidName(p.Name) #>
+    <#= Naming.ToValidName(p.InstanceName) #>: entity work.<#= Naming.ProcessNameToValidName(p.SourceInstance.Instance) #>
 <# var lastel = p.SharedVariables.Cast<object>().Concat(p.SharedSignals).LastOrDefault();
    if (lastel != null) {
 #>

@@ -69,7 +69,7 @@ namespace SME.VHDL.Templates {
             #line hidden
             
             #line 29 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Process.Name ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ProcessNameToValidName(Process.SourceInstance.Instance) ));
             
             #line default
             #line hidden
@@ -513,7 +513,7 @@ end ");
             #line hidden
             
             #line 89 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Process.Name ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ProcessNameToValidName(Process.SourceInstance.Instance) ));
             
             #line default
             #line hidden
@@ -525,7 +525,7 @@ end ");
             #line hidden
             
             #line 91 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Process.Name ));
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ProcessNameToValidName(Process.SourceInstance.Instance) ));
             
             #line default
             #line hidden
