@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using SME.AST;
 
 namespace SME.AST.Transform
@@ -30,22 +31,11 @@ namespace SME.AST.Transform
 			apply = apply ?? (x => new IASTTransform[0]);
 			postapply = postapply ?? (x => new IASTTransform[0]);
 
-			var methods = new List<Method>();
-
-            foreach (var n in network.All((el, direction) =>
-            {
-                if (direction == VisitorState.Enter && el is Method)
-                {
-                    methods.Add(el as Method);
-                    return true;
-                }
-
-                return true;
-            }))
-            {
+            foreach (var n in network.All())
                 foreach (var f in directapply)
                     f.Transform(n);
-            }
+
+            var methods = network.All().OfType<Method>().ToList();
 
             // Pre-transforms are in Pre-Order
             foreach (var m in methods)
