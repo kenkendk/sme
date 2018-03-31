@@ -159,6 +159,7 @@ namespace SME.VHDL
                 new SME.AST.Transform.IASTTransform[] {
                     new Transformations.AssignNames(),
                     new SME.AST.Transform.RenameDuplicateVariables(),
+                    new SME.AST.Transform.BuildStateMachine(),
                 },
                 m => new SME.AST.Transform.IASTTransform[] {
                     new Transformations.RewriteChainedAssignments(this, m),
@@ -181,7 +182,6 @@ namespace SME.VHDL
 					new Transformations.FixForLoopIncrements(this, m),
 					new Transformations.RewireUnaryOperators(this),
                     new Transformations.UntangleElseStatements(this, m),
-                    new SME.AST.Transform.BuildStateMachine(),
                 },
 				m => new SME.AST.Transform.IASTTransform[] {
                     new SME.AST.Transform.RemoveExtraParenthesis()
