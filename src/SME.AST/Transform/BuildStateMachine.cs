@@ -17,7 +17,7 @@ namespace SME.AST.Transform
             /// <summary>
             /// The target label
             /// </summary>
-            public readonly int CaseLabel;
+            public int CaseLabel;
 
             /// <summary>
             /// A flag indicating if the statement is a fall-through request
@@ -56,6 +56,10 @@ namespace SME.AST.Transform
                 return SplitStatement((WhileStatement)statement, collected, fragments);
             else if (statement is ForStatement)
                 return SplitStatement((ForStatement)statement, collected, fragments);
+            else if (statement is IfElseStatement)
+                return SplitStatement((IfElseStatement)statement, collected, fragments);
+            else if (statement is SwitchStatement)
+                return SplitStatement((SwitchStatement)statement, collected, fragments);
             else if (statement is ExpressionStatement && ((ExpressionStatement)statement).Expression is AwaitExpression)
             {
                 EndFragment(collected, fragments, fragments.Count + 1, false);
@@ -87,6 +91,157 @@ namespace SME.AST.Transform
         }
 
         /// <summary>
+        /// Splits a <see cref="SwitchStatement"/> into a set of cases
+        /// </summary>
+        /// <returns>The number of new fragments.</returns>
+        /// <param name="statement">The statement(s) to split.</param>
+        /// <param name="collected">The currently collected statements.</param>
+        /// <param name="fragments">The currently collected fragments.</param>
+        private int SplitStatement(SwitchStatement statement, List<Statement> collected, List<List<Statement>> fragments)
+        {
+            // If there are no awaits inside, just treat it like a regular code block
+            if (!statement.All().OfType<AwaitExpression>().Any())
+            {
+                collected.Add(statement);
+                return 0;
+            }
+
+            // Split into cases that has await, and regular cases
+            var regulars = new List<Tuple<Expression[], Statement[]>>();
+            var specials = new List<Tuple<Expression[], Statement[]>>();
+            foreach (var c in statement.Cases)
+            {
+                if (c.Item2.SelectMany(x => x.All().OfType<AwaitExpression>()).Any())
+                    specials.Add(c);
+                else
+                    regulars.Add(c);
+            }
+
+            if (specials.Count == 0)
+                throw new Exception("Unexpected number of specials");
+
+            IfElseStatement prev = null;
+            IfElseStatement first = null;
+            while (specials.Count > 0)
+            {
+                // Build each comparison statement
+                var conds = specials.First().Item1.Select(x => new BinaryOperatorExpression(
+                    statement.SwitchExpression,
+                    ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.Equality,
+                    x
+                )
+                { SourceResultType = statement.SwitchExpression.SourceResultType.Module.ImportReference(typeof(bool)) });
+
+                // Then condense into a single statement
+                Expression cond;
+                if (specials.First().Item1.Length == 1)
+                    cond = conds.First();
+                else
+                    cond = conds.Aggregate((a, b) => new BinaryOperatorExpression(a, ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.ConditionalOr, b) { SourceResultType = statement.SwitchExpression.SourceResultType.Module.ImportReference(typeof(bool)) });
+
+                var ifs = new IfElseStatement(cond, ToBlockStatement(specials.First().Item2.Where(x => !(x is BreakStatement))), new EmptyStatement());
+                if (first == null)
+                    first = ifs;                
+                if (prev != null)
+                    prev.FalseStatement = ifs;
+                prev = ifs;
+                specials.RemoveAt(0);
+            }
+
+            if (regulars.Count > 0)
+            {
+                prev.FalseStatement = statement;
+                statement.Cases = regulars.ToArray();
+            }
+            first.UpdateParents();
+
+            return SplitStatement(first, collected, fragments);
+        }
+
+        /// <summary>
+        /// Splits a <see cref="IfElseStatement"/> into a set of cases
+        /// </summary>
+        /// <returns>The number of new fragments.</returns>
+        /// <param name="statement">The statement(s) to split.</param>
+        /// <param name="collected">The currently collected statements.</param>
+        /// <param name="fragments">The currently collected fragments.</param>
+        private int SplitStatement(IfElseStatement statement, List<Statement> collected, List<List<Statement>> fragments)
+        {
+            // If there are no awaits inside, just treat it like a regular code block
+            if (!statement.All().OfType<AwaitExpression>().Any())
+            {
+                collected.Add(statement);
+                return 0;
+            }
+
+            var conditionlabel = fragments.Count;
+            EndFragment(collected, fragments, fragments.Count + 1, true);
+
+            var ifs = new IfElseStatement(statement.Condition, new EmptyStatement(), new EmptyStatement());
+            collected.Add(ifs);
+
+            EndFragment(collected, fragments, -1, true);
+
+            var truelabel = fragments.Count;
+            var truestatements = SplitStatement(statement.TrueStatement, collected, fragments);
+
+            EndFragment(collected, fragments, fragments.Count + 1, true);
+            var falselabel = fragments.Count;
+
+            if (statement.FalseStatement is EmptyStatement)
+            {
+                // Move all targets one up, as we remove an empty case
+                for (var i = truelabel; i < falselabel; i++)
+                    foreach (var c in fragments[i])
+                        foreach (var cx in c.All().OfType<CaseGotoStatement>())
+                            cx.CaseLabel = cx.CaseLabel - 1;
+
+                ifs.TrueStatement = ToBlockStatement(fragments[truelabel]);
+                ifs.FalseStatement = new CaseGotoStatement(falselabel - 1, true);
+                ifs.UpdateParents();
+
+                fragments.RemoveAt(truelabel);
+            }
+            else
+            {
+                // Keep a list of all targets that point out of the current block
+                var topatch = new List<CaseGotoStatement>();
+                for (var i = truelabel; i < fragments.Count; i++)
+                    foreach (var c in fragments[i])
+                        foreach (var cx in c.All().OfType<CaseGotoStatement>())
+                            if (cx.CaseLabel == fragments.Count)
+                                topatch.Add(cx);
+
+                var falsestatements = SplitStatement(statement.FalseStatement, collected, fragments);
+                EndFragment(collected, fragments, fragments.Count + 1, true);
+                var endlabel = fragments.Count;
+
+                // Move all targets up, as we remove two fragments
+                // (the inital fragments for true/false are embedded in
+                //   the if-else-statement )
+                for (var i = truelabel; i < fragments.Count; i++)
+                    foreach (var c in fragments[i])
+                        foreach (var cx in c.All().OfType<CaseGotoStatement>())
+                            cx.CaseLabel = cx.CaseLabel - (i >= falselabel ? 2 : 1);
+
+                // Fix those that point to the next instruction,
+                // so they skip the false fragments
+                foreach (var s in topatch)
+                    s.CaseLabel = endlabel - 2;
+
+                ifs.TrueStatement = ToBlockStatement(fragments[truelabel]);
+                ifs.FalseStatement = ToBlockStatement(fragments[falselabel]);
+                ifs.UpdateParents();
+
+                fragments.RemoveAt(falselabel);
+                fragments.RemoveAt(truelabel);
+            }
+
+            ifs.UpdateParents();
+            return fragments.Count - conditionlabel;                
+        }
+
+        /// <summary>
         /// Splits a <see cref="WhileStatement"/> into a set of cases
         /// </summary>
         /// <returns>The number of new fragments.</returns>
@@ -97,39 +252,54 @@ namespace SME.AST.Transform
         {
             if (!statement.All().OfType<AwaitExpression>().Any())
                 throw new Exception($"Cannot process a while statement without await calls in the body");
-            
-            var ifs = new IfElseStatement(statement.Condition, new EmptyStatement(), new EmptyStatement());
-            collected.Add(ifs);
+
+            EndFragment(collected, fragments, fragments.Count + 1, true);
             var selflabel = fragments.Count;
-            EndFragment(collected, fragments, -1, true);
 
-            var extras = SplitStatement(statement.Body, collected, fragments);
-            List<Statement> trueStatements;
+            var ifs = new IfElseStatement(statement.Condition, statement.Body, new EmptyStatement()) { Parent = statement.Parent };
+            ifs.UpdateParents();
 
-            // Build the loop body into a list
-            if (extras == 0)
+            var rewired = SplitStatement(ifs, collected, fragments);
+            var trailfragment = fragments.Last();
+            var exitlabel = fragments.Count;
+
+            // If the while loop ends with await, we can just re-wire the last label
+            if (trailfragment.Count == 1 && trailfragment.First() is IfElseStatement && ((IfElseStatement)trailfragment.First()).Condition == statement.Condition)
             {
-                trueStatements = new List<Statement>(collected);
-                collected.Clear();
+                foreach (var s in fragments.Last().SelectMany(x => x.All().OfType<CaseGotoStatement>()).Where(x => x.CaseLabel == exitlabel && !x.FallThrough))
+                    s.CaseLabel = selflabel;
             }
             else
             {
-                trueStatements = fragments[selflabel + 1];
-                fragments.RemoveAt(selflabel + 1);
-                extras--;
+                // If we have additional code after the await, 
+                // we need to move the last fragment up before the while loop,
+                // so the code can fall-through, into the while loop
+                foreach (var s in fragments.SelectMany(x => x).SelectMany(x => x.All().OfType<CaseGotoStatement>()))
+                {
+                    if (s.CaseLabel == exitlabel)
+                    {
+                        // Inject the loop redirect to the loop start,
+                        // but don't redirect the loop exit
+
+                        // NOTE: Does not work if the loop has continue statements
+                        // which is currently not supported
+                        if (s == trailfragment.Last())
+                            s.CaseLabel = selflabel + 1;
+                    }
+                    // Point the last fragment upwards before the loop
+                    else if (s.CaseLabel == fragments.Count - 1)
+                        s.CaseLabel = selflabel;
+                    // Point downwards, skipping the injected state
+                    else if (s.CaseLabel >= selflabel)
+                        s.CaseLabel = s.CaseLabel + 1;
+                }
+                            
+                // Move the fragments around
+                fragments.RemoveAt(fragments.Count - 1);
+                fragments.Insert(selflabel, trailfragment);
             }
 
-            // TODO: Handle if we fall out of the loop
-            if (!HandlesControlFlow(trueStatements.Last()))
-                trueStatements.Add(new CaseGotoStatement(selflabel, true));            
-            // Jump to self, not next at the end of the loop
-            else if (trueStatements.Last() is CaseGotoStatement)
-                trueStatements[trueStatements.Count - 1] = new CaseGotoStatement(selflabel, false);
-
-            ifs.TrueStatement = ToBlockStatement(trueStatements);
-            ifs.FalseStatement = new CaseGotoStatement(fragments.Count, true);
-
-            return extras + 1;
+            return fragments.Count - selflabel;
         }
 
         /// <summary>
@@ -157,47 +327,27 @@ namespace SME.AST.Transform
                 }
             }
 
-            collected.Add(
-                new ExpressionStatement(
-                    new AssignmentExpression(
+            collected.Add(new ExpressionStatement(
+                new AssignmentExpression(
                         new IdentifierExpression(statement.LoopIndex), statement.Initializer)));
-            EndFragment(collected, fragments, fragments.Count + 2, true);
-
-            collected.Add(new ExpressionStatement(statement.Increment));
             EndFragment(collected, fragments, fragments.Count + 1, true);
 
-            var ifs = new IfElseStatement(statement.Condition, new EmptyStatement(), new EmptyStatement());
-            collected.Add(ifs);
-            var selflabel = fragments.Count;
-            EndFragment(collected, fragments, -1, true);
+            var body = new List<Statement>();
+            var variables = new Variable[0];
 
-            var extras = SplitStatement(statement.LoopBody, collected, fragments);
-            List<Statement> trueStatements;
-
-            // Build the loop body into a list
-            if (extras == 0)
+            if (statement.LoopBody is BlockStatement)
             {
-                trueStatements = new List<Statement>(collected);
-                collected.Clear();
+                body.AddRange(((BlockStatement)statement.LoopBody).Statements);
+                variables = ((BlockStatement)statement.LoopBody).Variables;
             }
             else
-            {
-                trueStatements = fragments[selflabel + 1];
-                fragments.RemoveAt(selflabel + 1);
-                extras--;
-            }
+                body.Add(statement.LoopBody);
 
-            // TODO: Handle if we fall out of the loop
-            if (!HandlesControlFlow(trueStatements.Last()))
-                trueStatements.Add(new CaseGotoStatement(selflabel - 1, true));
-            // Jump to self, not next at the end of the loop
-            else if (trueStatements.Last() is CaseGotoStatement)
-                trueStatements[trueStatements.Count - 1] = new CaseGotoStatement(selflabel - 1, false);
+            // NOTE: This does not work if we support break/continue statements
+            body.Add(new ExpressionStatement(statement.Increment));
 
-            ifs.TrueStatement = ToBlockStatement(trueStatements);
-            ifs.FalseStatement = new CaseGotoStatement(fragments.Count, true);
-
-            return extras + 3;
+            var whs = new WhileStatement(statement.Condition, new BlockStatement(body.ToArray(), variables));
+            return SplitStatement(whs, collected, fragments);
         }
 
         /// <summary>
@@ -209,13 +359,16 @@ namespace SME.AST.Transform
         /// <param name="fallThrough"><c>true</c> if the goto is a fallthrough element</param>
         private void EndFragment(List<Statement> collected, List<List<Statement>> fragments, int gotoTarget, bool fallThrough)
         {
-            if (gotoTarget >= 0)
-                collected.Add(new CaseGotoStatement(gotoTarget, fallThrough));
+            if (collected.Count > 0)
+            {
+                if (gotoTarget >= 0)
+                    collected.Add(new CaseGotoStatement(gotoTarget, fallThrough));
 
-            if (collected.Count > 0)                
-                fragments.Add(new List<Statement>(collected));
-
-            collected.Clear();
+                if (collected.Count > 0)
+                    fragments.Add(new List<Statement>(collected));
+                
+                collected.Clear();
+            }
         }
 
 
@@ -297,7 +450,8 @@ namespace SME.AST.Transform
                         new IdentifierExpression(statelabel),
                         ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.Equality,
                         new PrimitiveExpression(enumfields[i].GetTarget().Name, enumfields[i].CecilType)
-                    ),
+                    )
+                    { SourceResultType = enumfields[0].CecilType.Module.ImportReference(typeof(bool)) },
                     ToBlockStatement(fragments[i]),
                     new EmptyStatement()
                 ));
