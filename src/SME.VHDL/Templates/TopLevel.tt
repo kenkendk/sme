@@ -69,28 +69,33 @@ var processes = Network.Processes.Where(x => !x.IsSimulation).ToArray();
 end <#= Network.Name #>;
 
 architecture RTL of <#= Network.Name #> is  
-  -- User defined signals here
-  -- #### USER-DATA-SIGNALS-START
-  -- #### USER-DATA-SIGNALS-END
+    -- User defined signals here
+    -- #### USER-DATA-SIGNALS-START
+    -- #### USER-DATA-SIGNALS-END
 
 <# if (feedbacks.Any()) { #>
-  -- Feedback signals
+    -- Feedback signals
 <#     foreach (var signal in feedbacks.SelectMany(x => x.Signals)) { #>
     signal <#= Naming.ToValidName("current_" + (signal.Parent as AST.Bus).InstanceName + "_" + signal.Name) #>, <#= Naming.ToValidName("next_" + (signal.Parent as AST.Bus).InstanceName + "_" + signal.Name) #>: <#= RS.VHDLWrappedTypeName(signal) #>;
 <#     } #>
 <# } #>
 
-  -- Process ready triggers
+    -- Process ready triggers
 <# foreach (var p in processes) { #>
 
-  signal <#= Naming.ToValidName("FIN_" + p.InstanceName) #><#= p.IsClocked ? string.Empty : ", " + Naming.ToValidName("RDY_" + p.InstanceName) #> : std_logic;
+    signal <#= Naming.ToValidName("FIN_" + p.InstanceName) #><#= p.IsClocked ? string.Empty : ", " + Naming.ToValidName("RDY_" + p.InstanceName) #> : std_logic;
 <# } #>
 
+<# foreach (var bus in processes.SelectMany(x => x.OutputBusses.Intersect(x.InputBusses).Except(feedbacks))) { #>
+    -- Bus <#= bus.Name #> intermediate signals
+<#        foreach(var signal in bus.Signals) { #>
+    signal <#= Naming.ToValidName("next_" + bus.InstanceName + "_" + signal.Name) #>: <#= RS.VHDLWrappedTypeName(signal) #>;
+<#     } #>
 
+<# } #>
 
-
-  -- The primary ready driver signal
-  signal RDY : std_logic;
+    -- The primary ready driver signal
+    signal RDY : std_logic;
 
 begin
 
@@ -214,6 +219,15 @@ begin
                 current_<#= Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name) #> <= next_<#= Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name) #>;
 <#     } #>
 <# } #>
+
+<# foreach (var bus in processes.SelectMany(x => x.OutputBusses.Intersect(x.InputBusses)).Except(feedbacks).Where(x => !x.IsTopLevelInput)) { #>
+                -- Bus <#= bus.Name #> intermediate signals
+<#        foreach(var signal in bus.Signals) { #>
+                <#= Naming.ToValidName(bus.InstanceName + "_" + signal.Name) #> <= <#= Naming.ToValidName("next_" + bus.InstanceName + "_" + signal.Name) #>;
+<#     } #>
+
+<# } #>
+
             end if;
         end if;
     end process;
