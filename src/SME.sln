@@ -45,6 +45,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleMIPS", "Examples\Simp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stopwatch", "Examples\Stopwatch\Stopwatch.csproj", "{82CF8963-104B-44EC-8D7A-F7770CBB29D0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StateMachineTester", "Examples\StateMachineTester\StateMachineTester.csproj", "{8234EDB4-F82F-4A11-902F-8ED48D3068C9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -131,6 +133,10 @@ Global
 		{82CF8963-104B-44EC-8D7A-F7770CBB29D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{82CF8963-104B-44EC-8D7A-F7770CBB29D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{82CF8963-104B-44EC-8D7A-F7770CBB29D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8234EDB4-F82F-4A11-902F-8ED48D3068C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8234EDB4-F82F-4A11-902F-8ED48D3068C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8234EDB4-F82F-4A11-902F-8ED48D3068C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8234EDB4-F82F-4A11-902F-8ED48D3068C9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -148,6 +154,7 @@ Global
 		{09EF6B4D-E422-471B-BCA9-C976E75A190E} = {0F94E837-9D61-47FE-98A0-EDFA671A44FA}
 		{6DAC7D6D-E2FF-4E65-AEBD-A7614757EFC3} = {0F94E837-9D61-47FE-98A0-EDFA671A44FA}
 		{82CF8963-104B-44EC-8D7A-F7770CBB29D0} = {0F94E837-9D61-47FE-98A0-EDFA671A44FA}
+		{8234EDB4-F82F-4A11-902F-8ED48D3068C9} = {0F94E837-9D61-47FE-98A0-EDFA671A44FA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {919EE0E7-607B-4DB0-9FD2-27B597206F06}
