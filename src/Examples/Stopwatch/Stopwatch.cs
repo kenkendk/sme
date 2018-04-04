@@ -14,55 +14,37 @@ namespace Stopwatch
 
         protected async override System.Threading.Tasks.Task OnTickAsync()
         {
-            // Zero
-            while (!buttons.startstop)
-            {
-                output.running = false;
-                output.reset = false;
+            output.running = false;
+            output.reset = false;
+
+            // Wait for a trigger event
+            while (!buttons.startstop && !buttons.reset)
                 await ClockAsync();
-            }
 
-            while (!(!buttons.startstop && buttons.reset))
+            // Check if we are in the reset or start
+            if (buttons.reset)
             {
-                // Start
-                while (!(!buttons.reset && !buttons.startstop))
-                {
-                    output.running = true;
-                    output.reset = false;
-                    await ClockAsync();
-                }
-
-                // Running
-                while (!buttons.startstop)
-                {
-                    output.running = true;
-                    output.reset = false;
-                    await ClockAsync();
-                }
-
-                // Stop
-                while (!(!buttons.reset && !buttons.startstop))
-                {
-                    output.running = false;
-                    output.reset = false;
-                    await ClockAsync();
-                }
-
-                // Stopped 
-                while (!buttons.reset && !buttons.startstop)
-                {
-                    output.running = false;
-                    output.reset = false;
-                    await ClockAsync();
-                }
-            }
-
-            // Reset
-            while (!(!buttons.reset && !buttons.startstop))
-            {
-                output.running = false;
+                // Keep resetting until the button is released
                 output.reset = true;
-                await ClockAsync();
+                while (buttons.reset)
+                    await ClockAsync();
+                
+                output.reset = false;
+            }
+            else
+            {
+                // Now running, wait for button to be pressed
+                output.running = true;
+                while (buttons.startstop)
+                    await ClockAsync();
+                // Keep running until the button is pressed
+                while (!buttons.startstop)
+                    await ClockAsync();
+
+                // Stop running, and wait for the button to be released
+                output.running = false;
+                while (buttons.startstop)
+                    await ClockAsync();
             }
         }
     }
