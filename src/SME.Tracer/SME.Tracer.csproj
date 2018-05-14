@@ -43,6 +43,7 @@
     <Compile Include="CSVTracer.cs" />
     <Compile Include="JsonTracer.cs" />
     <Compile Include="ExtensionMethods.cs" />
+    <Compile Include="JsonTypes.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SME\SME.csproj">
