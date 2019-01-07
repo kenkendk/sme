@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace SME
 {
@@ -362,9 +363,9 @@ namespace SME
         private static readonly Dictionary<string, Scope> _scopes;
 
         /// <summary>
-        /// The key used to store data in the CallContext
+        /// The shared scope key
         /// </summary>
-        private const string CONTEXT_SCOPE_KEY = "SME_SCOPE_KEY";
+        private static AsyncLocal<string> _scopekey = new AsyncLocal<string>();
 
         /// <summary>
         /// Gets or sets the scope key from the call context.
@@ -372,8 +373,8 @@ namespace SME
         /// <value>The scope key.</value>
         private static string ScopeKey
         {
-            get { return System.Runtime.Remoting.Messaging.CallContext.GetData(CONTEXT_SCOPE_KEY) as string; }
-            set { System.Runtime.Remoting.Messaging.CallContext.SetData(CONTEXT_SCOPE_KEY, value); }
+            get => _scopekey.Value;
+            set => _scopekey.Value = value;
         }
         #endregion
     }

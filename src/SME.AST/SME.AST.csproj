@@ -1,107 +1,19 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\SME\SME.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NewtonSoft.Json" Version="12.0.1" />
+    <PackageReference Include="ICSharpCode.Decompiler" Version="3.0.2.3465" />
+    <PackageReference Include="Mono.Cecil" Version="0.10.0-beta7" />
+  </ItemGroup>
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{B1C84452-3FA5-4176-BAB6-EF27DE76D452}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <OutputType>library</OutputType>
+    <TargetFramework>netstandard2</TargetFramework>
     <RootNamespace>SME.AST</RootNamespace>
-    <AssemblyName>SME.AST</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ReleaseVersion>0.3.2</ReleaseVersion>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug</OutputPath>
-    <DefineConstants>DEBUG;</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <ConsolePause>false</ConsolePause>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release</OutputPath>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <ConsolePause>false</ConsolePause>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="Humanizer">
-      <HintPath>..\packages\Humanizer.Core.2.2.0\lib\netstandard1.0\Humanizer.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil">
-      <HintPath>..\packages\Mono.Cecil.0.10.0-beta7\lib\net40\Mono.Cecil.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Mdb">
-      <HintPath>..\packages\Mono.Cecil.0.10.0-beta7\lib\net40\Mono.Cecil.Mdb.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Pdb">
-      <HintPath>..\packages\Mono.Cecil.0.10.0-beta7\lib\net40\Mono.Cecil.Pdb.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Rocks">
-      <HintPath>..\packages\Mono.Cecil.0.10.0-beta7\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Collections.Immutable">
-      <HintPath>..\packages\System.Collections.Immutable.1.3.1\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll</HintPath>
-    </Reference>
-    <Reference Include="System.ValueTuple">
-      <HintPath>..\packages\System.ValueTuple.4.3.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
-    </Reference>
-    <Reference Include="ICSharpCode.Decompiler">
-      <HintPath>..\packages\ICSharpCode.Decompiler.3.0.2.3465\lib\net45\ICSharpCode.Decompiler.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.11.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ASTTypes.cs" />
-    <Compile Include="HelperMethods.cs" />
-    <Compile Include="StatementTypes.cs" />
-    <Compile Include="ExpressionTypes.cs" />
-    <Compile Include="OperatorEnumHelpers.cs" />
-    <Compile Include="EnumerationExtensions.cs" />
-    <Compile Include="ParseProcesses\ParseProcesses.cs" />
-    <Compile Include="ParseProcesses\ParseProcessesExpression.cs" />
-    <Compile Include="ParseProcesses\ParseProcessesIL.cs" />
-    <Compile Include="ParseProcesses\ParseProcessesStatement.cs" />
-    <Compile Include="ParseProcesses\ParseProcessesTypeResolve.cs" />
-    <Compile Include="ParseProcesses\ParseProcessesVariableLookup.cs" />
-    <Compile Include="JsonHelpers.cs" />
-    <Compile Include="CloneHelper.cs" />
-    <Compile Include="Transform\BuildTransformations.cs" />
-    <Compile Include="Transform\IASTTransform.cs" />
-    <Compile Include="Transform\RemoveUIntPtrCast.cs" />
-    <Compile Include="Transform\RemoveDoubleCast.cs" />
-    <Compile Include="Transform\WrapIfComposite.cs" />
-    <Compile Include="Transform\RemoveSelfAssignments.cs" />
-    <Compile Include="Transform\RemoveTrailingBreakStatement.cs" />
-    <Compile Include="Transform\RewireCompositeAssignment.cs" />
-    <Compile Include="Transform\RemoveExtraParenthesis.cs" />
-    <Compile Include="Transform\RenameDuplicateVariables.cs" />
-    <Compile Include="Transform\RecontructSwitchStatement.cs" />
-    <Compile Include="Transform\BuildStateMachine.cs" />
-    <Compile Include="Transform\ForLoopToWhile.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\SME\SME.csproj">
-      <Project>{CDC88908-F9B8-40CB-B746-86C8A4C1871B}</Project>
-      <Name>SME</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="SME.AST.nuspec" />
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="ParseProcesses\" />
-    <Folder Include="Transform\" />
-  </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+
 </Project>

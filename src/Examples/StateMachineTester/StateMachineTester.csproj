@@ -1,52 +1,17 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\SME\SME.csproj" />
+    <ProjectReference Include="..\..\SME.Tracer\SME.Tracer.csproj" />
+    <ProjectReference Include="..\..\SME.VHDL\SME.VHDL.csproj" />
+    <ProjectReference Include="..\..\SME.GraphViz\SME.GraphViz.csproj" />
+    <ProjectReference Include="..\..\SME.CPP\SME.CPP.csproj" />
+  </ItemGroup>
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{8234EDB4-F82F-4A11-902F-8ED48D3068C9}</ProjectGuid>
     <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
     <RootNamespace>StateMachineTester</RootNamespace>
-    <AssemblyName>StateMachineTester</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
-    <ReleaseVersion>0.3.2</ReleaseVersion>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug</OutputPath>
-    <DefineConstants>DEBUG;</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <ExternalConsole>true</ExternalConsole>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release</OutputPath>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <ExternalConsole>true</ExternalConsole>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\SME\SME.csproj">
-      <Project>{CDC88908-F9B8-40CB-B746-86C8A4C1871B}</Project>
-      <Name>SME</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\SME.VHDL\SME.VHDL.csproj">
-      <Project>{E796351B-EB59-4686-9B54-DE4A284E0433}</Project>
-      <Name>SME.VHDL</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\SME.Tracer\SME.Tracer.csproj">
-      <Project>{325E539D-9BA8-4EAE-BE6E-D7226A8E8B45}</Project>
-      <Name>SME.Tracer</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+
 </Project>

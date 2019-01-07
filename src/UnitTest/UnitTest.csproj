@@ -1,112 +1,25 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\NUnit.3.10.1\build\NUnit.props" Condition="Exists('..\packages\NUnit.3.10.1\build\NUnit.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\SME\SME.csproj" />
+    <ProjectReference Include="..\Examples\AES256CBC\AES256CBC.csproj" />
+    <ProjectReference Include="..\Examples\ColorBin\ColorBin.csproj" />
+    <ProjectReference Include="..\Examples\ExternalComponent\ExternalComponent.csproj" />
+    <ProjectReference Include="..\Examples\NoiseFilter\NoiseFilter.csproj" />
+    <ProjectReference Include="..\Examples\SimpleComponents\SimpleComponents.csproj" />
+    <ProjectReference Include="..\Examples\SimpleTrader\SimpleTrader.csproj" />
+    <ProjectReference Include="..\Examples\StatebasedCounter\StatebasedCounter.csproj" />
+    <ProjectReference Include="..\Examples\StatedAdder\StatedAdder.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NUnit" Version="3.10.1" />
+  </ItemGroup>
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{CCC467E5-94DD-4028-9F78-2CAF31BD64E5}</ProjectGuid>
     <OutputType>Library</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
     <RootNamespace>UnitTest</RootNamespace>
-    <AssemblyName>UnitTest</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
-    <ReleaseVersion>0.3.2</ReleaseVersion>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug</OutputPath>
-    <DefineConstants>DEBUG;</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release</OutputPath>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="nunit.framework">
-      <HintPath>..\packages\NUnit.3.10.1\lib\net45\nunit.framework.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Test.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Examples\AES256CBC\AES256CBC.csproj">
-      <Project>{F567A5CA-0E4F-4641-BB98-191933A2DBBB}</Project>
-      <Name>AES256CBC</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Examples\ColorBin\ColorBin.csproj">
-      <Project>{6BB5AFD0-8B33-42C0-960C-235C7350E52B}</Project>
-      <Name>ColorBin</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Examples\ExternalComponent\ExternalComponent.csproj">
-      <Project>{979E169E-0BE1-4FEB-AEF2-5B42E3873ECD}</Project>
-      <Name>ExternalComponent</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Examples\NoiseFilter\NoiseFilter.csproj">
-      <Project>{91759F1E-3279-406C-B621-4C3296AF65A6}</Project>
-      <Name>NoiseFilter</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Examples\SimpleComponents\SimpleComponents.csproj">
-      <Project>{C1716AA9-45FF-4103-AD48-5333E325C9D9}</Project>
-      <Name>SimpleComponents</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Examples\SimpleMemoryBus\SimpleMemoryBus.csproj">
-      <Project>{2BAC28BE-A503-4534-BA59-171FE4313317}</Project>
-      <Name>SimpleMemoryBus</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Examples\SimpleNestedComponent\SimpleNestedComponent.csproj">
-      <Project>{1565B41E-DBF3-49B9-9A07-B9E31EF6861F}</Project>
-      <Name>SimpleNestedComponent</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Examples\SimpleTrader\SimpleTrader.csproj">
-      <Project>{83BF7F48-BB3D-40C0-931D-B5BBCA93C92F}</Project>
-      <Name>SimpleTrader</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Examples\StatebasedCounter\StatebasedCounter.csproj">
-      <Project>{09EF6B4D-E422-471B-BCA9-C976E75A190E}</Project>
-      <Name>StatebasedCounter</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Examples\StatedAdder\StatedAdder.csproj">
-      <Project>{1006B782-C1DF-4D0C-9D91-B940B03A53ED}</Project>
-      <Name>StatedAdder</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SME\SME.csproj">
-      <Project>{CDC88908-F9B8-40CB-B746-86C8A4C1871B}</Project>
-      <Name>SME</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SME.AST\SME.AST.csproj">
-      <Project>{B1C84452-3FA5-4176-BAB6-EF27DE76D452}</Project>
-      <Name>SME.AST</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SME.Components\SME.Components.csproj">
-      <Project>{3F409401-0FB3-4481-A860-6FFAD20E3EFA}</Project>
-      <Name>SME.Components</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SME.CPP\SME.CPP.csproj">
-      <Project>{9F28DC04-2A0C-4F87-9E82-D6679DE94017}</Project>
-      <Name>SME.CPP</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SME.GraphViz\SME.GraphViz.csproj">
-      <Project>{268A0B13-B84C-42F1-96D9-96550ED2F71F}</Project>
-      <Name>SME.GraphViz</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SME.Tracer\SME.Tracer.csproj">
-      <Project>{325E539D-9BA8-4EAE-BE6E-D7226A8E8B45}</Project>
-      <Name>SME.Tracer</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SME.VHDL\SME.VHDL.csproj">
-      <Project>{E796351B-EB59-4686-9B54-DE4A284E0433}</Project>
-      <Name>SME.VHDL</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+
 </Project>

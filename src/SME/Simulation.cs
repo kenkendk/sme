@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SME
@@ -437,19 +438,19 @@ namespace SME
 		/// </summary>
         private static readonly Dictionary<string, Simulation> _scopes = new Dictionary<string, Simulation>();
 
-		/// <summary>
-		/// The key used to store data in the CallContext
-		/// </summary>
-		private const string CONTEXT_SCOPE_KEY = "SME_SIMULATION_SCOPE_KEY";
+        /// <summary>
+        /// The shared scope key
+        /// </summary>
+        private static AsyncLocal<string> _scopekey = new AsyncLocal<string>();
 
-		/// <summary>
-		/// Gets or sets the scope key from the call context.
-		/// </summary>
-		/// <value>The scope key.</value>
-		private static string ScopeKey
-		{
-			get { return System.Runtime.Remoting.Messaging.CallContext.GetData(CONTEXT_SCOPE_KEY) as string; }
-			set { System.Runtime.Remoting.Messaging.CallContext.SetData(CONTEXT_SCOPE_KEY, value); }
-		}
+        /// <summary>
+        /// Gets or sets the scope key from the call context.
+        /// </summary>
+        /// <value>The scope key.</value>
+        private static string ScopeKey
+        {
+            get => _scopekey.Value;
+            set => _scopekey.Value = value;
+        }
     }
 }
