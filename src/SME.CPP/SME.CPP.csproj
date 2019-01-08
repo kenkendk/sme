@@ -11,6 +11,11 @@
     <PackageReference Include="System.CodeDom" Version="*" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="Templates/*.hpp" />
+    <EmbeddedResource Include="Templates/*.cpp" />
+  </ItemGroup>
+
   <PropertyGroup>
     <OutputType>library</OutputType>
     <TargetFramework>netstandard2</TargetFramework>
