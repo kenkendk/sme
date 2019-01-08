@@ -23,10 +23,11 @@ namespace SME
 	/// <summary>
 	/// Helper interface to access methods in an untyped manner
 	/// </summary>
-	internal interface IFixedArrayInteraction
+	public interface IFixedArrayInteraction
 	{
 		void Propagate();
 		void Forward();
+		bool CanRead(int index);
 	}
 
 	/// <summary>
@@ -109,6 +110,16 @@ namespace SME
 		public int Length
 		{
 			get { return m_stage.Length; }
+		}
+
+		/// <summary>
+		/// Gets a value indicating if the index can be read
+		/// </summary>
+		/// <param name="index">The index to read</param>
+		/// <returns><c>true</c> if the index can be read, <c>false</c> otherwise</returns>
+		public bool CanRead(int index)
+		{
+			return m_initialized[index];
 		}
 	}
 }

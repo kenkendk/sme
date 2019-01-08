@@ -188,9 +188,14 @@ namespace SME.Tracer
 					var attr = v.Item1.Property.GetCustomAttributes(typeof(FixedArrayLengthAttribute), false).Cast<FixedArrayLengthAttribute>().FirstOrDefault();
 					var eltype = v.Item1.Property.PropertyType.GetGenericArguments().First();
 					var m = v.Item2.GetType().GetProperties().FirstOrDefault(x => x.GetIndexParameters().Length == 1);
-
+                    var fixedInteraction = (IFixedArrayInteraction)v.Item2;
 					try
 					{
+                        if (!fixedInteraction.CanRead(0))
+                        {
+                            m_writer.WriteValue('U');
+                            continue;
+                        }
 						m.GetValue(v.Item2, new object[] { 0 });
 					}
 					catch (Exception)
@@ -201,7 +206,12 @@ namespace SME.Tracer
 
 					m_writer.WriteStartArray();
 					for (var i = 0; i < attr.Length; i++)
-						m_writer.WriteValue(m.GetValue(v.Item2, new object[] { i }));
+                    {
+                        if (!fixedInteraction.CanRead(0))
+                            m_writer.WriteValue('U');
+                        else
+						    m_writer.WriteValue(m.GetValue(v.Item2, new object[] { i }));
+                    }
 					m_writer.WriteEndArray();
 				}
 				else if (v.Item2 != null && v.Item2.GetType().IsConstructedGenericType)

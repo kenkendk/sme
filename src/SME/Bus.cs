@@ -189,6 +189,16 @@ namespace SME
 		}
 
 		/// <summary>
+		/// Checks if the property can be read
+		/// </summary>
+		/// <param name="name">The property to check</param>
+		/// <returns><c>true</c> if the property can be read, <c>false</c> otherwise</returns>
+		public bool CanRead(string name)
+		{
+			return m_readValues.ContainsKey(name);
+		}
+
+		/// <summary>
 		/// Drives the bus and propagates all writen signals into the read side
 		/// </summary>
 		public virtual void Propagate()

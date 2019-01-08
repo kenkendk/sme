@@ -86,5 +86,11 @@ namespace SME.InternalItems
         /// Calls the Propagate method
         /// </summary>
         public void Propagate() => m_target.Propagate();
+        /// <summary>
+        /// Checks if the property can be read
+        /// </summary>
+        /// <param name="name">The property to check</param>
+        /// <returns><c>true</c> if the property can be read, <c>false</c> otherwise</returns>
+        public bool CanRead(string name) => m_target.CanRead(name);
     }
 }

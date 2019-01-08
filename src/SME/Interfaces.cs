@@ -9,15 +9,49 @@ namespace SME
 	/// </summary>
 	public interface IBus
 	{
+		/// <summary>
+		/// The type of the mapped bus
+		/// </summary>
+		/// <value></value>
 		Type BusType { get; }
+		/// <summary>
+		/// Propagates staged values
+		/// </summary>
 		void Propagate();
+		/// <summary>
+		/// Forwards staged values
+		/// </summary>
 		void Forward();
+		/// <summary>
+		/// Returns a value indicating if any values are staged
+		/// </summary>
 		bool AnyStaged();
-		IEnumerable<string> NonStaged();
-		Clock Clock { get; }
-		IBus Manager { get; }
+        /// <summary>
+        /// Returns a list of non-staged properties
+        /// </summary>
+        IEnumerable<string> NonStaged();
+        /// <summary>
+        /// Returns the clock used on the bus
+        /// </summary>
+        Clock Clock { get; }
+        /// <summary>
+        /// Returns the manager for the bus
+        /// </summary>
+        IBus Manager { get; }
+        /// <summary>
+        /// Returns a value indicating if the bus is internal
+        /// </summary>
         bool IsInternal { get; }
+		/// <summary>
+		/// Returns a value indicating if the bus is clocked
+		/// </summary>
         bool IsClocked { get; }
+        /// <summary>
+        /// Checks if the property can be read
+        /// </summary>
+        /// <param name="name">The property to check</param>
+        /// <returns><c>true</c> if the property can be read, <c>false</c> otherwise</returns>
+        bool CanRead(string property);
 	}
 
     /// <summary>
