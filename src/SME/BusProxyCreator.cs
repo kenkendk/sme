@@ -20,14 +20,14 @@ namespace SME
 		/// <param name="clock">The clock to tick with</param>
 		/// <param name="isClocked">A value indicating if the bus is clocked</param>
 		/// <param name="isInternal">A value indicating if the bus is internal</param>
-        internal static IBus CreateBusProxy(Type @interface, Clock clock, bool isClocked, bool isInternal)
+        internal static IRuntimeBus CreateBusProxy(Type @interface, Clock clock, bool isClocked, bool isInternal)
         {
             if (@interface == null)
                 throw new ArgumentNullException(nameof(@interface));
             if (!@interface.IsInterface)
                 throw new Exception($"Cannot create proxy from non-interface type: {@interface.FullName}");
             if (!typeof(IBus).IsAssignableFrom(@interface))
-                throw new Exception($"Cannot create proxy from interface type: {@interface.FullName} as it does not implement {nameof(IBus)}");
+                throw new Exception($"Cannot create proxy from interface type: {@interface.FullName} as it does not implement {nameof(IRuntimeBus)}");
     
             if (!_interfaceCache.ContainsKey(@interface))
             {
@@ -40,7 +40,7 @@ namespace SME
                 var module = assembly.DefineDynamicModule(assemblyName.Name);
 
                 // Create the type definition
-                var typeBuilder = module.DefineType(typename, TypeAttributes.Public, typeof(object), new Type[] { @interface });
+                var typeBuilder = module.DefineType(typename, TypeAttributes.Public, typeof(object), new Type[] { @interface, typeof(IRuntimeBus) });
 
                 // Add the field holding the target instance reference
                 var targetField = typeBuilder.DefineField("m_target", typeof(Bus), FieldAttributes.Private | FieldAttributes.InitOnly);
@@ -57,7 +57,7 @@ namespace SME
                 construtorIL.Emit(OpCodes.Ret);
 
                 // Get a list of property names that are used internally and need special handling
-                var coreprops = typeof(IBus).GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance);
+                var coreprops = typeof(IRuntimeBus).GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance);
 
                 // The internal property names needs to be filtered as they are handled different than user values
                 var basenames = coreprops.ToDictionary(x => x.Name);
@@ -66,10 +66,10 @@ namespace SME
                 var gettersetter = new HashSet<MethodInfo>(coreprops.SelectMany(x => new [] { x.GetGetMethod(), x.GetSetMethod() }).Where(x => x != null));
 
                 // Some methods are implemented explicitly, so they need a special mapping access
-                var ifmap = typeof(Bus).GetInterfaceMap(typeof(IBus));
+                var ifmap = typeof(Bus).GetInterfaceMap(typeof(IRuntimeBus));
 
-                // For calls to IBus methods, we simply call the target
-                foreach (var sourceMethod in typeof(IBus).GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance).Where(x => !gettersetter.Contains(x)))
+                // For calls to IRuntimeBus methods, we simply call the target
+                foreach (var sourceMethod in typeof(IRuntimeBus).GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance).Where(x => !gettersetter.Contains(x)))
                 {
                     var parameterTypes = sourceMethod.GetParameters().Select(x => x.ParameterType).ToArray();
 
@@ -96,8 +96,9 @@ namespace SME
                     methodIL.Emit(OpCodes.Ret);
                 }
 
-                // For calls to IBus properties, we simply call the target
-                foreach (var sourceProperty in typeof(IBus).GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance))
+                // For calls to IRuntimeBus properties, we simply call the target
+                // TODO: This should be implemented in the interface map, to avoid clashes with user-defined properties having the same names                
+                foreach (var sourceProperty in typeof(IRuntimeBus).GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance))
                 {
                     var indexParameters = sourceProperty.GetIndexParameters().Select(x => x.ParameterType).ToArray();
                     if (indexParameters.Length != 0)
@@ -227,7 +228,7 @@ namespace SME
                 _interfaceCache[@interface] = typeBuilder.CreateTypeInfo();
             }
 
-            return (IBus)Activator.CreateInstance(_interfaceCache[@interface], new object[] { new Bus(@interface, clock, isClocked, isInternal) });
+            return (IRuntimeBus)Activator.CreateInstance(_interfaceCache[@interface], new object[] { new Bus(@interface, clock, isClocked, isInternal) });
 
         }
 

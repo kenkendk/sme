@@ -52,7 +52,7 @@ namespace SME
 	/// <summary>
 	/// Backend for a DynamicProxy instance of an interface
 	/// </summary>
-	public class Bus : IBus
+	public class Bus : IRuntimeBus
 	{
 		private Dictionary<string, object> m_readValues = new Dictionary<string, object>();
 		private Dictionary<string, object> m_stageValues = new Dictionary<string, object>();
@@ -71,13 +71,13 @@ namespace SME
 		/// Gets the type of the bus.
 		/// </summary>
 		/// <value>The type of the bus.</value>
-		Type IBus.BusType { get { return BusType; } }
+		Type IRuntimeBus.BusType { get { return BusType; } }
 
 		/// <summary>
 		/// Gets a self reference
 		/// </summary>
 		/// <value>The manager.</value>
-		IBus IBus.Manager { get { return this; } }
+		IBus IRuntimeBus.Manager { get { return this; } }
 
         /// <summary>
         /// Gets a value indicating whether this <see cref="T:SME.Bus"/> is clocked.
@@ -263,7 +263,7 @@ namespace SME
 		/// <returns>The DynamicProxy instance.</returns>
 		/// <param name="t">The interface type to map.</param>
 		/// <param name="clock">The clock to keep the Bus on.</param>
-		public static IBus CreateFromInterface(Type t, Clock clock, bool isClocked, bool isInternal)
+		public static IRuntimeBus CreateFromInterface(Type t, Clock clock, bool isClocked, bool isInternal)
 		{
 			if (!t.IsInterface)
 				throw new Exception(string.Format("Cannot create proxy from non-interface type: {0}", t.FullName));

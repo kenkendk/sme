@@ -186,8 +186,8 @@ namespace SME.VHDL.OldComponents
         {
             var self = renderer.Process;
             var outbus = self.OutputBusses.First();
-            var inreadbus = self.InputBusses.First(x => typeof(IReadIn).IsAssignableFrom(x.SourceInstance.BusType));
-            var inwritebus = self.InputBusses.First(x => typeof(IWriteIn).IsAssignableFrom(x.SourceInstance.BusType));
+            var inreadbus = self.InputBusses.First(x => typeof(IReadIn).IsAssignableFrom(((IRuntimeBus)x.SourceInstance).BusType));
+            var inwritebus = self.InputBusses.First(x => typeof(IWriteIn).IsAssignableFrom(((IRuntimeBus)x.SourceInstance).BusType));
 
             var memsize = m_memory.Length * DataWidth;
             var config = new BlockRamConfig(renderer, DataWidth, memsize, false);
@@ -262,8 +262,8 @@ signal WRADDR_internal : std_logic_vector({config.realaddrwidth - 1} downto 0);
 
             var self = renderer.Process;
             var outbus = self.OutputBusses.First();
-            var inreadbus = self.InputBusses.First(x => typeof(IReadIn).IsAssignableFrom(x.SourceInstance.BusType));
-            var inwritebus = self.InputBusses.First(x => typeof(IWriteIn).IsAssignableFrom(x.SourceInstance.BusType));
+            var inreadbus = self.InputBusses.First(x => typeof(IReadIn).IsAssignableFrom(((IRuntimeBus)x.SourceInstance).BusType));
+            var inwritebus = self.InputBusses.First(x => typeof(IWriteIn).IsAssignableFrom(((IRuntimeBus)x.SourceInstance).BusType));
             // Apparently, it does not work to do "(others => '1')"
             var westring = new string('1', config.wewidth);
 

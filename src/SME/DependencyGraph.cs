@@ -17,7 +17,7 @@ namespace SME
 			INode[] Parents { get; }
 			INode[] Children { get; }
 			IProcess Item { get; }
-            IBus[] PropagateAfter { get; }
+            IRuntimeBus[] PropagateAfter { get; }
 		}
 
 		/// <summary>
@@ -28,7 +28,7 @@ namespace SME
 			public Node[] Parents = new Node[0];
 			public Node[] Children = new Node[0];
 			public readonly IProcess Item;
-			public IBus[] PropagateAfter = new IBus[0];
+			public IRuntimeBus[] PropagateAfter = new IRuntimeBus[0];
 
 			public Node(IProcess component)
 			{
@@ -57,15 +57,15 @@ namespace SME
 				Children[Children.Length - 1] = child;
 			}
 
-			public void AddBus(IEnumerable<IBus> bus)
+			public void AddBus(IEnumerable<IRuntimeBus> bus)
 			{
 				foreach (var b in bus)
 					AddBus(b);
 			}
 
-			public void AddBus(IBus bus)
+			public void AddBus(IRuntimeBus bus)
 			{
-				var b = new IBus[PropagateAfter.Length + 1];
+				var b = new IRuntimeBus[PropagateAfter.Length + 1];
 				Array.Copy(PropagateAfter, b, PropagateAfter.Length);
 				PropagateAfter = b;
 				PropagateAfter[PropagateAfter.Length - 1] = bus;
@@ -93,7 +93,7 @@ namespace SME
 			INode[] INode.Parents { get { return Parents.Cast<INode>().ToArray(); } }
 			INode[] INode.Children { get { return Children.Cast<INode>().ToArray(); } }
 			IProcess INode.Item { get { return Item; } }
-            IBus[] INode.PropagateAfter { get { return PropagateAfter; } }
+            IRuntimeBus[] INode.PropagateAfter { get { return PropagateAfter; } }
 
 			#endregion
 		}
@@ -121,12 +121,12 @@ namespace SME
         /// <summary>
         /// List of all clocked busses
         /// </summary>
-        private readonly IBus[] m_clockedBusses;
+        private readonly IRuntimeBus[] m_clockedBusses;
 
         /// <summary>
 		/// List of all busses
 		/// </summary>
-        public IBus[] AllBusses { get; private set; }
+        public IRuntimeBus[] AllBusses { get; private set; }
 
 		/// <summary>
 		/// Readonly access to the execution plan, i.e. the root nodes
@@ -166,6 +166,7 @@ namespace SME
                            )
                 .Where(x => x != null)
                 .Distinct()
+				.Cast<IRuntimeBus>()
                 .ToArray();
 
             m_clockedBusses = AllBusses.Where(x => x.IsClocked).ToArray();

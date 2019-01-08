@@ -4,10 +4,18 @@ using System.Collections.Generic;
 
 namespace SME
 {
-	/// <summary>
-	/// The interface for a Bus, which is a collection of signals
-	/// </summary>
-	public interface IBus
+    /// <summary>
+    /// The interface for a Bus, which is a collection of signals
+    /// </summary>
+    public interface IBus
+	{
+
+	}
+
+    /// <summary>
+    /// The interface for a Bus, which is a collection of signals
+    /// </summary>
+    public interface IRuntimeBus : IBus
 	{
 		/// <summary>
 		/// The type of the mapped bus
@@ -70,10 +78,10 @@ namespace SME
 		Task WaitUntilAsync(Func<bool> condition);
 		Task SignalInputReady();
 
-		IBus[] InputBusses { get; }
-		IBus[] OutputBusses { get; }
-		IBus[] ClockedInputBusses { get; }
-		IBus[] InternalBusses { get; }
+        IRuntimeBus[] InputBusses { get; }
+        IRuntimeBus[] OutputBusses { get; }
+        IRuntimeBus[] ClockedInputBusses { get; }
+        IRuntimeBus[] InternalBusses { get; }
 
 		bool IsClockedProcess { get; }
         string Name { get; }

@@ -24,7 +24,7 @@ namespace SME.InternalItems
     /// but can be used to view the generated IL,
     /// for comparing with the generated proxy bus IL
     /// </summary>
-    internal class ReflectionExample : IReflectionExample
+    internal class ReflectionExample : IReflectionExample, IRuntimeBus
     {
         /// <summary>
         /// The target
@@ -51,7 +51,7 @@ namespace SME.InternalItems
         /// <summary>
         /// Gets the bus manager
         /// </summary>
-        public IBus Manager => ((IBus)m_target).Manager;
+        public IBus Manager => ((IRuntimeBus)m_target).Manager;
         /// <summary>
         /// Gets the internal flag
         /// </summary>

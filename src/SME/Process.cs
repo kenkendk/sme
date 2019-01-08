@@ -17,40 +17,40 @@ namespace SME
 		/// <summary>
 		/// The clocked input busses
 		/// </summary>
-		private IBus[] m_clockedinputbusses;
+		private IRuntimeBus[] m_clockedinputbusses;
 		/// <summary>
 		/// The input busses.
 		/// </summary>
-		private IBus[] m_inputbusses;
+		private IRuntimeBus[] m_inputbusses;
 		/// <summary>
 		/// The output busses.
 		/// </summary>
-		private IBus[] m_outputbusses;
+		private IRuntimeBus[] m_outputbusses;
 		/// <summary>
 		/// The internal busses
 		/// </summary>
-		private IBus[] m_internalbusses;
+		private IRuntimeBus[] m_internalbusses;
 
-		/// <summary>
-		/// Gets the clocked input busses.
-		/// </summary>
-		/// <value>The input busses.</value>
-        IBus[] IProcess.ClockedInputBusses { get { LoadBusMapsIfRequired(); return m_clockedinputbusses; } }
-		/// <summary>
-		/// Gets the input busses.
-		/// </summary>
-		/// <value>The input busses.</value>
-		IBus[] IProcess.InputBusses { get { LoadBusMapsIfRequired(); return m_inputbusses; } }
-		/// <summary>
-		/// Gets the output busses.
-		/// </summary>
-		/// <value>The output busses.</value>
-		IBus[] IProcess.OutputBusses { get { LoadBusMapsIfRequired(); return m_outputbusses; } }
-		/// <summary>
-		/// Gets the output busses.
-		/// </summary>
-		/// <value>The output busses.</value>
-		IBus[] IProcess.InternalBusses { get { LoadBusMapsIfRequired(); return m_internalbusses; } }
+        /// <summary>
+        /// Gets the clocked input busses.
+        /// </summary>
+        /// <value>The input busses.</value>
+        IRuntimeBus[] IProcess.ClockedInputBusses { get { LoadBusMapsIfRequired(); return m_clockedinputbusses; } }
+        /// <summary>
+        /// Gets the input busses.
+        /// </summary>
+        /// <value>The input busses.</value>
+        IRuntimeBus[] IProcess.InputBusses { get { LoadBusMapsIfRequired(); return m_inputbusses; } }
+        /// <summary>
+        /// Gets the output busses.
+        /// </summary>
+        /// <value>The output busses.</value>
+        IRuntimeBus[] IProcess.OutputBusses { get { LoadBusMapsIfRequired(); return m_outputbusses; } }
+        /// <summary>
+        /// Gets the output busses.
+        /// </summary>
+        /// <value>The output busses.</value>
+        IRuntimeBus[] IProcess.InternalBusses { get { LoadBusMapsIfRequired(); return m_internalbusses; } }
 
 		/// <summary>
 		/// Gets a value indicating whether this instance is a clocked process.
@@ -116,6 +116,7 @@ namespace SME
                       .SelectMany(n => Loader.GetBusInstances(this, n))
                       .Where(n => n != null)
                       .Distinct()
+					  .Cast<IRuntimeBus>()
                       .ToArray();
 
 			m_outputbusses = 
@@ -129,6 +130,7 @@ namespace SME
                       .SelectMany(n => Loader.GetBusInstances(this, n))
                       .Where(n => n != null)
                       .Distinct()
+					  .Cast<IRuntimeBus>()
                       .ToArray();
 
 			var inputList = 
@@ -142,6 +144,7 @@ namespace SME
                       .SelectMany(n => Loader.GetBusInstances(this, n))
                       .Where(n => n != null)
                       .Distinct()
+					  .Cast<IRuntimeBus>()
                       .ToArray();
 
 			var violator = m_internalbusses.FirstOrDefault(x => x.BusType.GetCustomAttributes(typeof(TopLevelInputBusAttribute), true).FirstOrDefault() != null);
@@ -154,12 +157,12 @@ namespace SME
 
 			if (((IProcess)this).IsClockedProcess)
 			{
-				m_inputbusses = new IBus[0];
+				m_inputbusses = new IRuntimeBus[0];
 				m_clockedinputbusses = inputList;
 			}
 			else
 			{
-				m_clockedinputbusses = new IBus[0];
+				m_clockedinputbusses = new IRuntimeBus[0];
 				m_inputbusses = inputList;
 			}
 		}
@@ -172,17 +175,17 @@ namespace SME
         /// <param name="internalBusses">The internal busses.</param>
         protected void RegisterBusses(IBus[] inputBusses, IBus[] outputBusses, IBus[] internalBusses)
         {
-            m_internalbusses = internalBusses ?? new IBus[0];
-            m_outputbusses = outputBusses ?? new IBus[0];
+            m_internalbusses = (internalBusses ?? new IBus[0]).Cast<IRuntimeBus>().ToArray();
+            m_outputbusses = (outputBusses ?? new IBus[0]).Cast<IRuntimeBus>().ToArray();
             if (((IProcess)this).IsClockedProcess)
             {
-                m_inputbusses = new IBus[0];
-                m_clockedinputbusses = inputBusses ?? new IBus[0];
+                m_inputbusses = new IRuntimeBus[0];
+                m_clockedinputbusses = (inputBusses ?? new IBus[0]).Cast<IRuntimeBus>().ToArray();
             }
             else
             {
-                m_clockedinputbusses = new IBus[0];
-                m_inputbusses = inputBusses ?? new IBus[0];
+                m_clockedinputbusses = new IRuntimeBus[0];
+                m_inputbusses = (inputBusses ?? new IBus[0]).Cast<IRuntimeBus>().ToArray();
             }
         }
 

@@ -413,7 +413,7 @@ namespace SME.AST
         /// <param name="simulation">The simulation the AST is built for</param>
         protected virtual Bus Parse(NetworkState network, ProcessState proc, IBus bus, Simulation simulation)
 		{
-			var st = bus.BusType;
+			var st = ((IRuntimeBus)bus).BusType;
 
 			if (network.BusInstanceLookup.ContainsKey(bus))
 				return network.BusInstanceLookup[bus];

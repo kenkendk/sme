@@ -88,7 +88,7 @@ namespace SME.Tracer
                 m_variables[n] = fmap;
             }
 
-            var busmap = new Dictionary<IBus, long>();
+            var busmap = new Dictionary<IRuntimeBus, long>();
             foreach (var n in graph.AllBusses)
                 busmap[n] = id++;
 

@@ -33,7 +33,7 @@ namespace SME
         /// <summary>
         /// The lookup table for busses
         /// </summary>
-        private readonly Dictionary<string, IBus> m_busses = new Dictionary<string, IBus>();
+        private readonly Dictionary<string, IRuntimeBus> m_busses = new Dictionary<string, IRuntimeBus>();
 
         /// <summary>
         /// The lookup table for processes
@@ -123,8 +123,10 @@ namespace SME
                 throw new ArgumentNullException(nameof(bus));
             if (typeof(T) == typeof(IBus))
                 throw new ArgumentException($"Cannot create a bus of type {typeof(T).FullName}");
+            if (!typeof(IRuntimeBus).IsAssignableFrom(typeof(T)))
+                throw new ArgumentException($"Cannot register a non-runtime bus");
 
-            Current.m_busses[name] = bus;
+            Current.m_busses[name] = (IRuntimeBus)bus;
 
             return bus;
         }
@@ -272,7 +274,7 @@ namespace SME
         /// </summary>
         /// <returns>The bus or null.</returns>
         /// <param name="name">The name of the bus to find.</param>
-        internal IBus FindBus(string name)
+        internal IRuntimeBus FindBus(string name)
         {
             return RecursiveLookup(x => x.m_busses, name);
         }

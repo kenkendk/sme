@@ -6,7 +6,7 @@ namespace SME.Tracer
 {
 	public class SignalEntry
 	{
-		public IBus Bus;
+		public IRuntimeBus Bus;
 		public PropertyInfo Property;
 		public bool IsDriver;
 		public bool IsInternal;
