@@ -32,7 +32,7 @@ namespace SME
             if (!_interfaceCache.ContainsKey(@interface))
             {
                 // Create the assembly and type
-                var typename = "DynamicBusProxy." + @interface.FullName + "." + Guid.NewGuid().ToString("N").Substring(0, 6);
+                var typename = "DynamicBusProxy." + @interface.Name + "." + Guid.NewGuid().ToString("N").Substring(0, 6);
 
                 // Build an assembly and a module to contain the type
                 var assemblyName = new AssemblyName($"{nameof(SME)}.{nameof(Bus)}Proxy.{typename}");
@@ -56,11 +56,20 @@ namespace SME
                 construtorIL.Emit(OpCodes.Stfld, targetField);
                 construtorIL.Emit(OpCodes.Ret);
 
-                // Get a list of property names that we ignore
-                var basenames = typeof(IBus).GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance).ToDictionary(x => x.Name);
+                // Get a list of property names that are used internally and need special handling
+                var coreprops = typeof(IBus).GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance);
+
+                // The internal property names needs to be filtered as they are handled different than user values
+                var basenames = coreprops.ToDictionary(x => x.Name);
+                
+                // Also remove the property methods as we implement them directly as properties
+                var gettersetter = new HashSet<MethodInfo>(coreprops.SelectMany(x => new [] { x.GetGetMethod(), x.GetSetMethod() }).Where(x => x != null));
+
+                // Some methods are implemented explicitly, so they need a special mapping access
+                var ifmap = typeof(Bus).GetInterfaceMap(typeof(IBus));
 
                 // For calls to IBus methods, we simply call the target
-                foreach (var sourceMethod in typeof(IBus).GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance).Where(x => !x.IsHideBySig))
+                foreach (var sourceMethod in typeof(IBus).GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance).Where(x => !gettersetter.Contains(x)))
                 {
                     var parameterTypes = sourceMethod.GetParameters().Select(x => x.ParameterType).ToArray();
 
@@ -73,11 +82,17 @@ namespace SME
                         parameterTypes
                     );
 
-                    var destMethod = typeof(Bus).GetMethod(sourceMethod.Name, parameterTypes);
+                    // Since we invoke members through the interface map, we do not need this here
+
+                    // var ix = Array.IndexOf(ifmap.InterfaceMethods, sourceMethod);
+                    // var destMethod = ifmap.TargetMethods[ix];
+
+                    //var destMethod = typeof(Bus).GetMethod(sourceMethod.Name, parameterTypes);
                     var methodIL = method.GetILGenerator();
+                    methodIL.Emit(OpCodes.Ldarg_0);
                     methodIL.Emit(OpCodes.Ldfld, targetField);
                     EmitArgumentLoad(methodIL, parameterTypes, 1);
-                    methodIL.Emit(OpCodes.Call, destMethod);
+                    methodIL.Emit(OpCodes.Callvirt, sourceMethod);
                     methodIL.Emit(OpCodes.Ret);
                 }
 
@@ -104,11 +119,16 @@ namespace SME
                             indexParameters
                         );
 
-                        var destMethod = typeof(Bus).GetProperty(sourceProperty.Name, sourceProperty.PropertyType).GetMethod;
+                        // Since we invoke members through the interface map, we do not need this here
+                        // var ix = Array.IndexOf(ifmap.InterfaceMethods, sourceProperty.GetGetMethod());
+                        // var destMethod = ifmap.TargetMethods[ix];
+                        //var destMethod = typeof(Bus).GetProperty(sourceProperty.Name, sourceProperty.PropertyType).GetMethod;
+
                         var getMethodIL = getMethod.GetILGenerator();
+                        getMethodIL.Emit(OpCodes.Ldarg_0);
                         getMethodIL.Emit(OpCodes.Ldfld, targetField);
                         EmitArgumentLoad(getMethodIL, indexParameters, 1);
-                        getMethodIL.Emit(OpCodes.Call, destMethod);
+                        getMethodIL.Emit(OpCodes.Callvirt, sourceProperty.GetGetMethod());
                         getMethodIL.Emit(OpCodes.Ret);
 
                         property.SetGetMethod(getMethod);
@@ -124,11 +144,15 @@ namespace SME
                             new Type[] { sourceProperty.PropertyType }.Concat(indexParameters).ToArray()
                         );
 
-                        var destMethod = typeof(Bus).GetProperty(sourceProperty.Name, sourceProperty.PropertyType).SetMethod;
+                        // Since we invoke members through the interface map, we do not need this here
+                        // var ix = Array.IndexOf(ifmap.InterfaceMethods, sourceProperty.GetSetMethod());
+                        // var destMethod = ifmap.TargetMethods[ix];
+                        //var destMethod = typeof(Bus).GetProperty(sourceProperty.Name, sourceProperty.PropertyType).SetMethod;
+
                         var setMethodIL = setMethod.GetILGenerator();
                         setMethodIL.Emit(OpCodes.Ldfld, targetField);
                         EmitArgumentLoad(setMethodIL, indexParameters, 1);
-                        setMethodIL.Emit(OpCodes.Call, destMethod);
+                        setMethodIL.Emit(OpCodes.Callvirt, sourceProperty.GetSetMethod());
                         setMethodIL.Emit(OpCodes.Ret);
 
                         property.SetSetMethod(setMethod);
@@ -159,11 +183,14 @@ namespace SME
                         );
 
                         var getMethodIL = getMethod.GetILGenerator();
+                        getMethodIL.Emit(OpCodes.Ldarg_0);
                         getMethodIL.Emit(OpCodes.Ldfld, targetField);
                         getMethodIL.Emit(OpCodes.Ldstr, sourceProperty.Name);
                         EmitArgumentLoad(getMethodIL, indexParameters, 1);
 
-                        getMethodIL.Emit(OpCodes.Call, typeof(Bus).GetMethod(nameof(Bus.Read)));
+                        var destMethod = typeof(Bus).GetMethods().Where(x => x.Name == nameof(Bus.Read) && x.IsGenericMethodDefinition).First();
+                        destMethod = destMethod.MakeGenericMethod(new Type[] { sourceProperty.PropertyType });
+                        getMethodIL.Emit(OpCodes.Call, destMethod);
                         getMethodIL.Emit(OpCodes.Ret);
 
                         property.SetGetMethod(getMethod);
@@ -180,11 +207,16 @@ namespace SME
                         );
 
                         var setMethodIL = setMethod.GetILGenerator();
+                        setMethodIL.Emit(OpCodes.Ldarg_0);
                         setMethodIL.Emit(OpCodes.Ldfld, targetField);
                         setMethodIL.Emit(OpCodes.Ldstr, sourceProperty.Name);
                         EmitArgumentLoad(setMethodIL, indexParameters, 1);
-                        
-                        setMethodIL.Emit(OpCodes.Call, typeof(Bus).GetMethod(nameof(Bus.Write)));
+
+                        setMethodIL.Emit(OpCodes.Ldarg_1);
+                        if (sourceProperty.PropertyType.IsValueType)
+                            setMethodIL.Emit(OpCodes.Box, sourceProperty.PropertyType);
+                        var destMethod = typeof(Bus).GetMethod(nameof(Bus.Write));
+                        setMethodIL.Emit(OpCodes.Call, destMethod);
                         setMethodIL.Emit(OpCodes.Ret);
 
                         property.SetSetMethod(setMethod);
