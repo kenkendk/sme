@@ -1,12 +1,12 @@
-﻿using NUnit.Framework;
-using System;
+﻿using System;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace UnitTest
 {
-    [TestFixture()]
+    [TestClass]
     public class TestRunner
     {
         private void RunTest(Type target, bool runGhdl = true, bool runCpp = false)
@@ -83,61 +83,61 @@ namespace UnitTest
             }
         }
 
-        [Test()]
+        [TestMethod]
         public void RunAES256()
         {
             RunTest(typeof(AES256CBC.Tester), true, false);
         }
 
-        [Test()]
+        [TestMethod]
         public void RunColorBin()
         {
             RunTest(typeof(ColorBin.ImageInputSimulator), true, false);
         }
 
-        [Test()]
+        [TestMethod]
         public void RunExternalComponent()
         {
             RunTest(typeof(ExternalComponent.SimpleDualPortBlockRamTester<>), true, false);
         }
 
-        [Test()]
+        [TestMethod]
         public void RunNoiseFilter()
         {
             RunTest(typeof(NoiseFilter.ImageInputSimulator), true, false);
         }
 
-        [Test()]
+        [TestMethod]
         public void RunSimpleComponents()
         {
             RunTest(typeof(SimpleComponents.ComponentTester), true, false);
         }
 
-        //[Test()]
+        //[TestMethod]
         //public void RunSimpleMemoryBus()
         //{
         //    RunTest(typeof(SimpleMemoryBus.MemoryTester), true, false);
         //}
 
-        //[Test()]
+        //[TestMethod]
         //public void RunSimpleNestedComponent()
         //{
         //    RunTest(typeof(SimpleNestedComponent.TestDriver), true, false);
         //}
 
-        [Test()]
+        [TestMethod]
         public void RunSimpleTrader()
         {
             RunTest(typeof(SimpleTrader.ITraderInput), true, false);
         }
 
-        [Test()]
+        [TestMethod]
         public void RunStatebasedCounter()
         {
             RunTest(typeof(StatebasedCounter.MainClass), true, false);
         }
 
-        [Test()]
+        [TestMethod]
         public void RunStatedAdder()
         {
             RunTest(typeof(StatedAdder.Adder), true, false);
