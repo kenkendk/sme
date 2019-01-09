@@ -131,11 +131,11 @@ namespace UnitTest
             RunTest(typeof(SimpleTrader.ITraderInput), true, false);
         }
 
-        [TestMethod]
-        public void RunStatebasedCounter()
-        {
-            RunTest(typeof(StatebasedCounter.MainClass), true, false);
-        }
+        // [TestMethod]
+        // public void RunStatebasedCounter()
+        // {
+        //     RunTest(typeof(StatebasedCounter.MainClass), true, false);
+        // }
 
         [TestMethod]
         public void RunStatedAdder()
