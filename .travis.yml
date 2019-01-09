@@ -1,16 +1,16 @@
 language: csharp
 solution: src/SME.sln
+dotnet: 2.0.0
 before_install:
   - sudo add-apt-repository ppa:pgavin/ghdl -y
   - sudo apt-get -qq update
   - sudo apt-get install -y ghdl
 install:
-  - nuget install NUnit.Runners -Version 3.5.0 -OutputDirectory testrunner
-  - nuget restore src/SME.sln
+  - dotnet restore src/SME.sln
 script:
-  - xbuild /p:Configuration=Release src/SME.sln
+  - dotnet build -c Release src/UnitTest
   - echo "travis_fold:start:unit_test"
-  - mono ./testrunner/NUnit.ConsoleRunner.3.5.0/tools/nunit3-console.exe ./src/UnitTest/bin/Release/UnitTest.dll --workers=1
+  - dotnet test -c Release src/UnitTest
   - echo "travis_fold:end:unit_test"
 
 
