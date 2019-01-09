@@ -157,7 +157,7 @@ begin
     end process;
 
 
-    {renderer.Process.InstanceName}_Helper: process(RST, CLK, RDY)
+    {Naming.ProcessNameToValidName(renderer.Process.SourceInstance.Instance)}_Helper: process(RST, CLK, RDY)
     begin
     if RST = '1' then
         FIN <= '0';                        
