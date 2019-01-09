@@ -66,7 +66,7 @@ foreach (var bus in Network.Busses.Where(x => x.IsTopLevelOutput && !x.IsTopLeve
     foreach(var signal in bus.Signals) 
     {
         var vt = RS.VHDLType(signal);
-        if (vt.IsSystemSigned || vt.IsSystemUnsigned) 
+        if (vt.IsSigned || vt.IsUnsigned) 
         {
             converted_outputs.Add(signal);
         }
@@ -112,9 +112,9 @@ begin
 #>
 <#            if (converted_outputs.Contains(signal)) { #>
         <#= bus.InstanceName #>_<#= signal.Name #> => tmp_<#= bus.InstanceName #>_<#= signal.Name #>,
-<#            } else if (vt.IsSystemType && vt.IsUnsigned) { #>
+<#            } else if (vt.IsUnsigned) { #>
         <#= bus.InstanceName #>_<#= signal.Name #> => unsigned(<#= bus.InstanceName #>_<#= signal.Name #>),
-<#            } else if (vt.IsSystemType && vt.IsSigned) { #>
+<#            } else if (vt.IsSigned) { #>
         <#= bus.InstanceName #>_<#= signal.Name #> => signed(<#= bus.InstanceName #>_<#= signal.Name #>),
 <#            } else { #>
         <#= bus.InstanceName #>_<#= signal.Name #> => <#= bus.InstanceName #>_<#= signal.Name #>,
