@@ -28,9 +28,20 @@ namespace SME
                 throw new Exception($"Cannot create proxy from non-interface type: {@interface.FullName}");
             if (!typeof(IBus).IsAssignableFrom(@interface))
                 throw new Exception($"Cannot create proxy from interface type: {@interface.FullName} as it does not implement {nameof(IRuntimeBus)}");
-    
+
             if (!_interfaceCache.ContainsKey(@interface))
             {
+                // Check if the interface has methods defined, as we do not support that
+                var userprops = new HashSet<MethodInfo>(
+                    @interface
+                    .GetProperties(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance)
+                    .SelectMany(x => new[] { x.GetGetMethod(), x.GetSetMethod() })
+                    .Where(x => x != null)
+                );
+
+                if (@interface.GetMethods(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance).Where(x => !userprops.Contains(x)).Any())
+                    throw new Exception($"The interface cannot have any methods defined: {@interface.FullName}");
+
                 // Create the assembly and type
                 var typename = "DynamicBusProxy." + @interface.Name + "." + Guid.NewGuid().ToString("N").Substring(0, 6);
 
@@ -56,49 +67,45 @@ namespace SME
                 construtorIL.Emit(OpCodes.Stfld, targetField);
                 construtorIL.Emit(OpCodes.Ret);
 
-                // Get a list of property names that are used internally and need special handling
-                var coreprops = typeof(IRuntimeBus).GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance);
-
-                // The internal property names needs to be filtered as they are handled different than user values
-                var basenames = coreprops.ToDictionary(x => x.Name);
-                
-                // Also remove the property methods as we implement them directly as properties
-                var gettersetter = new HashSet<MethodInfo>(coreprops.SelectMany(x => new [] { x.GetGetMethod(), x.GetSetMethod() }).Where(x => x != null));
-
-                // Some methods are implemented explicitly, so they need a special mapping access
-                var ifmap = typeof(Bus).GetInterfaceMap(typeof(IRuntimeBus));
-
-                // For calls to IRuntimeBus methods, we simply call the target
-                foreach (var sourceMethod in typeof(IRuntimeBus).GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance).Where(x => !gettersetter.Contains(x)))
+                // For calls to IRuntimeBus methods, forward calls to the target.
+                // To avoid name clashes with the user-defined properties, we use an interface mapping,
+                // aka explicit interface implementation in C#
+                //
+                // The proxy does not have IRuntimeBus properties itself, so these properties cannot be 
+                // directly accessed on the proxy instnace, and cannot be found via reflection.
+                // But when the proxy is cast as a IRuntimeBus, the properties can be accessed
+                // as the getter/setter methods are wired correctly.
+                // Because of this, we do not need explict handling of properties, we can
+                // just treat them like methods.
+                foreach (var sourceMethod in typeof(IRuntimeBus).GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance))
                 {
                     var parameterTypes = sourceMethod.GetParameters().Select(x => x.ParameterType).ToArray();
 
                     // Replicate the source method
                     var method = typeBuilder.DefineMethod(
-                        sourceMethod.Name,
+                        typeof(IRuntimeBus).Name  + "." + sourceMethod.Name,
                         MethodAttributes.Public | MethodAttributes.Final | MethodAttributes.Virtual,
                         CallingConventions.Standard,
                         sourceMethod.ReturnType,
                         parameterTypes
                     );
 
-                    // Since we invoke members through the interface map, we do not need this here
-
-                    // var ix = Array.IndexOf(ifmap.InterfaceMethods, sourceMethod);
-                    // var destMethod = ifmap.TargetMethods[ix];
-
-                    //var destMethod = typeof(Bus).GetMethod(sourceMethod.Name, parameterTypes);
+                    // Write the IL to call the method through the interface
                     var methodIL = method.GetILGenerator();
                     methodIL.Emit(OpCodes.Ldarg_0);
                     methodIL.Emit(OpCodes.Ldfld, targetField);
                     EmitArgumentLoad(methodIL, parameterTypes, 1);
                     methodIL.Emit(OpCodes.Callvirt, sourceMethod);
                     methodIL.Emit(OpCodes.Ret);
+
+                    // Specify that our specially named method implements the interface method
+                    typeBuilder.DefineMethodOverride(method, sourceMethod);
                 }
 
-                // For calls to IRuntimeBus properties, we simply call the target
-                // TODO: This should be implemented in the interface map, to avoid clashes with user-defined properties having the same names                
-                foreach (var sourceProperty in typeof(IRuntimeBus).GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance))
+                // For calls to user-defined properties we call Read and Write on the target
+                // We implement the interface as regular properties so the bus proxy can be examined
+                // with reflection and looks like a reasonable implementation of the interface
+                foreach (var sourceProperty in @interface.GetProperties(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance))
                 {
                     var indexParameters = sourceProperty.GetIndexParameters().Select(x => x.ParameterType).ToArray();
                     if (indexParameters.Length != 0)
@@ -113,70 +120,7 @@ namespace SME
                     if (sourceProperty.CanRead)
                     {
                         var getMethod = typeBuilder.DefineMethod(
-                            "get_" + property.Name,
-                            MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig | MethodAttributes.Final | MethodAttributes.Virtual | MethodAttributes.NewSlot,
-                            CallingConventions.HasThis,
-                            sourceProperty.PropertyType,
-                            indexParameters
-                        );
-
-                        // Since we invoke members through the interface map, we do not need this here
-                        // var ix = Array.IndexOf(ifmap.InterfaceMethods, sourceProperty.GetGetMethod());
-                        // var destMethod = ifmap.TargetMethods[ix];
-                        //var destMethod = typeof(Bus).GetProperty(sourceProperty.Name, sourceProperty.PropertyType).GetMethod;
-
-                        var getMethodIL = getMethod.GetILGenerator();
-                        getMethodIL.Emit(OpCodes.Ldarg_0);
-                        getMethodIL.Emit(OpCodes.Ldfld, targetField);
-                        EmitArgumentLoad(getMethodIL, indexParameters, 1);
-                        getMethodIL.Emit(OpCodes.Callvirt, sourceProperty.GetGetMethod());
-                        getMethodIL.Emit(OpCodes.Ret);
-
-                        property.SetGetMethod(getMethod);
-                    }
-
-                    if (sourceProperty.CanWrite)
-                    {
-                        var setMethod = typeBuilder.DefineMethod(
-                            "set_" + property.Name,
-                            MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig | MethodAttributes.Final | MethodAttributes.Virtual | MethodAttributes.NewSlot,
-                            CallingConventions.HasThis,
-                            typeof(void),
-                            new Type[] { sourceProperty.PropertyType }.Concat(indexParameters).ToArray()
-                        );
-
-                        // Since we invoke members through the interface map, we do not need this here
-                        // var ix = Array.IndexOf(ifmap.InterfaceMethods, sourceProperty.GetSetMethod());
-                        // var destMethod = ifmap.TargetMethods[ix];
-                        //var destMethod = typeof(Bus).GetProperty(sourceProperty.Name, sourceProperty.PropertyType).SetMethod;
-
-                        var setMethodIL = setMethod.GetILGenerator();
-                        setMethodIL.Emit(OpCodes.Ldfld, targetField);
-                        EmitArgumentLoad(setMethodIL, indexParameters, 1);
-                        setMethodIL.Emit(OpCodes.Callvirt, sourceProperty.GetSetMethod());
-                        setMethodIL.Emit(OpCodes.Ret);
-
-                        property.SetSetMethod(setMethod);
-                    }
-                }
-
-                // For calls to other properties we call Read and Write
-                foreach (var sourceProperty in @interface.GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance).Where(x => !basenames.ContainsKey(x.Name)))
-                {
-                    var indexParameters = sourceProperty.GetIndexParameters().Select(x => x.ParameterType).ToArray();
-                    if (indexParameters.Length != 0)
-                        throw new ArgumentException($"Unexpected indexed property: {sourceProperty.Name}");
-
-                    var property = typeBuilder.DefineProperty(
-                        sourceProperty.Name,
-                        PropertyAttributes.None,
-                        sourceProperty.PropertyType,
-                        indexParameters
-                    );
-                    if (sourceProperty.CanRead)
-                    {
-                        var getMethod = typeBuilder.DefineMethod(
-                            "get_" + property.Name,
+                            "get_" + sourceProperty.Name,
                             MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig | MethodAttributes.Final | MethodAttributes.Virtual | MethodAttributes.NewSlot,
                             CallingConventions.HasThis,
                             sourceProperty.PropertyType,
@@ -200,7 +144,7 @@ namespace SME
                     if (sourceProperty.CanWrite)
                     {
                         var setMethod = typeBuilder.DefineMethod(
-                            "set_" + property.Name,
+                            "set_" + sourceProperty.Name,
                             MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig | MethodAttributes.Final | MethodAttributes.Virtual | MethodAttributes.NewSlot,
                             CallingConventions.HasThis,
                             typeof(void),
