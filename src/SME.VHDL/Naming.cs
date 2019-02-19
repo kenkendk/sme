@@ -82,7 +82,7 @@ namespace SME.VHDL
 		public static string ToValidName(string name)
 		{
 			var r = RX_ALPHANUMERIC.Replace(name, "_");
-			if (new string[] { "register", "record", "variable", "process", "if", "then", "else", "begin", "end", "architecture", "of", "is" }.Contains(r.ToLowerInvariant()))
+			if (new string[] { "register", "record", "variable", "process", "if", "then", "else", "begin", "end", "architecture", "of", "is", "wait" }.Contains(r.ToLowerInvariant()))
 				r = "vhdl_" + r;
 
             while (r.IndexOf("__", StringComparison.Ordinal) >= 0)
