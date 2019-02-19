@@ -2,21 +2,21 @@
 <package >
   <metadata>
     <id>SME.GraphViz</id>
-    <version>0.3.3-beta</version>
+    <version>0.4.0-beta</version>
     <authors>Kenneth Skovhede</authors>
     <owners>Kenneth Skovhede</owners>
     <licenseUrl>https://raw.githubusercontent.com/kenkendk/sme/master/LICENSE</licenseUrl>
     <projectUrl>https://github.com/kenkendk/sme</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>GraphViz renderer for Synchronous Message Exchange</description>
-    <releaseNotes>Experimental build with async support</releaseNotes>
-    <copyright>Copyright Kenneth Skovhede 2017</copyright>
+    <releaseNotes>Switched to .net standard with .net core support</releaseNotes>
+    <copyright>Copyright Kenneth Skovhede 2019</copyright>
     <tags>SME hardware simulation GraphViz</tags>
     <dependencies>
-      <dependency id="SME" version="0.3.3-beta" />
+      <dependency id="SME" version="0.4.0-beta" />
     </dependencies>
   </metadata>
   <files>
-    <file src="bin/Release/SME.GraphViz.dll" target="lib/net45" />
+    <file src="bin/Release/netstandard2/SME.GraphViz.dll" target="lib/netstandard2.0" />
   </files>
 </package>

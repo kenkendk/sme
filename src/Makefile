@@ -9,7 +9,7 @@ DEPENDS_CSPROJ=$(find . -type f -name "*.csproj" | xargs echo)
 VERSION=$(shell cat SME/SME.nuspec | grep "<version>" | cut -f 2 -d ">" | cut -f 1 -d "<")
 
 build: SME.sln ${DEPENDS_CS} ${DEPENDS_TT} ${DEPENDS_CSPROJ}
-	msbuild /p:Configuration=Release SME.sln
+	dotnet build --configuration Release SME.sln
 
 nupkg: build
 	if [ -d nupkg ]; then rm -rf nupkg; fi

@@ -2,25 +2,26 @@
 <package >
   <metadata>
     <id>SME.VHDL</id>
-    <version>0.3.3-beta</version>
+    <version>0.4.0-beta</version>
     <authors>Kenneth Skovhede</authors>
     <owners>Kenneth Skovhede</owners>
     <licenseUrl>https://raw.githubusercontent.com/kenkendk/sme/master/LICENSE</licenseUrl>
     <projectUrl>https://github.com/kenkendk/sme</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>VHDL transpiler for SME networks</description>
-    <releaseNotes>Experimental build with async support</releaseNotes>
-    <copyright>Copyright Kenneth Skovhede 2017</copyright>
+    <releaseNotes>Switched to .net standard with .net core support</releaseNotes>
+    <copyright>Copyright Kenneth Skovhede 2019</copyright>
     <tags>SME hardware simulation</tags>
     <dependencies>
       <dependency id="ICSharpCode.Decompiler" version="3.0.2.3465" />
       <dependency id="Mono.Cecil" version="0.10.0-beta7" />
-      <dependency id="SME" version="0.3.3-beta" />
-      <dependency id="SME.AST" version="0.3.3-beta" />
-      <dependency id="SME.Components" version="0.3.3-beta" />
+      <dependency id="SME" version="0.4.0-beta" />
+      <dependency id="SME.AST" version="0.4.0-beta" />
+      <dependency id="SME.Components" version="0.4.0-beta" />
+      <dependency id="System.CodeDom" version="4.5.0" />
     </dependencies>
   </metadata>
   <files>
-    <file src="bin/Release/SME.VHDL.dll" target="lib/net45" />
+    <file src="bin/Release/netstandard2/SME.VHDL.dll" target="lib/netstandard2.0" />
   </files>
 </package>
