@@ -1,0 +1,37 @@
+<!DOCTYPE html> 
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js" ></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/1.7.1/fabric.min.js" ></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+<script type="text/javascript" src="./drawlib.js" ></script>
+</head>
+<body>
+	<canvas id="canvas" style="border: 1px solid #cccccc"></canvas>
+  
+	<div ng-app="SMEApp" ng-controller="simCtrl">
+		<h1>Simulation is currently in cycle {{simcycle == 0 ? "-initialization-" : (simcycle + '')}}</h1>
+		<a href ng-click="setSimCycle(simcycle - 1)" class="{{simcycle == 0 ? 'disabled' : 'enabled'}}">&lt; Previous cycle</a>
+		<a href ng-click="setSimCycle(0)" class="{{simcycle == 0 ? 'disabled' : 'enabled'}}">Reset</a>
+		<a href ng-click="setSimCycle(simcycle + 1)" class="{{simcycle == values.length - 1 ? 'disabled' : 'enabled'}}" >Next cycle &gt;</a>
+		<h2 ng-show="currentitem==null">Click an element to see the values</h2>
+		<h2 ng-hide="currentitem==null">{{selectedType}}: {{selectedName}} <span ng-hide="sourceClass == null">({{sourceClass}})</span></h2>
+
+	  	<table ng-hide="currentitem==null">
+	  		<tr>
+	  			<th>{{selectedType == 'Bus' ? 'Signal' : 'Variable'}}</th>
+	  			<th>Value</th>
+	  		</tr>
+
+	  		<tr ng-repeat="n in signals">
+	  			<td>{{signals[$index].name}}</td>
+				<td>{{values[simcycle][signalmap[$index]]}}</td>
+	  		</tr>
+	  	</table>
+	</div>
+
+	<script>
+	</script>
+</body>
+</html>

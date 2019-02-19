@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SME
@@ -207,8 +208,20 @@ namespace SME
         /// <summary>
         /// Run the specified processes.
         /// </summary>
+        /// <param name="processes">The processes to run</param>
         /// <returns>The awaitable task.</returns>
         public void Run(params IProcess[] processes)
+        {
+            Run(processes, null);
+        }
+
+        /// <summary>
+        /// Run the specified processes.
+        /// </summary>
+        /// <param name="processes">The processes to run</param>
+        /// <param name="exitMethod">The exit method, return true to keep running</param>
+        /// <returns>The awaitable task.</returns>
+        public void Run(IProcess[] processes, Func<bool> exitMethod = null)
         {
             if (processes != null)
                 foreach (var p in processes)
@@ -247,15 +260,15 @@ namespace SME
 
 
             // Assign unique names to processes if there are multiple instances
-            var busmap = new Dictionary<Type, List<IBus>>();
+            var busmap = new Dictionary<Type, List<IRuntimeBus>>();
             foreach (var b in m_processes.Values.Select(x => x.Instance).SelectMany(x => x.InputBusses.Concat(x.OutputBusses).Concat(x.InternalBusses).Concat(x.ClockedInputBusses)).Distinct())
             {
                 if (b == null)
                     continue;
                 
-                List<IBus> lp;
+                List<IRuntimeBus> lp;
                 if (!busmap.TryGetValue(b.BusType, out lp))
-                    busmap[b.BusType] = lp = new List<IBus>();
+                    busmap[b.BusType] = lp = new List<IRuntimeBus>();
                 lp.Add(b);
 
                 if (b.BusType.GetCustomAttributes(typeof(TopLevelInputBusAttribute), true).Any())
@@ -305,8 +318,22 @@ namespace SME
                         };
                     }).ToArray();
 
+                // Determine when to quit
+                if (exitMethod == null)
+                {
+                    // If we have simulation processes that write, wait until all are done
+                    if (running_tasks.Any(x => x.Proc is SimulationProcess && x.HasOutputs))
+                        exitMethod = () => running_tasks.Any(x => x.Proc is SimulationProcess && x.HasOutputs && !x.Task.IsCompleted);
+                    // If we have only have simulation tasks, wait until they are all completed
+                    else if (running_tasks.Any(x => x.Proc is SimulationProcess))
+                        exitMethod = () => running_tasks.Any(x => x.Proc is SimulationProcess && !x.Task.IsCompleted);
+                    // Otherwise, wait until one of them completes
+                    else
+                        exitMethod = () => running_tasks.All(x => !x.Task.IsCompleted);
+                }
+
                 // Keep running until all simulation (stimulation) processes have finished
-                while (running_tasks.Any(x => x.Proc is SimulationProcess && x.HasOutputs && !x.Task.IsCompleted))
+                while (exitMethod())
                 {
                     Graph.Execute();
                     var crashes = running_tasks.Where(x => x.Task.Exception != null).SelectMany(x => x.Task.Exception.InnerExceptions);
@@ -411,19 +438,19 @@ namespace SME
 		/// </summary>
         private static readonly Dictionary<string, Simulation> _scopes = new Dictionary<string, Simulation>();
 
-		/// <summary>
-		/// The key used to store data in the CallContext
-		/// </summary>
-		private const string CONTEXT_SCOPE_KEY = "SME_SIMULATION_SCOPE_KEY";
+        /// <summary>
+        /// The shared scope key
+        /// </summary>
+        private static AsyncLocal<string> _scopekey = new AsyncLocal<string>();
 
-		/// <summary>
-		/// Gets or sets the scope key from the call context.
-		/// </summary>
-		/// <value>The scope key.</value>
-		private static string ScopeKey
-		{
-			get { return System.Runtime.Remoting.Messaging.CallContext.GetData(CONTEXT_SCOPE_KEY) as string; }
-			set { System.Runtime.Remoting.Messaging.CallContext.SetData(CONTEXT_SCOPE_KEY, value); }
-		}
+        /// <summary>
+        /// Gets or sets the scope key from the call context.
+        /// </summary>
+        /// <value>The scope key.</value>
+        private static string ScopeKey
+        {
+            get => _scopekey.Value;
+            set => _scopekey.Value = value;
+        }
     }
 }

@@ -26,7 +26,7 @@ use work.CUSTOM_TYPES.ALL;
 -- #### USER-DATA-IMPORTS-END
 
 
-entity <#= Process.Name #> is
+entity <#= Naming.ProcessNameToValidName(Process.SourceInstance.Instance) #> is
 <# var lastel = Process.SharedVariables.Cast<object>().Concat(Process.SharedSignals).LastOrDefault();
    if (lastel != null) {
 #>
@@ -86,9 +86,9 @@ entity <#= Process.Name #> is
         -- Reset signal
         RST : in Std_logic
     );
-end <#= Process.Name #>;
+end <#= Naming.ProcessNameToValidName(Process.SourceInstance.Instance) #>;
 
-architecture RTL of <#= Process.Name #> is
+architecture RTL of <#= Naming.ProcessNameToValidName(Process.SourceInstance.Instance) #> is
 <# if (RSP.HasCustomRenderer) { #>
 <#= RSP.CustomRendererBody #>
 <# } else { #>

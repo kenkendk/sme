@@ -36,18 +36,21 @@ namespace SME.VHDL
         {
             var processname = type.FullName;
             var extras = string.Empty;
+            var prefix = string.Empty;
             if (type.IsGenericType)
             {
                 processname = type.GetGenericTypeDefinition().FullName;
                 extras = "<" + string.Join(", ", type.GenericTypeArguments.Select(x => x.Name)) + ">";
             }
 
-
             var asmname = type.Assembly.GetName().Name + '.';
             if (processname.StartsWith(asmname, StringComparison.Ordinal))
                 processname = processname.Substring(asmname.Length);
 
-            return ToValidName(processname + extras);
+            if (string.Equals(type.Assembly.GetName().Name, processname))
+                prefix = "cls_";
+
+            return ToValidName(prefix + processname + extras);
         }
 
 
@@ -79,7 +82,7 @@ namespace SME.VHDL
 		public static string ToValidName(string name)
 		{
 			var r = RX_ALPHANUMERIC.Replace(name, "_");
-			if (new string[] { "register", "record", "variable", "process", "if", "then", "else", "begin", "end", "architecture", "of", "is" }.Contains(r.ToLowerInvariant()))
+			if (new string[] { "register", "record", "variable", "process", "if", "then", "else", "begin", "end", "architecture", "of", "is", "wait" }.Contains(r.ToLowerInvariant()))
 				r = "vhdl_" + r;
 
             while (r.IndexOf("__", StringComparison.Ordinal) >= 0)

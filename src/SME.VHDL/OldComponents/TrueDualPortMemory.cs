@@ -153,10 +153,10 @@ namespace SME.VHDL.OldComponents
             var config = new BlockRamConfig(renderer, DataWidthA, memsize, true);
 
             var self = renderer.Process;
-            var outbusa = self.OutputBusses.First(x => typeof(IOutputA).IsAssignableFrom(x.SourceInstance.BusType));
-            var outbusb = self.OutputBusses.First(x => typeof(IOutputB).IsAssignableFrom(x.SourceInstance.BusType));
-            var inbusa = self.InputBusses.First(x => typeof(IInputA).IsAssignableFrom(x.SourceInstance.BusType));
-            var inbusb = self.InputBusses.First(x => typeof(IInputB).IsAssignableFrom(x.SourceInstance.BusType));
+            var outbusa = self.OutputBusses.First(x => typeof(IOutputA).IsAssignableFrom(((IRuntimeBus)x.SourceInstance).BusType));
+            var outbusb = self.OutputBusses.First(x => typeof(IOutputB).IsAssignableFrom(((IRuntimeBus)x.SourceInstance).BusType));
+            var inbusa = self.InputBusses.First(x => typeof(IInputA).IsAssignableFrom(((IRuntimeBus)x.SourceInstance).BusType));
+            var inbusb = self.InputBusses.First(x => typeof(IInputB).IsAssignableFrom(((IRuntimeBus)x.SourceInstance).BusType));
 
             string template;
 
@@ -229,10 +229,10 @@ signal ADDRB_internal : std_logic_vector({config.realaddrwidth - 1} downto 0);
             var initialvalue = VHDLHelper.GetDataBitString(m_resetinitial, DataWidthA);
 
             var self = renderer.Process;
-            var outbusa = self.OutputBusses.First(x => typeof(IOutputA).IsAssignableFrom(x.SourceInstance.BusType));
-            var outbusb = self.OutputBusses.First(x => typeof(IOutputB).IsAssignableFrom(x.SourceInstance.BusType));
-            var inbusa = self.InputBusses.First(x => typeof(IInputA).IsAssignableFrom(x.SourceInstance.BusType));
-            var inbusb = self.InputBusses.First(x => typeof(IInputB).IsAssignableFrom(x.SourceInstance.BusType));
+            var outbusa = self.OutputBusses.First(x => typeof(IOutputA).IsAssignableFrom(((IRuntimeBus)x.SourceInstance).BusType));
+            var outbusb = self.OutputBusses.First(x => typeof(IOutputB).IsAssignableFrom(((IRuntimeBus)x.SourceInstance).BusType));
+            var inbusa = self.InputBusses.First(x => typeof(IInputA).IsAssignableFrom(((IRuntimeBus)x.SourceInstance).BusType));
+            var inbusb = self.InputBusses.First(x => typeof(IInputB).IsAssignableFrom(((IRuntimeBus)x.SourceInstance).BusType));
 
             var addrpadding =
                 AddressWidthA < config.realaddrwidth

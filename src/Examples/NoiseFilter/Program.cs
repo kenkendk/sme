@@ -13,6 +13,7 @@ namespace NoiseFilter
 				.BuildGraph()
 				.BuildVHDL()
                 .BuildCPP()
+                .BuildJsonFile()
 				.Run(
                     new ImageInputSimulator("image1.png"),
                     new BorderEmitter(),

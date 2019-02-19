@@ -73,11 +73,15 @@ namespace SME.Tracer
 						{
 							var eltype = p.Property.PropertyType.GetGenericArguments().First();
 							var m = value.GetType().GetProperties().FirstOrDefault(x => x.GetIndexParameters().Length == 1);
-							foreach (var n in Enumerable.Range(0, attr.Length))
+                            var fixedInteraction = (IFixedArrayInteraction)value;
+                            foreach (var n in Enumerable.Range(0, attr.Length))
 							{
 								try
 								{
-									af.Write(ConvertToString(m.GetValue(value, new object[] { n }), eltype));
+									if (!fixedInteraction.CanRead(n))
+										af.Write("U");
+									else
+										af.Write(ConvertToString(m.GetValue(value, new object[] { n }), eltype));
 								}
 								catch (Exception ex)
 								{

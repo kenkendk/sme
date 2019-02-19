@@ -10,7 +10,6 @@ namespace SME.CPP
 {
 	public class RenderState
 	{
-
 		/// <summary>
 		/// A type reference comparer, used to compare type references loaded from different contexts
 		/// </summary>

@@ -77,7 +77,11 @@ namespace SME.Tracer
 
                 try
                 {
-                    value = p.Property.GetValue(p.Bus);
+                    if (!p.Bus.CanRead(p.Property.Name))
+                        value = new SME.ReadViolationException("Signal not written");
+                    else
+                        value = p.Property.GetValue(p.Bus);
+                    
                 }
                 catch (Exception ex)
                 {

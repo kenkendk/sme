@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace SME
 {
@@ -32,7 +33,7 @@ namespace SME
         /// <summary>
         /// The lookup table for busses
         /// </summary>
-        private readonly Dictionary<string, IBus> m_busses = new Dictionary<string, IBus>();
+        private readonly Dictionary<string, IRuntimeBus> m_busses = new Dictionary<string, IRuntimeBus>();
 
         /// <summary>
         /// The lookup table for processes
@@ -122,8 +123,10 @@ namespace SME
                 throw new ArgumentNullException(nameof(bus));
             if (typeof(T) == typeof(IBus))
                 throw new ArgumentException($"Cannot create a bus of type {typeof(T).FullName}");
+            if (!typeof(IRuntimeBus).IsAssignableFrom(typeof(T)))
+                throw new ArgumentException($"Cannot register a non-runtime bus");
 
-            Current.m_busses[name] = bus;
+            Current.m_busses[name] = (IRuntimeBus)bus;
 
             return bus;
         }
@@ -152,18 +155,32 @@ namespace SME
             return CreateOrLoadBus(bustype, name, internalBus, true);
         }
 
-		/// <summary>
-		/// Finds the bus with the given name and type, or creates a new if none is found
-		/// </summary>
-		/// <returns>The loaded or created bus.</returns>
-		/// <param name="name">The name of the bus to find.</param>
-		/// <typeparam name="T">The bus type</typeparam>
-		/// <param name="clock">The optional clock to use if not using the default clock</param>
-		/// <param name="internalBus">A flag indicating if this is an internal bus</param>
-        /// <param name="forceCreate">A flag indicating if the bus should be created even if it exists</param>
-		public static T CreateOrLoadBus<T>(string name = null, bool internalBus = false, bool forceCreate = false) where T : class, IBus
+        /// <summary>
+        /// Finds the bus with the given name and type, or creates a new if none is found
+        /// </summary>
+        /// <returns>The loaded or created bus.</returns>
+        /// <param name="name">The name of the bus to find.</param>
+        /// <typeparam name="T">The bus type</typeparam>
+        /// <param name="internalBus">A flag indicating if this is an internal bus</param>
+        public static T LoadBus<T>(string name = null, bool internalBus = false) where T : class, IBus
         {
-            return (T)CreateOrLoadBus(typeof(T), name, internalBus, forceCreate);
+            return (T)LoadBus(typeof(T), name, internalBus);
+        }
+
+        /// <summary>
+        /// Finds the bus with the given name and type, or creates a new if none is found
+        /// </summary>
+        /// <returns>The loaded or created bus.</returns>
+        /// <param name="name">The name of the bus to find.</param>
+        /// <param name="bustype">The bus type</param>
+        /// <param name="internalBus">A flag indicating if this is an internal bus</param>
+        public static IBus LoadBus(Type bustype, string name = null, bool internalBus = false)
+        {
+            var scope = GetTargetScope(bustype, ref name, internalBus);
+            if (scope.FindBus(name) == null)
+                throw new Exception($"Unable to find the bus, make sure it is created before calling {nameof(LoadBus)}");
+
+            return CreateOrLoadBus(bustype, name, internalBus, false);
         }
 
 		/// <summary>
@@ -171,20 +188,31 @@ namespace SME
 		/// </summary>
 		/// <returns>The loaded or created bus.</returns>
 		/// <param name="name">The name of the bus to find.</param>
-		/// <param name="bustype">The bus type</param>
+		/// <typeparam name="T">The bus type</typeparam>
 		/// <param name="internalBus">A flag indicating if this is an internal bus</param>
-		/// <param name="forceCreate">A flag indicating if the bus should be created even if it exists</param>
-		public static IBus CreateOrLoadBus(Type bustype, string name = null, bool internalBus = false, bool forceCreate = false)
+        /// <param name="forceCreate">A flag indicating if the bus should be created even if it exists</param>
+		public static T CreateOrLoadBus<T>(string name = null, bool internalBus = false, bool forceCreate = false) where T : class, IBus
+        {
+            return (T)CreateOrLoadBus(typeof(T), name, internalBus, forceCreate);
+        }
+
+        /// <summary>
+        /// Gets the target scope for a bus
+        /// </summary>
+        /// <returns>The target scope.</returns>
+        /// <param name="name">The name of the bus to find.</param>
+        /// <param name="bustype">The bus type</param>
+        /// <param name="internalBus">A flag indicating if this is an internal bus</param>
+        private static Scope GetTargetScope(Type bustype, ref string name, bool internalBus)
         {
             Scope targetScope;
             var isClocked = (bustype.GetCustomAttributes(typeof(ClockedBusAttribute), true).FirstOrDefault() as ClockedBusAttribute) != null;
             if (internalBus)
             {
-				if (name != null)
-					throw new ArgumentException($"Cannot set the name of an internal bus");
-                
-                return Bus.CreateFromInterface(bustype, Current.Clock, isClocked, true);
-			}
+                if (name != null)
+                    throw new ArgumentException($"Cannot set the name of an internal bus");
+                return null;
+            }
             else if (typeof(ISingletonBus).IsAssignableFrom(bustype))
             {
                 if (name != null)
@@ -198,6 +226,25 @@ namespace SME
                     name = bustype.FullName;
                 targetScope = Current;
             }
+
+            return targetScope;
+        }
+
+		/// <summary>
+		/// Finds the bus with the given name and type, or creates a new if none is found
+		/// </summary>
+		/// <returns>The loaded or created bus.</returns>
+		/// <param name="name">The name of the bus to find.</param>
+		/// <param name="bustype">The bus type</param>
+		/// <param name="internalBus">A flag indicating if this is an internal bus</param>
+		/// <param name="forceCreate">A flag indicating if the bus should be created even if it exists</param>
+		public static IBus CreateOrLoadBus(Type bustype, string name = null, bool internalBus = false, bool forceCreate = false)
+        {
+            var targetScope = GetTargetScope(bustype, ref name, internalBus);
+            var isClocked = (bustype.GetCustomAttributes(typeof(ClockedBusAttribute), true).FirstOrDefault() as ClockedBusAttribute) != null;
+
+            if (targetScope == null)
+                return Bus.CreateFromInterface(bustype, Current.Clock, isClocked, true);
 
             if (bustype == typeof(IBus) || bustype == typeof(ISingletonBus))
                 throw new ArgumentException($"Cannot create a bus of type {bustype.FullName}");
@@ -227,7 +274,7 @@ namespace SME
         /// </summary>
         /// <returns>The bus or null.</returns>
         /// <param name="name">The name of the bus to find.</param>
-        internal IBus FindBus(string name)
+        internal IRuntimeBus FindBus(string name)
         {
             return RecursiveLookup(x => x.m_busses, name);
         }
@@ -318,9 +365,9 @@ namespace SME
         private static readonly Dictionary<string, Scope> _scopes;
 
         /// <summary>
-        /// The key used to store data in the CallContext
+        /// The shared scope key
         /// </summary>
-        private const string CONTEXT_SCOPE_KEY = "SME_SCOPE_KEY";
+        private static AsyncLocal<string> _scopekey = new AsyncLocal<string>();
 
         /// <summary>
         /// Gets or sets the scope key from the call context.
@@ -328,8 +375,8 @@ namespace SME
         /// <value>The scope key.</value>
         private static string ScopeKey
         {
-            get { return System.Runtime.Remoting.Messaging.CallContext.GetData(CONTEXT_SCOPE_KEY) as string; }
-            set { System.Runtime.Remoting.Messaging.CallContext.SetData(CONTEXT_SCOPE_KEY, value); }
+            get => _scopekey.Value;
+            set => _scopekey.Value = value;
         }
         #endregion
     }

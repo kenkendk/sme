@@ -86,7 +86,7 @@ namespace SME.GraphViz
                 DependsOnClockedBus = ReduceToNames(mapper.Simulation, mapper.DependsOnClockedBus);
 			}
 
-            private static Dictionary<string, List<string>> ReduceToNames(Simulation simulation, Dictionary<IBus, List<ProcessMetadata>> input)
+            private static Dictionary<string, List<string>> ReduceToNames(Simulation simulation, Dictionary<IRuntimeBus, List<ProcessMetadata>> input)
 			{
                 var res = new Dictionary<string, List<string>>();
 				foreach (var k in input)
@@ -98,9 +98,9 @@ namespace SME.GraphViz
 		private class NetworkMapper
 		{
             public readonly Simulation Simulation;
-            public Dictionary<IBus, List<ProcessMetadata>> BusDependsOn { get; private set; }
-            public Dictionary<IBus, List<ProcessMetadata>> DependsOnBus { get; private set; }
-            public Dictionary<IBus, List<ProcessMetadata>> DependsOnClockedBus { get; private set; }
+            public Dictionary<IRuntimeBus, List<ProcessMetadata>> BusDependsOn { get; private set; }
+            public Dictionary<IRuntimeBus, List<ProcessMetadata>> DependsOnBus { get; private set; }
+            public Dictionary<IRuntimeBus, List<ProcessMetadata>> DependsOnClockedBus { get; private set; }
 
             public NetworkMapper(Simulation simulation)
 			{

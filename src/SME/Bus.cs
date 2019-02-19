@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-using Castle.DynamicProxy;
 using System.Threading.Tasks;
 using System.Reflection;
 
@@ -53,7 +52,7 @@ namespace SME
 	/// <summary>
 	/// Backend for a DynamicProxy instance of an interface
 	/// </summary>
-	public class Bus : IBus
+	public class Bus : IRuntimeBus
 	{
 		private Dictionary<string, object> m_readValues = new Dictionary<string, object>();
 		private Dictionary<string, object> m_stageValues = new Dictionary<string, object>();
@@ -72,13 +71,13 @@ namespace SME
 		/// Gets the type of the bus.
 		/// </summary>
 		/// <value>The type of the bus.</value>
-		Type IBus.BusType { get { return BusType; } }
+		Type IRuntimeBus.BusType { get { return BusType; } }
 
 		/// <summary>
 		/// Gets a self reference
 		/// </summary>
 		/// <value>The manager.</value>
-		IBus IBus.Manager { get { return this; } }
+		IBus IRuntimeBus.Manager { get { return this; } }
 
         /// <summary>
         /// Gets a value indicating whether this <see cref="T:SME.Bus"/> is clocked.
@@ -190,6 +189,16 @@ namespace SME
 		}
 
 		/// <summary>
+		/// Checks if the property can be read
+		/// </summary>
+		/// <param name="name">The property to check</param>
+		/// <returns><c>true</c> if the property can be read, <c>false</c> otherwise</returns>
+		public bool CanRead(string name)
+		{
+			return m_readValues.ContainsKey(name);
+		}
+
+		/// <summary>
 		/// Drives the bus and propagates all writen signals into the read side
 		/// </summary>
 		public virtual void Propagate()
@@ -248,102 +257,18 @@ namespace SME
 			 	select n;
 		}
 
-
-		/// <summary>
-		/// Helper class to do property interception
-		/// </summary>
-		internal class PropertyIntercepter<T> : PropertyIntercepter
-		{
-			public PropertyIntercepter(Clock clock, bool isClocked, bool isInternal)
-                : base(typeof(T), clock, isClocked, isInternal)
-			{
-			}
-		}
-
-		/// <summary>
-		/// Helper class to do property interception for the dynamic proxy
-		/// </summary>
-		internal class PropertyIntercepter : IInterceptor
-		{
-			/// <summary>
-			/// The bus instance holding the signal values
-			/// </summary>
-			protected Bus m_target;
-
-			public PropertyIntercepter(Type t, Clock clock, bool isClocked, bool isInternal)
-			{
-                m_target = new Bus(t, clock, isClocked, isInternal);
-			}
-				
-			public virtual void Intercept(IInvocation invocation)
-			{
-				var name = invocation.Method.Name;
-				if (name.Equals("Propagate") && invocation.Arguments.Length == 0)
-				{
-					m_target.Propagate();
-				}
-				else if (name.Equals("Forward") && invocation.Arguments.Length == 0)
-				{
-					m_target.Forward();
-				}
-				else if (name.Equals("AnyStaged") && invocation.Arguments.Length == 0)
-				{
-					invocation.ReturnValue = m_target.AnyStaged();
-				}
-				else if (name.Equals("NonStaged") && invocation.Arguments.Length == 0)
-				{
-					invocation.ReturnValue = m_target.NonStaged();
-				}
-				else if (name.Equals("get_IsInternal") && invocation.Arguments.Length == 0)
-				{
-					invocation.ReturnValue = m_target.IsInternal;
-				}
-				else if (name.Equals("get_IsClocked") && invocation.Arguments.Length == 0)
-				{
-					invocation.ReturnValue = m_target.IsClocked;
-				}
-				else if (name.Equals("get_BusType") && invocation.Arguments.Length == 0)
-				{
-					invocation.ReturnValue = m_target.BusType;
-				}
-				else if (name.Equals("get_Clock") && invocation.Arguments.Length == 0)
-				{
-					invocation.ReturnValue = ((Bus)m_target).Clock;
-				}
-				else if (name.Equals("get_Manager") && invocation.Arguments.Length == 0)
-				{
-					invocation.ReturnValue = m_target;
-				}
-				else if (name.StartsWith("set_") && invocation.Arguments.Length == 1)
-				{
-					name = name.Substring("set_".Length);
-					m_target.Write(name, invocation.Arguments[0]);
-				}
-				else if (name.StartsWith("get_") && invocation.Arguments.Length == 0)
-				{
-					name = name.Substring("get_".Length);
-					invocation.ReturnValue = m_target.Read(name);
-				}
-				else
-				{
-					// This should throw an exception
-					invocation.Proceed();
-				}
-			}
-		}
-
 		/// <summary>
 		/// Creates a bus from an interface.
 		/// </summary>
 		/// <returns>The DynamicProxy instance.</returns>
 		/// <param name="t">The interface type to map.</param>
 		/// <param name="clock">The clock to keep the Bus on.</param>
-		public static IBus CreateFromInterface(Type t, Clock clock, bool isClocked, bool isInternal)
+		public static IRuntimeBus CreateFromInterface(Type t, Clock clock, bool isClocked, bool isInternal)
 		{
 			if (!t.IsInterface)
 				throw new Exception(string.Format("Cannot create proxy from non-interface type: {0}", t.FullName));
 
-            return (IBus)new ProxyGenerator().CreateInterfaceProxyWithoutTarget(t, new PropertyIntercepter(t, clock, isClocked, isInternal));
+            return BusProxyCreator.CreateBusProxy(t, clock, isClocked, isInternal);
 
 		}
 
@@ -359,7 +284,7 @@ namespace SME
 			if (!typeof(T).IsInterface)
 				throw new Exception(string.Format("Cannot create proxy from non-interface type: {0}", typeof(T).FullName));
 
-            return new ProxyGenerator().CreateInterfaceProxyWithoutTarget<T>(new PropertyIntercepter<T>(clock, isClocked, isInternal));
+            return (T)BusProxyCreator.CreateBusProxy(typeof(T), clock, isClocked, isInternal);
 			
 		}
 	}

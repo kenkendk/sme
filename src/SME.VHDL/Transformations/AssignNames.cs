@@ -10,6 +10,11 @@ namespace SME.VHDL.Transformations
 	/// </summary>
 	public class AssignNames : IASTTransform
 	{
+        /// <summary>
+        /// The name of the top-level item
+        /// </summary>
+        private string TopLevelName = null;
+
 		/// <summary>
 		/// Applies the transformation
 		/// </summary>
@@ -22,8 +27,17 @@ namespace SME.VHDL.Transformations
 
             if (el is AST.Bus && ((AST.Bus)el).InstanceName != null)
                 ((AST.Bus)el).InstanceName = Naming.ToValidName(((AST.Bus)el).InstanceName);
-            if (el is AST.Process && ((AST.Process)el).InstanceName != null)
-                ((AST.Process)el).InstanceName = Naming.ToValidName(((AST.Process)el).InstanceName);
+            if (el is AST.Process)
+            {
+                if (((AST.Process)el).InstanceName == null)
+                    ((AST.Process)el).InstanceName = Naming.ToValidName(((AST.Process)el).InstanceName);
+
+                if (TopLevelName == null)
+                    TopLevelName = Naming.AssemblyToValidName(new[] { ((AST.Process)el).SourceInstance.Instance });
+
+                if (string.Equals(((AST.Process)el).InstanceName, TopLevelName, StringComparison.OrdinalIgnoreCase))
+                    ((AST.Process)el).InstanceName = "cls_" + ((AST.Process)el).InstanceName;
+            }
 
 			if (el is AST.Constant)
 			{

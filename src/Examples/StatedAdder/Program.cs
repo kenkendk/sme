@@ -42,13 +42,10 @@ namespace StatedAdder
         [OutputBus]
         public readonly IResult output = Scope.CreateOrLoadBus<IResult>();
 
-        uint tmp0 = 0;
-        uint tmp1 = 0;
-
         protected async override Task OnTickAsync()
         {
-            tmp0 = input.a + input.b;
-            tmp1 = input.c;
+            var tmp0 = input.a + input.b;
+            var tmp1 = input.c;
 
             await ClockAsync();
             output.sum = tmp0 + tmp1;

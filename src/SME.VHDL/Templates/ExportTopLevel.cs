@@ -209,7 +209,7 @@ foreach (var bus in Network.Busses.Where(x => x.IsTopLevelOutput && !x.IsTopLeve
     foreach(var signal in bus.Signals) 
     {
         var vt = RS.VHDLType(signal);
-        if (vt.IsSystemSigned || vt.IsSystemUnsigned) 
+        if (vt.IsSigned || vt.IsUnsigned) 
         {
             converted_outputs.Add(signal);
         }
@@ -555,7 +555,7 @@ foreach (var bus in Network.Busses.Where(x => x.IsTopLevelOutput && !x.IsTopLeve
             #line hidden
             
             #line 115 ""
-            } else if (vt.IsSystemType && vt.IsUnsigned) { 
+            } else if (vt.IsUnsigned) { 
             
             #line default
             #line hidden
@@ -615,7 +615,7 @@ foreach (var bus in Network.Busses.Where(x => x.IsTopLevelOutput && !x.IsTopLeve
             #line hidden
             
             #line 117 ""
-            } else if (vt.IsSystemType && vt.IsSigned) { 
+            } else if (vt.IsSigned) { 
             
             #line default
             #line hidden
