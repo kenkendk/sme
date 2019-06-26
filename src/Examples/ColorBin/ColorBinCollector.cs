@@ -8,7 +8,7 @@ namespace ColorBin
         [InputBus]
         private readonly ImageInputLine Input = Scope.CreateOrLoadBus<ImageInputLine>();
 
-		[InputBus, OutputBus]
+		[OutputBus]
 		private readonly BinCountOutput Output = Scope.CreateOrLoadBus<BinCountOutput>();
 
 		const uint HighThreshold = 200;
