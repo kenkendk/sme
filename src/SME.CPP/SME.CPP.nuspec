@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>SME.CPP</id>
-    <version>0.4.0-beta</version>
+    <version>0.4.1-beta</version>
     <authors>Kenneth Skovhede</authors>
     <owners>Kenneth Skovhede</owners>
     <licenseUrl>https://raw.githubusercontent.com/kenkendk/sme/master/LICENSE</licenseUrl>
@@ -15,9 +15,9 @@
     <dependencies>
       <dependency id="ICSharpCode.Decompiler" version="3.0.2.3465" />
       <dependency id="Mono.Cecil" version="0.10.0-beta7" />
-      <dependency id="SME" version="0.4.0-beta" />
-      <dependency id="SME.AST" version="0.4.0-beta" />
-      <dependency id="SME.Components" version="0.4.0-beta" />
+      <dependency id="SME" version="0.4.1-beta" />
+      <dependency id="SME.AST" version="0.4.1-beta" />
+      <dependency id="SME.Components" version="0.4.1-beta" />
       <dependency id="System.CodeDom" version="4.5.0" />
     </dependencies>
   </metadata>

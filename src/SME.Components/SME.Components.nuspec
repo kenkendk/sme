@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>SME.Components</id>
-    <version>0.4.0-beta</version>
+    <version>0.4.1-beta</version>
     <authors>Kenneth Skovhede</authors>
     <owners>Kenneth Skovhede</owners>
     <licenseUrl>https://raw.githubusercontent.com/kenkendk/sme/master/LICENSE</licenseUrl>
@@ -13,7 +13,7 @@
     <copyright>Copyright Kenneth Skovhede 2019</copyright>
     <tags>SME hardware simulation</tags>
     <dependencies>
-      <dependency id="SME" version="0.4.0-beta" />
+      <dependency id="SME" version="0.4.1-beta" />
     </dependencies>
   </metadata>
   <files>

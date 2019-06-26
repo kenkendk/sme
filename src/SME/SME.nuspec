@@ -2,14 +2,14 @@
 <package >
   <metadata>
     <id>SME</id>
-    <version>0.4.0-beta</version>
+    <version>0.4.1-beta</version>
     <authors>Kenneth Skovhede</authors>
     <owners>Kenneth Skovhede</owners>
     <licenseUrl>https://raw.githubusercontent.com/kenkendk/sme/master/LICENSE</licenseUrl>
     <projectUrl>https://github.com/kenkendk/sme</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Synchronous Message Exchange simulation and component library</description>
-    <releaseNotes>Switched to .net standard with .net core support</releaseNotes>
+    <releaseNotes>Added some support for struct/record data types</releaseNotes>
     <copyright>Copyright Kenneth Skovhede 2019</copyright>
     <tags>SME hardware simulation</tags>
     <dependencies>
