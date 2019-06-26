@@ -648,7 +648,7 @@ namespace SME.VHDL
             }
             else
             {
-                return VHDLTypeConversion.GetPrimitiveLiteral(e, tvhdl);
+                return VHDLTypeConversion.GetPrimitiveLiteral(e, tvhdl, Parent);
             }
         }
 
@@ -681,7 +681,7 @@ namespace SME.VHDL
         {
             string innerexp;
             if (e.Expression is PrimitiveExpression)
-                innerexp = VHDLTypeConversion.GetPrimitiveLiteral(e.Expression, Parent.TypeLookup[e]);
+                innerexp = VHDLTypeConversion.GetPrimitiveLiteral(e.Expression, Parent.TypeLookup[e], Parent);
             else
                 innerexp = RenderExpression(e.Expression);
             return string.Format(e.WrappingTemplate, innerexp);
@@ -750,10 +750,12 @@ namespace SME.VHDL
                         }
 
                         var tvhdl = Parent.VHDLType(v);
-                        if (tvhdl.IsSystemType || (tvhdl.IsArray && Parent.TypeScope.GetByName(tvhdl.ElementName).IsSystemType))
-                            yield return $"subtype {Process.Name}_{v.Name}_type is {Parent.VHDLType(v)}(0 to {arraylen - 1})";
+                        var telvhdl = Parent.TypeScope.GetByName(tvhdl.ElementName);
+
+                        if (tvhdl.IsSystemType || (tvhdl.IsArray && telvhdl.IsSystemType))
+                            yield return $"subtype {Process.Name}_{v.Name}_type is {tvhdl.ToSafeVHDLName()}(0 to {arraylen - 1})";
                         else
-                            yield return $"type {Process.Name}_{v.Name}_type is array(0 to {arraylen - 1}) of {Parent.VHDLType(v).ElementName}";
+                            yield return $"type {Process.Name}_{v.Name}_type is array(0 to {arraylen - 1}) of {telvhdl.ToSafeVHDLName()}";
                     }
                 }
             }

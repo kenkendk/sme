@@ -838,7 +838,7 @@ namespace SME.VHDL
 
                                 yield return string.Format("type {0}_type is array (0 to {1}{3}) of {2}", varname, ellength, vhdl_eltype, eltrail);
 
-                                var values = string.Join(", ", arc.Initializer.Elements.Select(x => string.Format("{0}({1})", convm, VHDLTypeConversion.GetPrimitiveLiteral(x, vhdl_eltype))));
+                                var values = string.Join(", ", arc.Initializer.Elements.Select(x => string.Format("{0}({1})", convm, VHDLTypeConversion.GetPrimitiveLiteral(x, vhdl_eltype, this))));
                                 yield return string.Format("constant {0}: {0}_type := ({1})", varname, values);
 
                             }
@@ -860,7 +860,7 @@ namespace SME.VHDL
 
                                 yield return string.Format("type {0}_type is array (0 to {1}{3}) of {2}", varname, ellength, vhdl_eltype, eltrail);
 
-                                var values = string.Join(", ", arc.ElementExpressions.Select(x => string.Format("{0}({1})", convm, VHDLTypeConversion.GetPrimitiveLiteral(x as AST.PrimitiveExpression, vhdl_eltype))));
+                                var values = string.Join(", ", arc.ElementExpressions.Select(x => string.Format("{0}({1})", convm, VHDLTypeConversion.GetPrimitiveLiteral(x as AST.PrimitiveExpression, vhdl_eltype, this))));
 
                                 yield return string.Format("constant {0}: {0}_type := ({1})", varname, values);
                             }
@@ -902,7 +902,7 @@ namespace SME.VHDL
 
                                 var elements = Enumerable.Range(0, arc.Length).Select(x => arc.GetValue(x));
 
-                                var values = string.Join(", ", elements.Select(x => string.Format("{0}({1})", convm,  VHDLTypeConversion.GetPrimitiveLiteral(x, vhdl_eltype))));
+                                var values = string.Join(", ", elements.Select(x => string.Format("{0}({1})", convm,  VHDLTypeConversion.GetPrimitiveLiteral(x, vhdl_eltype, this))));
                                 yield return string.Format("constant {0}: {0}_type := ({1})", varname, values);                                
                             }
 							else
@@ -1225,7 +1225,7 @@ namespace SME.VHDL
                 if (primitiveVHDL.IsVHDLSigned || primitiveVHDL.IsVHDLUnsigned)
                     TypeLookup[exp.Right] = VHDLTypes.INTEGER;
                 else if (element.DefaultValue != null && !element.DefaultValue.GetType().IsEnum && element.DefaultValue.GetType() != typeof(bool))
-                    TypeLookup[exp.Right] = VHDLTypes.INTEGER;
+                    TypeLookup[exp.Right] = tvhdl; //VHDLTypes.INTEGER;
             }
 
             res.UpdateParents();

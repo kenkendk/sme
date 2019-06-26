@@ -11,7 +11,7 @@ namespace SME.VHDL
 			var svhdl = render.VHDLType(s);
 
             // Deal with pesky integers that overflow the 32bit VHDL specs
-            if (IsTooLargeIntegerLiteral(s, target))
+            if (IsTooLargeIntegerLiteral(s, target, render))
                 svhdl = render.TypeScope.StdLogicVectorEquivalent(target);
 
 			// Already the real target type, just return it
@@ -479,9 +479,10 @@ namespace SME.VHDL
         /// <returns><c>true</c>, if the expression is an integer that is too larget, <c>false</c> otherwise.</returns>
         /// <param name="e">The expression to evaluate.</param>
         /// <param name="tvhdl">The target VHDL type.</param>
-        public static bool IsTooLargeIntegerLiteral(Expression e, VHDLType tvhdl)
+        /// <param name="render">The render state to use</param>
+        public static bool IsTooLargeIntegerLiteral(Expression e, VHDLType tvhdl, RenderState render)
         {
-            return (GetPrimitiveLiteral(e as PrimitiveExpression, tvhdl) ?? string.Empty).StartsWith("STD_LOGIC_VECTOR'(\"", StringComparison.OrdinalIgnoreCase);
+            return (GetPrimitiveLiteral(e as PrimitiveExpression, tvhdl, render) ?? string.Empty).StartsWith("STD_LOGIC_VECTOR'(\"", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -490,7 +491,8 @@ namespace SME.VHDL
         /// <returns>The integer literal expression.</returns>
         /// <param name="e">The expression to evaluate.</param>
         /// <param name="tvhdl">The target VHDL type.</param>
-        public static string GetPrimitiveLiteral(object e, VHDLType tvhdl)
+        /// <param name="render">The render state to use</param>
+        public static string GetPrimitiveLiteral(object e, VHDLType tvhdl, RenderState render)
         {
             if (e is PrimitiveExpression)
                 e = (e as PrimitiveExpression).Value;
@@ -536,6 +538,35 @@ namespace SME.VHDL
                 {
                     binstr = Convert.ToString((int)(ivalue & 0xffffffff), 2).PadLeft(32, '0');
                 }
+            }
+            // Structs
+            else if (e.GetType().IsValueType && !e.GetType().IsPrimitive)
+            {
+                var fields = tvhdl.SourceType.Resolve().Fields.ToDictionary(x => x.Name);                
+                return "(" +
+                    string.Join(", ",
+                        e.GetType().GetFields()
+                        .Select(x => {
+                            var f = fields[x.Name];
+
+                            var exp = new AST.PrimitiveExpression(x.GetValue(e), f.FieldType);
+                            var stm = new ExpressionStatement()
+                            {
+                                Expression = new AssignmentExpression()
+                                {
+                                    Left = null,
+                                    Right = exp
+                                }
+                            };
+                            exp.Parent = stm.Expression;
+                            stm.Expression.Parent = stm;
+
+                            var conv = ConvertExpression(render, null, exp, render.TypeScope.GetVHDLType(f), f.FieldType, false);
+
+                            return $"{x.Name} => {new RenderHelper(render, null).RenderExpression(conv)}";
+                        })
+                    )
+                    + ")";
             }
 
             if (!string.IsNullOrWhiteSpace(binstr))
