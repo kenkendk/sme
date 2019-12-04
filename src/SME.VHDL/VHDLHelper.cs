@@ -342,11 +342,11 @@ use unimacro.Vcomponents.all;
             }
 
             var last = data.GetValue(data.Length - 1);
-           var datawidth = GetBitWidthFromType(data.GetType().GetElementType());
+            var datawidth = GetBitWidthFromType(data.GetType().GetElementType());
 
             int first_trailing_element;
             for (first_trailing_element = data.Length - 1; first_trailing_element >= 0; first_trailing_element--)
-                if (data.GetValue(first_trailing_element) != last)
+                if (!data.GetValue(first_trailing_element).Equals(last))
                     break;
 
             first_trailing_element++;
