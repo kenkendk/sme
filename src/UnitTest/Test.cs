@@ -64,16 +64,34 @@ namespace UnitTest
             };
 
             var ps = System.Diagnostics.Process.Start(psi);
+            var errorLine = string.Empty;
+
+            Func<StreamReader, TextWriter, Task> copyAndCheck = async (source, sink) =>
+            {
+                string line;
+                while ((line = await source.ReadLineAsync()) != null)
+                {
+                    // Check for error markers
+                    if (string.IsNullOrWhiteSpace(errorLine) && (line ?? string.Empty).Contains("error"))
+                        errorLine = line;
+
+                    await sink.WriteLineAsync(line);
+                }
+            };
+
 
             var tasks = Task.WhenAll(
-                CopyStreamAsync(ps.StandardOutput, Console.Out),
-                CopyStreamAsync(ps.StandardError, Console.Out)
+                copyAndCheck(ps.StandardOutput, Console.Out),
+                copyAndCheck(ps.StandardError, Console.Out)
             );
 
             ps.WaitForExit((int)TimeSpan.FromMinutes(5).TotalMilliseconds);
             if (ps.HasExited)
             {
                 tasks.Wait(TimeSpan.FromSeconds(5));
+                if (!string.IsNullOrWhiteSpace(errorLine))
+                    throw new Exception($"Console output indicates error: {errorLine}");
+
                 return ps.ExitCode;
             }
             else

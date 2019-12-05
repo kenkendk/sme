@@ -193,9 +193,9 @@
             "request": "launch",
             "preLaunchTask": "build UnitTest",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/src/Examples/UnitTest/bin/Debug/netcoreapp2.0/UnitTest.dll",
+            "program": "${workspaceFolder}/src/UnitTest/bin/Debug/netcoreapp2.0/UnitTest.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/src/Examples/UnitTest",
+            "cwd": "${workspaceFolder}/src/UnitTest",
             // For more information about the 'console' field, see https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md#console-terminal-window
             "console": "internalConsole",
             "stopAtEntry": false,

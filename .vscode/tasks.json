@@ -195,7 +195,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/src/Examples/UnitTest/UnitTest.csproj"
+                "${workspaceFolder}/src/UnitTest/UnitTest.csproj"
             ],
             "problemMatcher": "$msCompile",
             "group": {
@@ -209,7 +209,7 @@
             "type": "process",
             "args": [
                 "test",
-                "${workspaceFolder}/src/Examples/UnitTest/"
+                "${workspaceFolder}/src/UnitTest/"
             ],
             "problemMatcher": "$msCompile",
             "group": {
