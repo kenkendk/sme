@@ -204,7 +204,7 @@ end ");
 
 var converted_outputs = new HashSet<AST.Signal>();
 
-foreach (var bus in Network.Busses.Where(x => x.IsTopLevelOutput && !x.IsTopLevelInput)) 
+foreach (var bus in Network.Busses.Where(x => (x.IsTopLevelOutput && !x.IsTopLevelInput) || (x.IsTopLevelInput && x.IsTopLevelOutput))) 
 { 
     foreach(var signal in bus.Signals) 
     {
