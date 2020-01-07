@@ -214,7 +214,6 @@ package body csv_util is
             when 'L' => s(1):= 'L';
             when 'H' => s(1):= 'H';
             when '-' => s(1):= '-';
-            when others => s(1) := '-';
          end case;
          return s;
     end str;
