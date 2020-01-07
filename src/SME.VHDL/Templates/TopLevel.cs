@@ -1176,7 +1176,7 @@ end ");
     begin
         if RST = '1' then
             RDY <= '0';
-            readyflag := '1';
+            readyflag := '0';
         elsif rising_edge(CLK) then
             if ENB = '1' then
                 readyflag := not readyflag;
