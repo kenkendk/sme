@@ -1,3 +1,4 @@
+dist: trusty
 language: csharp
 solution: src/SME.sln
 mono: none
