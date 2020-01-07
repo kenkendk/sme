@@ -2,7 +2,7 @@
 namespace SME.Components
 {
     /// <summary>
-    /// Implementation of a true dual-port memory resource
+    /// Implementation of a true dual-port memory resource in read-first mode
     /// </summary>
     [ClockedProcess]
     public class TrueDualPortMemory<T> : SimpleProcess
@@ -34,6 +34,7 @@ namespace SME.Components
             /// Sets the data to write.
             /// </summary>
             /// <value>The data.</value>
+            [InitialValue]
             T Data { get; set; }
         }
 
@@ -64,6 +65,7 @@ namespace SME.Components
             /// Sets the data to write.
             /// </summary>
             /// <value>The data.</value>
+            [InitialValue]
             T Data { get; set; }
         }
 
@@ -76,6 +78,7 @@ namespace SME.Components
             /// Gets the last data read from port A
             /// </summary>
             /// <value>The data.</value>
+            [InitialValue]
             T Data { get; set; }
         }
 
@@ -88,6 +91,7 @@ namespace SME.Components
             /// Gets the last data read from port B
             /// </summary>
             /// <value>The data.</value>
+            [InitialValue]
             T Data { get; set; }
         }
 
@@ -142,26 +146,20 @@ namespace SME.Components
                 {
                     if (ControlA.IsWriting && ControlB.IsWriting)
                         throw new Exception("Both ports are writing the same memory address");
-
-                    if (ControlA.IsWriting == !ControlB.IsWriting)
-                        throw new Exception("Conflicting read and write to the same memory address");
                 }
             });
 
             if (ControlA.Enabled)
-            {
                 ReadResultA.Data = m_memory[ControlA.Address];
-                if (ControlA.IsWriting)
-                    m_memory[ControlA.Address] = ControlA.Data;
-            }
 
             if (ControlB.Enabled)
-            {
                 ReadResultB.Data = m_memory[ControlB.Address];
-                if (ControlB.IsWriting)
-                    m_memory[ControlB.Address] = ControlB.Data;
-            }
 
+            if (ControlA.Enabled && ControlA.IsWriting)
+                m_memory[ControlA.Address] = ControlA.Data;
+                
+            if (ControlB.Enabled && ControlB.IsWriting)
+                m_memory[ControlB.Address] = ControlB.Data;
         }
     }
 }
