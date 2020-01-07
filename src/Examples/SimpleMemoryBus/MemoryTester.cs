@@ -12,6 +12,10 @@ namespace SimpleMemoryBus
         public MemoryTester(IMemoryInterface bus = null)
         {
             Interface = bus ?? Scope.CreateOrLoadBus<IMemoryInterface>();
+			Simulation.Current
+				.AddTopLevelInputs(Interface)
+				.AddTopLevelOutputs(Interface);
+			
         }
 
 		public async override Task Run()
