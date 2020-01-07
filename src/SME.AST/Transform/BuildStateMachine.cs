@@ -62,6 +62,8 @@ namespace SME.AST.Transform
                 return SplitStatement((SwitchStatement)statement, collected, fragments);
             else if (statement is ExpressionStatement && ((ExpressionStatement)statement).Expression is AwaitExpression)
             {
+                if (collected.Count == 0)
+                    collected.Add(new EmptyStatement());
                 EndFragment(collected, fragments, fragments.Count + 1, false);
                 return 1;
             }
