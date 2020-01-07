@@ -61,10 +61,10 @@ namespace ExternalComponent
             await ClockAsync();
 
             m_rdcontrol.Address = 0;
+            m_rdcontrol.Enabled = true;
 
             m_wrcontrol.Address = 1;
             m_wrcontrol.Enabled = false;
-            m_rdcontrol.Enabled = true;
 
             await ClockAsync();
 
@@ -72,8 +72,8 @@ namespace ExternalComponent
             {
                 m_rdcontrol.Address = i;
                 await ClockAsync();
-                if (m_rddata.Data.ToString() != VHDLHelper.CreateIntType<TData>((ulong)(i - 1)).ToString())
-                    Console.WriteLine($"Read problem at offset {i}, value is {m_rddata.Data} but should be {i}");
+                if (!m_rddata.Data.Equals(VHDLHelper.CreateIntType<TData>((ulong)(i - 1))))
+                    Console.WriteLine($"Sequential test: Read problem at offset {i - 1}, value is {m_rddata.Data} but should be {i - 1}");
             }
 
             m_rdcontrol.Enabled = false;
@@ -81,7 +81,7 @@ namespace ExternalComponent
             await ClockAsync();
             m_wrcontrol.Enabled = true;
 
-            for (var i = 1; i < m_rnd.Length; i++)
+            for (var i = 0; i < m_rnd.Length; i++)
             {
                 m_wrcontrol.Address = i;
                 m_wrcontrol.Data = m_rnd[i];
@@ -94,16 +94,15 @@ namespace ExternalComponent
 
             m_rdcontrol.Address = 0;
             m_rdcontrol.Enabled = true;
+            await ClockAsync();
 
             for (var i = 1; i < m_rnd.Length; i++)
             {
                 m_rdcontrol.Address = i;
                 await ClockAsync();
-                if (m_rddata.Data.ToString() != m_rnd[i - 1].ToString())
-                    Console.WriteLine($"Read problem at offset {i}, value is {m_rddata.Data} but should be {i}");
+                if (!m_rddata.Data.Equals(m_rnd[i - 1]))
+                    Console.WriteLine($"Random test: Read problem at offset {i-1}, value is {m_rddata.Data} but should be {m_rnd[i - 1]}");
             }
-
-
         }
     }
 }
