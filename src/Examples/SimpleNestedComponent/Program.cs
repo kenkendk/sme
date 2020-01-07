@@ -7,17 +7,22 @@ namespace SimpleNestedComponent
 	{
 		public static void Main(string[] args)
 		{
-            new Simulation()
-                .AddTicker(ticks => Console.WriteLine("Ticked {0}", ticks))
-                .BuildCSVFile()
-                .BuildVHDL()
-                .Run(
-                    new TestDriver(),
-				    new CompositeItem.CounterTicker(),
-				    new CompositeItem.ValueIncrementer()
-				);
+			using (var sim = new Simulation())
+			{
+				var test_driver = new TestDriver();
+				var counter_ticker = new CompositeItem.CounterTicker();
+				var value_incrementer = new CompositeItem.ValueIncrementer();
 
-			Console.WriteLine("Execution complete after {0} ticks", Scope.Current.Clock.Ticks);
+				sim
+					//.AddTicker(ticks => Console.WriteLine("Ticked {0}", ticks))
+					.AddTopLevelInputs(test_driver.Input)
+					.AddTopLevelOutputs(test_driver.Output)
+					.BuildCSVFile()
+					.BuildVHDL()
+					.Run();
+
+				Console.WriteLine("Execution complete after {0} ticks", Scope.Current.Clock.Ticks);
+			}
 		}
 	}
 }

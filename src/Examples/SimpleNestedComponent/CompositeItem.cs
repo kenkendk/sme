@@ -15,7 +15,7 @@ namespace SimpleNestedComponent
 			bool Reset { get; set; }
 		}
 
-		public class CounterTicker : Process
+		public class CounterTicker : StateProcess
 		{
             [OutputBus]
             private TickBus Ticker = Scope.CreateOrLoadBus<TickBus>();
@@ -23,34 +23,31 @@ namespace SimpleNestedComponent
 			[InputBus]
             private CounterInput Input = Scope.CreateOrLoadBus<CounterInput>();
 
-			public async override Task Run()
+			protected async override Task OnTickAsync()
 			{
 				await ClockAsync();
+				while (!Input.InputEnabled)
+					await ClockAsync();
+                
+				int cnt = Input.RepeatCount;
+				Ticker.Reset = true;
 
-				while (true)
+				while (cnt > 0)
 				{
-                    await WaitUntilAsync(() => Input.InputEnabled);
+					cnt--;
+					Ticker.Tick = true;
+					await ClockAsync();
 
-					int cnt = Input.RepeatCount;
-					Ticker.Reset = true;
-
-					while (cnt-- > 0)
-					{
-						Ticker.Tick = true;
-						await ClockAsync();
-
-						if (cnt != 0)
-							Ticker.Reset = false;
-					}
-
-					Ticker.Tick = false;
-					Ticker.Reset = true;
+					if (cnt != 0)
+						Ticker.Reset = false;
 				}
 
+				Ticker.Tick = false;
+				Ticker.Reset = true;
 			}
 		}
 
-		public class ValueIncrementer : Process
+		public class ValueIncrementer : StateProcess
 		{
 			[InputBus]
             private TickBus Ticker = Scope.CreateOrLoadBus<TickBus>();
@@ -61,26 +58,22 @@ namespace SimpleNestedComponent
 			[OutputBus]
 			private CounterOutput Output = Scope.CreateOrLoadBus<CounterOutput>();
 
-			public async override Task Run()
+			protected async override Task OnTickAsync()
 			{
-				await ClockAsync();
-
 				int regno = 0;
 
-				while (true)
-				{
-					await WaitUntilAsync(() => Ticker.Tick || Ticker.Reset);
+				await ClockAsync();
+				while (!(Ticker.Tick || Ticker.Reset))
+					await ClockAsync();
+				
+				if (Ticker.Reset)
+					regno = Input.StartRegister;
+				else if (Ticker.Tick)
+					regno++;
 
-					if (Ticker.Reset)
-						regno = Input.StartRegister;
-					else if (Ticker.Tick)
-						regno++;
-
-					Output.OutputEnabled = Ticker.Tick;
-					Output.RegisterNumber = regno;
-				}
+				Output.OutputEnabled = Ticker.Tick;
+				Output.RegisterNumber = regno;
 			}
-
 		}
 	}
 }

@@ -7,10 +7,10 @@ namespace SimpleNestedComponent
     public class TestDriver : SimulationProcess
 	{
         [OutputBus]
-        private CounterInput Input = Scope.CreateOrLoadBus<CounterInput>();
+        public CounterInput Input = Scope.CreateOrLoadBus<CounterInput>();
 
         [InputBus]
-        private CounterOutput Output = Scope.CreateOrLoadBus<CounterOutput>();
+        public CounterOutput Output = Scope.CreateOrLoadBus<CounterOutput>();
 
 		public async override Task Run()
         {
