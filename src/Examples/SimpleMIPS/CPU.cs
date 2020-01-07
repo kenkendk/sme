@@ -161,7 +161,7 @@ namespace SimpleMIPS
         MemoryInput memin = Scope.CreateOrLoadBus<MemoryInput>();
 
         [OutputBus]
-        Terminate terminate = Scope.CreateOrLoadBus<Terminate>();
+        public Terminate terminate = Scope.CreateOrLoadBus<Terminate>();
 
         uint iptr = 0;
         uint instruction = 0;
@@ -180,6 +180,7 @@ namespace SimpleMIPS
                 memin.wrena = false;
                 memin.wrdata = 0;
                 await ClockAsync();
+                memin.ena = false; // TODO added because of empty state optimizations
                 await ClockAsync();
                 iptr++;
 
@@ -230,9 +231,17 @@ namespace SimpleMIPS
                             case Funcs.or:
                                 registers[rd] = registers[rs] | registers[rt]; break;
                             case Funcs.slt:
-                                registers[rd] = (uint) ((int)registers[rs] < (int)registers[rt] ? 1 : 0); break;
+                                if ((int)registers[rs] < (int)registers[rt])
+                                    registers[rd] = 1; 
+                                else
+                                    registers[rd] = 0;
+                                break;
                             case Funcs.sltu:
-                                registers[rd] = (uint) (registers[rs] < registers[rt] ? 1 : 0); break;
+                                if (registers[rs] < registers[rt])
+                                    registers[rd] = 1; 
+                                else
+                                    registers[rd] = 0;
+                                break;
                             default:
                                 //throw new Exception($"Funct not found: {funct}");
                                 Console.WriteLine($"Funct not found: {funct}"); break;
@@ -265,6 +274,7 @@ namespace SimpleMIPS
                         memin.wrena = false;
                         memin.wrdata = 0;
                         await ClockAsync();
+                        memin.ena = false;
                         await ClockAsync();
                         registers[rt] = memout.rddata;
                         break;
@@ -274,8 +284,10 @@ namespace SimpleMIPS
                         memin.wrena = true;
                         memin.wrdata = registers[rt];
                         await ClockAsync();
+                        memin.ena = false;
+                        memin.wrena = false;
                         break;
-                    case Opcodes.terminate:
+                    case Opcodes.terminate: // TODO Not quite MIPS standard, is it? :)
                         terminate.flg = true;
                         return;
                     default:

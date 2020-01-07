@@ -14,9 +14,10 @@ namespace SimpleMIPS
                 var tester = new Tester();
 
                 Simulation.Current
-                          .BuildCSVFile()
-                          .BuildVHDL()
-                          .Run();
+                    .AddTopLevelOutputs(cpu.terminate)
+                    .BuildCSVFile()
+                    .BuildVHDL()
+                    .Run();
             }
         }
     }

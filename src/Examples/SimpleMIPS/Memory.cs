@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using SME;
 
 namespace SimpleMIPS
@@ -12,10 +14,12 @@ namespace SimpleMIPS
     [ClockedProcess]
     public class Memory : SimpleProcess
     {
-        public Memory(string path) 
+        public Memory(string program_name) 
         {
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            string resource_name = assembly.GetManifestResourceNames().First(x => x.EndsWith(program_name));
             // Read the binary file in the given path
-            using (var reader = new BinaryReader(File.Open(path, FileMode.Open)))
+            using (var reader = new BinaryReader(assembly.GetManifestResourceStream(resource_name)))
             {
                 int position = 0;
                 int length = (int)reader.BaseStream.Length;

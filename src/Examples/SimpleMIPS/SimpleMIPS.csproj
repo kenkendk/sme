@@ -14,4 +14,8 @@
     <RootNamespace>SimpleMIPS</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="programs/*" />
+  </ItemGroup>
+
 </Project>
