@@ -183,8 +183,9 @@ namespace SME.VHDL
 				if (Process.MainMethod != null)
 				{
 					foreach(var variable in Process.MainMethod.AllVariables)
-                        foreach (var s in Helper.RenderStatement(null, Parent.GetResetStatement(variable), 0))
-							yield return s;
+						if (!variable.isLoopIndex)
+                        	foreach (var s in Helper.RenderStatement(null, Parent.GetResetStatement(variable), 0))
+								yield return s;
 						
 					if (Parent.TemporaryVariables.ContainsKey(Process.MainMethod))
 						foreach (var variable in Parent.TemporaryVariables[Process.MainMethod].Values)

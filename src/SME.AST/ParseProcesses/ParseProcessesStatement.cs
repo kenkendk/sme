@@ -664,6 +664,7 @@ namespace SME.AST
                 CecilType = LoadType(typeof(int)),
                 Name = name,
                 Source = statement.Clone(),
+				isLoopIndex = true
             };
 
             if (initial is ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression)

@@ -173,6 +173,8 @@ var variables = RSP.Variables.Concat(RSP.FiniteStateMethod == null ? RSP.SharedV
 <#     if (variables.Count() > 0) { #>
     -- Internal variables
 <#          foreach(var s in variables) { #>
+<#              if (s.isLoopIndex) #>
+<#                  continue; #>
     variable <#= s.Name #> : <#= RS.VHDLWrappedTypeName(s) #><#= Process.SharedVariables.Contains(s) ? " := " + Naming.ToValidName("reset_" + s.Name) : "" #>;
 <#          } #>
 <#     } #>
@@ -193,6 +195,8 @@ var variables = RSP.Variables.Concat(RSP.FiniteStateMethod == null ? RSP.SharedV
             <#= s #>
 <#     } #>
 <#     foreach(var variable in RSP.FiniteStateMethod == null ? RSP.SharedVariables : RSP.Variables) { #>
+<#          if (variable.isLoopIndex) #>
+<#              continue; #>
             <#= variable.Name #> := <#= Naming.ToValidName("reset_" + variable.Name) #>;
 <#     } #>
 <#     foreach(var variable in Process.SharedSignals) { #>

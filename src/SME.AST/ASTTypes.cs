@@ -205,6 +205,8 @@ namespace SME.AST
             this.Name = name;
             this.DefaultValue = defaultValue;
         }
+
+		public bool isLoopIndex;
     }
 
 	/// <summary>

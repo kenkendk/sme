@@ -110,7 +110,8 @@ namespace SME.VHDL
                     yield return $"pure function {method.Name}({margs}) return {Parent.VHDLWrappedTypeName(method.ReturnVariable)} is";
 
                 foreach (var n in method.AllVariables)
-                    yield return $"    variable {n.Name}: {Parent.VHDLWrappedTypeName(n)};";
+                    if (!n.isLoopIndex)
+                        yield return $"    variable {n.Name}: {Parent.VHDLWrappedTypeName(n)};";
 
                 foreach (var m in Parent.TemporaryVariables)
                     if (m.Key == method)

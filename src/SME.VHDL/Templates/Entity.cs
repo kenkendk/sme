@@ -1094,7 +1094,9 @@ var variables = RSP.Variables.Concat(RSP.FiniteStateMethod == null ? RSP.SharedV
             #line hidden
             
             #line 175 ""
-          foreach(var s in variables) { 
+          foreach(var s in variables) {
+                 if (s.isLoopIndex)
+                     continue;
             
             #line default
             #line hidden
@@ -1217,7 +1219,9 @@ var variables = RSP.Variables.Concat(RSP.FiniteStateMethod == null ? RSP.SharedV
             #line hidden
             
             #line 195 ""
-     foreach(var variable in RSP.FiniteStateMethod == null ? RSP.SharedVariables : RSP.Variables) { 
+     foreach(var variable in RSP.FiniteStateMethod == null ? RSP.SharedVariables : RSP.Variables) {
+            if (variable.isLoopIndex)
+                     continue;
             
             #line default
             #line hidden
