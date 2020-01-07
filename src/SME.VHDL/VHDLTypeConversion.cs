@@ -539,8 +539,8 @@ namespace SME.VHDL
                     binstr = Convert.ToString((int)(ivalue & 0xffffffff), 2).PadLeft(32, '0');
                 }
             }
-            // Structs
-            else if (e.GetType().IsValueType && !e.GetType().IsPrimitive)
+            // Structs TODO better fix? It captures VHDL.UINT_10
+            else if (e.GetType().IsValueType && !e.GetType().IsPrimitive && !(e is SME.Tracer.ITracerSerializable))
             {
                 var fields = tvhdl.SourceType.Resolve().Fields.ToDictionary(x => x.Name);                
                 return "(" +
