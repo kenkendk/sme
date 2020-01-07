@@ -345,7 +345,7 @@ use unimacro.Vcomponents.all;
             var datawidth = GetBitWidthFromType(data.GetType().GetElementType());
 
             int first_trailing_element;
-            for (first_trailing_element = data.Length - 1; first_trailing_element >= 0; first_trailing_element--)
+            for (first_trailing_element = data.Length - 2; first_trailing_element >= 0; first_trailing_element--)
                 if (!data.GetValue(first_trailing_element).Equals(last))
                     break;
 
@@ -358,7 +358,7 @@ use unimacro.Vcomponents.all;
                 sb.Append(string.Format(typecasttemplate, data.GetValue(i), datawidth));
             }
 
-            if (first_trailing_element != data.Length - 1)
+            if (first_trailing_element != data.Length)
             {
                 if (sb.Length != 0)
                     sb.Append(", ");
