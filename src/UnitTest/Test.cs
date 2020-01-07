@@ -31,7 +31,7 @@ namespace UnitTest
             if (runGhdl)
             {
                 var vhdlfolder = Path.Combine(targetfolder, "output", "vhdl");
-                if (RunExternalProgram("make", "test", vhdlfolder) != 0)
+                if (RunExternalProgram("make", "all", vhdlfolder) != 0)
                     throw new Exception($"Failed to run VHDL for {programname}");
             }
 
@@ -131,17 +131,23 @@ namespace UnitTest
             RunTest(typeof(SimpleComponents.ComponentTester), true, false);
         }
 
-        //[TestMethod]
-        //public void RunSimpleMemoryBus()
-        //{
-        //    RunTest(typeof(SimpleMemoryBus.MemoryTester), true, false);
-        //}
+        [TestMethod]
+        public void RunSimpleMemoryBus()
+        {
+            RunTest(typeof(SimpleMemoryBus.MemoryTester), true, false);
+        }
 
-        //[TestMethod]
-        //public void RunSimpleNestedComponent()
-        //{
-        //    RunTest(typeof(SimpleNestedComponent.TestDriver), true, false);
-        //}
+        [TestMethod]
+        public void RunSimpleMIPS()
+        {
+            RunTest(typeof(SimpleMIPS.Tester), true, false);
+        }
+
+        [TestMethod]
+        public void RunSimpleNestedComponent()
+        {
+            RunTest(typeof(SimpleNestedComponent.TestDriver), true, false);
+        }
 
         [TestMethod]
         public void RunSimpleTrader()
@@ -149,16 +155,28 @@ namespace UnitTest
             RunTest(typeof(SimpleTrader.ITraderInput), true, false);
         }
 
-        // [TestMethod]
-        // public void RunStatebasedCounter()
-        // {
-        //     RunTest(typeof(StatebasedCounter.MainClass), true, false);
-        // }
+        [TestMethod]
+        public void RunStatebasedCounter()
+        {
+            RunTest(typeof(StatebasedCounter.MainClass), true, false);
+        }
 
         [TestMethod]
         public void RunStatedAdder()
         {
             RunTest(typeof(StatedAdder.Adder), true, false);
+        }
+
+        [TestMethod]
+        public void RunStateMachineTester()
+        {
+            RunTest(typeof(StateMachineTester.MainClass), true, false);
+        }
+
+        [TestMethod]
+        public void RunStopwatch()
+        {
+            RunTest(typeof(Stopwatch.MainClass), true, false);
         }
 
     }

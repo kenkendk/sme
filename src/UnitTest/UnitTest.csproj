@@ -7,9 +7,14 @@
     <ProjectReference Include="..\Examples\ExternalComponent\ExternalComponent.csproj" />
     <ProjectReference Include="..\Examples\NoiseFilter\NoiseFilter.csproj" />
     <ProjectReference Include="..\Examples\SimpleComponents\SimpleComponents.csproj" />
+    <ProjectReference Include="..\Examples\SimpleMemoryBus\SimpleMemoryBus.csproj" />
+    <ProjectReference Include="..\Examples\SimpleMIPS\SimpleMIPS.csproj" />
+    <ProjectReference Include="..\Examples\SimpleNestedComponent\SimpleNestedComponent.csproj" />
     <ProjectReference Include="..\Examples\SimpleTrader\SimpleTrader.csproj" />
     <ProjectReference Include="..\Examples\StatebasedCounter\StatebasedCounter.csproj" />
     <ProjectReference Include="..\Examples\StatedAdder\StatedAdder.csproj" />
+    <ProjectReference Include="..\Examples\StateMachineTester\StateMachineTester.csproj" />
+    <ProjectReference Include="..\Examples\Stopwatch\Stopwatch.csproj" />
   </ItemGroup>
 
   <ItemGroup>
