@@ -11,7 +11,7 @@ namespace Stopwatch
         bool startstop { get; set; }
     }
 
-    [InitializedBus, TopLevelOutputBus]
+    [InitializedBus]
     public interface WatchOutput : IBus 
     {
         bool running { get; set; }

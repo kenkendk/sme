@@ -3,7 +3,7 @@ using SME;
 
 namespace Stopwatch
 {
-    class MainClass
+    public class MainClass
     {
         public static void Main(string[] args)
         {
