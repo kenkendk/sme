@@ -47,6 +47,7 @@ namespace SME.VHDL
             foreach(var n in method.Variables.Union(proc.SharedVariables).Where(x => x != runvariable))
                 yield return $"    variable {n.Name}: {Parent.VHDLWrappedTypeName(n)} := reset_{n.Name};";
             yield return $"    variable {runvariable.Name}: {Parent.VHDLWrappedTypeName(runvariable)} := {RenderExpression(new PrimitiveExpression("State0", runvariable.CecilType))};";
+            yield return $"    variable reentry_guard: std_logic := '0';";
             yield return "begin";
 
             // The first statement is the state reset call
@@ -65,7 +66,8 @@ namespace SME.VHDL
 
             yield return "        FIN <= '0';";
 
-            yield return "    else";
+            yield return "    elsif reentry_guard /= FSM_Trigger then";
+            yield return "        reentry_guard := FSM_Trigger;";
 
             foreach (var s in method.Statements.Skip(1).SelectMany(x => RenderStatement(method, x, 8)))
                 yield return s;
@@ -644,7 +646,10 @@ namespace SME.VHDL
             }
             else if (e.SourceResultType.Resolve().IsEnum)
             {
-                return Naming.ToValidName(e.SourceResultType.FullName + "_" + e.Value.ToString());
+                if (e.Value is string)
+                    return Naming.ToValidName(e.SourceResultType.FullName + "_" + e.Value.ToString());
+                else
+                    return Naming.ToValidName(e.SourceResultType.FullName) + "'VAL(" + e.Value.ToString() + ")";
             }
             else
             {
