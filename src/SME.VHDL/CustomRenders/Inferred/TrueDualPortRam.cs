@@ -128,11 +128,16 @@ namespace SME.VHDL.CustomRenders.Inferred
     signal { readresultb_bus_data_name }_Vector: std_logic_vector ({datawidth - 1} downto 0);
     signal { controla_bus_addr_name }_Vector: std_logic_vector ({addrwidth - 1} downto 0);
     signal { controlb_bus_addr_name }_Vector: std_logic_vector ({addrwidth - 1} downto 0);
+    signal FIN_A : std_logic;
+    signal FIN_B : std_logic;
 begin 
 
-    process (CLK)
+    process (CLK, RST)
     begin
-        if (CLK'event and CLK = '1') then
+        if RST = '1' then
+            { readresulta_bus_data_name }_Vector <= (others => '0');
+            FIN_A <= '0';
+        elsif rising_edge(CLK) then
             if ({ controla_bus_enabled_name } = '1') then
                 { readresulta_bus_data_name }_Vector <= RAM(to_integer(unsigned({ controla_bus_addr_name }_Vector)));
 
@@ -140,12 +145,16 @@ begin
                     RAM(to_integer(unsigned({ controla_bus_addr_name }_Vector))) := { controla_bus_data_name }_Vector;
                 end if;
             end if;
+            FIN_A <= not RDY;
         end if;
     end process;
 
-    process (CLK)
+    process (CLK, RST)
     begin
-        if (CLK'event and CLK = '1') then
+        if RST = '1' then
+            { readresultb_bus_data_name }_Vector <= (others => '0');
+            FIN_B <= '0';
+        elsif rising_edge(CLK) then
             if ({ controlb_bus_enabled_name } = '1') then
                 { readresultb_bus_data_name }_Vector <= RAM(to_integer(unsigned({ controlb_bus_addr_name }_Vector)));
 
@@ -153,17 +162,18 @@ begin
                     RAM(to_integer(unsigned({ controlb_bus_addr_name }_Vector))) := { controlb_bus_data_name }_Vector;
                 end if;
             end if;
+            FIN_B <= not RDY;
         end if;
     end process;
 
 
-    {Naming.ProcessNameToValidName(renderer.Process.SourceInstance.Instance)}_Helper: process(RST, CLK, RDY)
+    {Naming.ProcessNameToValidName(renderer.Process.SourceInstance.Instance)}_Helper: process(RST, FIN_A, FIN_B)
     begin
-    if RST = '1' then
-        FIN <= '0';                        
-    elsif rising_edge(CLK) then
-        FIN <= not RDY;
-    end if;
+        if RST = '1' then
+            FIN <= '0';
+        elsif FIN_A = FIN_B then
+            FIN <= FIN_A;
+        end if;
     end process;
 
     { controla_bus_addr_name }_Vector <= STD_LOGIC_VECTOR(resize(unsigned({ controla_bus_addr_name }), {addrwidth}));
