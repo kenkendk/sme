@@ -14,13 +14,14 @@ namespace ColorBin
 		const uint HighThreshold = 200;
 		const uint MediumThreshold = 100;
 
+		bool was_valid = false;
+		uint countlow = 0;
+		uint countmed = 0;
+		uint counthigh = 0;
+
 		protected override void OnTick()
 		{
-			var countlow = Output.Low;
-			var countmed = Output.Medium;
-			var counthigh = Output.High;
-
-			if (Output.IsValid)
+			if (was_valid)
 				countlow = countmed = counthigh = 0;
 			
 			if (Input.IsValid)
@@ -34,11 +35,12 @@ namespace ColorBin
 				else
 					countlow++;
 			}
+			was_valid = Input.IsValid && Input.LastPixel;
 
 			Output.Low = countlow;
 			Output.Medium = countmed;
 			Output.High = counthigh;
-			Output.IsValid = Input.IsValid && Input.LastPixel;
+			Output.IsValid = was_valid;
 		}
 	}
 }
