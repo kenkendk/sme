@@ -2,7 +2,7 @@ dist: trusty
 language: csharp
 solution: src/SME.sln
 mono: none
-dotnet: 3.1
+dotnet: 2.0
 before_install:
   - sudo add-apt-repository ppa:pgavin/ghdl -y
   - sudo apt-get -qq update
