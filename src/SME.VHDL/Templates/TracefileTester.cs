@@ -338,7 +338,6 @@ begin
             #line hidden
             
             #line 113 ""
- if (RS.DriverSignals.Count() > 0) { 
             
             #line default
             #line hidden
@@ -352,7 +351,8 @@ begin
             end if;
 
 ");
-            
+
+ if (RS.DriverSignals.Count() > 0) {            
             #line default
             #line hidden
             
@@ -661,12 +661,11 @@ begin
             #line 149 ""
             this.Write(@"
             if first_round then
-                wait until rising_edge(CLOCK);
                 first_round := false;
+            else
+                -- Wait until the signals are settled before veriying the results
+                wait until falling_edge(CLOCK);
             end if;
-
-            -- Wait until the signals are settled before veriying the results
-            wait until falling_edge(CLOCK);
 
             -- Compare each signal with the value in the CSV file
 ");

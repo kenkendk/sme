@@ -109,14 +109,14 @@ begin
 
             fieldno := 0;
             newfailures := 0;
-
-<# if (RS.DriverSignals.Count() > 0) { #>
             -- Write all driver signals out on the clock edge,
             -- except on the first round, where we make sure the reset
             -- values are propagated _before_ the initial clock edge
             if not first_round then
                 wait until rising_edge(CLOCK);
             end if;
+
+<# if (RS.DriverSignals.Count() > 0) { #>
 
 <#     foreach (var signal in RS.DriverSignals) { 
            var vhdltype = RS.VHDLType(signal);
@@ -148,12 +148,11 @@ begin
 <# } #>
 
             if first_round then
-                wait until rising_edge(CLOCK);
                 first_round := false;
+            else
+                -- Wait until the signals are settled before veriying the results
+                wait until falling_edge(CLOCK);
             end if;
-
-            -- Wait until the signals are settled before veriying the results
-            wait until falling_edge(CLOCK);
 
             -- Compare each signal with the value in the CSV file
 <# foreach (var signal in RS.VerifySignals) { 
