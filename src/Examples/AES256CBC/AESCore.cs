@@ -9,7 +9,6 @@ namespace AES256CBC
 	[ClockedProcess]
 	public class AESCore : SimpleProcess
 	{
-		[TopLevelOutputBus]
 		public interface IOutput : IBus
 		{
 			[InitialValue]
@@ -19,7 +18,6 @@ namespace AES256CBC
 			ulong Data1 { get; set; }
 		}
 
-		[TopLevelInputBus]
 		public interface IInput : IBus
 		{
 			[InitialValue]
@@ -37,10 +35,10 @@ namespace AES256CBC
 		}
 
         [InputBus]
-        private readonly IInput Input = Scope.CreateBus<IInput>();
+        public IInput Input;
 
         [OutputBus]
-        private readonly IOutput Output = Scope.CreateBus<IOutput>();
+        public IOutput Output = Scope.CreateBus<IOutput>();
 
 		private readonly byte[] m_key = new byte[32];
 		private readonly byte[] m_iv = new byte[16];

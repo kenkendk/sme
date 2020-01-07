@@ -8,17 +8,23 @@ namespace AES256CBC
 	{
 		public static void Main(string[] args)
 		{
-            //Tester.NUMBER_OF_RUNS = 10000;
+            using (var sim = new Simulation())
+            {
+                var core = new AESCore();
+                var test = new Tester();
 
-            new Simulation()
-                .BuildCSVFile()
-                .BuildGraph()
-                .BuildVHDL()
-                .BuildCPP()
-                .Run(
-                    new AESCore(),
-                    new Tester()
-                );
+                core.Input = test.Input;
+                test.Output = core.Output;
+
+                sim
+                    .AddTopLevelInputs(core.Input)
+                    .AddTopLevelOutputs(core.Output)
+                    .BuildCSVFile()
+                    .BuildGraph()
+                    .BuildVHDL()
+                    .BuildCPP()
+                    .Run();
+            }
 		}
 	}
 }
