@@ -142,13 +142,13 @@ namespace AES256CBC
                 Input.DataReady = false;
 
                 await ClockAsync();
-				Debug.Assert(!Output.DataReady, "Failed to produce data?");
+				Debug.Assert(Output.DataReady, "Failed to produce data?");
 
 				var d0 = PackArrayToLong(testvector.Value, 0);
 				var d1 = PackArrayToLong(testvector.Value, 8);
 
-				Debug.Assert(Output.Data0 != d0, "Failed to produce correct output");
-				Debug.Assert(Output.Data1 != d1, "Failed to produce correct output");
+				Debug.Assert(Output.Data0 == d0, "Failed to produce correct output");
+				Debug.Assert(Output.Data1 == d1, "Failed to produce correct output");
 			}
 
 			Input.DataReady = false;
