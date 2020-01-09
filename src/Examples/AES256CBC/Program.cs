@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using SME;
+﻿using SME;
 
 namespace AES256CBC
 {

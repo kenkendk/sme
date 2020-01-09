@@ -1,9 +1,9 @@
-﻿using System;
-using SME;
-using System.Threading.Tasks;
+﻿using SME;
+using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Collections.Generic;
-using SME.VHDL;
+using System.Threading.Tasks;
 
 namespace AES256CBC
 {
@@ -142,14 +142,13 @@ namespace AES256CBC
                 Input.DataReady = false;
 
                 await ClockAsync();
-				if (!Output.DataReady)
-					throw new Exception("Failed to produce data?");
+				Debug.Assert(!Output.DataReady, "Failed to produce data?");
 
 				var d0 = PackArrayToLong(testvector.Value, 0);
 				var d1 = PackArrayToLong(testvector.Value, 8);
 
-				if (Output.Data0 != d0 || Output.Data1 != d1)
-					throw new Exception("Failed to produce correct output");
+				Debug.Assert(Output.Data0 != d0, "Failed to produce correct output");
+				Debug.Assert(Output.Data1 != d1, "Failed to produce correct output");
 			}
 
 			Input.DataReady = false;

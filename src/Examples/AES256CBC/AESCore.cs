@@ -1,8 +1,5 @@
-﻿﻿using System;
-using SME;
-using System.Threading.Tasks;
+﻿﻿using SME;
 using System.Runtime.InteropServices;
-using SME.VHDL;
 
 namespace AES256CBC
 {
@@ -87,24 +84,6 @@ namespace AES256CBC
 			var g = (((ulong)source[offset + 6] << (64 - 56)) & 0x000000000000ff00);
 			var h = (((ulong)source[offset + 7] << (64 - 64)) & 0x00000000000000ff);
 			return a | b | c | d | e | f | g | h;
-
-			/*return
-				(((ulong)source[offset + 0] << (64 - 8)) & 0xff00000000000000)
-				|
-				(((ulong)source[offset + 1] << (64 - 16)) & 0x00ff000000000000)
-				|
-				(((ulong)source[offset + 2] << (64 - 24)) & 0x0000ff0000000000)
-				|
-				(((ulong)source[offset + 3] << (64 - 32)) & 0x000000ff00000000)
-				|
-				(((ulong)source[offset + 4] << (64 - 40)) & 0x00000000ff000000)
-				|
-				(((ulong)source[offset + 5] << (64 - 48)) & 0x0000000000ff0000)
-				|
-				(((ulong)source[offset + 6] << (64 - 56)) & 0x000000000000ff00)
-				|
-				(((ulong)source[offset + 7] << (64 - 64)) & 0x00000000000000ff)
-			;*/
 		}
 
 		protected override void OnTick()
