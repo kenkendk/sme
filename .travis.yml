@@ -10,9 +10,9 @@ before_install:
 install:
   - dotnet restore src/SME.sln
 script:
-  - dotnet build -c Release src/UnitTest
+  - dotnet build -c Debug src/UnitTest
   - echo "travis_fold:start:unit_test"
-  - dotnet test -c Release src/UnitTest
+  - dotnet test -c Debug src/UnitTest
   - echo "travis_fold:end:unit_test"
 
 
