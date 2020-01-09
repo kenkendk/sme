@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using SME;
+﻿using SME;
 
 namespace ColorBin
 {
@@ -8,15 +6,23 @@ namespace ColorBin
 	{
 		public static void Main(string[] args)
 		{
-            new Simulation()
-                .BuildCSVFile()
-                .BuildGraph()
-                .BuildVHDL()
-                .BuildCPP()
-			    .Run(
-                    new ImageInputSimulator("image1.png"),
-                    new ColorBinCollector()
-                );
+            using (var sim = new Simulation())
+            {
+                var tester = new ImageInputSimulator();
+                var collector = new ColorBinCollector();
+            
+                collector.Input = tester.Data;
+                tester.Result = collector.Output;
+
+                sim
+                    .AddTopLevelInputs(collector.Input)
+                    .AddTopLevelOutputs(collector.Output)
+                    .BuildCSVFile()
+                    .BuildGraph()
+                    .BuildVHDL()
+                    .BuildCPP()
+                    .Run();
+            }
 		}
 	}
 }

@@ -6,10 +6,10 @@ namespace ColorBin
 	public class ColorBinCollector : SimpleProcess
 	{
         [InputBus]
-        private readonly ImageInputLine Input = Scope.CreateOrLoadBus<ImageInputLine>();
+        public ImageInputLine Input;
 
 		[OutputBus]
-		private readonly BinCountOutput Output = Scope.CreateOrLoadBus<BinCountOutput>();
+		public BinCountOutput Output = Scope.CreateBus<BinCountOutput>();
 
 		const uint HighThreshold = 200;
 		const uint MediumThreshold = 100;

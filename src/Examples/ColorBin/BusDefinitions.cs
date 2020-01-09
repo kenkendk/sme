@@ -1,5 +1,4 @@
-﻿using System;
-using SME;
+﻿using SME;
 
 namespace ColorBin
 {
@@ -7,7 +6,6 @@ namespace ColorBin
 	/// A bus for reading image values from a sensor,
 	/// one pixel at a time
 	/// </summary>
-	[TopLevelInputBus]
 	public interface ImageInputLine : IBus
 	{
 		[InitialValue]
@@ -23,17 +21,13 @@ namespace ColorBin
 	/// <summary>
 	/// Bus for reporting counts in the bins
 	/// </summary>
-	[TopLevelOutputBus]
+	[InitializedBus]
 	public interface BinCountOutput : IBus
 	{
-		[InitialValue]
 		bool IsValid { get; set; }
 
-		[InitialValue]
 		uint Low { get; set; }
-		[InitialValue]
 		uint Medium { get; set; }
-		[InitialValue]
 		uint High { get; set; }
 	}
 }

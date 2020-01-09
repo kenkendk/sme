@@ -1,16 +1,23 @@
 ﻿using SME;
 using System;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace ColorBin
 {
 	/// <summary>
-	/// Helper process that loads images and writes them into the simulation
+	/// Helper process that loads images, writes them into the simulation and verifies 
+	/// that it produces the expected output, if the file exists.
 	/// </summary>
 	public class ImageInputSimulator : SimulationProcess
 	{
+		[InputBus]
+		public BinCountOutput Result;
+
 		[OutputBus]
-		private readonly ImageInputLine Data = Scope.CreateOrLoadBus<ImageInputLine>();
+		public ImageInputLine Data = Scope.CreateBus<ImageInputLine>();
 
         /// <summary>
         /// The images to process
@@ -21,7 +28,7 @@ namespace ColorBin
         /// Initializes a new instance of the <see cref="T:ColorBin.ImageInputSimulator"/> class.
         /// </summary>
         public ImageInputSimulator()
-            : this("image1.png", "image2.jpg", "image3.png")
+            : this("input/image1.png", "input/image2.jpg", "input/image3.png")
         {
         }
 
@@ -47,42 +54,44 @@ namespace ColorBin
 
 			foreach (var file in IMAGES)
 			{
-				if (!System.IO.File.Exists(file))
+				//Console.WriteLine($"Processing {file}");
+				Debug.Assert(System.IO.File.Exists(file), $"File not found: {file}");
+
+				using (var img = System.Drawing.Image.FromFile(file))
+				using (var bmp = new System.Drawing.Bitmap(img))
 				{
-					Console.WriteLine($"File not found: {file}");
-				}
-				else
-				{
-					using (var img = System.Drawing.Image.FromFile(file))
-					using (var bmp = new System.Drawing.Bitmap(img))
+					Console.WriteLine($"Writing {bmp.Width * bmp.Height} pixels from {file}");
+
+					Data.IsValid = true;
+
+					for (var i = 0; i < img.Height; i++)
 					{
-						Console.WriteLine($"Writing {bmp.Width * bmp.Height} pixels from {file}");
-
-						Data.IsValid = true;
-
-						for (var i = 0; i < img.Height; i++)
+						//Console.WriteLine($"Still need to write {bmp.Width * (bmp.Height - i)} pixels");
+						for (var j = 0; j < img.Width; j++)
 						{
-							for (var j = 0; j < img.Width; j++)
-							{
-								var pixel = bmp.GetPixel(j, i);
-								Data.R = pixel.R;
-								Data.G = pixel.G;
-								Data.B = pixel.B;
-								Data.LastPixel = i == img.Height - 1 && j == img.Width - 1;
+							var pixel = bmp.GetPixel(j, i);
+							Data.R = pixel.R;
+							Data.G = pixel.G;
+							Data.B = pixel.B;
+							Data.LastPixel = i == img.Height - 1 && j == img.Width - 1;
 
-								//Console.WriteLine("Input -> pixel {0}x{1}, values: {2},{3},{4}", j, i, pixel.R, pixel.G, pixel.B);
-
-								await ClockAsync();
-							}
-
-							Console.WriteLine($"Still need to write {(bmp.Width - i) * bmp.Height} pixels");
-
+							await ClockAsync();
 						}
-
-						Data.IsValid = false;
-						Data.LastPixel = false;
 					}
+
+					Data.IsValid = false;
+					Data.LastPixel = false;
 				}
+
+				while (!Result.IsValid)
+					await ClockAsync();
+
+				var expected_file = $"{file}.txt";
+				Debug.Assert(File.Exists(expected_file), $"Error, expected results file '{expected_file}' does not exist.");
+				int[] expected = File.ReadLines(expected_file).Select(x => int.Parse(x)).ToArray();
+				Debug.Assert(expected[0] == Result.Low, $"Low: Got {Result.Low}, expected {expected[0]}");
+				Debug.Assert(expected[1] == Result.Medium, $"Medium: Got {Result.Medium}, expected {expected[1]}");
+				Debug.Assert(expected[2] == Result.High, $"High: Got {Result.High}, expected {expected[2]}");
 			}
 
 			await ClockAsync();
