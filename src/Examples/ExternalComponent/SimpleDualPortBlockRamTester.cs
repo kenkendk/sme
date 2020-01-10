@@ -1,28 +1,33 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using SME;
+using SME.Components;
 using SME.VHDL;
 
 namespace ExternalComponent
 {
     public class SimpleDualPortBlockRamTester<TData> : SimulationProcess
     {
-        private readonly SME.Components.SimpleDualPortMemory<TData> m_bram;
+        private readonly SimpleDualPortMemory<TData> m_bram;
 
         private readonly TData[] m_initial;
         private readonly TData[] m_rnd;
 
-        [OutputBus]
-        private readonly SME.Components.SimpleDualPortMemory<TData>.IReadControl m_rdcontrol;
-        [InputBus]
-        private readonly SME.Components.SimpleDualPortMemory<TData>.IReadResult m_rddata;
-        [OutputBus]
-        private readonly SME.Components.SimpleDualPortMemory<TData>.IWriteControl m_wrcontrol;
+        private readonly bool init_is_random;
 
-        public SimpleDualPortBlockRamTester(int memsize, bool random = false, int seed = 42)
+        [OutputBus]
+        private readonly SimpleDualPortMemory<TData>.IReadControl m_rdcontrol;
+        [InputBus]
+        private readonly SimpleDualPortMemory<TData>.IReadResult m_rddata;
+        [OutputBus]
+        private readonly SimpleDualPortMemory<TData>.IWriteControl m_wrcontrol;
+
+        public SimpleDualPortBlockRamTester(int memsize, bool random = false, int seed = 42, bool make_top_level = true)
         {
             var rndbuf = new byte[8];
 
+            init_is_random = random;
             var rnd = new Random(seed);
             m_initial = new TData[memsize];
 
@@ -43,13 +48,16 @@ namespace ExternalComponent
                 }
             }
 
-            m_bram = new SME.Components.SimpleDualPortMemory<TData>(memsize, m_initial);
+            m_bram = new SimpleDualPortMemory<TData>(memsize, m_initial);
             m_rdcontrol = m_bram.ReadControl;
             m_rddata = m_bram.ReadResult;
             m_wrcontrol = m_bram.WriteControl;
 
-            Simulation.Current.AddTopLevelInputs(m_rdcontrol, m_wrcontrol);
-            Simulation.Current.AddTopLevelOutputs(m_rddata);
+            if (make_top_level)
+            {
+                Simulation.Current.AddTopLevelInputs(m_rdcontrol, m_wrcontrol);
+                Simulation.Current.AddTopLevelOutputs(m_rddata);
+            }
         }
 
         /// <summary>
@@ -60,25 +68,28 @@ namespace ExternalComponent
             // Wait for initialization to complete
             await ClockAsync();
 
-            m_rdcontrol.Address = 0;
             m_rdcontrol.Enabled = true;
+            m_rdcontrol.Address = 0;
 
-            m_wrcontrol.Address = 1;
             m_wrcontrol.Enabled = false;
+            m_wrcontrol.Address = 1;
 
             await ClockAsync();
 
-            for (var i = 1; i < m_initial.Length; i++)
+            for (var i = 1; i < m_initial.Length+1; i++)
             {
+                m_rdcontrol.Enabled = i < m_initial.Length;
                 m_rdcontrol.Address = i;
                 await ClockAsync();
-                if (!m_rddata.Data.Equals(VHDLHelper.CreateIntType<TData>((ulong)(i - 1))))
-                    Console.WriteLine($"Sequential test: Read problem at offset {i - 1}, value is {m_rddata.Data} but should be {i - 1}");
+                TData expected = init_is_random ? m_initial[i-1] : VHDLHelper.CreateIntType<TData>((ulong)(i - 1));
+                Debug.Assert(m_rddata.Data.Equals(expected), 
+                    $"Sequential test: Read problem at offset {i - 1}, value is {m_rddata.Data} but should be {expected}");
             }
 
             m_rdcontrol.Enabled = false;
 
             await ClockAsync();
+
             m_wrcontrol.Enabled = true;
 
             for (var i = 0; i < m_rnd.Length; i++)
@@ -96,12 +107,12 @@ namespace ExternalComponent
             m_rdcontrol.Enabled = true;
             await ClockAsync();
 
-            for (var i = 1; i < m_rnd.Length; i++)
+            for (var i = 1; i < m_rnd.Length+1; i++)
             {
+                m_rdcontrol.Enabled = i < m_rnd.Length;
                 m_rdcontrol.Address = i;
                 await ClockAsync();
-                if (!m_rddata.Data.Equals(m_rnd[i - 1]))
-                    Console.WriteLine($"Random test: Read problem at offset {i-1}, value is {m_rddata.Data} but should be {m_rnd[i - 1]}");
+                Debug.Assert(m_rddata.Data.Equals(m_rnd[i - 1]), $"Random test: Read problem at offset {i-1}, value is {m_rddata.Data} but should be {m_rnd[i - 1]}");
             }
         }
     }
