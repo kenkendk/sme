@@ -76,10 +76,10 @@ namespace SME.VHDL.CustomRenders.Inferred
             transformer.Transform(asm_write);
             transformer.Transform(asm_read);
 
-
+            // TODO flip så den er 0 to size istedet for size downto 0
             var template = $@"
-    type ram_type is array ({size - 1} downto 0) of std_logic_vector ({datawidth - 1} downto 0);
-    shared variable RAM : ram_type := { VHDLHelper.GetArrayAsAssignmentList(initialdata, inverse: true) };
+    type ram_type is array (0 to {size - 1}) of std_logic_vector ({datawidth - 1} downto 0);
+    shared variable RAM : ram_type := { VHDLHelper.GetArrayAsAssignmentList(initialdata) };
     signal { read_result_data_name }_Vector: std_logic_vector ({datawidth - 1} downto 0);
     signal { write_control_data_name }_Vector: std_logic_vector ({datawidth - 1} downto 0);
     signal { read_control_addr_name }_Vector: std_logic_vector ({addrwidth - 1} downto 0);

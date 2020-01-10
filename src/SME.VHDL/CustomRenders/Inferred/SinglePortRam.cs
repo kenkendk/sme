@@ -79,8 +79,8 @@ namespace SME.VHDL.CustomRenders.Inferred
 
 
             var template = $@"
-    type ram_type is array ({size - 1} downto 0) of std_logic_vector ({datawidth - 1} downto 0);
-    signal RAM : ram_type := { VHDLHelper.GetArrayAsAssignmentList(initialdata, inverse: true) };
+    type ram_type is array (0 to {size - 1}) of std_logic_vector ({datawidth - 1} downto 0);
+    signal RAM : ram_type := { VHDLHelper.GetArrayAsAssignmentList(initialdata) };
     signal { control_bus_data_name }_Vector: std_logic_vector ({datawidth - 1} downto 0);
     signal { readresult_bus_data_name }_Vector: std_logic_vector ({datawidth - 1} downto 0);
     signal { control_bus_addr_name }_Vector: std_logic_vector ({addrwidth - 1} downto 0);
