@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -377,8 +377,11 @@ use unimacro.Vcomponents.all;
             for (var i = 0; i < first_trailing_element; i++)
             {
                 if (sb.Length != 0)
-                    sb.Append(", ");
-                sb.Append(string.Format(typecasttemplate, data.GetValue(i), datawidth));
+                    sb.Append(", \n");
+                if (datawidth >= 32)
+                    sb.Append(GetDataBitOrHexString(data.GetType().GetElementType(), data.GetValue(i)));
+                else
+                    sb.Append(string.Format(typecasttemplate, data.GetValue(i), datawidth));
             }
 
             if (first_trailing_element != data.Length)
@@ -386,7 +389,10 @@ use unimacro.Vcomponents.all;
                 if (sb.Length != 0)
                     sb.Append(", ");
                 sb.Append("others => ");
-                sb.Append(string.Format(typecasttemplate, last, datawidth));
+                if (datawidth >= 32)
+                    sb.Append(GetDataBitOrHexString(last.GetType(), last));
+                else
+                    sb.Append(string.Format(typecasttemplate, last, datawidth));
             }
 
             return "(" + sb + ")";        
