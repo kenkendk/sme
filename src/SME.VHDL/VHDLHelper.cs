@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -117,7 +117,12 @@ namespace SME.VHDL
 
             for (var i = start; i < length + start; i++)
             {
-                var td = Convert.ToString((long)ulong.Parse(data.GetValue(i).ToString()), 2).PadLeft(64, '0');
+                var el = data.GetValue(i).ToString();
+                string td;
+                if (el[0] == '-')
+                    td = Convert.ToString(long.Parse(data.GetValue(i).ToString()), 2).PadLeft(64, '0');
+                else
+                    td = Convert.ToString((long)ulong.Parse(data.GetValue(i).ToString()), 2).PadLeft(64, '0');
                 td = td.Substring(td.Length - elsize);
                 yield return td;
             }
