@@ -184,6 +184,24 @@ namespace SME.VHDL
         }
 
         /// <summary>
+        /// Converts the given object into either a bit or hex string, depending
+        /// on the bit width of the datatype
+        /// </summary>
+        /// <returns>The bit or hex string.</returns>
+        /// <param name="datatype">The data type of the object</param>
+        /// <param name="data">The object to convert</param>
+        public static string GetDataBitOrHexString(Type datatype, object data)
+        {
+            var elsize = GetBitWidthFromType(datatype);
+            if (elsize % 4 != 0)
+                return GetDataBitString(datatype, data);
+            var hexwidth = (elsize / 4);
+            var width_string = $"0:x{hexwidth}";
+            var format_string = $"x\"{{{width_string}}}\"";
+            return string.Format(format_string, data);
+        }
+
+        /// <summary>
         /// Splits a sequence of data bits into a memory initialization string fitted for Xilinx BRAM initialization macros
         /// </summary>
         /// <returns>The data bit string to mem init.</returns>
