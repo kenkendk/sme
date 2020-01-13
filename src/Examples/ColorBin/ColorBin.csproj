@@ -19,7 +19,7 @@
   </PropertyGroup>
 
   <ItemGroup>  
-    <Content Include="input/*" />
+    <None Update="input/*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

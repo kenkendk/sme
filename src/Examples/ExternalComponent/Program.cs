@@ -9,7 +9,7 @@ namespace ExternalComponent
         {
             using (var sim = new Simulation())
             {
-                int blocksize = 1324; //{ 100, 512, 1024, 2000 };
+                int blocksize = 100; //{ 100, 512, 1024, 2000 };
                 bool rnd = true;
                 
                 new SinglePortBlockRamTester<UInt10>(blocksize, rnd, make_top_level: true);

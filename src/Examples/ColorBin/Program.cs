@@ -8,7 +8,7 @@ namespace ColorBin
 		{
             using (var sim = new Simulation())
             {
-                var tester = new ImageInputSimulator();
+                var tester = new ImageInputSimulator("input/image1.png");
                 var collector = new ColorBinCollector();
             
                 collector.Input = tester.Data;
