@@ -1,5 +1,4 @@
-﻿using System;
-using SME;
+﻿using SME;
 
 namespace SimpleMIPS
 {

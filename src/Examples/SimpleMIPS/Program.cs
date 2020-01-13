@@ -1,5 +1,4 @@
-﻿using System;
-using SME;
+﻿using SME;
 
 namespace SimpleMIPS
 {
@@ -10,8 +9,12 @@ namespace SimpleMIPS
             using (new Simulation()) 
             {
                 var cpu = new CPU();
-                var mem = new Memory("fib");
-                var tester = new Tester();
+                var mem = new Memory("programs/fib");
+                var tester = new Tester(mem.mem, "programs/fib.output");
+
+                cpu.memout = mem.output;
+                mem.input = cpu.memin;
+                tester.term = cpu.terminate;
 
                 Simulation.Current
                     .AddTopLevelOutputs(cpu.terminate)

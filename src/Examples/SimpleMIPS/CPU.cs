@@ -144,24 +144,18 @@ namespace SimpleMIPS
     {
         public CPU() 
         {
-            /* 
-            // In case of the simple program, hardcode registers 1 and 2
-            registers[1] = 5;
-            registers[2] = 2;
-            */
-
             // Set the stack pointer to the maximum memory address
-            registers[29] = (uint)MemoryConstants.max_addr;    
+            registers[29] = ((uint)MemoryConstants.max_addr) << 2;    
         }
 
         [InputBus]
-        MemoryOutput memout = Scope.CreateOrLoadBus<MemoryOutput>();
+        public MemoryOutput memout;
 
         [OutputBus]
-        MemoryInput memin = Scope.CreateOrLoadBus<MemoryInput>();
+        public MemoryInput memin = Scope.CreateBus<MemoryInput>();
 
         [OutputBus]
-        public Terminate terminate = Scope.CreateOrLoadBus<Terminate>();
+        public Terminate terminate = Scope.CreateBus<Terminate>();
 
         uint iptr = 0;
         uint instruction = 0;
@@ -169,132 +163,126 @@ namespace SimpleMIPS
 
         protected async override System.Threading.Tasks.Task OnTickAsync()
         {
-            /*await ClockAsync();
-            while (true) {*/
-                // Debug print registers
-                //Console.Write("["); for (int i = 0; i < 13; i++) Console.Write("{0}, ", registers[i]); Console.WriteLine("]");
+            // Fetch instruction
+            memin.ena = true;
+            memin.addr = iptr;
+            memin.wrena = false;
+            memin.wrdata = 0;
+            await ClockAsync();
+            memin.ena = false; // TODO added because of empty state optimizations
+            await ClockAsync();
+            iptr++;
 
-                // Fetch instruction
-                memin.ena = true;
-                memin.addr = iptr;
-                memin.wrena = false;
-                memin.wrdata = 0;
-                await ClockAsync();
-                memin.ena = false; // TODO added because of empty state optimizations
-                await ClockAsync();
-                iptr++;
+            // Extract fields from the instruction
+            instruction = memout.rddata;
+            Opcodes opcode = (Opcodes)((instruction >> 26) & 0x3F);
+            byte rs     = (byte)((instruction >> 21) & 0x1F);
+            byte rt     = (byte)((instruction >> 16) & 0x1F);
+            byte rd     = (byte)((instruction >> 11) & 0x1F);
+            byte shamt  = (byte)((instruction >> 6)  & 0x1F);
+            Funcs funct = (Funcs)(instruction        & 0x3F);
+            uint jaddr  = (uint) (instruction        & 0x03FFFFFF); 
+            short imm   = (short)(instruction        & 0xFFFF);
+            int ext   = (int)imm;
+            uint zext = (uint) (0x0 | imm);
+            await ClockAsync();
 
-                // Extract fields from the instruction
-                instruction = memout.rddata;
-                Opcodes opcode = (Opcodes)((instruction >> 26) & 0x3F);
-                byte rs     = (byte)((instruction >> 21) & 0x1F);
-                byte rt     = (byte)((instruction >> 16) & 0x1F);
-                byte rd     = (byte)((instruction >> 11) & 0x1F);
-                byte shamt  = (byte)((instruction >> 6)  & 0x1F);
-                Funcs funct = (Funcs)(instruction        & 0x3F);
-                uint jaddr  = (uint) (instruction        & 0x03FFFFFF); 
-                short imm   = (short)(instruction        & 0xFFFF);
-                int ext   = (int)imm;
-                uint zext = (uint) (0x0 | imm);
-                await ClockAsync();
-
-                // Run the instruction
-                switch (opcode) 
-                {
-                    case Opcodes.j:
-                        // ignore top bits from pc
-                        iptr = jaddr;
-                        break;
-                    case Opcodes.jal:
-                        registers[31] = iptr;
-                        iptr = jaddr;
-                        break;
-                    case Opcodes.Rformat:
-                        switch (funct) 
-                        {
-                            case Funcs.sll:
-                                registers[rd] = registers[rt] << shamt; break;
-                            case Funcs.srl:
-                                registers[rd] = registers[rt] >> shamt; break;
-                            case Funcs.jr:
-                                iptr = registers[rs]; break;
-                            case Funcs.add:
-                                registers[rd] = (uint)((int)registers[rs] + (int)registers[rt]); break;
-                            case Funcs.addu:
-                                registers[rd] = registers[rs] + registers[rt]; break;
-                            case Funcs.sub:
-                                registers[rd] = (uint)((int)registers[rs] - (int)registers[rt]); break;
-                            case Funcs.subu:
-                                registers[rd] = registers[rs] - registers[rt]; break;
-                            case Funcs.and:
-                                registers[rd] = registers[rs] & registers[rt]; break;
-                            case Funcs.or:
-                                registers[rd] = registers[rs] | registers[rt]; break;
-                            case Funcs.slt:
-                                if ((int)registers[rs] < (int)registers[rt])
-                                    registers[rd] = 1; 
-                                else
-                                    registers[rd] = 0;
-                                break;
-                            case Funcs.sltu:
-                                if (registers[rs] < registers[rt])
-                                    registers[rd] = 1; 
-                                else
-                                    registers[rd] = 0;
-                                break;
-                            default:
-                                //throw new Exception($"Funct not found: {funct}");
-                                Console.WriteLine($"Funct not found: {funct}"); break;
-                        }
-                        break;
-                    case Opcodes.beq:
-                        if (registers[rs] == registers[rt])
-                        {
-                            iptr = (uint)((int)iptr + ext);
-                        }
-                        break;
-                    case Opcodes.bne:
-                        if (registers[rs] != registers[rt])
-                        {
-                            iptr = (uint)((int)iptr + ext);
-                        }
-                        break;
-                    case Opcodes.addi:
-                        registers[rt] = (uint) ((int)registers[rs] + ext);
-                        break;
-                    case Opcodes.andi:
-                        registers[rt] = registers[rs] & zext;
-                        break;
-                    case Opcodes.ori:
-                        registers[rt] = registers[rs] | zext; 
-                        break;
-                    case Opcodes.lw:
-                        memin.ena = true;
-                        memin.addr = (uint)((int)registers[rs] + ext) >> 2; // Right shift because memory is word array not byte
-                        memin.wrena = false;
-                        memin.wrdata = 0;
-                        await ClockAsync();
-                        memin.ena = false;
-                        await ClockAsync();
-                        registers[rt] = memout.rddata;
-                        break;
-                    case Opcodes.sw:
-                        memin.ena = true;
-                        memin.addr = (uint)((int)registers[rs] + ext) >> 2; // Right shift because memory is word array not byte
-                        memin.wrena = true;
-                        memin.wrdata = registers[rt];
-                        await ClockAsync();
-                        memin.ena = false;
-                        memin.wrena = false;
-                        break;
-                    case Opcodes.terminate: // TODO Not quite MIPS standard, is it? :)
-                        terminate.flg = true;
-                        return;
-                    default:
-                        Console.WriteLine($"Opcode not found: {opcode}"); break;
-                        //throw new Exception($"Opcode not found: {opcode}");
-                }
-            //}
+            // Run the instruction
+            switch (opcode) 
+            {
+                case Opcodes.j:
+                    // ignore top bits from pc
+                    iptr = jaddr;
+                    break;
+                case Opcodes.jal:
+                    registers[31] = iptr;
+                    iptr = jaddr;
+                    break;
+                case Opcodes.Rformat:
+                    switch (funct) 
+                    {
+                        case Funcs.sll:
+                            registers[rd] = registers[rt] << shamt; break;
+                        case Funcs.srl:
+                            registers[rd] = registers[rt] >> shamt; break;
+                        case Funcs.jr:
+                            iptr = registers[rs]; break;
+                        case Funcs.add:
+                            registers[rd] = (uint)((int)registers[rs] + (int)registers[rt]); break;
+                        case Funcs.addu:
+                            registers[rd] = registers[rs] + registers[rt]; break;
+                        case Funcs.sub:
+                            registers[rd] = (uint)((int)registers[rs] - (int)registers[rt]); break;
+                        case Funcs.subu:
+                            registers[rd] = registers[rs] - registers[rt]; break;
+                        case Funcs.and:
+                            registers[rd] = registers[rs] & registers[rt]; break;
+                        case Funcs.or:
+                            registers[rd] = registers[rs] | registers[rt]; break;
+                        case Funcs.slt:
+                            if ((int)registers[rs] < (int)registers[rt])
+                                registers[rd] = 1; 
+                            else
+                                registers[rd] = 0;
+                            break;
+                        case Funcs.sltu:
+                            if (registers[rs] < registers[rt])
+                                registers[rd] = 1; 
+                            else
+                                registers[rd] = 0;
+                            break;
+                        default:
+                            SimulationOnly(() => throw new Exception($"Funct not found: {funct}"));
+                            break;
+                    }
+                    break;
+                case Opcodes.beq:
+                    if (registers[rs] == registers[rt])
+                    {
+                        iptr = (uint)((int)iptr + ext);
+                    }
+                    break;
+                case Opcodes.bne:
+                    if (registers[rs] != registers[rt])
+                    {
+                        iptr = (uint)((int)iptr + ext);
+                    }
+                    break;
+                case Opcodes.addi:
+                    registers[rt] = (uint) ((int)registers[rs] + ext);
+                    break;
+                case Opcodes.andi:
+                    registers[rt] = registers[rs] & zext;
+                    break;
+                case Opcodes.ori:
+                    registers[rt] = registers[rs] | zext; 
+                    break;
+                case Opcodes.lw:
+                    memin.ena = true;
+                    memin.addr = (uint)((int)registers[rs] + ext) >> 2; // Right shift because memory is word array not byte
+                    memin.wrena = false;
+                    memin.wrdata = 0;
+                    await ClockAsync();
+                    memin.ena = false;
+                    await ClockAsync();
+                    registers[rt] = memout.rddata;
+                    break;
+                case Opcodes.sw:
+                    memin.ena = true;
+                    memin.addr = (uint)((int)registers[rs] + ext) >> 2; // Right shift because memory is word array not byte
+                    memin.wrena = true;
+                    memin.wrdata = registers[rt];
+                    await ClockAsync();
+                    memin.ena = false;
+                    memin.wrena = false;
+                    break;
+                case Opcodes.terminate: // TODO Not quite MIPS standard, is it? :)
+                    terminate.flg = true;
+                    return;
+                default:
+                    SimulationOnly(() => throw new Exception($"Opcode not found: {opcode}"));
+                    break;
+            }
         }
     }
 }

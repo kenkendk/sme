@@ -1,14 +1,12 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 using SME;
 
 namespace SimpleMIPS
 {
     public enum MemoryConstants
     {
-        max_addr = 4096,
+        max_addr = 1024,
     }
 
     [ClockedProcess]
@@ -16,10 +14,8 @@ namespace SimpleMIPS
     {
         public Memory(string program_name) 
         {
-            Assembly assembly = Assembly.GetExecutingAssembly();
-            string resource_name = assembly.GetManifestResourceNames().First(x => x.EndsWith(program_name));
             // Read the binary file in the given path
-            using (var reader = new BinaryReader(assembly.GetManifestResourceStream(resource_name)))
+            using (var reader = new BinaryReader(File.Open(program_name, FileMode.Open)))
             {
                 int position = 0;
                 int length = (int)reader.BaseStream.Length;
@@ -33,23 +29,20 @@ namespace SimpleMIPS
         }
 
         [InputBus]
-        MemoryInput input = Scope.CreateOrLoadBus<MemoryInput>();
+        public MemoryInput input;
 
         [OutputBus]
-        MemoryOutput output = Scope.CreateOrLoadBus<MemoryOutput>();
+        public MemoryOutput output = Scope.CreateBus<MemoryOutput>();
 
-        uint[] mem = new uint[(uint)MemoryConstants.max_addr];
+        public uint[] mem = new uint[(uint)MemoryConstants.max_addr];
 
         protected override void OnTick()
         {
             if (input.ena) 
             {
                 output.rddata = mem[input.addr];
-                if (input.wrena) 
-                {
-                    Console.WriteLine("mem[{0}] = {1}", input.addr, input.wrdata);
+                if (input.wrena)
                     mem[input.addr] = input.wrdata;
-                }
             }
         }
     }
