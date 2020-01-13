@@ -55,6 +55,11 @@ namespace SME
         public ulong Tick { get; private set; }
 
         /// <summary>
+        /// Specifies whether or not the current simulation is running
+        /// </summary>
+        private bool Running;
+
+        /// <summary>
         /// Gets the currently running processes
         /// </summary>
         public IList<ProcessMetadata> Processes => m_processes.Values.ToList();
@@ -196,6 +201,14 @@ namespace SME
         }
 
         /// <summary>
+        /// Requests that the current simulation should stop
+        /// </summary>
+        public void RequestStop()
+        {
+            Running = false;
+        }
+
+        /// <summary>
         /// Creates a single process for each class that implements <see cref="IProcess"/> and runs the simulation on that
         /// </summary>
         /// <param name="asm">The assembly to load.</param>
@@ -295,6 +308,7 @@ namespace SME
             try
             {
                 Tick = 0uL;
+                Running = true;
                 Graph = new DependencyGraph(
                     m_processes.Keys,
                     g => m_prerunners.ForEach(x => x?.Invoke(this)),
@@ -321,19 +335,16 @@ namespace SME
                 // Determine when to quit
                 if (exitMethod == null)
                 {
-                    // If we have simulation processes that write, wait until all are done
-                    if (running_tasks.Any(x => x.Proc is SimulationProcess && x.HasOutputs))
-                        exitMethod = () => running_tasks.Any(x => x.Proc is SimulationProcess && x.HasOutputs && !x.Task.IsCompleted);
-                    // If we have only have simulation tasks, wait until they are all completed
-                    else if (running_tasks.Any(x => x.Proc is SimulationProcess))
-                        exitMethod = () => running_tasks.Any(x => x.Proc is SimulationProcess && !x.Task.IsCompleted);
-                    // Otherwise, wait until one of them completes
-                    else
-                        exitMethod = () => running_tasks.All(x => !x.Task.IsCompleted);
+                    // Wait until all simulation processes are completed
+                    exitMethod = () => running_tasks.All(x => x.Proc is SimulationProcess && x.Task.IsCompleted);
+                    // Wait until all simulation processes that write are done
+                    //exitMethod = () => running_tasks.All(x => x.Proc is SimulationProcess && x.HasOutputs && x.Task.IsCompleted);
+                    // Wait until one of the simulation processes completes
+                    //exitMethod = () => running_tasks.Any(x => x.Task.IsCompleted);
                 }
 
                 // Keep running until all simulation (stimulation) processes have finished
-                while (exitMethod())
+                while (!exitMethod() && Running)
                 {
                     Graph.Execute();
                     var crashes = running_tasks.Where(x => x.Task.Exception != null).SelectMany(x => x.Task.Exception.InnerExceptions);
