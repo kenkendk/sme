@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
+using System.Diagnostics;
 using System.Drawing;
 using System.Threading.Tasks;
 using SME;
@@ -13,29 +13,34 @@ namespace NoiseFilter
 	public class ImageOutputSink : SimulationProcess
 	{
 		[InputBus]
-        private readonly ImageInputConfiguration Config = Scope.CreateOrLoadBus<ImageInputConfiguration>();
+        public ImageInputConfiguration Config;
 		
 		[InputBus]
-        private readonly ImageOutputLine Input = Scope.CreateOrLoadBus<ImageOutputLine>();
+        public ImageOutputLine Input;
 
 		[InputBus]
-        private readonly PaddedInputLine Padded = Scope.CreateOrLoadBus<PaddedInputLine>();
+        public PaddedInputLine Padded;
 
 		private class Item : IDisposable
 		{
 			private readonly Bitmap m_image;
+			private Bitmap m_image_expected;
 			private int m_index;
 			private static int _imageIndex;
 
-			public Item(int width, int height)
+			public Item(int width, int height, string filename)
 			{
 				m_image = new Bitmap(width, height);
+				m_image_expected = new Bitmap(Image.FromFile(filename));
 			}
 
 			public void WritePixel(byte r, byte g, byte b)
 			{
 				var color = Color.FromArgb(r, g, b);
-				m_image.SetPixel(m_index % m_image.Width, m_index / m_image.Width, color);
+				var x = m_index % m_image.Width;
+				var y = m_index / m_image.Width;
+				Debug.Assert(m_image_expected.GetPixel(x, y).Equals(color));
+				m_image.SetPixel(x, y, color);
 				m_index++;
 			}
 
@@ -56,7 +61,6 @@ namespace NoiseFilter
 		{
 			var work = new Queue<Item>();
 			var workPadded = new Queue<Item>();
-			var n = 0;
 
 			while (true)
 			{
@@ -64,21 +68,14 @@ namespace NoiseFilter
 
 				if (Config.IsValid)
 				{
-					work.Enqueue(new Item(Config.Width, Config.Height));
-					//workPadded.Enqueue(new Item(Config.Width + StencilConfig.BORDER_SIZE * 2, Config.Height + StencilConfig.BORDER_SIZE * 2));
+					string filename = ImageInputSimulator.current;
+					work.Enqueue(new Item(Config.Width, Config.Height, $"{filename}.expected.png"));
+					workPadded.Enqueue(new Item(Config.Width + StencilConfig.BORDER_SIZE * 2, Config.Height + StencilConfig.BORDER_SIZE * 2, $"{filename}.expectedpad.png"));
 				}
-
-					
 
 				if (work.Count > 0 && Input.IsValid)
 				{
-					n++;
-					if (n % 1000 == 0)
-						Console.WriteLine("Still need {0} pixels more", (Config.Width * Config.Height) - n);
-
-
 					var cur = work.Peek();
-					//Console.WriteLine("Sink -> pixel {0}x{1}, values: {2},{3},{4}", cur.X, cur.Y, Input.Color[0], Input.Color[1], Input.Color[2]);
 					cur.WritePixel(Input.Color[0], Input.Color[1], Input.Color[2]);
 
 					if (cur.IsComplete)
@@ -99,6 +96,9 @@ namespace NoiseFilter
 						workPadded.Dequeue().Dispose();
 					}
 				}
+
+				if (work.Count == 0 && workPadded.Count == 0 && !ImageInputSimulator.running)
+					Simulation.Current.RequestStop();
 			}
 		}
 	}

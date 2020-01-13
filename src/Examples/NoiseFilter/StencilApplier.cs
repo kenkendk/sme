@@ -1,5 +1,4 @@
-﻿using System;
-using SME;
+﻿using SME;
 using static NoiseFilter.StencilConfig;
 
 namespace NoiseFilter
@@ -10,10 +9,10 @@ namespace NoiseFilter
 	public class StencilApplier : SimpleProcess
 	{
 		[InputBus]
-        private readonly ImageFragment Input = Scope.CreateOrLoadBus<ImageFragment>();
+        public ImageFragment Input;
 
 		[OutputBus]
-        private readonly ImageOutputLine Output = Scope.CreateOrLoadBus<ImageOutputLine>();
+        public ImageOutputLine Output = Scope.CreateBus<ImageOutputLine>();
 
 		public interface IInternal : IBus
 		{
@@ -30,10 +29,6 @@ namespace NoiseFilter
 
 		private readonly int[] FILTER_SUMS = { 9, 9, 9 };
 		private readonly int[] m_buffer = new int[COLOR_WIDTH];
-
-		// TODO: Give warning for this if it is not a signal
-		//[SME.Render.VHDL.VHDLSignal]
-		//private uint m_index = 0;
 
 		[InternalBus]
         private readonly IInternal Internal = Scope.CreateInternalBus<IInternal>();
@@ -63,7 +58,6 @@ namespace NoiseFilter
 
 				for (var i = 0; i < m_buffer.Length; i++)
 					Output.Color[i] = (byte)(m_buffer[i] / FILTER_SUMS[i]);
-					//Output.Color[i] = Input.Data[i + (3 * 4)];
 
 				PrintDebug("Apply {3} -> {0},{1},{2}", Input.Data[0 + (3 * 4)], Input.Data[1 + (3 * 4)], Input.Data[2 + (3 * 4)], Internal.Index);
 

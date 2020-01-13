@@ -1,5 +1,4 @@
 ﻿using SME;
-using System;
 using static NoiseFilter.StencilConfig;
 
 namespace NoiseFilter
@@ -28,16 +27,16 @@ namespace NoiseFilter
 		}
 
 		[InputBus]
-        private readonly ImageInputConfiguration Configuration = Scope.CreateOrLoadBus<ImageInputConfiguration>();
+        public ImageInputConfiguration Configuration;
 
         [InputBus]
-        private readonly PaddedInputLine Data = Scope.CreateOrLoadBus<PaddedInputLine>();
+        public PaddedInputLine Data;
 
 		[OutputBus]
-        private readonly ImageFragment Output = Scope.CreateOrLoadBus<ImageFragment>();
+        public ImageFragment Output = Scope.CreateBus<ImageFragment>();
 
         [InternalBus]
-        private readonly IInternal Internal = Scope.CreateInternalBus<IInternal>();
+        public IInternal Internal = Scope.CreateInternalBus<IInternal>();
 
 		private readonly byte[] m_buffer = new byte[COLOR_WIDTH * STENCIL_HEIGHT * MAX_IMAGE_WIDTH];
 

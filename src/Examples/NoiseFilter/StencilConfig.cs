@@ -1,5 +1,4 @@
-﻿using System;
-namespace NoiseFilter
+﻿namespace NoiseFilter
 {
 	public static class StencilConfig
 	{

@@ -1,7 +1,10 @@
-﻿using SME;
-using System;
+﻿using System;
+using System.Diagnostics;
+using System.Drawing;
+using System.IO;
 using System.Threading.Tasks;
-using System.Linq;
+using SME;
+
 
 namespace NoiseFilter
 {
@@ -11,13 +14,13 @@ namespace NoiseFilter
 	public class ImageInputSimulator : SimulationProcess
 	{
 		[OutputBus]
-        private readonly ImageInputConfiguration Configuration = Scope.CreateOrLoadBus<ImageInputConfiguration>();
+        public ImageInputConfiguration Configuration = Scope.CreateBus<ImageInputConfiguration>();
 
 		[OutputBus]
-        private readonly ImageInputLine Data = Scope.CreateOrLoadBus<ImageInputLine>();
+        public ImageInputLine Data = Scope.CreateBus<ImageInputLine>();
 
 		[InputBus]
-        private readonly BorderDelayUpdate Delay = Scope.CreateOrLoadBus<BorderDelayUpdate>();
+        public BorderDelayUpdate Delay;
 
 		/// <summary>
 		/// The images to process
@@ -28,7 +31,7 @@ namespace NoiseFilter
 		/// Initializes a new instance of the <see cref="T:NoiseFilter.ImageInputSimulator"/> class.
 		/// </summary>
 		public ImageInputSimulator()
-			: this("image1.png", "image2.jpg", "image3.png")
+			: this("input/image1.png", "input/image2.jpg", "input/image3.png")
 		{
 		}
 
@@ -45,6 +48,9 @@ namespace NoiseFilter
 			IMAGES = images;
 		}
 
+		public static string current;
+		public static bool running = true;
+
 		/// <summary>
 		/// Run this instance.
 		/// </summary>
@@ -54,17 +60,13 @@ namespace NoiseFilter
 
 			foreach (var file in IMAGES)
 			{
-				if (!System.IO.File.Exists(file))
-				{
-					Console.WriteLine($"File not found: {file}");
-				}
-				else
-				{
-					while (!Delay.IsReady)
-						await ClockAsync();
+				Debug.Assert(File.Exists(file), $"File not found: {file}");
+				current = file;
+				while (!Delay.IsReady)
+					await ClockAsync();
 
-					using (var img = System.Drawing.Image.FromFile(file))
-					using (var bmp = new System.Drawing.Bitmap(img))
+				using (var img = Image.FromFile(file))
+					using (var bmp = new Bitmap(img))
 					{
 						Console.WriteLine($"Writing {bmp.Width * bmp.Height} pixels from {file}");
 
@@ -86,28 +88,18 @@ namespace NoiseFilter
 								Data.Color[1] = pixel.G;
 								Data.Color[2] = pixel.B;
 
-								//Console.WriteLine("Input -> pixel {0}x{1}, values: {2},{3},{4}", j, i, pixel.R, pixel.G, pixel.B);
-
 								await ClockAsync();
 							}
 
-							Console.WriteLine($"Still need to write {(bmp.Width - i) * bmp.Height} pixels");
+							Console.WriteLine($"Still need to write {bmp.Width * (bmp.Height - i)} pixels");
 
 						}
 
 						Data.IsValid = false;
 					}
-				}
 			}
 
-			await ClockAsync();
-
-			while (!Delay.IsReady)
-				await ClockAsync();
-
-			await Task.WhenAll(Enumerable.Range(0, 10).Select(x => ClockAsync()));
-			//await ClockAsync();
-
+			running = false;
 		}
 	}
 }

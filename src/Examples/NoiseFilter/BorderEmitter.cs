@@ -1,5 +1,4 @@
-﻿using System;
-using SME;
+﻿using SME;
 using static NoiseFilter.StencilConfig;
 
 namespace NoiseFilter
@@ -22,19 +21,19 @@ namespace NoiseFilter
 		}
 
 		[InputBus]
-        private readonly ImageInputConfiguration Configuration = Scope.CreateOrLoadBus<ImageInputConfiguration>();
+        public ImageInputConfiguration Configuration;
 
 		[InputBus]
-        private readonly ImageInputLine Input = Scope.CreateOrLoadBus<ImageInputLine>();
+        public ImageInputLine Input;
 
 		[OutputBus]
-        private readonly PaddedInputLine Output = Scope.CreateOrLoadBus<PaddedInputLine>();
+        public PaddedInputLine Output = Scope.CreateBus<PaddedInputLine>();
 
 		[OutputBus]
-        private readonly BorderDelayUpdate Delay = Scope.CreateOrLoadBus<BorderDelayUpdate>();
+        public BorderDelayUpdate Delay = Scope.CreateBus<BorderDelayUpdate>();
 
 		[InternalBus]
-        private readonly IInternal Internal = Scope.CreateInternalBus<IInternal>();
+        public IInternal Internal = Scope.CreateInternalBus<IInternal>();
 
 		/// <summary>
 		/// A buffer to hold all border pixels
@@ -44,7 +43,6 @@ namespace NoiseFilter
 
 		protected override void OnTick()
 		{
-			//DebugOutput = true;
 			Delay.IsReady = false;
 			Output.IsValid = false;
 

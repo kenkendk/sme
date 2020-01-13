@@ -1,5 +1,4 @@
-﻿using System;
-using SME;
+﻿using SME;
 using static NoiseFilter.StencilConfig;
 
 namespace NoiseFilter
@@ -7,7 +6,6 @@ namespace NoiseFilter
 	/// <summary>
 	/// A bus for sending image dimensions
 	/// </summary>
-	[TopLevelInputBus]
 	public interface ImageInputConfiguration : IBus
 	{
 		[InitialValue]
@@ -21,7 +19,6 @@ namespace NoiseFilter
 	/// A bus for reading image values from a sensor,
 	/// one pixel at a time
 	/// </summary>
-	[TopLevelInputBus]
 	public interface ImageInputLine : IBus
 	{
 		[InitialValue]
@@ -30,20 +27,6 @@ namespace NoiseFilter
 		[FixedArrayLength(COLOR_WIDTH)]
 		IFixedArray<byte> Color { get; set; }
 	}
-
-	/// <summary>
-	/// A bus for sending image dimensions
-	/// </summary>
-	[TopLevelOutputBus]
-	public interface ImageOutputConfiguration : IBus
-	{
-		[InitialValue]
-		bool IsValid { get; set; }
-
-		ushort Width { get; set; }
-		ushort Height { get; set; }
-	}
-
 
 	/// <summary>
 	/// A bus for sending filtered image values from a sensor,

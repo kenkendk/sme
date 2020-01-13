@@ -2,18 +2,14 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\SME\SME.csproj" />
+    <ProjectReference Include="..\..\SME.CPP\SME.CPP.csproj" />
+    <ProjectReference Include="..\..\SME.GraphViz\SME.GraphViz.csproj" />
     <ProjectReference Include="..\..\SME.Tracer\SME.Tracer.csproj" />
     <ProjectReference Include="..\..\SME.VHDL\SME.VHDL.csproj" />
-    <ProjectReference Include="..\..\SME.GraphViz\SME.GraphViz.csproj" />
-    <ProjectReference Include="..\..\SME.CPP\SME.CPP.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="System.Drawing.Common" Version="4.5.1" />
-
-    <!-- Remove these packages as required by the OS you are using -->
-    <PackageReference Include="runtime.osx.10.10-x64.CoreCompat.System.Drawing" Version="5.6.20" />
-    <PackageReference Include="runtime.linux-x64.CoreCompat.System.Drawing" Version="1.0.0-beta002" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -21,5 +17,9 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <RootNamespace>NoiseFilter</RootNamespace>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Update="input/*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 
 </Project>
