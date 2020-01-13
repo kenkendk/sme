@@ -7,15 +7,24 @@ namespace SimpleTrader
 {
 	class SimulationDriver : SimulationProcess
 	{
+
+		public SimulationDriver(int seed)
+		{
+			this.seed = seed;
+		}
+
 		[OutputBus]
-        private SimpleTrader.ITraderInput Output = Scope.CreateOrLoadBus<SimpleTrader.ITraderInput>();
+        public ITraderInput Output = Scope.CreateBus<ITraderInput>();
+
+		public static bool running = true;
+		int seed;
 
 		public override async Task Run()
 		{
-			var rn = new Random();
+			var rn = seed == 0 ? new Random() : new Random(seed);
 			Output.Valid = false;
 
-			foreach (var v in GenerateRandomValueSequence.GetUIntSequence().Take(500))
+			foreach (var v in GenerateRandomValueSequence.GetUIntSequence(seed).Take(500))
 			{
 				await ClockAsync();
 
@@ -33,6 +42,8 @@ namespace SimpleTrader
 			await ClockAsync();
 			Output.Valid = false;
 			await ClockAsync();
+			
+			running = false;
 		}
 	}
 }

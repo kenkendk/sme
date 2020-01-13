@@ -1,5 +1,4 @@
-﻿using System;
-using SME;
+﻿using SME;
 
 namespace SimpleTrader
 {
@@ -7,7 +6,6 @@ namespace SimpleTrader
 	public class TraderCoreFIR : SimpleProcess
 	{
 		[InitializedBus]
-		[TopLevelOutputBus]
 		public interface ITraderOutput : IBus
 		{
 			bool Valid { get; set; }
@@ -28,13 +26,13 @@ namespace SimpleTrader
 		}
 
 		[InputBus]
-        private ITraderInput Input = Scope.CreateOrLoadBus<ITraderInput>();
+        public ITraderInput Input;
 
         [OutputBus]
-        private ITraderOutput Output = Scope.CreateBus<ITraderOutput>();
+        public ITraderOutput Output = Scope.CreateBus<ITraderOutput>();
 
         [InternalBus]
-        private IInternal Internal = Scope.CreateInternalBus<IInternal>();
+        public IInternal Internal = Scope.CreateInternalBus<IInternal>();
 
 
 		// Weights for the short tap

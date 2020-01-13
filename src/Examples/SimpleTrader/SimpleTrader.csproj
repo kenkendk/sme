@@ -2,10 +2,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\SME\SME.csproj" />
+    <ProjectReference Include="..\..\SME.CPP\SME.CPP.csproj" />
+    <ProjectReference Include="..\..\SME.GraphViz\SME.GraphViz.csproj" />
     <ProjectReference Include="..\..\SME.Tracer\SME.Tracer.csproj" />
     <ProjectReference Include="..\..\SME.VHDL\SME.VHDL.csproj" />
-    <ProjectReference Include="..\..\SME.GraphViz\SME.GraphViz.csproj" />
-    <ProjectReference Include="..\..\SME.CPP\SME.CPP.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -13,5 +13,9 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <RootNamespace>SimpleTrader</RootNamespace>
   </PropertyGroup>
+
+  <ItemGroup>  
+    <None Update="expected.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 
 </Project>

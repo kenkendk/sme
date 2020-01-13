@@ -1,12 +1,10 @@
-﻿using System;
-using SME;
+﻿using SME;
 
 namespace SimpleTrader
 {
 	/// <summary>
 	/// The top-level bus that communicates input values
 	/// </summary>
-	[TopLevelInputBus]
 	public interface ITraderInput : IBus
 	{
 		[InitialValue]

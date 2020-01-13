@@ -1,8 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.IO;
-using System.Threading.Tasks;
-using SME;
+﻿using SME;
 
 namespace SimpleTrader
 {
@@ -10,16 +6,27 @@ namespace SimpleTrader
 	{
 		public static void Main(string[] args)
 		{
-			new Simulation()
-				.BuildCSVFile()
-				.BuildGraph()
-				.BuildVHDL()
-                .BuildCPP()
-				.Run(
-                    new SimulationDriver(),
-                    new TraderCoreFIR(),
-                    new TraderCoreEWMA()
-                );
+			using (var sim = new Simulation())
+			{
+				var driver = new SimulationDriver(42);
+				var fir = new TraderCoreFIR();
+				var ewma = new TraderCoreEWMA();
+				var verifier = new Verifier("expected.txt");
+
+				fir.Input = driver.Output;
+				ewma.Input = driver.Output;
+				verifier.ewma = ewma.Output;
+				verifier.fir = fir.Output;
+
+				sim
+					.AddTopLevelInputs(driver.Output)
+					.AddTopLevelOutputs(fir.Output, ewma.Output)
+					.BuildCSVFile()
+					.BuildGraph()
+					.BuildVHDL()
+					//.BuildCPP()
+					.Run();
+			}
 		}
 	}
 }
