@@ -1,5 +1,4 @@
-﻿using System;
-using SME;
+﻿using SME;
 
 namespace SimpleNestedComponent
 {
@@ -13,15 +12,17 @@ namespace SimpleNestedComponent
 				var counter_ticker = new CompositeItem.CounterTicker();
 				var value_incrementer = new CompositeItem.ValueIncrementer();
 
+				test_driver.Output = value_incrementer.Output;
+				counter_ticker.Input = test_driver.Input;
+				value_incrementer.Input = test_driver.Input;
+				value_incrementer.Ticker = counter_ticker.Ticker;
+
 				sim
-					//.AddTicker(ticks => Console.WriteLine("Ticked {0}", ticks))
 					.AddTopLevelInputs(test_driver.Input)
 					.AddTopLevelOutputs(test_driver.Output)
 					.BuildCSVFile()
 					.BuildVHDL()
 					.Run();
-
-				Console.WriteLine("Execution complete after {0} ticks", Scope.Current.Clock.Ticks);
 			}
 		}
 	}

@@ -1,16 +1,17 @@
 ﻿using System;
-using SME;
+using System.Diagnostics;
 using System.Threading.Tasks;
+using SME;
 
 namespace SimpleNestedComponent
 {
     public class TestDriver : SimulationProcess
 	{
         [OutputBus]
-        public CounterInput Input = Scope.CreateOrLoadBus<CounterInput>();
+        public CounterInput Input = Scope.CreateBus<CounterInput>();
 
         [InputBus]
-        public CounterOutput Output = Scope.CreateOrLoadBus<CounterOutput>();
+        public CounterOutput Output;
 
 		public async override Task Run()
         {
@@ -24,23 +25,16 @@ namespace SimpleNestedComponent
 
 			await WaitUntilAsync(() => { Input.InputEnabled = false; return Output.OutputEnabled; });
 
-			Console.WriteLine("Output is {0} expected {1}", Output.RegisterNumber, 4);
-
-			await WaitUntilAsync(() => Output.OutputEnabled);
-
-			Console.WriteLine("Output is {0} expected {1}", Output.RegisterNumber, 5);
-
-			await WaitUntilAsync(() => Output.OutputEnabled);
-
-			Console.WriteLine("Output is {0} expected {1}", Output.RegisterNumber, 6);
-
-			await WaitUntilAsync(() => Output.OutputEnabled);
-
-			Console.WriteLine("Output is {0} expected {1}", Output.RegisterNumber, 7);
+			for (int i = 4; i < 8; i++)
+			{
+				Debug.Assert(Output.RegisterNumber == i, $"Output is {Output.RegisterNumber}, expected {i}");
+				if (i < 7)
+					await WaitUntilAsync(() => Output.OutputEnabled);	
+			}
 
 			await ClockAsync();
 
-			Console.WriteLine("Output is expected to be false and it is: {0}", Output.OutputEnabled);
+			Debug.Assert(!Output.OutputEnabled, $"Output should not be enabled");
 		}
 	}
 }

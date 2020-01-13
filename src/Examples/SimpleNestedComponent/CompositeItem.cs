@@ -1,5 +1,4 @@
-﻿using System;
-using SME;
+﻿using SME;
 using System.Threading.Tasks;
 
 namespace SimpleNestedComponent
@@ -18,10 +17,10 @@ namespace SimpleNestedComponent
 		public class CounterTicker : StateProcess
 		{
             [OutputBus]
-            private TickBus Ticker = Scope.CreateOrLoadBus<TickBus>();
+            public TickBus Ticker = Scope.CreateBus<TickBus>();
 
 			[InputBus]
-            private CounterInput Input = Scope.CreateOrLoadBus<CounterInput>();
+            public CounterInput Input;
 
 			protected async override Task OnTickAsync()
 			{
@@ -31,6 +30,7 @@ namespace SimpleNestedComponent
                 
 				int cnt = Input.RepeatCount;
 				Ticker.Reset = true;
+				await ClockAsync();
 
 				while (cnt > 0)
 				{
@@ -47,32 +47,31 @@ namespace SimpleNestedComponent
 			}
 		}
 
-		public class ValueIncrementer : StateProcess
+		public class ValueIncrementer : SimpleProcess
 		{
 			[InputBus]
-            private TickBus Ticker = Scope.CreateOrLoadBus<TickBus>();
+            public TickBus Ticker;
 
 			[InputBus]
-			private CounterInput Input = Scope.CreateOrLoadBus<CounterInput>();
+			public CounterInput Input;
 
 			[OutputBus]
-			private CounterOutput Output = Scope.CreateOrLoadBus<CounterOutput>();
+			public CounterOutput Output = Scope.CreateBus<CounterOutput>();
 
-			protected async override Task OnTickAsync()
+			int regno = 0;
+
+			protected override void OnTick()
 			{
-				int regno = 0;
+				if (Ticker.Tick || Ticker.Reset)
+				{
+					if (Ticker.Reset)
+						regno = Input.StartRegister;
+					else if (Ticker.Tick)
+						regno++;
 
-				await ClockAsync();
-				while (!(Ticker.Tick || Ticker.Reset))
-					await ClockAsync();
-				
-				if (Ticker.Reset)
-					regno = Input.StartRegister;
-				else if (Ticker.Tick)
-					regno++;
-
-				Output.OutputEnabled = Ticker.Tick;
-				Output.RegisterNumber = regno;
+					Output.OutputEnabled = Ticker.Tick;
+					Output.RegisterNumber = regno;
+				}
 			}
 		}
 	}
