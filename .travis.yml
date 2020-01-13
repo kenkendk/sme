@@ -6,7 +6,7 @@ dotnet: 2.0
 before_install:
   - sudo add-apt-repository ppa:pgavin/ghdl -y
   - sudo apt-get -qq update
-  - sudo apt-get install -y ghdl
+  - sudo apt-get install -y ghdl libgdiplus
 install:
   - dotnet restore src/SME.sln
 script:
