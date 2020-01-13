@@ -10,14 +10,26 @@ namespace StatebasedCounter
         {
             using (new Simulation())
             {
+                var counter1 = new StatebasedCounter();
+                var counter2 = new StatebasedCounterWithForLoop();
+                var tester1 = new Tester();
+                var tester2 = new Tester();
+
+                tester1.result = counter1.output;
+                tester2.result = counter2.output;
+                counter1.input = tester1.control;
+                counter2.input = tester2.control;
+
                 Simulation.Current
-                          .BuildCSVFile()
-                          .BuildVHDL()
-                          .Run(new Tester());
+                    .AddTopLevelInputs(counter1.input, counter2.input)
+                    .AddTopLevelOutputs(counter1.output, counter2.output)
+                    .BuildCSVFile()
+                    .BuildVHDL()
+                    .Run();
             }
         }
 
-        [TopLevelInputBus, InitializedBus]
+        [InitializedBus]
         public interface IControl : IBus
         {
             [InitialValue]
@@ -25,7 +37,7 @@ namespace StatebasedCounter
             int count { get; set; }
         }
 
-        [TopLevelOutputBus, InitializedBus]
+        [InitializedBus]
         public interface IResult : IBus
         {
             [InitialValue]
@@ -37,25 +49,23 @@ namespace StatebasedCounter
         public class StatebasedCounterWithForLoop : StateProcess
         {
             [InputBus]
-            public readonly IControl input = Scope.CreateOrLoadBus<IControl>();
+            public IControl input;
 
             [OutputBus]
-            public readonly IResult output = Scope.CreateOrLoadBus<IResult>();
+            public IResult output = Scope.CreateBus<IResult>();
 
             protected async override Task OnTickAsync()
             {
-                while (ShouldContinue)
-                {
-                    while (!input.valid)
-                        await ClockAsync();
+                output.valid = false;
+                while (!input.valid)
+                    await ClockAsync();
 
-                    var count = input.count;
-                    for (var i = 0; i < count; i++)
-                    {
-                        output.number = i;
-                        output.valid = true;
-                        await ClockAsync();
-                    }
+                var count = input.count;
+                for (var i = 0; i < count; i++)
+                {
+                    output.number = i;
+                    output.valid = true;
+                    await ClockAsync();
                 }
             }
         }
@@ -63,13 +73,14 @@ namespace StatebasedCounter
         public class StatebasedCounter : StateProcess
         {
             [InputBus]
-            public readonly IControl input = Scope.CreateOrLoadBus<IControl>();
+            public IControl input;
 
             [OutputBus]
-            public readonly IResult output = Scope.CreateOrLoadBus<IResult>();
+            public IResult output = Scope.CreateBus<IResult>();
 
             protected async override Task OnTickAsync()
             {
+                output.valid = false;
                 while (!input.valid)
                     await ClockAsync();
 
@@ -87,31 +98,24 @@ namespace StatebasedCounter
 
         public class Tester : SimulationProcess
         {
-            readonly StatebasedCounter counter1 = new StatebasedCounter();
-
             [OutputBus]
-            readonly IControl control1;
-            [InputBus]
-            readonly IResult result1;
+            public IControl control = Scope.CreateBus<IControl>();
 
-            public Tester()
-            {
-                control1 = counter1.input;
-                result1 = counter1.output;
-            }
+            [InputBus]
+            public IResult result;
 
             public async override Task Run()
             {
                 await ClockAsync();
-                control1.valid = true;
-                control1.count = 4;
+                control.valid = true;
+                control.count = 4;
 
                 await ClockAsync();
-                control1.valid = false;
+                control.valid = false;
 
                 for (var i = 0; i < 4; i++)
                 {
-                    if (!result1.valid || i != result1.number)
+                    if (!result.valid && i != result.number)
                         throw new Exception($"Failed in counter with number {i}");
                     await ClockAsync();
                 }
