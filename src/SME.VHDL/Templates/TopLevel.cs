@@ -59,6 +59,7 @@ entity ");
 
 var feedbacks = RS.FeedbackBusses.ToArray();
 var processes = Network.Processes.Where(x => !x.IsSimulation).ToArray();
+var tmps = processes.SelectMany(x => x.InputBusses.Where(y => y.IsTopLevelOutput)).Distinct().ToArray();
 
             
             #line default
@@ -487,6 +488,18 @@ end ");
             
             #line 95 ""
  } 
+
+foreach (var bus in tmps)
+{
+    foreach (var signal in bus.Signals)
+    {
+        this.Write("    signal ");
+        this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("tmp_" + bus.InstanceName + "_" + signal.Name) ));
+        this.Write(": ");
+        this.Write(this.ToStringHelper.ToStringWithCulture( RS.VHDLWrappedTypeName(signal) ));
+        this.Write(";\n");
+    }
+}
             
             #line default
             #line hidden
@@ -688,6 +701,8 @@ end ");
 	      var input_prefix = string.Empty;
           if (feedbacks.Contains(bus))
               input_prefix = output_prefix = "current_";
+          else if (tmps.Contains(bus))
+              input_prefix = output_prefix = "tmp_";
 
           var busname = RS.GetLocalBusName(bus, p);
           var signals = bus.Signals.AsEnumerable();
@@ -1391,7 +1406,15 @@ end ");
             #line hidden
             
             #line 240 ""
- } 
+ }
+
+foreach (var signal in tmps.SelectMany(x => x.Signals))
+{
+    this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name) ));
+    this.Write(" <= ");
+    this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("tmp_" + (signal.Parent as AST.Bus).InstanceName + "_" + signal.Name) ));
+    this.Write(";\n");
+}
             
             #line default
             #line hidden

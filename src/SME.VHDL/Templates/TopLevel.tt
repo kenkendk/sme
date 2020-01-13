@@ -26,6 +26,7 @@ entity <#= Network.Name #> is
 <#
 var feedbacks = RS.FeedbackBusses.ToArray();
 var processes = Network.Processes.Where(x => !x.IsSimulation).ToArray();
+var tmps = processes.SelectMany(x => x.InputBusses.Where(y => y.IsTopLevelOutput)).Distinct().ToArray();
 #>
 
 <# foreach (var bus in Network.Busses.Where(x => x.IsTopLevelInput || x.IsTopLevelOutput)) { 
@@ -82,7 +83,6 @@ architecture RTL of <#= Network.Name #> is
 
     -- Process ready triggers
 <# foreach (var p in processes) { #>
-
     signal <#= Naming.ToValidName("FIN_" + p.InstanceName) #><#= p.IsClocked ? string.Empty : ", " + Naming.ToValidName("RDY_" + p.InstanceName) #> : std_logic;
 <# } #>
 
@@ -91,6 +91,11 @@ architecture RTL of <#= Network.Name #> is
 <#        foreach(var signal in bus.Signals) { #>
     signal <#= Naming.ToValidName("next_" + bus.InstanceName + "_" + signal.Name) #>: <#= RS.VHDLWrappedTypeName(signal) #>;
 <#     } #>
+<# foreach (var bus in tmps) { #>
+<#     foreach (var signal in bus.Signals) { #>
+    signal <#= Naming.ToValidName("tmp_" + bus.InstanceName + "_" + signal.Name) #>: <#= RS.VHDLWrappedTypeName(signal) #>;
+<#     } #>
+<# }#>
 
 <# } #>
 
@@ -130,6 +135,8 @@ begin
 	      var input_prefix = string.Empty;
           if (feedbacks.Contains(bus))
               input_prefix = output_prefix = "current_";
+          else if (tmps.Contains(bus))
+              input_prefix = "tmp_";
 
           var busname = RS.GetLocalBusName(bus, p);
           var signals = bus.Signals.AsEnumerable();
@@ -237,6 +244,10 @@ begin
 <#     foreach (var signal in feedbacks.Where(x => x.IsTopLevelOutput).SelectMany(x => x.Signals)) { #>
     <#= Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name) #> <= <#= Naming.ToValidName("next_" + (signal.Parent as AST.Bus).InstanceName + "_" + signal.Name) #>;
 <#     } #>
+<# } #>
+
+<# foreach (var signal in tmps.SelectMany(x => x.Signals)) { #>
+    <#= Naming.ToValidName((signal.Parent as AST.Bus).InstanceName + "_" + signal.Name) #> <= <#= Naming.ToValidName("tmp_" + (signal.Parent as AST.Bus).InstanceName + "_" + signal.Name) #>;
 <# } #>
 
 
