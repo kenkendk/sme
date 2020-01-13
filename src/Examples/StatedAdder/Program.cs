@@ -1,6 +1,6 @@
-﻿using System;
+﻿using SME;
+using System.Diagnostics;
 using System.Threading.Tasks;
-using SME;
 
 namespace StatedAdder
 {
@@ -10,15 +10,26 @@ namespace StatedAdder
         {
             using (new Simulation()) 
             {
+                var manual_adder = new Adder();
+                var stated_adder = new StatedAdder();
+                var tester = new Tester();
+
+                manual_adder.input = tester.control;
+                stated_adder.input = tester.control;
+                tester.result_manual = manual_adder.output;
+                tester.result_stated = stated_adder.output;
+
                 Simulation.Current
-                          .BuildCSVFile()
-                          .BuildVHDL()
-                          .Run(new Tester());
+                    .AddTopLevelInputs(manual_adder.input)
+                    .AddTopLevelOutputs(manual_adder.output, stated_adder.output)
+                    .BuildCSVFile()
+                    .BuildVHDL()
+                    .Run();
             }
         }
     }
 
-    [TopLevelInputBus, InitializedBus]
+    [InitializedBus]
     public interface IControl : IBus 
     {
         uint a { get; set; }
@@ -26,7 +37,7 @@ namespace StatedAdder
         uint c { get; set; }
     }
 
-    [TopLevelOutputBus, InitializedBus]
+    [InitializedBus]
     public interface IResult : IBus 
     {
         uint sum { get; set; }
@@ -34,13 +45,13 @@ namespace StatedAdder
 
 
     [ClockedProcess]
-    public class Adder2 : StateProcess 
+    public class StatedAdder : StateProcess 
     {
         [InputBus]
-        public readonly IControl input = Scope.CreateOrLoadBus<IControl>();
+        public IControl input;
 
         [OutputBus]
-        public readonly IResult output = Scope.CreateOrLoadBus<IResult>();
+        public IResult output = Scope.CreateBus<IResult>();
 
         protected async override Task OnTickAsync()
         {
@@ -56,10 +67,10 @@ namespace StatedAdder
     public class Adder : SimpleProcess 
     {
         [InputBus]
-        public readonly IControl input = Scope.CreateOrLoadBus<IControl>();
+        public IControl input;
 
         [OutputBus]
-        public readonly IResult output = Scope.CreateOrLoadBus<IResult>();
+        public IResult output = Scope.CreateBus<IResult>();
 
         uint tmp0 = 0;
         uint tmp1 = 0;
@@ -80,50 +91,35 @@ namespace StatedAdder
 
     public class Tester : SimulationProcess 
     {
-        //readonly Adder manual_state_adder = new Adder();
-        readonly Adder2 auto_state_adder = new Adder2();
 
-        //[OutputBus]
-        //readonly IControl control_manual;
-        //[InputBus]
-        //readonly IResult result_manual;
         [OutputBus]
-        readonly IControl control_auto;
-        [InputBus]
-        readonly IResult result_auto;
+        public IControl control = Scope.CreateBus<IControl>();
 
-        public Tester()
-        {
-            //control_manual = manual_state_adder.input;
-            //result_manual = manual_state_adder.output;
-            control_auto = auto_state_adder.input;
-            result_auto = auto_state_adder.output;
-        }
+        [InputBus]
+        public IResult result_manual;
+
+        [InputBus]
+        public IResult result_stated;
 
         public async override Task Run()
         {
+            await ClockAsync();
+
+            control.a = 1;
+            control.b = 2;
+            control.c = 3;
 
             await ClockAsync();
-            //control_manual.a = control_auto.a = 1;
-            //control_manual.b = control_auto.b = 2;
-            //control_manual.c = control_auto.c = 3;
 
-            control_auto.a = 1;
-            control_auto.b = 2;
-            control_auto.c = 3;
-
-            await ClockAsync();
-            //System.Diagnostics.Debug.Assert(result_manual.sum == 0, string.Format("sum is {0}, expected {1}", result_manual.sum, 0));
-            System.Diagnostics.Debug.Assert(result_auto.sum == 0, string.Format("sum is {0}, expected {1}", result_auto.sum, 0));
-            await ClockAsync();
-            //System.Diagnostics.Debug.Assert(result_manual.sum == 0, string.Format("sum is {0}, expected {1}", result_manual.sum, 0));
-            System.Diagnostics.Debug.Assert(result_auto.sum == 0, string.Format("sum is {0}, expected {1}", result_auto.sum, 0));
-            await ClockAsync();
-            //System.Diagnostics.Debug.Assert(result_manual.sum == 0, string.Format("sum is {0}, expected {1}", result_manual.sum, 0));
-            System.Diagnostics.Debug.Assert(result_auto.sum == 0, string.Format("sum is {0}, expected {1}", result_auto.sum, 0));
-            await ClockAsync();
-            //System.Diagnostics.Debug.Assert(result_manual.sum == 6, string.Format("sum is {0}, expected {1}", result_manual.sum, 6));
-            System.Diagnostics.Debug.Assert(result_auto.sum == 6, string.Format("sum is {0}, expected {1}", result_auto.sum, 6));
+            for (int i = 0; i < 4; i++)
+            {
+                uint expected = i == 3 ? 6u : 0u;
+                Debug.Assert(result_manual.sum == result_stated.sum, 
+                    $"Manual and Stated aren't equal: {result_manual.sum} != {result_stated.sum}");
+                Debug.Assert(result_manual.sum == expected,
+                    $"sum is {result_manual.sum}, expected {expected}");
+                await ClockAsync();
+            }
         }
     }
 }
