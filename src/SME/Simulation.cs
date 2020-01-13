@@ -336,11 +336,11 @@ namespace SME
                 if (exitMethod == null)
                 {
                     // Wait until all simulation processes are completed
-                    exitMethod = () => running_tasks.All(x => x.Proc is SimulationProcess && x.Task.IsCompleted);
+                    exitMethod = () => running_tasks.Where(x => x.Proc is SimulationProcess).All(x => x.Task.IsCompleted);
                     // Wait until all simulation processes that write are done
-                    //exitMethod = () => running_tasks.All(x => x.Proc is SimulationProcess && x.HasOutputs && x.Task.IsCompleted);
+                    //exitMethod = () => running_tasks.Where(x => x.Proc is SimulationProcess && x.HasOutputs).All(x => x.Task.IsCompleted);
                     // Wait until one of the simulation processes completes
-                    //exitMethod = () => running_tasks.Any(x => x.Task.IsCompleted);
+                    //exitMethod = () => running_tasks.Any(x => x.Proc is SimulationProcess && x.Task.IsCompleted);
                 }
 
                 // Keep running until all simulation (stimulation) processes have finished
