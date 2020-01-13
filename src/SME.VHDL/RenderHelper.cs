@@ -251,9 +251,12 @@ namespace SME.VHDL
                     yield return ss;
             }
 
-            yield return $"{indent2}when others =>";
-            foreach (var ss in others.SelectMany(x => RenderStatement(method, x, indentation)))
-                yield return ss;
+            if (others.Length > 0)
+            {
+                yield return $"{indent2}when others =>";
+                foreach (var ss in others.SelectMany(x => RenderStatement(method, x, indentation)))
+                    yield return ss;
+            }
 
             yield return $"{indent}end case;";
         }
