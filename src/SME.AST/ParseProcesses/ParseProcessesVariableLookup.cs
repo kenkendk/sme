@@ -95,6 +95,12 @@ namespace SME.AST
 						ec = null;
 						break;
 					}
+					else if (ec is ICSharpCode.Decompiler.CSharp.Syntax.BaseReferenceExpression)
+					{
+						//parts.Add("base");
+						ec = null;
+						break;
+					}
 					else if (ec is ICSharpCode.Decompiler.CSharp.Syntax.IdentifierExpression)
 					{
 						parts.Add(((ICSharpCode.Decompiler.CSharp.Syntax.IdentifierExpression)ec).Identifier);

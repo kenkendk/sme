@@ -376,8 +376,17 @@ namespace SME.AST
 
 			if (res.Decompile)
 			{
+				var Fields = proctype.Fields
+					.Where(x => x.GetAttributes(typeof(IgnoreAttribute)).FirstOrDefault() == null);
+				while (!proctype.BaseType.FullName.StartsWith("SME"))
+				{
+					proctype = proctype.BaseType.Resolve();
+					Fields = Fields.Union(
+						proctype.Fields
+							.Where(x => x.GetAttributes(typeof(IgnoreAttribute)).FirstOrDefault() == null));
+				}
                 // Register all variables
-                foreach (var f in proctype.Fields)
+                foreach (var f in Fields)
                 {
                     var ft = res.ResolveGenericType(f.FieldType);
 
