@@ -1,9 +1,22 @@
-﻿using System;
+﻿using SME;
+using System;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
-using SME;
 
 namespace StateMachineTester
 {
+
+    public abstract class StateMachineTest : StateProcess
+    {
+        [InputBus] public IControlBus control;
+        [OutputBus] public IResultBus result;
+
+        [Ignore] public bool[] go1s;
+        [Ignore] public bool[] go2s;
+        [Ignore] public int[] states;
+    }
+
     [TopLevelInputBus]
     public interface IControlBus : IBus
     {
@@ -22,23 +35,70 @@ namespace StateMachineTester
         int State { get; set; }
     }
 
-    public class SingleIfStatement : StateProcess
+    public class SingleIfStatement : StateMachineTest
     {
-        [InputBus]
-        private readonly IControlBus controlBus = Scope.CreateBus<IControlBus>();
-        [OutputBus]
-        private readonly IResultBus resultBus = Scope.CreateBus<IResultBus>();
+
+        public SingleIfStatement()
+        {
+            this.go1s = new bool[] { false, true, false };
+            this.go2s = new bool[] { };
+            this.states = new int[] { 3, 1, 3 };
+            this.control = Scope.CreateBus<IControlBus>();
+            this.result = Scope.CreateBus<IResultBus>();
+        }
 
         protected async override Task OnTickAsync()
         {
-            resultBus.State = 0;
-            if (controlBus.Go1)
+            result.State = 0;
+            if (control.Go1)
             {
-                resultBus.State = 1;
+                result.State = 1;
                 await ClockAsync();
-                //resultBus.State = 2;
+                result.State = 2;
             }
-            resultBus.State = 3;
+            result.State = 3;
+        }
+    }
+
+    public class Tester : SimulationProcess
+    {
+
+        public Tester(StateMachineTest test)
+        {
+            this.name = test.GetType().Name;
+            this.go1s = test.go1s;
+            this.go2s = test.go2s;
+            this.states = test.states;
+
+            control = test.control;
+            result = test.result;
+
+            Simulation.Current
+                .AddTopLevelInputs(control)
+                .AddTopLevelOutputs(result);
+        }
+
+        [OutputBus] public IControlBus control;
+
+        [InputBus] public IResultBus result;
+
+        string name;
+        bool[] go1s;
+        bool[] go2s;
+        int[] states;
+
+        public override async Task Run()
+        {
+            await ClockAsync();
+
+            int len = Math.Max(go1s.Length, go2s.Length);
+            for (int i = 0; i < len; i++)
+            {
+                if (i < go1s.Length) control.Go1 = go1s[i];
+                if (i < go2s.Length) control.Go2 = go2s[i];
+                await ClockAsync();
+                Debug.Assert(states[i] == result.State, $"{name}: state in step {i} not correct. Expected {states[i]}, got {result.State}");
+            }
         }
     }
 
@@ -295,21 +355,31 @@ namespace StateMachineTester
     {
         public static void Main(string[] args)
         {
-            new Simulation()
-                .BuildCSVFile()
-                .BuildVHDL()
-                .Run(
-                    //new SingleIfStatement(),
+            using (var sim = new Simulation())
+            {
+                StateMachineTest[] tests = {
+                    new SingleIfStatement(),
                     //new SingleIfElseStatement(),
-                    //new NestedIfStatement(),
                     //new SingleWhileLoop(),
-                    //new NestedWhileLoop(),
                     //new SingleForLoop(),
                     //new SingleSwitchStatement(),
-                    new NestedSwitchStatement(),
+        
+                    //new NestedIfStatement(),
+                    //new NestedIfElseStatement(),
+                    //new NestedWhileLoop(),
+                    //new NestedForLoop(),
+                    //new NestedSwitchStatement(),
+                };
+                
+                //tests.Select(x => new Tester(x));
+                foreach (StateMachineTest test in tests)
+                    new Tester(test);
 
-                    new DummySimulationTester()
-                );
+                sim
+                    .BuildCSVFile()
+                    .BuildVHDL()
+                    .Run();
+            }
         }
     }
 }
