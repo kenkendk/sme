@@ -22,18 +22,7 @@ namespace SME.AST
             else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.IdentifierExpression)
                 return Decompile(network, proc, method, statement, expression as ICSharpCode.Decompiler.CSharp.Syntax.IdentifierExpression);
             else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.MemberReferenceExpression)
-            {
-                var mr = expression as ICSharpCode.Decompiler.CSharp.Syntax.MemberReferenceExpression;
-
-                if (mr.ToString() == "base.ShouldContinue")
-                    return new PrimitiveExpression(true, method.SourceMethod.Module.ImportReference(typeof(bool)))
-                    {
-                        SourceExpression = mr,
-                        Parent = statement,
-                    };
-
-                return Decompile(network, proc, method, statement, expression as ICSharpCode.Decompiler.CSharp.Syntax.MemberReferenceExpression);
-            }
+            	return Decompile(network, proc, method, statement, expression as ICSharpCode.Decompiler.CSharp.Syntax.MemberReferenceExpression);
             else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression)
                 return Decompile(network, proc, method, statement, expression as ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression);
             else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorExpression)

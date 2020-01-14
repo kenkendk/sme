@@ -24,10 +24,5 @@ namespace SME
                 await OnTickAsync();
             }
         }
-
-        /// <summary>
-        /// Workaround flag to avoid having "while(true)" in the state machine
-        /// </summary>
-        protected bool ShouldContinue { get; } = true;
     }
 }
