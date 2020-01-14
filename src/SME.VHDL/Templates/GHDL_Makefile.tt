@@ -24,6 +24,9 @@ IEEE=synopsys
 # VCD trace file for GTKWave
 VCDFILE=trace.vcd
 
+# Disable the 'Warning: redundant others'
+FLAGS=--warn-no-others
+
 <#
 var cust_tag = CustomFiles == null || CustomFiles.Count() == 0 ? "" : " custom_files";
 #>
@@ -37,40 +40,40 @@ $(WORKDIR):
 	mkdir $(WORKDIR)
 
 $(WORKDIR)/system_types.o: system_types.vhdl $(WORKDIR)
-	ghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) system_types.vhdl
+	ghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) $(FLAGS) system_types.vhdl
 
 $(WORKDIR)/Types_<#= RS.Network.Name #>.o: Types_<#= RS.Network.Name #>.vhdl $(WORKDIR)
-	ghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) Types_<#= RS.Network.Name #>.vhdl
+	ghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) $(FLAGS) Types_<#= RS.Network.Name #>.vhdl
 
 <# foreach (var file in Filenames) { #>
 $(WORKDIR)/<#= file #>.o: <#= file #>.vhdl $(WORKDIR)/system_types.o $(WORKDIR)/Types_<#= RS.Network.Name #>.o $(WORKDIR)<#= cust_tag #>
-	ghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) <#= file #>.vhdl
+	ghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) $(FLAGS) <#= file #>.vhdl
 <# } #>
 
 <# if (!string.IsNullOrEmpty(cust_tag)) { #>
 <#     foreach (var file in CustomFiles) { #>
 $(WORKDIR)/<#= file #>.o: <#= file #>.vhdl $(WORKDIR)/system_types.o $(WORKDIR)/Types_<#= RS.Network.Name #>.o $(WORKDIR)
-	ghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) <#= file #>.vhdl
+	ghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) $(FLAGS) <#= file #>.vhdl
 <#     } #>
 <# } #>
 
 
 $(WORKDIR)/<#= RS.Network.Name #>.o: <#= RS.Network.Name #>.vhdl $(WORKDIR)/system_types.o $(WORKDIR)/Types_<#= RS.Network.Name #>.o <# foreach(var file in Filenames) { #>$(WORKDIR)/<#= file #>.o <# } #><#= cust_tag #>
 
-	ghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) <#= RS.Network.Name #>.vhdl
+	ghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) $(FLAGS) <#= RS.Network.Name #>.vhdl
 
 $(WORKDIR)/TestBench_<#= RS.Network.Name #>.o: TestBench_<#= RS.Network.Name #>.vhdl $(WORKDIR)/<#= RS.Network.Name #>.o
-	ghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) TestBench_<#= RS.Network.Name #>.vhdl
+	ghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) $(FLAGS) TestBench_<#= RS.Network.Name #>.vhdl
 
 <#= RS.Network.Name.ToLower() #>_tb: $(WORKDIR)/TestBench_<#= RS.Network.Name #>.o
-	ghdl -e --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) <#= RS.Network.Name #>_tb
+	ghdl -e --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) $(FLAGS) <#= RS.Network.Name #>_tb
 
 <#= RS.Network.Name #>_export: $(WORKDIR)/<#= RS.Network.Name #>.o
-	ghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) Export_<#= RS.Network.Name #>.vhdl
+	ghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) $(FLAGS) Export_<#= RS.Network.Name #>.vhdl
 
 test: <#= RS.Network.Name.ToLower() #>_tb
 	cp "<#= RS.CSVTracename #>" .
-	ghdl -r --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) <#= RS.Network.Name #>_tb --vcd=$(VCDFILE)
+	ghdl -r --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) $(FLAGS) <#= RS.Network.Name #>_tb --vcd=$(VCDFILE)
 
 clean:
 	rm -rf $(WORKDIR) *.o <#= RS.Network.Name.ToLower() #>_tb

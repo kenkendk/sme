@@ -205,15 +205,16 @@ package body csv_util is
      variable s: string(1 to 1);
      begin
           case b is
-            when 'U' => s(1):= 'U';
-            when 'X' => s(1):= 'X';
-            when '0' => s(1):= '0';
-            when '1' => s(1):= '1';
-            when 'Z' => s(1):= 'Z';
-            when 'W' => s(1):= 'W';
-            when 'L' => s(1):= 'L';
-            when 'H' => s(1):= 'H';
-            when '-' => s(1):= '-';
+            when 'U'    => s(1) := 'U';
+            when 'X'    => s(1) := 'X';
+            when '0'    => s(1) := '0';
+            when '1'    => s(1) := '1';
+            when 'Z'    => s(1) := 'Z';
+            when 'W'    => s(1) := 'W';
+            when 'L'    => s(1) := 'L';
+            when 'H'    => s(1) := 'H';
+            when '-'    => s(1) := '-';
+            when others => s(1) := '-';
          end case;
          return s;
     end str;

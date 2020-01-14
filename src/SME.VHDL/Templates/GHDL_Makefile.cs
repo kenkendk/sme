@@ -69,6 +69,9 @@ IEEE=synopsys
 # VCD trace file for GTKWave
 VCDFILE=trace.vcd
 
+# Disable the 'Warning: redundant others'
+FLAGS=--warn-no-others
+
 ");
             
             #line default
@@ -144,7 +147,7 @@ var cust_tag = CustomFiles == null || CustomFiles.Count() == 0 ? "" : " custom_f
             
             #line 36 ""
             this.Write("\n$(WORKDIR):\n\tmkdir $(WORKDIR)\n\n$(WORKDIR)/system_types.o: system_types.vhdl $(WO" +
-                    "RKDIR)\n\tghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) system_types.vh" +
+                    "RKDIR)\n\tghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) $(FLAGS) system_types.vh" +
                     "dl\n\n$(WORKDIR)/Types_");
             
             #line default
@@ -169,7 +172,7 @@ var cust_tag = CustomFiles == null || CustomFiles.Count() == 0 ? "" : " custom_f
             #line hidden
             
             #line 43 ""
-            this.Write(".vhdl $(WORKDIR)\n\tghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) Types_" +
+            this.Write(".vhdl $(WORKDIR)\n\tghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) $(FLAGS) Types_" +
                     "");
             
             #line default
@@ -242,7 +245,7 @@ var cust_tag = CustomFiles == null || CustomFiles.Count() == 0 ? "" : " custom_f
             #line hidden
             
             #line 47 ""
-            this.Write("\n\tghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) ");
+            this.Write("\n\tghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) $(FLAGS) ");
             
             #line default
             #line hidden
@@ -320,7 +323,7 @@ var cust_tag = CustomFiles == null || CustomFiles.Count() == 0 ? "" : " custom_f
             #line hidden
             
             #line 53 ""
-            this.Write(".o $(WORKDIR)\n\tghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) ");
+            this.Write(".o $(WORKDIR)\n\tghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) $(FLAGS) ");
             
             #line default
             #line hidden
@@ -428,7 +431,7 @@ var cust_tag = CustomFiles == null || CustomFiles.Count() == 0 ? "" : " custom_f
             #line hidden
             
             #line 61 ""
-            this.Write("\n\n\tghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) ");
+            this.Write("\n\n\tghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) $(FLAGS) ");
             
             #line default
             #line hidden
@@ -476,7 +479,7 @@ var cust_tag = CustomFiles == null || CustomFiles.Count() == 0 ? "" : " custom_f
             #line hidden
             
             #line 65 ""
-            this.Write(".o\n\tghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) TestBench_");
+            this.Write(".o\n\tghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) $(FLAGS) TestBench_");
             
             #line default
             #line hidden
@@ -512,7 +515,7 @@ var cust_tag = CustomFiles == null || CustomFiles.Count() == 0 ? "" : " custom_f
             #line hidden
             
             #line 68 ""
-            this.Write(".o\n\tghdl -e --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) ");
+            this.Write(".o\n\tghdl -e --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) $(FLAGS) ");
             
             #line default
             #line hidden
@@ -548,7 +551,7 @@ var cust_tag = CustomFiles == null || CustomFiles.Count() == 0 ? "" : " custom_f
             #line hidden
             
             #line 71 ""
-            this.Write(".o\n\tghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) Export_");
+            this.Write(".o\n\tghdl -a --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) $(FLAGS) Export_");
             
             #line default
             #line hidden
@@ -584,7 +587,7 @@ var cust_tag = CustomFiles == null || CustomFiles.Count() == 0 ? "" : " custom_f
             #line hidden
             
             #line 75 ""
-            this.Write("\" .\n\tghdl -r --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) ");
+            this.Write("\" .\n\tghdl -r --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) $(FLAGS) ");
             
             #line default
             #line hidden
