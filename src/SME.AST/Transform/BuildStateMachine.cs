@@ -4,11 +4,34 @@ using System.Linq;
 
 namespace SME.AST.Transform
 {
+
+    public class WhileWithoutAwaitException : Exception 
+    { 
+        public WhileWithoutAwaitException(string message) : base(message) { }
+    }
+
     /// <summary>
     /// Builds a state machine from a <see cref="StateProcess"/>'s main method.
     /// </summary>
     public class BuildStateMachine : IASTTransform
     {
+        /// <summary>
+        /// Checks if all branches contains an <see cref="AwaitExpression"/>. Used by while loops.
+        /// <summary>
+        /// <param name="statement">The statement to be checked</param>
+        private bool AllBranchesHasAwait(Statement statement)
+        {
+            switch (statement)
+            {
+                case BlockStatement s:      return s.Statements.Where(x => AllBranchesHasAwait(x)).Any();
+                case ExpressionStatement s: return s.Expression is AwaitExpression;
+                //case ForStatement s:        return AllBranchesHasAwait(s.LoopBody); // TODO check if empty range?
+                case IfElseStatement s:     return AllBranchesHasAwait(s.TrueStatement) && AllBranchesHasAwait(s.FalseStatement);
+                case SwitchStatement s:     return s.Cases.Select(x => x.Item2).All(x => x.Select(y => AllBranchesHasAwait(y)).Any());
+                default:                    return false;
+            }
+        }
+
         /// <summary>
         /// Represents a Goto statement used to build the statemachine
         /// </summary>
@@ -252,8 +275,8 @@ namespace SME.AST.Transform
         /// <param name="fragments">The currently collected fragments.</param>
         private int SplitStatement(WhileStatement statement, List<Statement> collected, List<List<Statement>> fragments)
         {
-            if (!statement.All().OfType<AwaitExpression>().Any())
-                throw new Exception($"Cannot process a while statement without await calls in the body");
+            if (!AllBranchesHasAwait(statement.Body))
+                throw new WhileWithoutAwaitException($"Cannot process a while statement without await calls in the body. Note: for loops are transformed into while loops. Note note: All branches must have an await call.");
 
             EndFragment(collected, fragments, fragments.Count + 1, true);
             var selflabel = fragments.Count;
@@ -299,6 +322,28 @@ namespace SME.AST.Transform
                 // Move the fragments around
                 fragments.RemoveAt(fragments.Count - 1);
                 fragments.Insert(selflabel, trailfragment);
+            }
+
+            // Cannot fallthrough backwards through states. Copy state machine, where this occurs
+            for (int i = 0; i < fragments.Count; i++)
+            {
+                var cases = fragments[i].SelectMany(x => 
+                    x.All()
+                        .OfType<CaseGotoStatement>()
+                        .Where(y => y.FallThrough && y.CaseLabel < i));
+                while (cases.Any())
+                {
+                    cases = cases.SelectMany(
+                        x => 
+                        { // TODO crash med at parent bliver null? 
+                            x.ReplaceWith(new BlockStatement(fragments[x.CaseLabel].ToArray(), null));
+                            return fragments[x.CaseLabel].SelectMany(y => 
+                                y.All()
+                                    .OfType<CaseGotoStatement>()
+                                    .Where(z => z.FallThrough && z.CaseLabel < i));
+                        }
+                    );
+                }
             }
 
             return fragments.Count - selflabel;
