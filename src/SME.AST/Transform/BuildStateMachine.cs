@@ -56,6 +56,12 @@ namespace SME.AST.Transform
                 CaseLabel = label;
                 FallThrough = fallthrough;
             }
+
+            public CaseGotoStatement()
+            {
+                CaseLabel = -1;
+                FallThrough = false;
+        }
         }
 
         /// <summary>

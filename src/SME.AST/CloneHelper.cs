@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+
 namespace SME.AST
 {
 	public static class CloneHelper
@@ -8,7 +10,7 @@ namespace SME.AST
 		{
 			var target = (ASTItem)Activator.CreateInstance(self.GetType());
 			foreach (var f in self.GetType().GetFields(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public))
-			{
+			{ 
 				if (f.Name == "Parent")
 					continue;
 
@@ -37,6 +39,23 @@ namespace SME.AST
 								var tmp = Clone((ASTItem)cur.GetValue(i));
 								tmp.Parent = target;
 								ncur.SetValue(tmp, i);
+							}
+							cur = ncur;
+						}
+						f.SetValue(target, cur);
+					}
+					else if (fe.GetGenericTypeDefinition() == typeof(Tuple<,>)) // Switch statements! :)
+					{
+						var cur = (Array)f.GetValue(self);
+						if (cur != null)
+						{
+							var ncur = Array.CreateInstance(fe, cur.Length);
+							for (var i = 0; i < cur.Length; i++)
+							{
+								var tmp = (Tuple<Expression[],Statement[]>)cur.GetValue(i);
+								var tmp1 = tmp.Item1.Select(x => Clone(x) as Expression).Select(x => { x.Parent = target; return x; }).ToArray();
+								var tmp2 = tmp.Item2.Select(x => Clone(x) as Statement).Select(x => { x.Parent = target; return x; }).ToArray();
+								ncur.SetValue(new Tuple<Expression[],Statement[]>(tmp1, tmp2), i);
 							}
 							cur = ncur;
 						}
