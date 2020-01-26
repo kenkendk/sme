@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using SME.AST;
 using SME.AST.Transform;
@@ -52,7 +52,9 @@ namespace SME.VHDL.Transformations
             {
                 var mp = ss.GetNearestParent<Method>();
                 if (mp != null)
-                {
+                { // TODO kun hvis den er member reference?
+                    ss.SwitchExpression = VHDL.VHDLTypeConversion.ConvertExpression(State, mp, ss.SwitchExpression, targets.First(), ss.SwitchExpression.SourceResultType, false);
+                    return el;
                     var targettype = ss
                         .Cases
                         .SelectMany(x => x.Item1)

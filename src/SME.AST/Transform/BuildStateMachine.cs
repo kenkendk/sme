@@ -137,56 +137,73 @@ namespace SME.AST.Transform
                 return 0;
             }
 
-            // Split into cases that has await, and regular cases
-            var regulars = new List<Tuple<Expression[], Statement[]>>();
-            var specials = new List<Tuple<Expression[], Statement[]>>();
+            var selflabel = fragments.Count;
+            var trailings = new List<List<Statement>>();
+            var cases = new List<Tuple<Expression[], Statement[]>>();
             foreach (var c in statement.Cases)
             {
-                if (c.Item2.SelectMany(x => x.All().OfType<AwaitExpression>()).Any())
-                    specials.Add(c);
+                bool found = false;
+                var initial = new List<Statement>();
+                var trailing = new List<Statement>();
+                for (int i = 0; i < c.Item2.Length; i++)
+                {
+                    if (found)
+                    {
+                        if (!(c.Item2[i] is BreakStatement))
+                            trailing.Add(c.Item2[i]);
+                        else // Trailing cases should not have break statements, and all following statements should be ignored
+                            break;
+                    }
                 else
-                    regulars.Add(c);
+                    {
+                        if (c.Item2[i] is ExpressionStatement && ((ExpressionStatement)(c.Item2[i])).Expression is AwaitExpression)
+                        { // Stop adding, and inject a goto statement to rest of the block
+                            found = true;
+                            initial.Add(new CaseGotoStatement(-1, false));
+                            initial.Add(new BreakStatement());
             }
+                        else
+                        { // Add all statements up until await statement
+                            if (c.Item2[i] is BreakStatement)
+                                initial.Add(new CaseGotoStatement(selflabel, true));
+                            initial.Add(c.Item2[i]);
+                            if (c.Item2[i] is BreakStatement)
+                                break;
+                        }
+                    }
+                }
+                cases.Add(new Tuple<Expression[], Statement[]>(c.Item1, initial.ToArray()));
+                trailings.Add(trailing);
+            }
+            statement.Cases = cases.ToArray();
 
-            if (specials.Count == 0)
-                throw new Exception("Unexpected number of specials");
+            collected.Add(statement);
+            EndFragment(collected, fragments, -1, false);
 
-            IfElseStatement prev = null;
-            IfElseStatement first = null;
-            while (specials.Count > 0)
+            for (int i = 0; i < statement.Cases.Length; i++)
             {
-                // Build each comparison statement
-                var conds = specials.First().Item1.Select(x => new BinaryOperatorExpression(
-                    statement.SwitchExpression,
-                    ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.Equality,
-                    x
-                )
-                { SourceResultType = statement.SwitchExpression.SourceResultType.Module.ImportReference(typeof(bool)) });
-
-                // Then condense into a single statement
-                Expression cond;
-                if (specials.First().Item1.Length == 1)
-                    cond = conds.First();
+                var c = statement.Cases[i].Item2.OfType<CaseGotoStatement>().First();
+                if (trailings[i].Count > 0)
+                {
+                    c.CaseLabel = fragments.Count;
+                    trailings[i].Select(x => SplitStatement(x, collected, fragments)).ToList();
+                    EndFragment(collected, fragments, selflabel, true);
+            }
                 else
-                    cond = conds.Aggregate((a, b) => new BinaryOperatorExpression(a, ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.ConditionalOr, b) { SourceResultType = statement.SwitchExpression.SourceResultType.Module.ImportReference(typeof(bool)) });
-
-                var ifs = new IfElseStatement(cond, ToBlockStatement(specials.First().Item2.Where(x => !(x is BreakStatement))), new EmptyStatement());
-                if (first == null)
-                    first = ifs;                
-                if (prev != null)
-                    prev.FalseStatement = ifs;
-                prev = ifs;
-                specials.RemoveAt(0);
-            }
-
-            if (regulars.Count > 0)
             {
-                prev.FalseStatement = statement;
-                statement.Cases = regulars.ToArray();
+                    c.CaseLabel = selflabel;
             }
-            first.UpdateParents();
+            }
 
-            return SplitStatement(first, collected, fragments);
+            for (int i = selflabel; i < fragments.Count; i++)
+                fragments[i].SelectMany(x => 
+                    x.All()
+                        .OfType<CaseGotoStatement>()
+                        .Where(y => y.CaseLabel == selflabel)
+                        .Select(y => y.CaseLabel = fragments.Count)
+                    ).ToList();
+
+            return 0; // TODO parenting?
         }
 
         /// <summary>

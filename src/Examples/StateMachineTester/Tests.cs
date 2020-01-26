@@ -400,8 +400,8 @@ namespace StateMachineTester
         {
             go1s = new bool[] { };
             go2s = new bool[] { };
-            values = new int[] { 0, 0, 0, 1, 1, 1, 2, 2, 2, 2, 3, 3 };
-            states = new int[] { 0, 1, 2, 0, 3, 4, 0, 5, 0, 5, 0, 6 };
+            values = new int[] { 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 3, 3, 4, 5 };
+            states = new int[] { 0, 1, 9, 0, 3, 4, 9, 0, 6, 9, 0, 9, 0, 9 };
         }
 
         protected async override Task OnTickAsync()
@@ -419,14 +419,21 @@ namespace StateMachineTester
                     result.State = 3;
                     await ClockAsync();
                     result.State = 4;
-                    break;
-                case 2:
+                    await ClockAsync();
                     result.State = 5;
                     break;
-                default:
+                case 2:
                     result.State = 6;
+                    await ClockAsync();
+                    break;
+                case 3:
+                    result.State = 7;
+                    break;
+                default:
+                    result.State = 8;
                     break;
             }
+            result.State = 9;
         }
     }
 
