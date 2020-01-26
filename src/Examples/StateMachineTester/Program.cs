@@ -29,7 +29,7 @@ namespace StateMachineTester
             var assembly = Assembly.GetExecutingAssembly();
             using (var sim = new Simulation())
             {
-                //new Tester(new NestedWhileLoop());
+                //new Tester(new SingleSwitchStatement());
                 assembly.GetTypes()
                     .Where(x => 
                         x.IsSubclassOf(typeof(StateMachineTest)))
@@ -62,7 +62,7 @@ namespace StateMachineTester
                 {
                     continue;
                 }
-                throw new Exception("Test did not throw exception!");
+                throw new Exception($"Test {ex_test.Name} did not throw exception!");
             }
         }
     }

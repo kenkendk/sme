@@ -155,7 +155,6 @@ namespace StateMachineTester
         }
     }
 
-    // TODO NestedIfWithinWhile : StateMachineTest
     public class NestedIfWithinWhile : StateMachineTest
     {
         public NestedIfWithinWhile()
@@ -196,8 +195,8 @@ namespace StateMachineTester
         {
             go1s = new bool[] { };
             go2s = new bool[] { };
-            values = new int[] { 0, 0, 0, 0, 1, 1, 1, 1, 2 };
-            states = new int[] { 1, 2, 3, 1, 4, 5, 6, 7, 8 };
+            values = new int[] { 0, 0,  0, 0, 1,  1, 0, 2,  2,  1,  1,  2,  2 };
+            states = new int[] { 1, 3, 14, 1, 5, 14, 1, 7, 14, 10, 14, 12, 14 };
         }
 
         protected async override Task OnTickAsync()
@@ -208,33 +207,82 @@ namespace StateMachineTester
                 case 0:
                     result.State = 1;
                     await ClockAsync();
+                    result.State = 2;
                     switch (control.Value)
                     {
                         case 0:
-                            result.State = 2;
-                            await ClockAsync();
                             result.State = 3;
+                            await ClockAsync();
+                            result.State = 4;
                             break;
                         case 1:
-                            result.State = 4;
-                            await ClockAsync();
                             result.State = 5;
+                            await ClockAsync();
+                            result.State = 6;
                             break;
+                        default:
+                            result.State = 7;
+                            await ClockAsync();
+                            result.State = 8;
+                            break;
+
                     }
+                    result.State = 9;
                     break;
                 case 1:
-                    result.State = 6;
+                    result.State = 10;
                     await ClockAsync();
-                    result.State = 7;
+                    result.State = 11;
                     break;
                 default:
-                    result.State = 8;
+                    result.State = 12;
+                    await ClockAsync();
+                    result.State = 13;
                     break;
             }
+            result.State = 14;
         }
     }
 
-    //TODO public class NestedSwitchWithinWhile : StateMachineTest
+    public class NestedSwitchWithinWhile : StateMachineTest
+    {
+        public NestedSwitchWithinWhile()
+        {
+            go1s = new bool[] { false,  true,  true,  true,  true, false };
+            go2s = new bool[] { };
+            values = new int[] {    0,     0,     1,     2,     5,     5 };
+            states = new int[] {    9,     2,     4,     6,     6,     9 };
+        }
+
+        protected async override Task OnTickAsync()
+        {
+            result.State = 0;
+            while (control.Go1)
+            {
+                result.State = 1;
+                switch (control.Value)
+                {
+                    case 0: 
+                        result.State = 2;
+                        await ClockAsync();
+                        result.State = 3;
+                        break;
+                    case 1:
+                        result.State = 4;
+                        await ClockAsync();
+                        result.State = 5;
+                        break;
+                    default:
+                        result.State = 6;
+                        await ClockAsync();
+                        result.State = 7;
+                        break;
+                }
+                result.State = 8;
+            }
+            result.State = 9;
+        }
+    }
 
     public class NestedWhileLoop : StateMachineTest
     {
@@ -352,13 +400,14 @@ namespace StateMachineTester
         {
             go1s = new bool[] { };
             go2s = new bool[] { };
-            values = new int[] { 0, 0, 1, 1, 2, 2 };
-            states = new int[] { 1, 2, 3, 4, 5, 5 };
+            values = new int[] { 0, 0, 0, 1, 1, 1, 2, 2, 2, 2, 3, 3 };
+            states = new int[] { 0, 1, 2, 0, 3, 4, 0, 5, 0, 5, 0, 6 };
         }
 
         protected async override Task OnTickAsync()
         {
             result.State = 0;
+            await ClockAsync();
             switch (control.Value)
             {
                 case 0:
@@ -371,8 +420,11 @@ namespace StateMachineTester
                     await ClockAsync();
                     result.State = 4;
                     break;
-                default:
+                case 2:
                     result.State = 5;
+                    break;
+                default:
+                    result.State = 6;
                     break;
             }
         }
