@@ -271,75 +271,36 @@ namespace SME.AST.Transform
         private int SplitStatement(WhileStatement statement, List<Statement> collected, List<List<Statement>> fragments)
         {
             if (!AllBranchesHasAwait(statement.Body))
-                throw new WhileWithoutAwaitException($"Cannot process a while statement without await calls in the body. Note: for loops are transformed into while loops. Note note: All branches must have an await call.");
+                throw new WhileWithoutAwaitException(
+                    $"Cannot process a while statement without await calls in the body. Note: for loops are transformed into while loops. Note note: All branches must have an await call.");
 
             EndFragment(collected, fragments, fragments.Count + 1, true);
             var selflabel = fragments.Count;
 
-            var ifs = new IfElseStatement(statement.Condition, statement.Body, new EmptyStatement()) { Parent = statement.Parent };
+            var ifs = new IfElseStatement(statement.Condition, 
+                statement.Body, new EmptyStatement()) 
+                { Parent = statement.Parent };
             ifs.UpdateParents();
 
             var rewired = SplitStatement(ifs, collected, fragments);
             var trailfragment = fragments.Last();
             var exitlabel = fragments.Count;
 
-            // If the while loop ends with await, we can just re-wire the last label
-            if (trailfragment.Count == 1 && trailfragment.First() is IfElseStatement && ((IfElseStatement)trailfragment.First()).Condition == statement.Condition)
+            for (int i = selflabel+1; i < fragments.Count; i++) 
             {
-                foreach (var s in fragments.Last().SelectMany(x => x.All().OfType<CaseGotoStatement>()).Where(x => x.CaseLabel == exitlabel && !x.FallThrough))
-                    s.CaseLabel = selflabel;
+                fragments[i]
+                    .SelectMany(x => x.All())
+                    .OfType<CaseGotoStatement>()
+                    .Select(x => x.CaseLabel = x.CaseLabel == exitlabel ? selflabel : x.CaseLabel)
+                    .ToList();
             }
-            else
-            {
-                // If we have additional code after the await, 
-                // we need to move the last fragment up before the while loop,
-                // so the code can fall-through, into the while loop
-                foreach (var s in fragments.SelectMany(x => x).SelectMany(x => x.All().OfType<CaseGotoStatement>()))
-                {
-                    if (s.CaseLabel == exitlabel)
-                    {
-                        // Inject the loop redirect to the loop start,
-                        // but don't redirect the loop exit
-
-                        // NOTE: Does not work if the loop has continue statements
-                        // which is currently not supported
-                        if (s == trailfragment.Last())
-                            s.CaseLabel = selflabel + 1;
-                    }
-                    // Point the last fragment upwards before the loop
-                    else if (s.CaseLabel == fragments.Count - 1)
-                        s.CaseLabel = selflabel;
-                    // Point downwards, skipping the injected state
-                    else if (s.CaseLabel >= selflabel)
-                        s.CaseLabel = s.CaseLabel + 1;
-                }
-                            
-                // Move the fragments around
-                fragments.RemoveAt(fragments.Count - 1);
-                fragments.Insert(selflabel, trailfragment);
-            }
+            ifs.FalseStatement = new CaseGotoStatement(exitlabel, true);
+            ifs.UpdateParents();
 
             // Cannot fallthrough backwards through states. Copy state machine, where this occurs
-            for (int i = 0; i < fragments.Count; i++)
-            {
-                var cases = fragments[i].SelectMany(x => 
-                    x.All()
-                        .OfType<CaseGotoStatement>()
-                        .Where(y => y.FallThrough && y.CaseLabel < i));
-                while (cases.Any())
-                {
-                    cases = cases.SelectMany(
-                        x => 
-                        { // TODO crash med at parent bliver null? 
-                            x.ReplaceWith(new BlockStatement(fragments[x.CaseLabel].ToArray(), null));
-                            return fragments[x.CaseLabel].SelectMany(y => 
-                                y.All()
-                                    .OfType<CaseGotoStatement>()
-                                    .Where(z => z.FallThrough && z.CaseLabel < i));
-                        }
-                    );
-                }
-            }
+            for (int i = selflabel; i < fragments.Count; i++)
+                fragments[i] = fragments[i].Select(x => 
+                    ReplaceBackGotoStatements(fragments, x, i, i)).ToList();
 
             return fragments.Count - selflabel;
         }
@@ -552,6 +513,54 @@ namespace SME.AST.Transform
                 );
             }
 
+            return statement;
+        }
+
+        private Statement ReplaceBackGotoStatements(List<List<Statement>> fragments, Statement statement, int start, int current)
+        { 
+            switch (statement)
+            {
+                case BlockStatement s:
+                    s.Statements = s.Statements.Select(x => 
+                        ReplaceBackGotoStatements(fragments, x, start, current))
+                        .ToArray();
+                    return s;
+                case CaseGotoStatement s:
+                    // Do not inject if it tries to go to itself
+                    if (s.FallThrough && (s.CaseLabel == current || s.CaseLabel == start)) 
+                    {
+                        return new CommentStatement($"FSM_RunState := State{s.CaseLabel}") { Parent = s.Parent };
+                    }
+                    // Only inject when it is a back jump
+                    if (s.FallThrough && s.CaseLabel < start)
+                    {
+                        var statements = new List<Statement>();
+                        statements.Add(new CommentStatement($"FSM_RunState := State{s.CaseLabel}"));
+                        statements.AddRange(fragments[s.CaseLabel].Select(x => x.Clone()));
+                        var inject = ToBlockStatement(statements);
+                        inject.Parent = s.Parent;
+                        inject.UpdateParents();
+                        inject = ReplaceBackGotoStatements(fragments, inject, start, s.CaseLabel);
+                        return inject;
+                    }
+                    break;
+                case IfElseStatement s:
+                    s.TrueStatement = ReplaceBackGotoStatements(fragments, s.TrueStatement, start, current);
+                    s.FalseStatement = ReplaceBackGotoStatements(fragments, s.FalseStatement, start, current);
+                    return s;
+                case SwitchStatement s:
+                    s.Cases = s.Cases.Select(tuple =>
+                    {
+                        var t = new Tuple<Expression[], Statement[]>(
+                            tuple.Item1,
+                            tuple.Item2.Select(x => 
+                                ReplaceBackGotoStatements(fragments, x, start, current))
+                                .ToArray());
+                        return t;
+                    }).ToArray();
+                    s.UpdateParents();
+                    return s;
+            }
             return statement;
         }
 
