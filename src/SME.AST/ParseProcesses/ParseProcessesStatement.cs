@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using ICSharpCode.Decompiler;
@@ -223,7 +223,13 @@ namespace SME.AST
 		{
 			var s = new SwitchStatement()
 			{
-				Parent = method
+				Parent = method,
+				// Default expression is a null expression
+				HasDefault = statement.SwitchSections
+					.SelectMany(x => 
+						x.CaseLabels.Select(y => 
+							y.Expression.IsNull))
+					.Contains(true)
 			};
 
 			s.SwitchExpression = Decompile(network, proc, method, s, statement.Expression);

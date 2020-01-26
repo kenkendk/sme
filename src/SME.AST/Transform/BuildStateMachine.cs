@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -27,7 +27,7 @@ namespace SME.AST.Transform
                 case ExpressionStatement s: return s.Expression is AwaitExpression;
                 //case ForStatement s:        return AllBranchesHasAwait(s.LoopBody); // TODO check if empty range?
                 case IfElseStatement s:     return AllBranchesHasAwait(s.TrueStatement) && AllBranchesHasAwait(s.FalseStatement);
-                case SwitchStatement s:     return s.Cases.Select(x => x.Item2).All(x => x.Select(y => AllBranchesHasAwait(y)).Any());
+                case SwitchStatement s:     return s.HasDefault && s.Cases.Select(x => x.Item2).All(x => x.Select(y => AllBranchesHasAwait(y)).Contains(true));
                 default:                    return false;
             }
         }

@@ -140,6 +140,11 @@ namespace SME.AST
 		public Tuple<Expression[], Statement[]>[] Cases;
 
         /// <summary>
+        /// States whether or not the SwitchStatement contains a default: case
+        /// </summary>
+        public bool HasDefault;
+
+        /// <summary>
         /// Default constructor
         /// </summary>
         public SwitchStatement()
