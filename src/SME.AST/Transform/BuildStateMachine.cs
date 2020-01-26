@@ -205,70 +205,42 @@ namespace SME.AST.Transform
                 return 0;
             }
 
+            // Build the if statement with the condition
             var conditionlabel = fragments.Count;
-            EndFragment(collected, fragments, fragments.Count + 1, true);
-
-            var ifs = new IfElseStatement(statement.Condition, new EmptyStatement(), new EmptyStatement());
+            var cnd = statement.Condition.Clone();
+            var ifs = new IfElseStatement(cnd, new EmptyStatement(), new EmptyStatement());
             collected.Add(ifs);
-
             EndFragment(collected, fragments, -1, true);
 
+            // Build the 'true' branch
             var truelabel = fragments.Count;
-            var truestatements = SplitStatement(statement.TrueStatement, collected, fragments);
-
+            var true_count = SplitStatement(statement.TrueStatement, collected, fragments);
             EndFragment(collected, fragments, fragments.Count + 1, true);
+
+            // Build the 'false' branch - if any
             var falselabel = fragments.Count;
-
-            if (statement.FalseStatement is EmptyStatement)
-            {
-                // Move all targets one up, as we remove an empty case
-                for (var i = truelabel; i < falselabel; i++)
-                    foreach (var c in fragments[i])
-                        foreach (var cx in c.All().OfType<CaseGotoStatement>())
-                            cx.CaseLabel = cx.CaseLabel - 1;
-
-                ifs.TrueStatement = ToBlockStatement(fragments[truelabel]);
-                ifs.FalseStatement = new CaseGotoStatement(falselabel - 1, true);
-                ifs.UpdateParents();
-
-                fragments.RemoveAt(truelabel);
-            }
+            var false_count = SplitStatement(statement.FalseStatement, collected, fragments);
+            if (false_count == 0)
+                collected.Clear();
             else
             {
-                // Keep a list of all targets that point out of the current block
-                var topatch = new List<CaseGotoStatement>();
-                for (var i = truelabel; i < fragments.Count; i++)
-                    foreach (var c in fragments[i])
-                        foreach (var cx in c.All().OfType<CaseGotoStatement>())
-                            if (cx.CaseLabel == fragments.Count)
-                                topatch.Add(cx);
-
-                var falsestatements = SplitStatement(statement.FalseStatement, collected, fragments);
                 EndFragment(collected, fragments, fragments.Count + 1, true);
-                var endlabel = fragments.Count;
-
-                // Move all targets up, as we remove two fragments
-                // (the inital fragments for true/false are embedded in
-                //   the if-else-statement )
-                for (var i = truelabel; i < fragments.Count; i++)
-                    foreach (var c in fragments[i])
-                        foreach (var cx in c.All().OfType<CaseGotoStatement>())
-                            cx.CaseLabel = cx.CaseLabel - (i >= falselabel ? 2 : 1);
-
-                // Fix those that point to the next instruction,
-                // so they skip the false fragments
-                foreach (var s in topatch)
-                    s.CaseLabel = endlabel - 2;
-
-                ifs.TrueStatement = ToBlockStatement(fragments[truelabel]);
-                ifs.FalseStatement = ToBlockStatement(fragments[falselabel]);
-                ifs.UpdateParents();
-
-                fragments.RemoveAt(falselabel);
-                fragments.RemoveAt(truelabel);
+                // Update all the CaseGotoStatements in the true branch, to point to after the false branch
+                for (int i = truelabel; i < falselabel; i++)
+                    fragments[i].SelectMany(x => 
+                            x.All()
+                                .OfType<CaseGotoStatement>()
+                                .Where(y => y.CaseLabel == falselabel)
+                        )
+                        .Select(x => x.CaseLabel = fragments.Count)
+                        .ToList();
             }
 
+            // Set the initial if statement to point to the two new branches
+            ifs.TrueStatement = new CaseGotoStatement(truelabel, true);
+            ifs.FalseStatement = new CaseGotoStatement(falselabel, true);
             ifs.UpdateParents();
+            
             return fragments.Count - conditionlabel;                
         }
 
