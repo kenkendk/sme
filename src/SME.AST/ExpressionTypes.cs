@@ -17,6 +17,11 @@ namespace SME.AST
         /// The source result type 
         /// </summary>
         public Mono.Cecil.TypeReference SourceResultType;
+
+        /// <summary>
+        /// Returns a string representation of the Expression
+        /// </summary>
+        public abstract override string ToString();
     }
 
     /// <summary>
@@ -61,6 +66,11 @@ namespace SME.AST
         /// Gets the target for the item or null
         /// </summary>
         public abstract DataElement GetTarget();
+
+        /// <summary>
+        /// Returns a string representation of the Expression
+        /// </summary>
+        public abstract override string ToString();
     }
 
     /// <summary>
@@ -69,6 +79,14 @@ namespace SME.AST
     public abstract class WrappingExpression : Expression
     {
         public Expression Expression;
+
+        /// <summary>
+        /// Returns a string representation of the Expression
+        /// </summary>
+        public override string ToString()
+        {
+            return Expression.ToString();
+        }
     }
 
     /// <summary>
@@ -98,6 +116,20 @@ namespace SME.AST
             foreach (var e in this.ElementExpressions ?? new Expression[0])
                 e.Parent = this;
         }
+
+        /// <summary>
+        /// Returns a string representation of the Expression
+        /// </summary>
+        public override string ToString()
+        {
+            string tmp = "";
+            for (int i = 0; i < ElementExpressions.Length; i++)
+            {
+                tmp += i > 0 ? ", " : "";
+                tmp += ElementExpressions[i].ToString();
+            }
+            return $"[{tmp}]";
+        }
     }
 
     /// <summary>
@@ -125,7 +157,15 @@ namespace SME.AST
         {
             this.SizeExpression = SizeExpression;
             this.SizeExpression.Parent = this;
-        }    
+        }
+        
+        /// <summary>
+        /// Returns a string representation of the Expression
+        /// </summary>
+        public override string ToString()
+        {
+            return $"[{SizeExpression.ToString()}]";
+        }
     }
 
 
@@ -181,6 +221,14 @@ namespace SME.AST
             : this(left, ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType.Assign, right)
         {
         }
+
+        /// <summary>
+        /// Returns a string representation of the Expression
+        /// </summary>
+        public override string ToString()
+        {
+            return $"{Left.ToString()} = {Right.ToString()}";
+        }
     }
 
     /// <summary>
@@ -223,6 +271,14 @@ namespace SME.AST
             this.Left.Parent = this;
             this.Right.Parent = this;
         }
+
+        /// <summary>
+        /// Returns a string representation of the Expression
+        /// </summary>
+        public override string ToString()
+        {
+            return $"{Left.ToString()} {Operator.ToString()} {Right.ToString()}";
+        }
     }
 
     /// <summary>
@@ -247,6 +303,14 @@ namespace SME.AST
             this.SourceResultType = this.Expression.SourceResultType;
             this.Expression.Parent = this;
         }
+
+        /// <summary>
+        /// Returns a string representation of the Expression
+        /// </summary>
+        public override string ToString()
+        {
+            return $"({SourceResultType.ToString()}){Expression.ToString()}";
+        }
     }
 
     /// <summary>
@@ -270,6 +334,14 @@ namespace SME.AST
             this.Expression = source;
             this.SourceResultType = this.Expression.SourceResultType;
             this.Expression.Parent = this;
+        }
+
+        /// <summary>
+        /// Returns a string representation of the Expression
+        /// </summary>
+        public override string ToString()
+        {
+            return $"checked({Expression.ToString()})";
         }
     }
 
@@ -311,6 +383,14 @@ namespace SME.AST
             this.FalseExpression = falseExpression;
             this.SourceResultType = trueExpression is EmptyExpression ? falseExpression.SourceResultType : trueExpression.SourceResultType;
         }
+
+        /// <summary>
+        /// Returns a string representation of the Expression
+        /// </summary>
+        public override string ToString()
+        {
+            return $"{ConditionExpression.ToString()} ? {TrueExpression.ToString()} : {FalseExpression.ToString()}";
+        }
     }
 
     /// <summary>
@@ -318,6 +398,13 @@ namespace SME.AST
     /// </summary>
     public partial class EmptyExpression : Expression
     {
+        /// <summary>
+        /// Returns a string representation of the Expression
+        /// </summary>
+        public override string ToString()
+        {
+            return "";
+        }
     }
 
     /// <summary>
@@ -345,7 +432,16 @@ namespace SME.AST
         {
             this.Target = target;
             this.SourceResultType = target.CecilType;
+            this.Name = target.Name;
         }    
+
+        /// <summary>
+        /// Returns a string representation of the Expression
+        /// </summary>
+        public override string ToString()
+        {
+            return Name;
+        }
     }
 
     /// <summary>
@@ -387,6 +483,14 @@ namespace SME.AST
             this.SourceResultType = targetExpression.SourceResultType.GetArrayElementType();
             this.TargetExpression.Parent = this;
             this.IndexExpression.Parent = this;
+        }
+
+        /// <summary>
+        /// Returns a string representation of the Expression
+        /// </summary>
+        public override string ToString()
+        {
+            return $"{TargetExpression.ToString()}[{IndexExpression.ToString()}]";
         }
     }
 
@@ -435,6 +539,20 @@ namespace SME.AST
             foreach (var e in this.ArgumentExpressions ?? new Expression[0])
                 e.Parent = this;
         }
+
+        /// <summary>
+        /// Returns a string representation of the Expression
+        /// </summary>
+        public override string ToString()
+        {
+            var args = "";
+            for (int i = 0; i < ArgumentExpressions.Length; i++)
+            {
+                args += i > 0 ? ", " : "";
+                args += ArgumentExpressions[i].ToString();
+            }
+            return $"{Target.Name}({args})";
+        }
     }
 
     /// <summary>
@@ -462,6 +580,14 @@ namespace SME.AST
         {
             this.Target = target;
             this.SourceResultType = target.CecilType;
+        }
+
+        /// <summary>
+        /// Returns a string representation of the Expression
+        /// </summary>
+        public override string ToString()
+        {
+            return Target.Name;
         }
     }
 
@@ -494,6 +620,14 @@ namespace SME.AST
             else
                 this.SourceResultType = target.SourceMethod.ReturnType;
         }
+
+        /// <summary>
+        /// Returns a string representation of the Expression
+        /// </summary>
+        public override string ToString()
+        {
+            return Target.Name;
+        }
     }
 
     /// <summary>
@@ -517,6 +651,14 @@ namespace SME.AST
             this.Expression = target;
             this.SourceResultType = this.Expression.SourceResultType;
             this.Expression.Parent = this;
+        }
+
+        /// <summary>
+        /// Returns a string representation of the Expression
+        /// </summary>
+        public override string ToString()
+        {
+            return $"({Expression.ToString()})";
         }
     }
 
@@ -548,6 +690,15 @@ namespace SME.AST
             this.SourceResultType = sourcetype;
             if (sourcetype == null)
                 throw new ArgumentNullException(nameof(sourcetype));
+            this.Name = value.ToString();
+        }
+
+        /// <summary>
+        /// Returns a string representation of the Expression
+        /// </summary>
+        public override string ToString()
+        {
+            return Value.ToString();
         }
     }
 
@@ -583,7 +734,15 @@ namespace SME.AST
             this.Operand = operand;
             this.SourceResultType = this.Operand.SourceResultType;
             this.Operand.Parent = this;
-        }    
+        }
+
+        /// <summary>
+        /// Returns a string representation of the Expression
+        /// </summary>
+        public override string ToString()
+        {
+            return $"{Operator.ToString()}{Operand.ToString()}";
+        }
     }
 
     /// <summary>
@@ -608,6 +767,14 @@ namespace SME.AST
             this.SourceResultType = this.Expression.SourceResultType;
             this.Expression.Parent = this;
         }
+
+        /// <summary>
+        /// Returns a string representation of the Expression
+        /// </summary>
+        public override string ToString()
+        {
+            return $"unchecked({Expression.ToString()})";
+        }
     }
 
     /// <summary>
@@ -615,6 +782,13 @@ namespace SME.AST
     /// </summary>
     public class NullReferenceExpression : Expression
     {
+        /// <summary>
+        /// Returns a string representation of the Expression
+        /// </summary>
+        public override string ToString()
+        {
+            return "null";
+        }
     }
 
     /// <summary>
@@ -639,6 +813,14 @@ namespace SME.AST
         public AwaitExpression(Expression expression) 
         {
             Expression = expression;    
+        }
+
+        /// <summary>
+        /// Returns a string representation of the Expression
+        /// </summary>
+        public override string ToString()
+        {
+            return $"await {Expression.ToString()}";
         }
     }
 

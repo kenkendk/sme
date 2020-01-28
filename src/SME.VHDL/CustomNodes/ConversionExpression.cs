@@ -42,5 +42,13 @@ namespace SME.VHDL.CustomNodes
 		{
             return Expression.GetTarget();
 		}
+
+		/// <summary>
+        /// Returns a string representation of the Expression
+        /// </summary>
+		public override string ToString()
+		{
+			return Expression.ToString();
+		}
 	}
 }
