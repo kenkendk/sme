@@ -72,7 +72,7 @@ namespace SME
                 // aka explicit interface implementation in C#
                 //
                 // The proxy does not have IRuntimeBus properties itself, so these properties cannot be 
-                // directly accessed on the proxy instnace, and cannot be found via reflection.
+                // directly accessed on the proxy instance, and cannot be found via reflection.
                 // But when the proxy is cast as a IRuntimeBus, the properties can be accessed
                 // as the getter/setter methods are wired correctly.
                 // Because of this, we do not need explict handling of properties, we can
