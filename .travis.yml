@@ -5,6 +5,7 @@ mono: none
 dotnet: 3.1
 services: docker
 before_install:
+  - sudo apt install libc6-dev libgdiplus
   - docker pull ghdl/ghdl:ubuntu18-mcode
 install:
   - dotnet restore src/SME.sln
