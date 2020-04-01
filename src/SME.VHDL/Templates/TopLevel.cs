@@ -1014,77 +1014,17 @@ foreach (var bus in tmps)
             
             #line 175 ""
      } else { 
-            
-            #line default
-            #line hidden
-            
-            #line 176 ""
-            this.Write("    -- Setup the RDY signal for ");
-            
-            #line default
-            #line hidden
-            
-            #line 176 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( p.InstanceName ));
-            
-            #line default
-            #line hidden
-            
-            #line 176 ""
-            this.Write("\n    process(\n      ");
-            
-            #line default
-            #line hidden
-            
-            #line 178 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( string.Join(", " + Environment.NewLine + "      ", parents.Select(x => string.Format(Naming.ToValidName("FIN_" + x)))) ));
-            
-            #line default
-            #line hidden
-            
-            #line 178 ""
-            this.Write("\n    )\n    begin\n      if ");
-            
-            #line default
-            #line hidden
-            
-            #line 181 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( string.Join(" AND ", parents.Skip(1).Select(x => string.Format("{0} = {1}", Naming.ToValidName("FIN_" + parents.First()), Naming.ToValidName("FIN_" + x)))) ));
-            
-            #line default
-            #line hidden
-            
-            #line 181 ""
-            this.Write(" then\n        ");
-            
-            #line default
-            #line hidden
-            
-            #line 182 ""
+            // TODO underlig fejl med guards der ikke virker
+            this.Write("    ");
             this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("RDY_" + p.InstanceName) ));
-            
-            #line default
-            #line hidden
-            
-            #line 182 ""
             this.Write(" <= ");
+            // TODO underlig fejl med guards der ikke virker
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("FIN_" + parents.First())));
+            this.Write(" when ");
+            // TODO parents.SkipLast(1) is not supported in old dotnet core, which travis is running. Using Take(Length-1) instead
+            this.Write(this.ToStringHelper.ToStringWithCulture( string.Join(" AND ", parents.Skip(1).Zip(parents.Take(parents.Length-1), (a, b) => Naming.ToValidName("FIN_" + a) + " = " + Naming.ToValidName("FIN_" + b)) )));
+            this.Write(";\n");
             
-            #line default
-            #line hidden
-            
-            #line 182 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("FIN_" + parents.First()) ));
-            
-            #line default
-            #line hidden
-            
-            #line 182 ""
-            this.Write(";\n      end if;\n    end process;\n");
-            
-            #line default
-            #line hidden
-            
-            #line 185 ""
      } 
             
             #line default
@@ -1128,53 +1068,13 @@ foreach (var bus in tmps)
             
             #line 191 ""
  } else { 
-            
-            #line default
-            #line hidden
-            
-            #line 192 ""
-            this.Write("    process(\n      ");
-            
-            #line default
-            #line hidden
-            
-            #line 193 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( string.Join(", " + Environment.NewLine + "      ", processes.Select(x => Naming.ToValidName("FIN_" + x.InstanceName))) ));
-            
-            #line default
-            #line hidden
-            
-            #line 193 ""
-            this.Write("\n    )\n    begin\n      if ");
-            
-            #line default
-            #line hidden
-            
-            #line 196 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( string.Join(" AND ", processes.Skip(1).Select(x => string.Format("{0} = {1}", Naming.ToValidName("FIN_" + processes.First().InstanceName), Naming.ToValidName("FIN_" + x.InstanceName)))) ));
-            
-            #line default
-            #line hidden
-            
-            #line 196 ""
-            this.Write(" then\n        FIN <= ");
-            
-            #line default
-            #line hidden
-            
-            #line 197 ""
-            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("FIN_" + processes.First().InstanceName) ));
-            
-            #line default
-            #line hidden
-            
-            #line 197 ""
-            this.Write(";\n      end if;\n    end process;\n");
-            
-            #line default
-            #line hidden
-            
-            #line 200 ""
+     // TODO underlig fejl med guards der ikke virker
+            this.Write("    FIN <= ");
+            this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ToValidName("FIN_" + processes.First().InstanceName)));
+            this.Write(" when ");
+            // TODO processes.SkipLast(1) is not supported in old dotnet core, which travis is running. Using Take(Count-1) instead
+            this.Write(this.ToStringHelper.ToStringWithCulture( string.Join(" AND ", processes.Skip(1).Zip(processes.Take(processes.Count()-1), (a, b) => Naming.ToValidName($"FIN_{a.InstanceName}") + " = " + Naming.ToValidName($"FIN_{b.InstanceName}")) )));
+            this.Write(";\n");
  } 
             
             #line default
