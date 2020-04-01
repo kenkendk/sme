@@ -30,8 +30,8 @@ namespace UnitTest
 
             if (runGhdl)
             {
-                var vhdlfolder = Path.Combine(targetfolder, "output", "vhdl");
-                if (RunExternalProgram("make", "all", vhdlfolder) != 0)
+                var vhdlfolder = Path.Combine(targetfolder, "output");
+                if (RunExternalProgram("docker", $"run -t -v {vhdlfolder}:/mnt/data ghdl/ghdl:ubuntu18-mcode /bin/bash -c \"cd /mnt/data/vhdl; make; ret=$?; rm -r work; exit $ret\"", targetfolder) != 0)
                     throw new Exception($"Failed to run VHDL for {programname}");
             }
 
