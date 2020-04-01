@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -64,6 +64,16 @@ namespace SME
 		private TaskCompletionSource<bool> m_inputready = new TaskCompletionSource<bool>();
 
 		/// <summary>
+		/// The processready task.
+		/// </summary>
+		private TaskCompletionSource<bool> m_procready = new TaskCompletionSource<bool>();
+
+		/// <summary>
+		/// The finished task
+		/// </summary>
+		private TaskCompletionSource<bool> m_finished = new TaskCompletionSource<bool>();
+
+		/// <summary>
 		/// Flag indicating if the process produces debug output
 		/// </summary>
 		protected bool DebugOutput;
@@ -75,14 +85,49 @@ namespace SME
         string IProcess.Name { get { return null; } }
 
 		/// <summary>
+		/// Resets the inputready task.
+		/// </summary>
+		Task IProcess.ResetInputReady()
+		{
+			var task = System.Threading.Interlocked.Exchange(ref m_inputready, new TaskCompletionSource<bool>());
+			var res = task.Task.ContinueWith(x => { });
+			return res;
+		}
+
+		/// <summary>
 		/// Signals the input is ready, allowing all waiters to procceed.
 		/// </summary>
 		Task IProcess.SignalInputReady()
 		{
-			var task = System.Threading.Interlocked.Exchange(ref m_inputready, new TaskCompletionSource<bool>());
+			m_inputready.SetResult(true);
+			return m_inputready.Task.ContinueWith(x => { });
+		}
+
+		/// <summary>
+		/// Resets the processready task
+		/// </summary>
+		Task IProcess.ResetProcessReady()
+		{	
+			var task = new TaskCompletionSource<bool>();
+			System.Threading.Interlocked.Exchange(ref m_procready, task);
 			var res = task.Task.ContinueWith(x => { });
-			task.SetResult(true);
 			return res;
+		}
+
+		/// <summary>
+		/// Gets the processready task
+		/// </summary>
+		Task IProcess.ProcessReady()
+		{
+			return m_procready.Task.ContinueWith(x => { });
+		}
+
+		/// <summary>
+		/// Signals the process is ready, allowing all waiters to procceed.
+		/// </summary>
+		void SignalProcessReady()
+		{
+			m_procready.SetResult(true);
 		}
 
 		/// <summary>
@@ -194,9 +239,26 @@ namespace SME
 		/// </summary>
 		/// <returns>The async awaitable task.</returns>
 		public async Task ClockAsync()
-		{			
+		{
+			SignalProcessReady();
 			await m_clock.WaitAsync();
 			await m_inputready.Task;
+		}
+
+		/// <summary>
+		/// Returns an awaitable task indicating that the process has finished
+		/// </summary>
+		Task IProcess.Finished()
+		{
+			return m_finished.Task;
+		}
+
+		/// <summary>
+		/// Method to be called after Run()
+		/// </summary>
+		void IProcess.SignalFinished()
+		{
+			m_finished.SetResult(true);
 		}
 
 		/// <summary>

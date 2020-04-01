@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -274,7 +274,7 @@ namespace SME
             foreach (var p in m_processes.Values.Select(x => x.Instance).OfType<Process>())
                 p.LoadBusMapsIfRequired();
 
-            // Assign unique names to processes if there are multiple instances
+            // Assign unique names to busses if there are multiple instances
             var busmap = new Dictionary<Type, List<IRuntimeBus>>();
             foreach (var b in m_processes.Values.Select(x => x.Instance).SelectMany(x => x.InputBusses.Concat(x.OutputBusses).Concat(x.InternalBusses).Concat(x.ClockedInputBusses)).Distinct())
             {
@@ -328,7 +328,7 @@ namespace SME
                         SME.Loader.AutoloadBusses(x);
                         return new
                         {
-                            Task = x.Run(),
+                            Task = x.Run().ContinueWith(y => x.SignalFinished()),
                             Proc = x,
                             HasOutputs = x.OutputBusses.Any()
                         };

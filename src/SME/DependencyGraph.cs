@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace SME
 {
@@ -18,6 +19,9 @@ namespace SME
 			INode[] Children { get; }
 			IProcess Item { get; }
             IRuntimeBus[] PropagateAfter { get; }
+			bool Fired { get; set; }
+			int InputsReady { get; set; }
+			void Reset();
 		}
 
 		/// <summary>
@@ -29,6 +33,8 @@ namespace SME
 			public Node[] Children = new Node[0];
 			public readonly IProcess Item;
 			public IRuntimeBus[] PropagateAfter = new IRuntimeBus[0];
+			public bool Fired { get; set; } = false;
+			public int InputsReady { get; set; } = 0;
 
 			public Node(IProcess component)
 			{
@@ -88,6 +94,12 @@ namespace SME
 				return false;
 			}
 
+			public void Reset()
+			{
+				Fired = false;
+				InputsReady = 0;
+			}
+
 			#region INode implementation
 
 			INode[] INode.Parents { get { return Parents.Cast<INode>().ToArray(); } }
@@ -98,6 +110,7 @@ namespace SME
 			#endregion
 		}
 
+		/// TODO lave kombinatoriske processer? så man har clockede, ikke clockede og kombinatoriske
 		/// <summary>
 		/// The order in which the processes are told to continue
 		/// </summary>
@@ -270,59 +283,89 @@ namespace SME
 		/// </summary>
 		public void Execute()
 		{
-            var clock = Scope.Current.Clock;			
+			var clock = Scope.Current.Clock;
             clock.Tick();
 
             m_pretickcallback?.Invoke(this);
 
-            // Start by propagating all tasks
-            System.Threading.Tasks.Task.WhenAll(
-                m_executionPlan
-                .Select(x => x.Item)
-                .Where(x => x.IsClockedProcess)
-                .Select(x => x.SignalInputReady()))
-            .Wait();
+			// Start by triggering clocked processes
+			var next = m_executionPlan
+				.Where(x => x.Item.IsClockedProcess)
+				.ToArray();
+			var first = true;
+			do {
+				// Reset and get a new processready task
+				var outputready_or_done = 
+					next
+						.Select(x => Task.WhenAny(
+							x.Item.ResetProcessReady(),
+							x.Item.Finished()
+						))
+						.ToArray();
 
-            // Then forward all busses
-            foreach (var b in m_clockedBusses.Where(x => x.Clock == clock))
-                b.Propagate();
+				// Trigger the processes
+				 Task.WhenAll(
+					next.Select(x => x.Item.SignalInputReady())
+				).Wait();
 
-            m_clocktickcallback?.Invoke(this);
+				// Wait for the processes to be ready again, or for them to finish
+				Task.WhenAll(outputready_or_done).Wait();
 
-			foreach (var n in m_executionPlan)
-			{
-                if (!n.Item.IsClockedProcess)
-				    n.Item.SignalInputReady().Wait();
+				// Reset the inputready tasks
+				Task.WhenAll(
+					next.Select(x => x.Item.ResetInputReady())
+				).Wait();
 
-				foreach (var b in n.Item.InputBusses.Where(x => !n.Item.OutputBusses.Contains(x)))
-					if (b.AnyStaged())
-						throw new Exception(string.Format("Process {0} has written the input bus {1}", n.Item.GetType().FullName, b.BusType.FullName));
-
-				if (n.Item.GetType().GetCustomAttributes(typeof(ClockedProcessAttribute), true).FirstOrDefault() == null)
+				// After triggering the clocked processes, we need to trigger
+				// all of the clocked buses
+				if (first)
 				{
-					foreach (var b in n.Item.OutputBusses)
-						if (b.NonStaged().Any())
-						{
-							var key = n.Item.GetType().FullName + ":" + b.BusType.FullName;
-							if (!m_warnedLatches.ContainsKey(key))
-							{
-								Console.WriteLine("Some signals were not written to bus {1} by {0} during the execution, this will lead to latches in the design: {2}", n.Item.GetType().FullName, b.BusType.FullName, string.Join(", ", b.NonStaged()));
-								m_warnedLatches[key] = null;
-							}
-						}
+					foreach (var b in m_clockedBusses.Where(x => x.Clock == clock))
+                		b.Propagate();
+					m_clocktickcallback?.Invoke(this);
+					first = false;
 				}
 
-				foreach (var b in n.Item.OutputBusses)
-					b.Forward();
+				// TODO husk at tjek om alt er blevet skrevet!
+				foreach (var node in next)
+				{
+					// Propegate the buses
+					foreach (var b in node.Item.OutputBusses)
+						b.Forward();
+					foreach (var b in node.PropagateAfter)
+						b.Propagate();
+					foreach (var b in node.Item.InternalBusses)
+						b.Propagate();
 					
-				foreach (var b in n.PropagateAfter)
-					b.Propagate();
-				foreach (var b in n.Item.InternalBusses)
-					b.Propagate();
+					// Update the graph
+					node.Fired = true;
+					foreach (var child in node.Children)
+						child.InputsReady++;
+				}
 
-			}
+				// Find the next candidates
+				next = m_executionPlan
+					.Where(x => !x.Fired && x.InputsReady == x.Parents.Length)
+					.ToArray();
+			} while (next.Any());
 
-            m_posttickcallback?.Invoke(this);
+			// Verify that all the processes fired
+			if (!m_executionPlan.All(x => x.Fired))
+				throw new Exception(
+					string.Format("Every process did not trigger: {0}", 
+						string.Join(", ", 
+							m_executionPlan
+								.Where(x => !x.Fired)
+								.Select(x => x.Item.GetType().FullName)
+						)
+					)
+				);
+			
+			// Reset the graph
+			foreach (var node in m_executionPlan)
+				node.Reset();
+
+			m_posttickcallback?.Invoke(this);
 		}
 	}
 }
