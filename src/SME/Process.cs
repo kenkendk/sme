@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -35,22 +35,22 @@ namespace SME
         /// Gets the clocked input busses.
         /// </summary>
         /// <value>The input busses.</value>
-        IRuntimeBus[] IProcess.ClockedInputBusses { get { LoadBusMapsIfRequired(); return m_clockedinputbusses; } }
+        IRuntimeBus[] IProcess.ClockedInputBusses { get { return m_clockedinputbusses; } }
         /// <summary>
         /// Gets the input busses.
         /// </summary>
         /// <value>The input busses.</value>
-        IRuntimeBus[] IProcess.InputBusses { get { LoadBusMapsIfRequired(); return m_inputbusses; } }
+        IRuntimeBus[] IProcess.InputBusses { get { return m_inputbusses; } }
         /// <summary>
         /// Gets the output busses.
         /// </summary>
         /// <value>The output busses.</value>
-        IRuntimeBus[] IProcess.OutputBusses { get { LoadBusMapsIfRequired(); return m_outputbusses; } }
+        IRuntimeBus[] IProcess.OutputBusses { get { return m_outputbusses; } }
         /// <summary>
         /// Gets the output busses.
         /// </summary>
         /// <value>The output busses.</value>
-        IRuntimeBus[] IProcess.InternalBusses { get { LoadBusMapsIfRequired(); return m_internalbusses; } }
+        IRuntimeBus[] IProcess.InternalBusses { get { return m_internalbusses; } }
 
 		/// <summary>
 		/// Gets a value indicating whether this instance is a clocked process.
@@ -99,7 +99,7 @@ namespace SME
 		/// <summary>
 		/// Helper method to refresh the internal list of input and output busses
 		/// </summary>
-		protected void LoadBusMapsIfRequired()
+		public void LoadBusMapsIfRequired()
         {
             if (m_internalbusses == null || m_outputbusses == null || m_inputbusses == null || m_clockedinputbusses == null)
                 ReloadBusMaps();

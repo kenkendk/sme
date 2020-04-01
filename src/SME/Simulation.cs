@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -271,6 +271,8 @@ namespace SME
                 }
             }
 
+            foreach (var p in m_processes.Values.Select(x => x.Instance).OfType<Process>())
+                p.LoadBusMapsIfRequired();
 
             // Assign unique names to processes if there are multiple instances
             var busmap = new Dictionary<Type, List<IRuntimeBus>>();
