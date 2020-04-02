@@ -745,15 +745,12 @@ namespace SME.VHDL
                 CustomEnumValues.TryGetValue(type, out customs);
                 customs = customs ?? new Dictionary<string, object>();
 
-				yield return string.Format(
-					"({0});",
-					string.Join("," + Environment.NewLine + "     ",
-                        td
-                        .Fields
-                        .Where(x => !(x.IsSpecialName || x.IsRuntimeSpecialName)).Select(m => Naming.ToValidName(td.FullName + "_" + m.Name))
-                        .Concat(customs.Keys)
-                    )
-				);
+				var members = td.Fields
+					.Where(x => !(x.IsSpecialName || x.IsRuntimeSpecialName))
+					.Select(m => Naming.ToValidName(td.FullName + "_" + m.Name))
+					.Concat(customs.Keys);
+				foreach (var member in members)
+					yield return member;
 			}
 			else if (td.IsValueType && !td.IsPrimitive)
 			{
