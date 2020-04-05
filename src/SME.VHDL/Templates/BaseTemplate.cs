@@ -30,11 +30,11 @@ namespace SME.VHDL.Templates
         {
             get
             {
-                return this.session;
+                return session;
             }
             set
             {
-                this.session = value;
+                session = value;
             }
         }
 
@@ -42,15 +42,15 @@ namespace SME.VHDL.Templates
         {
             get
             {
-                if ((this.builder == null))
+                if ((builder == null))
                 {
-                    this.builder = new StringBuilder();
+                    builder = new StringBuilder();
                 }
-                return this.builder;
+                return builder;
             }
             set
             {
-                this.builder = value;
+                builder = value;
             }
         }
 
@@ -58,11 +58,11 @@ namespace SME.VHDL.Templates
         {
             get
             {
-                if ((this.errors == null))
+                if ((errors == null))
                 {
-                    this.errors = new CompilerErrorCollection();
+                    errors = new CompilerErrorCollection();
                 }
-                return this.errors;
+                return errors;
             }
         }
 
@@ -70,7 +70,7 @@ namespace SME.VHDL.Templates
         {
             get
             {
-                return this.currentIndent;
+                return currentIndent;
             }
         }
 
@@ -78,11 +78,11 @@ namespace SME.VHDL.Templates
         {
             get
             {
-                if ((this.indents == null))
+                if ((indents == null))
                 {
-                    this.indents = new Stack<int>();
+                    indents = new Stack<int>();
                 }
-                return this.indents;
+                return indents;
             }
         }
 
@@ -90,67 +90,67 @@ namespace SME.VHDL.Templates
         {
             get
             {
-                return this._toStringHelper;
+                return _toStringHelper;
             }
         }
 
         public void Error(string message)
         {
-            this.Errors.Add(new CompilerError(null, -1, -1, null, message));
+            Errors.Add(new CompilerError(null, -1, -1, null, message));
         }
 
         public void Warning(string message)
         {
             CompilerError val = new CompilerError(null, -1, -1, null, message);
             val.IsWarning = true;
-            this.Errors.Add(val);
+            Errors.Add(val);
         }
 
         public string PopIndent()
         {
-            if ((this.Indents.Count == 0))
+            if ((Indents.Count == 0))
             {
                 return string.Empty;
             }
-            int lastPos = (this.currentIndent.Length - this.Indents.Pop());
-            string last = this.currentIndent.Substring(lastPos);
-            this.currentIndent = this.currentIndent.Substring(0, lastPos);
+            int lastPos = (currentIndent.Length - Indents.Pop());
+            string last = currentIndent.Substring(lastPos);
+            currentIndent = currentIndent.Substring(0, lastPos);
             return last;
         }
 
         public void PushIndent(string indent)
         {
-            this.Indents.Push(indent.Length);
-            this.currentIndent = (this.currentIndent + indent);
+            Indents.Push(indent.Length);
+            currentIndent = (currentIndent + indent);
         }
 
         public void ClearIndent()
         {
-            this.currentIndent = string.Empty;
-            this.Indents.Clear();
+            currentIndent = string.Empty;
+            Indents.Clear();
         }
 
         public void Write(string textToAppend)
         {
-            this.GenerationEnvironment.Append(textToAppend);
+            GenerationEnvironment.Append(textToAppend);
         }
 
         public void Write(string format, params object[] args)
         {
-            this.GenerationEnvironment.AppendFormat(format, args);
+            GenerationEnvironment.AppendFormat(format, args);
         }
 
         public void WriteLine(string textToAppend)
         {
-            this.GenerationEnvironment.Append(this.currentIndent);
-            this.GenerationEnvironment.AppendLine(textToAppend);
+            GenerationEnvironment.Append(currentIndent);
+            GenerationEnvironment.AppendLine(textToAppend);
         }
 
         public void WriteLine(string format, params object[] args)
         {
-            this.GenerationEnvironment.Append(this.currentIndent);
-            this.GenerationEnvironment.AppendFormat(format, args);
-            this.GenerationEnvironment.AppendLine();
+            GenerationEnvironment.Append(currentIndent);
+            GenerationEnvironment.AppendFormat(format, args);
+            GenerationEnvironment.AppendLine();
         }
 
         public class ToStringInstanceHelper
@@ -161,13 +161,13 @@ namespace SME.VHDL.Templates
             {
                 get
                 {
-                    return this.formatProvider;
+                    return formatProvider;
                 }
                 set
                 {
                     if ((value != null))
                     {
-                        this.formatProvider = value;
+                        formatProvider = value;
                     }
                 }
             }
@@ -182,14 +182,14 @@ namespace SME.VHDL.Templates
                 Type iConvertibleType = typeof(IConvertible);
                 if (iConvertibleType.IsAssignableFrom(type))
                 {
-                    return ((IConvertible)(objectToConvert)).ToString(this.formatProvider);
+                    return ((IConvertible)(objectToConvert)).ToString(formatProvider);
                 }
                 System.Reflection.MethodInfo methInfo = type.GetMethod("ToString", new Type[] {
                             iConvertibleType});
                 if ((methInfo != null))
                 {
                     return ((string)(methInfo.Invoke(objectToConvert, new object[] {
-                                this.formatProvider})));
+                                formatProvider})));
                 }
                 return objectToConvert.ToString();
             }

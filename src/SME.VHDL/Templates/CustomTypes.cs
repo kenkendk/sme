@@ -54,8 +54,11 @@ package CUSTOM_TYPES is
 
             if (RS.BusArrays.Any())
             {
+                var bustypes = RS.BusArrays
+                    .GroupBy(x => ((AST.Bus)x.Parent).SourceType)
+                    .Select(x => x.FirstOrDefault());
                 Write("    -- Bus array definitions\n");
-                foreach (var signal in RS.BusArrays)
+                foreach (var signal in bustypes)
                 {
                     var vhdltype = RS.VHDLType(signal);
                     var elementtype = RS.TypeScope.GetByName(vhdltype.ElementName);
@@ -129,7 +132,7 @@ package body CUSTOM_TYPES is
             {
                 foreach (var enumtype in RS.EnumTypes)
                 {
-                    var enumname = ToStringHelper.ToStringWithCulture(enumtype); 
+                    var enumname = ToStringHelper.ToStringWithCulture(enumtype);
                     var vhdltype = ToStringHelper.ToStringWithCulture(enumtype.ToSafeVHDLName());
                     Write($"    -- converts {enumname} into a string\n");
                     Write($"    pure function str(b: {vhdltype}) return string is\n");
