@@ -1,5 +1,4 @@
-﻿
-library IEEE;
+﻿library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
@@ -27,7 +26,6 @@ package SYSTEM_TYPES is
     type T_SYSTEM_INT16_ARRAY is array(natural range <>) of T_SYSTEM_INT16;
     type T_SYSTEM_INT32_ARRAY is array(natural range <>) of T_SYSTEM_INT32;
     type T_SYSTEM_INT64_ARRAY is array(natural range <>) of T_SYSTEM_INT64;
-
 
     subtype T_UINT1 is unsigned(0 downto 0);
     subtype T_UINT2 is unsigned(1 downto 0);
@@ -272,7 +270,6 @@ package SYSTEM_TYPES is
     type T_INT61_ARRAY is array(natural range <>) of T_INT61;
     type T_INT62_ARRAY is array(natural range <>) of T_INT62;
     type T_INT63_ARRAY is array(natural range <>) of T_INT63;
-
 
     -- converts an integer to UINT1
     pure function UINT1(v: integer) return T_UINT1;
@@ -634,7 +631,6 @@ package SYSTEM_TYPES is
     -- converts a std_logic_vector to UINT63
     pure function UINT63(v: std_logic_vector) return T_UINT63;
 
-
     -- converts an integer to INT1
     pure function INT1(v: integer) return T_INT1;
 
@@ -995,7 +991,6 @@ package SYSTEM_TYPES is
     -- converts a std_logic_vector to INT63
     pure function INT63(v: std_logic_vector) return T_INT63;
 
-
     -- converts an integer to SYSTEM_UINT8
     pure function SYSTEM_UINT8(v: integer) return T_SYSTEM_UINT8;
 
@@ -1019,7 +1014,6 @@ package SYSTEM_TYPES is
 
     -- converts a std_logic_vector to SYSTEM_UINT64
     pure function SYSTEM_UINT64(v: std_logic_vector) return T_SYSTEM_UINT64;
-
 
     -- converts an integer to SYSTEM_INT8
     pure function SYSTEM_INT8(v: integer) return T_SYSTEM_INT8;
@@ -1045,10 +1039,7 @@ package SYSTEM_TYPES is
     -- converts a std_logic_vector to SYSTEM_UINT64
     pure function SYSTEM_INT64(v: std_logic_vector) return T_SYSTEM_INT64;
 
-
-
 end SYSTEM_TYPES;
-
 
 package body SYSTEM_TYPES is
 
@@ -1772,7 +1763,6 @@ package body SYSTEM_TYPES is
         return RESIZE(UNSIGNED(v), T_UINT63'length);
     end UINT63;
 
-
     -- converts an integer to INT1
     pure function INT1(v: integer) return T_INT1 is
     begin
@@ -2493,7 +2483,6 @@ package body SYSTEM_TYPES is
         return RESIZE(SIGNED(v), T_INT63'length);
     end INT63;
 
-
     -- converts an integer to SYSTEM_UINT8
     pure function SYSTEM_UINT8(v: integer) return T_SYSTEM_UINT8 is
     begin
@@ -2541,7 +2530,6 @@ package body SYSTEM_TYPES is
     begin
         return RESIZE(UNSIGNED(v), T_SYSTEM_UINT64'length);
     end SYSTEM_UINT64;
-
 
     -- converts an integer to SYSTEM_INT8
     pure function SYSTEM_INT8(v: integer) return T_SYSTEM_INT8 is
@@ -2591,7 +2579,4 @@ package body SYSTEM_TYPES is
         return RESIZE(SIGNED(v), T_SYSTEM_INT64'length);
     end SYSTEM_INT64;
 
-
-
 end SYSTEM_TYPES;
-
