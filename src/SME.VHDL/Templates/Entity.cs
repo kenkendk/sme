@@ -9,8 +9,22 @@ using System;
 namespace SME.VHDL.Templates
 {
 
-    public partial class Entity : BaseTemplate
+    public class Entity : BaseTemplate
     {
+
+        public readonly RenderState RS;
+		public readonly RenderStateProcess RSP;
+
+		public readonly Network Network;
+		public readonly AST.Process Process;
+
+		public Entity(RenderState renderer, RenderStateProcess renderproc)
+		{
+			RS = renderer;
+			RSP = renderproc;
+			Network = renderer.Network;
+			Process = renderproc.Process;
+		}
 
         public override string TransformText()
         {

@@ -6,7 +6,7 @@ using System.Text;
 
 namespace SME.VHDL.Templates
 {
-    public class BaseTemplate
+    public abstract class BaseTemplate
     {
         public virtual string TransformText()
         {

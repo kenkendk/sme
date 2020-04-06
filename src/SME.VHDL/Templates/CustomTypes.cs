@@ -1,11 +1,21 @@
 ﻿using System;
 using System.Linq;
+using SME.AST;
 
 namespace SME.VHDL.Templates
 {
 
-    public partial class CustomTypes : BaseTemplate
+    public class CustomTypes : BaseTemplate
     {
+
+        public readonly Network Network;
+		public readonly RenderState RS;
+
+		public CustomTypes(RenderState renderer)
+		{
+			RS = renderer;
+			Network = renderer.Network;
+		}
 
         public override string TransformText()
         {

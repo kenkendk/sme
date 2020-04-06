@@ -13,8 +13,8 @@ package csv_util is
 
     -- Read until EOL or comma
     procedure read_csv_field(ln: inout LINE; ret: out string);
-    
-    -- Compare variable length strings  
+
+    -- Compare variable length strings
     function are_strings_equal (ln1: string; ln2: string) return boolean;
 
     -- Debug print text
@@ -46,10 +46,10 @@ package csv_util is
 
     -- Returns a substring, from start to finish
     function substr(ln: string; start: integer; finish: integer) return string;
-    
+
     -- Trucates strings with embedded null characters
     function truncate(ln: string) return string;
-    
+
     -- Converts the input strings unwanted characters to underscore
     function to_safe_name(ln: string) return string;
 
@@ -61,7 +61,7 @@ package body csv_util is
         variable msg: line;
     begin
         write(msg, text);
-        writeline(output, msg);       
+        writeline(output, msg);
     end print;
 
     procedure read_csv_field(ln: inout LINE; ret: out string) is
@@ -81,7 +81,7 @@ package body csv_util is
             end if;
             read(ln, read_char, read_ok);
         end loop;
-        
+
         ret := return_string;
     end;
 
@@ -101,12 +101,12 @@ package body csv_util is
     begin
        return index_of_chr(ln, NUL);
     end;
-    
+
     function substr(ln: string; start: integer; finish: integer) return string is
     begin
         return ln(start to finish);
     end;
-    
+
     function truncate(ln: string) return string is
     begin
         return substr(ln, 1, index_of_null(ln) - 1);
@@ -124,7 +124,6 @@ package body csv_util is
        return res;
     end;
 
-
     function are_strings_equal(ln1: string; ln2: string) return boolean is
         variable lhs : string(1 to ln1'length) := ln1;
         variable rhs : string(1 to ln2'length) := ln2;
@@ -136,7 +135,7 @@ package body csv_util is
            if ln2'length < maxlen then
                maxlen := ln2'length;
            end if;
-           
+
            for i in 1 to maxlen loop
                if lhs(i) /= rhs(i) then
                    return false;
@@ -154,7 +153,7 @@ package body csv_util is
                     return false;
                 end if;
            end if;
-           
+
            return true;
        end if;
     end;
@@ -162,7 +161,7 @@ package body csv_util is
     -- converts string STD_LOGIC_VECTOR to string
     function to_std_logic_vector(b: string) return std_logic_vector is
         variable res : std_logic_vector(1 to b'length);
-        variable v : string(1 to b'length) := b; 
+        variable v : string(1 to b'length) := b;
     begin
         if v(1) /= '1' and v(1) /= '0' then
             res(1) := std_logic'value(v);
@@ -175,12 +174,12 @@ package body csv_util is
                 else
                     res(i) := '-';
                 end if;
-            end loop;            
+            end loop;
         end if;
-        
+
         return res;
     end to_std_logic_vector;
-    
+
     -- converts string to STD_LOGIC
    function to_std_logic(b: string) return std_logic is
      variable s: std_logic;
@@ -199,7 +198,7 @@ package body csv_util is
          end case;
          return s;
     end to_std_logic;
-    
+
     -- converts STD_LOGIC into a string
    function str(b: std_logic) return string is
      variable s: string(1 to 1);
@@ -218,11 +217,11 @@ package body csv_util is
          end case;
          return s;
     end str;
- 
+
     -- converts STD_LOGIC_VECTOR into a string
     function str(b: std_logic_vector) return string is
         variable res : string(1 to b'length);
-        variable v : std_logic_vector(1 to b'length) := b; 
+        variable v : std_logic_vector(1 to b'length) := b;
     begin
         if v(1) /= '1' and v(1) /= '0' then
             return  std_logic'image(v(1));
@@ -236,7 +235,7 @@ package body csv_util is
                     res(i) := '-';
                 end if;
             end loop;
-            
+
             return res;
         end if;
     end str;

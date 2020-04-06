@@ -9,8 +9,17 @@ using System;
 namespace SME.VHDL.Templates
 {
 
-    public partial class ExportTopLevel : BaseTemplate
+    public class ExportTopLevel : BaseTemplate
     {
+
+        public readonly Network Network;
+		public readonly RenderState RS;
+
+		public ExportTopLevel(RenderState renderer)
+		{
+			RS = renderer;
+			Network = renderer.Network;
+		}
 
         public override string TransformText()
         {

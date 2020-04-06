@@ -13,25 +13,41 @@ namespace SME.VHDL.Templates {
     using System.Text;
     using System.Collections.Generic;
     using System;
-    
-    
+
+
     public partial class VivadoProject : VivadoProjectBase {
-        
+
+        public readonly Network Network;
+        public readonly RenderState RS;
+        public readonly Simulation Simulation;
+        public readonly string Runtime;
+        public readonly AST.Process[] Processes;
+
+        public VivadoProject(RenderState renderer, AST.Process[] processes)
+        {
+            RS = renderer;
+            Network = renderer.Network;
+            Simulation = renderer.Simulation;
+            Runtime = ((Simulation.Tick + 2) * 10) + "ns";
+            Processes = processes;
+
+        }
+
         public virtual string TransformText() {
             this.GenerationEnvironment = null;
-            
+
             #line 6 ""
             this.Write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Project Version=\"7\" Minor=\"35\" Path=\"./");
-            
+
             #line default
             #line hidden
-            
+
             #line 7 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( Network.Name ));
-            
+
             #line default
             #line hidden
-            
+
             #line 7 ""
             this.Write(".xpr\">\n  <DefaultLaunch Dir=\"$PRUNDIR\"/>\n  <Configuration>\n    <Option Name=\"Id\" " +
                     "Val=\"da04b7443593460ab7943c9e399803cf\"/>\n    <Option Name=\"Part\" Val=\"xc7z020clg" +
@@ -73,16 +89,16 @@ namespace SME.VHDL.Templates {
                     "     <Attr Name=\"IsGlobalInclude\" Val=\"1\"/>\n          <Attr Name=\"UsedIn\" Val=\"s" +
                     "ynthesis\"/>\n          <Attr Name=\"UsedIn\" Val=\"simulation\"/>\n        </FileInfo>" +
                     "\n      </File>\n      <File Path=\"$PPRDIR/Types_");
-            
+
             #line default
             #line hidden
-            
+
             #line 70 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( Naming.AssemblyNameToFileName(Simulation) ));
-            
+
             #line default
             #line hidden
-            
+
             #line 70 ""
             this.Write(@""">
         <FileInfo>
@@ -93,54 +109,54 @@ namespace SME.VHDL.Templates {
         </FileInfo>
       </File>
 ");
-            
+
             #line default
             #line hidden
-            
+
             #line 78 ""
- foreach (var p in Processes) { 
-            
+ foreach (var p in Processes) {
+
             #line default
             #line hidden
-            
+
             #line 79 ""
             this.Write("      <File Path=\"$PPRDIR/");
-            
+
             #line default
             #line hidden
-            
+
             #line 79 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( Naming.ProcessNameToFileName(p.SourceInstance.Instance) ));
-            
+
             #line default
             #line hidden
-            
+
             #line 79 ""
             this.Write("\">\n        <FileInfo>\n          <Attr Name=\"Library\" Val=\"xil_defaultlib\"/>\n     " +
                     "     <Attr Name=\"UsedIn\" Val=\"synthesis\"/>\n          <Attr Name=\"UsedIn\" Val=\"si" +
                     "mulation\"/>\n        </FileInfo>\n      </File>\n");
-            
+
             #line default
             #line hidden
-            
+
             #line 86 ""
- } 
-            
+ }
+
             #line default
             #line hidden
-            
+
             #line 87 ""
             this.Write("      <File Path=\"$PPRDIR/");
-            
+
             #line default
             #line hidden
-            
+
             #line 87 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( Naming.AssemblyNameToFileName(Simulation) ));
-            
+
             #line default
             #line hidden
-            
+
             #line 87 ""
             this.Write(@""">
         <FileInfo>
@@ -152,16 +168,16 @@ namespace SME.VHDL.Templates {
       <Config>
         <Option Name=""DesignMode"" Val=""RTL""/>
         <Option Name=""TopModule"" Val=""");
-            
+
             #line default
             #line hidden
-            
+
             #line 96 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( Network.Name ));
-            
+
             #line default
             #line hidden
-            
+
             #line 96 ""
             this.Write(@"""/>
         <Option Name=""TopAutoSet"" Val=""TRUE""/>
@@ -183,44 +199,44 @@ namespace SME.VHDL.Templates {
         </FileInfo>
       </File>
       <File Path=""$PPRDIR/TestBench_");
-            
+
             #line default
             #line hidden
-            
+
             #line 115 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( Naming.AssemblyNameToFileName(Simulation) ));
-            
+
             #line default
             #line hidden
-            
+
             #line 115 ""
             this.Write("\">\n        <FileInfo>\n          <Attr Name=\"Library\" Val=\"xil_defaultlib\"/>\n     " +
                     "     <Attr Name=\"UsedIn\" Val=\"synthesis\"/>\n          <Attr Name=\"UsedIn\" Val=\"si" +
                     "mulation\"/>\n        </FileInfo>\n      </File>\n      <File Path=\"$PPRDIR/");
-            
+
             #line default
             #line hidden
-            
+
             #line 122 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( RS.CSVTracename ));
-            
+
             #line default
             #line hidden
-            
+
             #line 122 ""
             this.Write("\">\n          <Attr Name=\"UsedIn\" Val=\"simulation\"/>\n      </File>\n      <Config>\n" +
                     "        <Option Name=\"DesignMode\" Val=\"RTL\"/>\n        <Option Name=\"TopModule\" V" +
                     "al=\"");
-            
+
             #line default
             #line hidden
-            
+
             #line 127 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( Network.Name ));
-            
+
             #line default
             #line hidden
-            
+
             #line 127 ""
             this.Write(@"_tb""/>
         <Option Name=""TopLib"" Val=""xil_defaultlib""/>
@@ -228,16 +244,16 @@ namespace SME.VHDL.Templates {
         <Option Name=""TransportIntDelay"" Val=""0""/>
         <Option Name=""SrcSet"" Val=""sources_1""/>
         <Option Name=""xsim.simulate.runtime"" Val=""");
-            
+
             #line default
             #line hidden
-            
+
             #line 132 ""
             this.Write(this.ToStringHelper.ToStringWithCulture( Runtime ));
-            
+
             #line default
             #line hidden
-            
+
             #line 132 ""
             this.Write("\"/>\n      </Config>\n    </FileSet>\n  </FileSets>\n  <Simulators>\n    <Simulator Na" +
                     "me=\"XSim\">\n      <Option Name=\"Description\" Val=\"Vivado Simulator\"/>\n      <Opti" +
@@ -267,30 +283,30 @@ namespace SME.VHDL.Templates {
                     "tegy Name=\"Vivado Implementation Default Reports\" Flow=\"Vivado Implementation 20" +
                     "17\"/>\n      <Report Name=\"ROUTE_DESIGN.REPORT_METHODOLOGY\" Enabled=\"1\"/>\n    </R" +
                     "un>\n  </Runs>\n  <Board>\n    <Jumpers/>\n  </Board>\n</Project>");
-            
+
             #line default
             #line hidden
             return this.GenerationEnvironment.ToString();
         }
-        
+
         public virtual void Initialize() {
         }
     }
-    
+
     public class VivadoProjectBase {
-        
+
         private global::System.Text.StringBuilder builder;
-        
+
         private global::System.Collections.Generic.IDictionary<string, object> session;
-        
+
         private global::System.CodeDom.Compiler.CompilerErrorCollection errors;
-        
+
         private string currentIndent = string.Empty;
-        
+
         private global::System.Collections.Generic.Stack<int> indents;
-        
+
         private ToStringInstanceHelper _toStringHelper = new ToStringInstanceHelper();
-        
+
         public virtual global::System.Collections.Generic.IDictionary<string, object> Session {
             get {
                 return this.session;
@@ -299,7 +315,7 @@ namespace SME.VHDL.Templates {
                 this.session = value;
             }
         }
-        
+
         public global::System.Text.StringBuilder GenerationEnvironment {
             get {
                 if ((this.builder == null)) {
@@ -311,7 +327,7 @@ namespace SME.VHDL.Templates {
                 this.builder = value;
             }
         }
-        
+
         protected global::System.CodeDom.Compiler.CompilerErrorCollection Errors {
             get {
                 if ((this.errors == null)) {
@@ -320,13 +336,13 @@ namespace SME.VHDL.Templates {
                 return this.errors;
             }
         }
-        
+
         public string CurrentIndent {
             get {
                 return this.currentIndent;
             }
         }
-        
+
         private global::System.Collections.Generic.Stack<int> Indents {
             get {
                 if ((this.indents == null)) {
@@ -335,23 +351,23 @@ namespace SME.VHDL.Templates {
                 return this.indents;
             }
         }
-        
+
         public ToStringInstanceHelper ToStringHelper {
             get {
                 return this._toStringHelper;
             }
         }
-        
+
         public void Error(string message) {
             this.Errors.Add(new global::System.CodeDom.Compiler.CompilerError(null, -1, -1, null, message));
         }
-        
+
         public void Warning(string message) {
             global::System.CodeDom.Compiler.CompilerError val = new global::System.CodeDom.Compiler.CompilerError(null, -1, -1, null, message);
             val.IsWarning = true;
             this.Errors.Add(val);
         }
-        
+
         public string PopIndent() {
             if ((this.Indents.Count == 0)) {
                 return string.Empty;
@@ -361,40 +377,40 @@ namespace SME.VHDL.Templates {
             this.currentIndent = this.currentIndent.Substring(0, lastPos);
             return last;
         }
-        
+
         public void PushIndent(string indent) {
             this.Indents.Push(indent.Length);
             this.currentIndent = (this.currentIndent + indent);
         }
-        
+
         public void ClearIndent() {
             this.currentIndent = string.Empty;
             this.Indents.Clear();
         }
-        
+
         public void Write(string textToAppend) {
             this.GenerationEnvironment.Append(textToAppend);
         }
-        
+
         public void Write(string format, params object[] args) {
             this.GenerationEnvironment.AppendFormat(format, args);
         }
-        
+
         public void WriteLine(string textToAppend) {
             this.GenerationEnvironment.Append(this.currentIndent);
             this.GenerationEnvironment.AppendLine(textToAppend);
         }
-        
+
         public void WriteLine(string format, params object[] args) {
             this.GenerationEnvironment.Append(this.currentIndent);
             this.GenerationEnvironment.AppendFormat(format, args);
             this.GenerationEnvironment.AppendLine();
         }
-        
+
         public class ToStringInstanceHelper {
-            
+
             private global::System.IFormatProvider formatProvider = global::System.Globalization.CultureInfo.InvariantCulture;
-            
+
             public global::System.IFormatProvider FormatProvider {
                 get {
                     return this.formatProvider;
@@ -405,7 +421,7 @@ namespace SME.VHDL.Templates {
                     }
                 }
             }
-            
+
             public string ToStringWithCulture(object objectToConvert) {
                 if ((objectToConvert == null)) {
                     throw new global::System.ArgumentNullException("objectToConvert");
