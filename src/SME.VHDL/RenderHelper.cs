@@ -168,17 +168,21 @@ namespace SME.VHDL
         /// <param name="indentation">The indentation to use.</param>
         private IEnumerable<string> RenderStatement(AST.Method method, AST.ForStatement s, int indentation)
         {
-            var edges = s.GetStaticForLoopValues();
-
-            var endval = edges.Item2;
-            endval--;
+            var (start, endval, incr) = s.GetStaticForLoopValues();
 
             var indent = new string(' ', indentation);
-            yield return $"{indent}for {s.LoopIndex.Name} in {edges.Item1} to {endval} loop";
 
-            var incr = edges.Item3;
             if (incr != 1)
                 throw new Exception($"Expected the for loop to have an increment of 1, it has {incr}");
+
+            // Fix for using variables for loop ranges, which is legal synthasizable VHDL
+            // as long as the variable can be statically computed.
+            var cond = s.Condition as BinaryOperatorExpression;
+            var right = cond?.Right as MemberReferenceExpression;
+            var target = right?.Target as Variable;
+            var end = target == null ? $"{endval}" : $"to_integer({target.Name})";
+
+            yield return $"{indent}for {s.LoopIndex.Name} in {start} to {end}-1 loop";
 
             foreach (var n in RenderStatement(method, s.LoopBody, indentation + 4))
                 yield return n;
@@ -251,7 +255,6 @@ namespace SME.VHDL
                     yield return ss;
             }
 
-            
             yield return $"{indent2}when others =>";
             foreach (var ss in others.SelectMany(x => RenderStatement(method, x, indentation)))
                 yield return ss;
@@ -374,7 +377,7 @@ namespace SME.VHDL
             if (e is AST.PrimitiveExpression)
                 return (AST.PrimitiveExpression)e;
 
-            return null;                
+            return null;
         }
 
         /// <summary>
@@ -394,7 +397,7 @@ namespace SME.VHDL
                                              .Take(e.ElementExpressions.Length - trailing_defaults)
                                              .Select(x => RenderExpression(x))
                                              .Concat(new[] { "others => " + RenderExpression(e.ElementExpressions.Last()) })
-                                            ) + ")";                    
+                                            ) + ")";
 
             }
 
