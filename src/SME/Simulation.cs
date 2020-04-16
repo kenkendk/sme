@@ -280,7 +280,7 @@ namespace SME
             {
                 if (b == null)
                     continue;
-                
+
                 List<IRuntimeBus> lp;
                 if (!busmap.TryGetValue(b.BusType, out lp))
                     busmap[b.BusType] = lp = new List<IRuntimeBus>();
@@ -328,7 +328,11 @@ namespace SME
                         SME.Loader.AutoloadBusses(x);
                         return new
                         {
-                            Task = x.Run().ContinueWith(y => x.SignalFinished()),
+                            Task = x.Run().ContinueWith(y => {
+                                x.SignalFinished();
+                                if (y.Exception != null)
+                                    throw new AggregateException(y.Exception.InnerExceptions);
+                            }),
                             Proc = x,
                             HasOutputs = x.OutputBusses.Any()
                         };
@@ -442,7 +446,7 @@ namespace SME
                     _scopes.Remove(key);
                 else if (_scopes.ContainsKey(key) && _scopes[key] != null)
                     throw new InvalidOperationException("Cannot use nested simulations");
-                else                    
+                else
 					_scopes[key] = value;
 			}
 		}
