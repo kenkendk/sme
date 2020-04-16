@@ -8,18 +8,18 @@ using System.Threading.Tasks;
 
 namespace SME
 {
-	/// <summary>
-	/// Helper class to run a simulation
-	/// </summary>
+    /// <summary>
+    /// Helper class to run a simulation
+    /// </summary>
     public class Simulation : IDisposable
-	{
-		/// <summary>
-		/// The methods to call prior to running the simulation
-		/// </summary>
+    {
+        /// <summary>
+        /// The methods to call prior to running the simulation
+        /// </summary>
         private readonly List<Action<Simulation>> m_preloaders = new List<Action<Simulation>>();
-		/// <summary>
-		/// The methods to call each cycle before running the network during the simulation
-		/// </summary>
+        /// <summary>
+        /// The methods to call each cycle before running the network during the simulation
+        /// </summary>
         private readonly List<Action<Simulation>> m_prerunners = new List<Action<Simulation>>();
         /// <summary>
         /// The methods to call each cycle before running the network during the simulation
@@ -30,9 +30,9 @@ namespace SME
         /// </summary>
         private readonly List<Action<Simulation>> m_clockrunners = new List<Action<Simulation>>();
 
-		/// <summary>
-		/// The methods to call after the simulation
-		/// </summary>
+        /// <summary>
+        /// The methods to call after the simulation
+        /// </summary>
         private readonly List<Action<Simulation>> m_postloaders = new List<Action<Simulation>>();
         /// <summary>
         /// The list of processes in the simulation
@@ -44,10 +44,10 @@ namespace SME
         /// </summary>
         private Scope m_scope = new Scope(isolated: true);
 
-		/// <summary>
-		/// The output folder
-		/// </summary>
-		public string TargetFolder { get; private set; }
+        /// <summary>
+        /// The output folder
+        /// </summary>
+        public string TargetFolder { get; private set; }
 
         /// <summary>
         /// Gets the current tick value.
@@ -85,60 +85,60 @@ namespace SME
         /// </summary>
         public DependencyGraph Graph { get; private set; }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="T:SME.Runner"/> class.
-		/// </summary>
-		/// <param name="outputfolder">The folder where output files are stored.</param>
-		public Simulation(string outputfolder = "output")
-		{
-			TargetFolder = Path.GetFullPath(outputfolder);
-			if (!Directory.Exists(TargetFolder))
-				Directory.CreateDirectory(TargetFolder);
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:SME.Runner"/> class.
+        /// </summary>
+        /// <param name="outputfolder">The folder where output files are stored.</param>
+        public Simulation(string outputfolder = "output")
+        {
+            TargetFolder = Path.GetFullPath(outputfolder);
+            if (!Directory.Exists(TargetFolder))
+                Directory.CreateDirectory(TargetFolder);
             if (Current != null)
                 throw new InvalidOperationException("Cannot start a new simulation before the current one is disposed");
             ScopeKey = Guid.NewGuid().ToString();
             Current = this;
-		}
+        }
 
-		/// <summary>
-		/// Adds a preloader.
-		/// </summary>
-		/// <param name="loader">The preloader.</param>
+        /// <summary>
+        /// Adds a preloader.
+        /// </summary>
+        /// <param name="loader">The preloader.</param>
         public Simulation AddPreloader(Action<Simulation> loader)
-		{
-			if (loader == null)
-				throw new ArgumentNullException($"{loader}");
+        {
+            if (loader == null)
+                throw new ArgumentNullException($"{loader}");
 
-			m_preloaders.Add(loader);
-			return this;
-		}
+            m_preloaders.Add(loader);
+            return this;
+        }
 
-		/// <summary>
-		/// Adds a postloader.
-		/// </summary>
-		/// <param name="loader">The postloader.</param>
+        /// <summary>
+        /// Adds a postloader.
+        /// </summary>
+        /// <param name="loader">The postloader.</param>
         public Simulation AddPostloader(Action<Simulation> loader)
-		{
-			if (loader == null)
-				throw new ArgumentNullException($"{loader}");
+        {
+            if (loader == null)
+                throw new ArgumentNullException($"{loader}");
 
-			m_postloaders.Add(loader);
-			return this;
-		}
+            m_postloaders.Add(loader);
+            return this;
+        }
 
-		/// <summary>
-		/// Adds pre-run handler.
-		/// </summary>
+        /// <summary>
+        /// Adds pre-run handler.
+        /// </summary>
         /// <returns>The simulation instance for chaining syntax use</returns>
-		/// <param name="prerunner">The prerunner method.</param>
+        /// <param name="prerunner">The prerunner method.</param>
         public Simulation AddPreRunner(Action<Simulation> prerunner)
-		{
-			if (prerunner == null)
-				throw new ArgumentNullException($"{prerunner}");
+        {
+            if (prerunner == null)
+                throw new ArgumentNullException($"{prerunner}");
 
             m_prerunners.Add(prerunner);
             return this;
-		}
+        }
 
         /// <summary>
         /// Adds post-run handler.
@@ -365,10 +365,10 @@ namespace SME
             }
             finally
             {
-				Scope.Current.Clock.Clear();
+                Scope.Current.Clock.Clear();
                 this.Dispose();
-			}
-		}
+            }
+        }
 
         /// <summary>
         /// Converts a type to a friendly name
@@ -420,39 +420,39 @@ namespace SME
                 m_processes.Add(p, new ProcessMetadata(p));
         }
 
-		/// <summary>
-		/// Gets the current scope.
-		/// </summary>
-		/// <value>The current scope.</value>
+        /// <summary>
+        /// Gets the current scope.
+        /// </summary>
+        /// <value>The current scope.</value>
         public static Simulation Current
-		{
-			get
-			{
-				var key = ScopeKey;
-				if (key == null)
-					return null;
+        {
+            get
+            {
+                var key = ScopeKey;
+                if (key == null)
+                    return null;
 
                 Simulation res;
-				_scopes.TryGetValue(key, out res);
-				return res;
-			}
+                _scopes.TryGetValue(key, out res);
+                return res;
+            }
 
-			private set
-			{
-				var key = ScopeKey;
-				if (key == null)
-					throw new InvalidOperationException("Cannot set the simulation without a key");
+            private set
+            {
+                var key = ScopeKey;
+                if (key == null)
+                    throw new InvalidOperationException("Cannot set the simulation without a key");
                 if (value == null)
                     _scopes.Remove(key);
                 else if (_scopes.ContainsKey(key) && _scopes[key] != null)
                     throw new InvalidOperationException("Cannot use nested simulations");
                 else
-					_scopes[key] = value;
-			}
-		}
-		/// <summary>
-		/// The simulation scopes matching the keys.
-		/// </summary>
+                    _scopes[key] = value;
+            }
+        }
+        /// <summary>
+        /// The simulation scopes matching the keys.
+        /// </summary>
         private static readonly Dictionary<string, Simulation> _scopes = new Dictionary<string, Simulation>();
 
         /// <summary>
