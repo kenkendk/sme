@@ -61,8 +61,20 @@ use work.CUSTOM_TYPES.ALL;
                     var instancename = ToStringHelper.ToStringWithCulture( bus.InstanceName );
                     var signalname = ToStringHelper.ToStringWithCulture( signal.Name );
                     var signaltypename = ToStringHelper.ToStringWithCulture( signaltype );
-                    var vhdltype = ToStringHelper.ToStringWithCulture( RS.VHDLExportTypeName(signal) );
-                    Write($"        {instancename}_{signalname}: {signaltypename} {vhdltype};\n");
+                    var vhdltype = ToStringHelper.ToStringWithCulture( RS.VHDLExportTypeName(RS.VHDLType(signal)) );
+                    if (signal.CecilType.IsArrayType())
+                    {
+                        // https://forums.xilinx.com/t5/Design-Entry/Error-quot-port-is-not-recognized-quot/td-p/956645
+                        // "As per UG 1118, - To ensure that the custom IP simulates properly when using VHDL, set the top-level ports to be std_logic or std_logic_vector."
+                        var arraylength = RS.GetArrayLength(signal);
+                        var arrayvhdltype = RS.VHDLType(signal);
+                        var elementtype = RS.TypeScope.GetByName(arrayvhdltype.ElementName);
+                        var elementtypename = RS.VHDLExportTypeName(elementtype);
+                        for (int i = 0; i < arraylength; i++)
+                            Write($"        {instancename}_{signalname}{i}: {signaltypename} {elementtypename};\n");
+                    }
+                    else
+                        Write($"        {instancename}_{signalname}: {signaltypename} {vhdltype};\n");
                 }
                 Write("\n");
             }
@@ -88,15 +100,30 @@ use work.CUSTOM_TYPES.ALL;
 
             Write($"end {networkname}_export;\n");
 
-            var converted_outputs = new HashSet<AST.Signal>();
+            var converted_outputs = new HashSet<AST.BusSignal>();
 
-            foreach (var bus in Network.Busses.Where(x => (x.IsTopLevelOutput && !x.IsTopLevelInput) || (x.IsTopLevelInput && x.IsTopLevelOutput)))
+            // Add all of the top level output busses
+            // as they need to be converted trough a tmp signal
+            foreach (var bus in Network.Busses.Where(x => x.IsTopLevelOutput))
+            {
                 foreach(var signal in bus.Signals)
                 {
                     var vt = RS.VHDLType(signal);
                     if (vt.IsSigned || vt.IsUnsigned)
                         converted_outputs.Add(signal);
                 }
+            }
+
+            // The same goes for arrays in busses
+            foreach (var signal in Network.Busses
+                .Where(x => x.IsTopLevelInput || x.IsTopLevelOutput)
+                .SelectMany(x => x.Signals
+                    .Where(y => y.CecilType.IsArrayType())
+                ))
+            {
+                converted_outputs.Add(signal);
+            }
+
 
             Write("\n");
             Write($"architecture RTL of {networkname}_export is\n");
@@ -127,9 +154,26 @@ use work.CUSTOM_TYPES.ALL;
                 Write("\n    -- Carry converted signals from entity to wrapped outputs\n");
                 foreach(var signal in converted_outputs)
                 {
-                    var busname = ToStringHelper.ToStringWithCulture( ((AST.Bus)signal.Parent).InstanceName );
+                    var bus = (AST.Bus)signal.Parent;
+                    var busname = ToStringHelper.ToStringWithCulture( bus.InstanceName );
                     var signalname = ToStringHelper.ToStringWithCulture( signal.Name );
-                    Write($"    {busname}_{signalname} <= std_logic_vector(tmp_{busname}_{signalname});\n");
+                    if (signal.CecilType.IsArrayType())
+                    {
+                        var arraylength = RS.GetArrayLength(signal);
+                        var arrayvhdltype = RS.VHDLType(signal);
+                        var elementtype = RS.TypeScope.GetByName(arrayvhdltype.ElementName);
+                        var typecast = RS.VHDLExportTypeCast(elementtype);
+
+                        if (bus.IsTopLevelInput)
+                            for (int i = 0; i < arraylength; i++)
+                                Write($"    tmp_{busname}_{signalname}({i}) <= {typecast}({busname}_{signalname}{i});\n");
+
+                        if (bus.IsTopLevelOutput)
+                            for (int i = 0; i < arraylength; i++)
+                                Write($"    {busname}_{signalname}{i} <= std_logic_vector(tmp_{busname}_{signalname}({i}));\n");
+                    }
+                    else
+                        Write($"    {busname}_{signalname} <= std_logic_vector(tmp_{busname}_{signalname});\n");
                 }
                 Write("\n");
             }
