@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Mono.Cecil;
 using SME.AST;
+using Microsoft.CodeAnalysis;
 
 namespace SME.VHDL
 {
@@ -171,7 +171,7 @@ namespace SME.VHDL
                 }
 
 				foreach (var signal in Process.SharedSignals)
-					if (!(signal.Source is Mono.Cecil.IMemberDefinition) || ((Mono.Cecil.IMemberDefinition)signal.Source).GetAttribute<IgnoreAttribute>() == null)
+					if (!(signal.Source is IFieldSymbol) || ((IFieldSymbol)signal.Source).GetAttribute<IgnoreAttribute>() == null)
                         foreach (var s in Helper.RenderStatement(null, Parent.GetResetStatement(signal), 0))
 							yield return s;
 
@@ -186,7 +186,7 @@ namespace SME.VHDL
 						if (!variable.isLoopIndex)
                         	foreach (var s in Helper.RenderStatement(null, Parent.GetResetStatement(variable), 0))
 								yield return s;
-						
+
 					if (Parent.TemporaryVariables.ContainsKey(Process.MainMethod))
 						foreach (var variable in Parent.TemporaryVariables[Process.MainMethod].Values)
                             foreach (var s in Helper.RenderStatement(null, Parent.GetResetStatement(variable), 0))
@@ -218,7 +218,7 @@ namespace SME.VHDL
             get
             {
                 foreach (var v in Process.SharedVariables)
-                    if (!(v.Source is Mono.Cecil.IMemberDefinition) || ((Mono.Cecil.IMemberDefinition)v.Source).GetAttribute<IgnoreAttribute>() == null)
+                    if (!(v.Source is IFieldSymbol) || ((IFieldSymbol)v.Source).GetAttribute<IgnoreAttribute>() == null)
                         yield return v;
             }
         }
