@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace SME.AST.Transform
 {
 
-    public class WhileWithoutAwaitException : Exception 
-    { 
+    public class WhileWithoutAwaitException : Exception
+    {
         public WhileWithoutAwaitException(string message) : base(message) { }
     }
 
@@ -196,7 +199,7 @@ namespace SME.AST.Transform
             }
 
             for (int i = selflabel; i < fragments.Count; i++)
-                fragments[i].SelectMany(x => 
+                fragments[i].SelectMany(x =>
                     x.All()
                         .OfType<CaseGotoStatement>()
                         .Where(y => y.CaseLabel == selflabel)
@@ -244,7 +247,7 @@ namespace SME.AST.Transform
                 EndFragment(collected, fragments, fragments.Count + 1, true);
                 // Update all the CaseGotoStatements in the true branch, to point to after the false branch
                 for (int i = truelabel; i < falselabel; i++)
-                    fragments[i].SelectMany(x => 
+                    fragments[i].SelectMany(x =>
                             x.All()
                                 .OfType<CaseGotoStatement>()
                                 .Where(y => y.CaseLabel == falselabel)
@@ -257,8 +260,8 @@ namespace SME.AST.Transform
             ifs.TrueStatement = new CaseGotoStatement(truelabel, true);
             ifs.FalseStatement = new CaseGotoStatement(falselabel, true);
             ifs.UpdateParents();
-            
-            return fragments.Count - conditionlabel;                
+
+            return fragments.Count - conditionlabel;
         }
 
         /// <summary>
@@ -277,8 +280,8 @@ namespace SME.AST.Transform
             EndFragment(collected, fragments, fragments.Count + 1, true);
             var selflabel = fragments.Count;
 
-            var ifs = new IfElseStatement(statement.Condition, 
-                statement.Body, new EmptyStatement()) 
+            var ifs = new IfElseStatement(statement.Condition,
+                statement.Body, new EmptyStatement())
                 { Parent = statement.Parent };
             ifs.UpdateParents();
 
@@ -286,7 +289,7 @@ namespace SME.AST.Transform
             var trailfragment = fragments.Last();
             var exitlabel = fragments.Count;
 
-            for (int i = selflabel+1; i < fragments.Count; i++) 
+            for (int i = selflabel+1; i < fragments.Count; i++)
             {
                 fragments[i]
                     .SelectMany(x => x.All())
@@ -299,7 +302,7 @@ namespace SME.AST.Transform
 
             // Cannot fallthrough backwards through states. Copy state machine, where this occurs
             for (int i = selflabel; i < fragments.Count; i++)
-                fragments[i] = fragments[i].Select(x => 
+                fragments[i] = fragments[i].Select(x =>
                     ReplaceBackGotoStatements(fragments, x, i, i)).ToList();
 
             return fragments.Count - selflabel;
@@ -369,7 +372,7 @@ namespace SME.AST.Transform
 
                 if (collected.Count > 0)
                     fragments.Add(new List<Statement>(collected));
-                
+
                 collected.Clear();
             }
         }
@@ -451,10 +454,10 @@ namespace SME.AST.Transform
                 res.Add(new IfElseStatement(
                     new BinaryOperatorExpression(
                         new IdentifierExpression(statelabel),
-                        ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.Equality,
-                        new PrimitiveExpression(enumfields[i].GetTarget().Name, enumfields[i].CecilType)
+                        SyntaxKind.EqualsEqualsToken,
+                        new PrimitiveExpression(enumfields[i].GetTarget().Name, enumfields[i].MSCAType)
                     )
-                    { SourceResultType = enumfields[0].CecilType.Module.ImportReference(typeof(bool)) },
+                    { SourceResultType = enumfields[0].MSCAType.LoadType(typeof(bool)) },
                     ToBlockStatement(fragments[i]),
                     new EmptyStatement()
                 ));
@@ -477,7 +480,7 @@ namespace SME.AST.Transform
             for (var i = 0; i < fragments.Count; i++)
             {
                 res.Add(new Tuple<Expression[], Statement[]>(
-                    new Expression[] { new PrimitiveExpression(enumfields[i].GetTarget().Name, enumfields[i].CecilType) },
+                    new Expression[] { new PrimitiveExpression(enumfields[i].GetTarget().Name, enumfields[i].MSCAType) },
                     fragments[i].ToArray()
                 ));
             }
@@ -502,12 +505,12 @@ namespace SME.AST.Transform
             while ((current = statement.All().OfType<CaseGotoStatement>().FirstOrDefault()) != null)
             {
                 var fallThrough = current.FallThrough && current.CaseLabel < enumfields.Length;
-                
+
                 current.ReplaceWith(
                     new ExpressionStatement(
                         new AssignmentExpression(
                             new IdentifierExpression(fallThrough ? currentstate : nextstate),
-                            new PrimitiveExpression(enumfields[current.CaseLabel % enumfields.Length].GetTarget().Name, enumfields[0].CecilType)
+                            new PrimitiveExpression(enumfields[current.CaseLabel % enumfields.Length].GetTarget().Name, enumfields[0].MSCAType)
                         )
                     )
                 );
@@ -517,17 +520,17 @@ namespace SME.AST.Transform
         }
 
         private Statement ReplaceBackGotoStatements(List<List<Statement>> fragments, Statement statement, int start, int current)
-        { 
+        {
             switch (statement)
             {
                 case BlockStatement s:
-                    s.Statements = s.Statements.Select(x => 
+                    s.Statements = s.Statements.Select(x =>
                         ReplaceBackGotoStatements(fragments, x, start, current))
                         .ToArray();
                     return s;
                 case CaseGotoStatement s:
                     // Do not inject if it tries to go to itself
-                    if (s.FallThrough && (s.CaseLabel == current || s.CaseLabel == start)) 
+                    if (s.FallThrough && (s.CaseLabel == current || s.CaseLabel == start))
                     {
                         return new CommentStatement($"FSM_RunState := State{s.CaseLabel}") { Parent = s.Parent };
                     }
@@ -553,7 +556,7 @@ namespace SME.AST.Transform
                     {
                         var t = new Tuple<Expression[], Statement[]>(
                             tuple.Item1,
-                            tuple.Item2.Select(x => 
+                            tuple.Item2.Select(x =>
                                 ReplaceBackGotoStatements(fragments, x, start, current))
                                 .ToArray());
                         return t;
@@ -572,7 +575,9 @@ namespace SME.AST.Transform
         /// <param name="item">The item to visit.</param>
         public ASTItem Transform(ASTItem item)
         {
-            if (!(item is AST.Method) || !((Method)item).IsStateMachine)
+            return item;
+            // TODO hænger igen sammen med at skulle bygge ny syntax :(
+            /*if (!(item is AST.Method) || !((Method)item).IsStateMachine)
                 return item;
 
             var method = item as AST.Method;
@@ -649,9 +654,9 @@ namespace SME.AST.Transform
             // If we have no fallthrough states, we build a switch
             if (isSimpleStatePossible)
             {
-                cases = new List<Statement>(new[] { 
+                cases = new List<Statement>(new[] {
                     new EmptyStatement(),
-                    CreateSwitchStatement(fragments, current_state_signal, enumdataitems) 
+                    CreateSwitchStatement(fragments, current_state_signal, enumdataitems)
                 });
             }
             // Otherwise, we build an if-based state machine
@@ -690,11 +695,11 @@ namespace SME.AST.Transform
             proc.Methods = proc.Methods.Concat(new[] { stateMachineProcess }).ToArray();
 
             // Move variables into the shared area
-            proc.InternalDataElements = 
+            proc.InternalDataElements =
                 proc.InternalDataElements
-                .Union(new[] { 
-                    current_state_signal, 
-                    next_state_signal 
+                .Union(new[] {
+                    current_state_signal,
+                    next_state_signal
                 })
                 //.Union(method.AllVariables)
                 .ToArray();
@@ -704,6 +709,7 @@ namespace SME.AST.Transform
             method.AllVariables = new Variable[0];
 
             return stateMachineProcess;
+            */
         }
     }
 }
