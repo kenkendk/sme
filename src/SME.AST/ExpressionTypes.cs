@@ -533,10 +533,10 @@ namespace SME.AST
             this.Target = target;
             this.TargetExpression = targetExpression;
             this.ArgumentExpressions = argumentExpressions;
-            if (target.MSCAMethod == null)
-                this.SourceResultType = target.ReturnVariable == null ? target.GetNearestParent<Process>().CecilType.Module.ImportReference(typeof(void)) : target.ReturnVariable.CecilType;
+            if (target.MSCAReturnType == null)
+                this.SourceResultType = target.ReturnVariable == null ? target.GetNearestParent<Process>().MSCAType.LoadType(typeof(void)) : target.ReturnVariable.MSCAType;
             else
-                this.SourceResultType = target.MSCAMethod.ReturnType;
+                this.SourceResultType = target.MSCAReturnType;
 
             this.Target.Parent = this;
             foreach (var e in this.ArgumentExpressions ?? new Expression[0])
@@ -618,10 +618,10 @@ namespace SME.AST
         public MethodReferenceExpression(Method target)
         {
             this.Target = target;
-            if (target.MSCAMethod == null)
-                this.SourceResultType = target.ReturnVariable == null ? target.GetNearestParent<Process>().CecilType.Module.ImportReference(typeof(void)) : target.ReturnVariable.CecilType;
+            if (target.MSCAReturnType == null)
+                this.SourceResultType = target.ReturnVariable == null ? target.GetNearestParent<Process>().MSCAType.LoadType(typeof(void)) : target.ReturnVariable.MSCAType;
             else
-                this.SourceResultType = target.MSCAMethod.ReturnType.LoadSymbol(m_semantics);
+                this.SourceResultType = target.MSCAReturnType;
         }
 
         /// <summary>

@@ -347,6 +347,7 @@ namespace SME.AST
 		/// The Microsoft.Codeanalysis type
 		/// </summary>
 		public MethodDeclarationSyntax MSCAMethod;
+		public ITypeSymbol MSCAReturnType;
 		/// <summary>
 		/// The input parameters used by the method
 		/// </summary>
