@@ -291,6 +291,21 @@ namespace SME.AST
 		}
 
 		/// <summary>
+		/// Returns a value indicating what directions an argument has
+		/// </summary>
+		/// <returns>The argument directions.</returns>
+		/// <param name="n">The argument to examine.</param>
+		public static ArgumentInOut GetArgumentInOut(this IParameterSymbol n)
+		{
+			var inarg = n.RefKind == RefKind.In;
+			var outarg = n.RefKind == RefKind.Out;
+			var inoutarg = inarg && outarg;
+			var inoutoverride = inarg || outarg;
+			var isarray = n.Type.IsArrayType();
+			return inoutarg || (isarray && !inoutoverride) ? ArgumentInOut.InOut : (inarg ? ArgumentInOut.In : ArgumentInOut.Out);
+		}
+
+		/// <summary>
 		/// Returns the target variable or signal, or null
 		/// </summary>
 		/// <returns>The target variable or signal.</returns>
