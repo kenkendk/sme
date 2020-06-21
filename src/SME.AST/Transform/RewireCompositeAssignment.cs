@@ -1,5 +1,5 @@
 ﻿using System;
-using ICSharpCode.Decompiler.CSharp.Syntax;
+using Microsoft.CodeAnalysis.CSharp;
 using SME.AST;
 
 namespace SME.AST.Transform
@@ -20,7 +20,7 @@ namespace SME.AST.Transform
 			if (el is AST.AssignmentExpression)
 			{
 				var ase = ((AST.AssignmentExpression)el);
-				if (ase.Operator != AssignmentOperatorType.Assign)
+				if (ase.Operator != SyntaxKind.EqualsToken)
 				{
 					AST.Expression clonedleft = ase.Left.Clone();
 
@@ -35,7 +35,7 @@ namespace SME.AST.Transform
 					};
 
 					newop.Left.Parent = newop.Right.Parent = newop;
-					ase.Operator = AssignmentOperatorType.Assign;
+					ase.Operator = SyntaxKind.EqualsToken;
 					ase.Right = newop;
 
 					return null;

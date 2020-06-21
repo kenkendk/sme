@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace SME.AST.Transform
 {
@@ -68,7 +69,7 @@ namespace SME.AST.Transform
 
                 var beo = ifs.Condition as BinaryOperatorExpression;
 
-                if (beo.Operator != ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.Equality) continue;
+                if (beo.Operator != SyntaxKind.EqualsEqualsToken) continue;
 
                 Expression casetarget;
 
