@@ -305,6 +305,11 @@ namespace SME.AST
 			return inoutarg || (isarray && !inoutoverride) ? ArgumentInOut.InOut : (inarg ? ArgumentInOut.In : ArgumentInOut.Out);
 		}
 
+		public static bool IsEnum(this ITypeSymbol its)
+		{
+			return ((INamedTypeSymbol)its).EnumUnderlyingType != null;
+		}
+
 		/// <summary>
 		/// Returns the target variable or signal, or null
 		/// </summary>
