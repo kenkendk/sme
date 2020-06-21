@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace SME.AST
@@ -182,8 +183,12 @@ namespace SME.AST
 				{
 					RegisterVariable(network, proc, method, vartype, n);
 					if (n.Initializer.Value != null)
-						// TODO lav ny syntax...
-						statements.Add(Decompile(network, proc, method, new ICSharpCode.Decompiler.CSharp.Syntax.ExpressionStatement(new ICSharpCode.Decompiler.CSharp.Syntax.AssignmentExpression(new ICSharpCode.Decompiler.CSharp.Syntax.IdentifierExpression(n.Name), n.Initializer.Clone()))));
+						statements.Add(Decompile(network, proc, method, SyntaxFactory.ExpressionStatement(
+								SyntaxFactory.AssignmentExpression(
+									SyntaxKind.EqualsExpression,
+									SyntaxFactory.IdentifierName(n.Identifier.ValueText),
+									SyntaxFactory.Token(SyntaxKind.EqualsToken),
+									n.Initializer.Value))));
 				}
 
 				if (statements.Count == 0)
@@ -397,9 +402,11 @@ namespace SME.AST
 				try
 				{
 					var mr = value as MemberDeclarationSyntax;
-					if (mr is FieldDeclarationSyntax && network.ConstantLookup.ContainsKey((mr as FieldDeclarationSyntax).LoadSymbol(m_semantics) as IFieldSymbol))
-						// TODO lav ny syntax...
-						return ResolveArrayLengthOrPrimitive(network, proc, method, new ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression(network.ConstantLookup[mr as FieldDefinition]));
+					var mrsym = (mr as FieldDeclarationSyntax).LoadSymbol(m_semantics) as IFieldSymbol;
+					if (mr is FieldDeclarationSyntax && network.ConstantLookup.ContainsKey(mrsym))
+					{
+						return ResolveArrayLengthOrPrimitive(network, proc, method, ((FieldDeclarationSyntax)mr).Declaration.Variables.First().Initializer.Value);
+					}
 				}
 				catch (Exception ex)
 				{
