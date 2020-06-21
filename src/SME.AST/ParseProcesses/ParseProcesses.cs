@@ -101,8 +101,11 @@ namespace SME.AST
                     {
                         var elt = (ft as IArrayTypeSymbol).ElementType.ContainingType;
                         if (elt.IsGenericType)
+						{
 							// https://stackoverflow.com/questions/43356807/how-to-create-a-roslyn-itypesymbol-for-an-arbitrary-type
-                            return Mono.Cecil.Rocks.TypeReferenceRocks.MakeArrayType(this.GenericTypes[elt.Name]);
+							// TODO ok jeg ved ikke om compilation tillader det?
+							return (INamedTypeSymbol)compilation.CreateArrayTypeSymbol(GenericTypes[elt.Name]);
+						}
                     }
                     else if (ft.IsGenericType)
                     {
