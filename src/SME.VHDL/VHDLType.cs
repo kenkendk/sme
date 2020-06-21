@@ -1,8 +1,8 @@
 ﻿using System;
-using Mono.Cecil;
 using System.Linq;
 using System.Collections.Generic;
 using SME.AST;
+using Microsoft.CodeAnalysis;
 
 namespace SME.VHDL
 {
@@ -46,7 +46,8 @@ namespace SME.VHDL
 		/// <summary>
 		/// Gets or sets the source CeCil type
 		/// </summary>
-		public TypeReference SourceType { get; set; }
+		//public TypeReference SourceType { get; set; }
+		public ITypeSymbol SourceType { get; set; }
 
 		/// <summary>
 		/// Gets or sets the length of the array
@@ -276,20 +277,20 @@ namespace SME.VHDL
 		/// <summary>
 		/// The numeric types in Mono.Cecil.
 		/// </summary>
-		private readonly TypeReference[] m_numericTypes;
+		private readonly ITypeSymbol[] m_numericTypes;
 		/// <summary>
 		/// The signed numeric types in Mono.Cecil.
 		/// </summary>
-		private readonly TypeReference[] m_signedNumericTypes;
+		private readonly ITypeSymbol[] m_signedNumericTypes;
 		/// <summary>
 		/// The unsigned numeric types in Mono.Cecil.
 		/// </summary>
-		private readonly TypeReference[] m_unsignedNumericTypes;
+		private readonly ITypeSymbol[] m_unsignedNumericTypes;
 
 		/// <summary>
 		/// The resolved numeric types in Mono.Cecil.
 		/// </summary>
-		private readonly TypeDefinition[] m_resolvedNumericTypes;
+		//private readonly TypeDefinition[] m_resolvedNumericTypes;
 
 		/// <summary>
 		/// The string types lookup.
@@ -314,15 +315,16 @@ namespace SME.VHDL
 		/// <summary>
 		/// The Mono.Cecil module definition
 		/// </summary>
-		private readonly ModuleDefinition m_resolveModule;
+		//private readonly ModuleDefinition m_resolveModule;
+		private readonly IAssemblySymbol m_resolveAssembly;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="T:SME.VHDL.VHDLTypeScope"/> class.
 		/// </summary>
 		/// <param name="resolveModule">The module used to resolve types.</param>
-		public VHDLTypeScope(ModuleDefinition resolveModule)
+		public VHDLTypeScope(IAssemblySymbol resolveAssembly)
 		{
-			m_resolveModule = resolveModule;
+			m_resolveAssembly = resolveAssembly;
 
 			foreach (var p in typeof(VHDLTypes).GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static).Where(x => x.FieldType == typeof(VHDLType)).Select(x => (VHDLType)x.GetValue(null)))
 			{
@@ -340,11 +342,11 @@ namespace SME.VHDL
 			}
 
 			m_stringTypes = new Dictionary<string, VHDLType>(m_builtins, StringComparer.OrdinalIgnoreCase);
-			m_numericTypes = NUMERIC_TYPES.Select(x => resolveModule.ImportReference(x)).ToArray();
-			m_signedNumericTypes = SIGNED_NUMERIC_TYPES.Select(x => resolveModule.ImportReference(x)).ToArray();
-			m_unsignedNumericTypes = UNSIGNED_NUMERIC_TYPES.Select(x => resolveModule.ImportReference(x)).ToArray();
+			m_numericTypes = NUMERIC_TYPES.Select(x => resolveAssembly.GetTypeByMetadataName(x.FullName)).ToArray();
+			m_signedNumericTypes = SIGNED_NUMERIC_TYPES.Select(x => resolveAssembly.GetTypeByMetadataName(x.FullName)).ToArray();
+			m_unsignedNumericTypes = UNSIGNED_NUMERIC_TYPES.Select(x => resolveAssembly.GetTypeByMetadataName(x.FullName)).ToArray();
 
-			m_resolvedNumericTypes = m_numericTypes.Select(x => x.Resolve()).ToArray();
+			//m_resolvedNumericTypes = m_numericTypes.Select(x => x.Resolve()).ToArray();
 		}
 
 		/// <summary>
@@ -363,7 +365,7 @@ namespace SME.VHDL
 		/// <param name="typename">The name of the type to get.</param>
 		/// <param name="alias">The type alias to use.</param>
 		/// <param name="type">The type in Mono.Cecil.</param>
-		public VHDLType GetVHDLType(string typename, string alias, TypeReference type)
+		public VHDLType GetVHDLType(string typename, string alias, ITypeSymbol type)
 		{
 			if (!string.IsNullOrWhiteSpace(alias) && m_stringTypes.ContainsKey(alias))
 				return m_stringTypes[alias];
@@ -401,19 +403,25 @@ namespace SME.VHDL
 			}
 			else
 			{
-                var tr = type.Resolve();
+                //var tr = type.Resolve();
+				var tr = type as INamedTypeSymbol;
 				res = new VHDLType()
 				{
 					Name = typename,
 					Alias = alias,
 					SourceType = type,
 					IsArray = false,
-                    IsEnum = tr.IsEnum,
+                    IsEnum = tr.EnumUnderlyingType != null,
                     IsIrregularEnum = IsEnumIrregular(tr)
 				};
 
                 if (res.IsEnum)
-                    res.ElementName = GetVHDLType(tr.Fields.First(x => x.IsSpecialName && x.Name == "value__")).ToString();
+                    res.ElementName = GetVHDLType(
+						tr
+							.GetMembers()
+							.OfType<IFieldSymbol>()
+							.First(x => x.Name == "value__"))
+						.ToString();
 			}
 
 			if (!m_stringTypes.ContainsKey(res.Name))
@@ -429,20 +437,21 @@ namespace SME.VHDL
         /// </summary>
         /// <returns><c>true</c>, if the enum is irregular, <c>false</c> otherwise.</returns>
         /// <param name="type">The type to evaluate.</param>
-        private bool IsEnumIrregular(TypeDefinition type)
+        private bool IsEnumIrregular(INamedTypeSymbol type)
         {
-            if (!type.IsEnum)
+            if (type.EnumUnderlyingType != null)
                 return false;
 
-            var fields = type.Fields
-                .Where(x => !(x.IsSpecialName || x.IsRuntimeSpecialName));
+            var fields = type
+				.GetMembers()
+				.OfType<IFieldSymbol>();
 
             // Something weird, but certainly not regular
-            if (fields.Any(x => !x.HasConstant || !(x.Constant is int)))
+            if (fields.Any(x => !x.HasConstantValue || !(x.ConstantValue is int)))
                 return true;
 
             var names = fields
-                .Select(x => new Tuple<int, string>((int)x.Constant, x.Name))
+                .Select(x => new Tuple<int, string>((int)x.ConstantValue, x.Name))
                 .OrderBy(x => x.Item1)
                 .ToArray();
 
@@ -491,17 +500,20 @@ namespace SME.VHDL
 				return VHDLTypes.NUMERIC_UINT64;
 			else if (type.SourceType != null && type.IsStdLogicVector)
 			{
-				/*foreach (var n in type.SourceType.Resolve().Methods)
-				{
-					if (n.IsSpecialName && n.IsStatic && n.Name == "op_Implicit")
-						Console.WriteLine();
-					if (n.MethodReturnType.ReturnType.IsPrimitive)
-						Console.WriteLine();
-				}*/
-
-				var targets = type.SourceType.Resolve().Methods.Where(x => x.IsSpecialName && x.IsStatic && x.Name == "op_Implicit" && x.MethodReturnType.ReturnType.IsPrimitive && m_resolvedNumericTypes.Where(y => x.MethodReturnType.ReturnType.IsSameTypeReference(y)).Any()).Select(y => y.MethodReturnType.ReturnType).ToArray();
+				var targets = type.SourceType
+					.GetMembers()
+					.OfType<IMethodSymbol>()
+					.Where(x =>
+						x.IsStatic &&
+						x.Name == "op_Implicit" &&
+						((INamedTypeSymbol)x.ReturnType).SpecialType != SpecialType.None &&
+						m_numericTypes
+							.Where(y => x.ReturnType.IsSameTypeReference(y))
+							.Any())
+					.Select(y => y.ReturnType)
+					.ToArray();
 				if (targets.Count() == 0)
-					throw new Exception(string.Format("Unable to get numeric equivalent for {0}", type.SourceType.FullName));
+					throw new Exception(string.Format("Unable to get numeric equivalent for {0}", type.SourceType.ToDisplayString()));
 				else if (targets.Count() == 1)
 				{
 					var t = targets.First();
@@ -607,9 +619,9 @@ namespace SME.VHDL
 		/// </summary>
 		/// <returns>The VHDL type.</returns>
 		/// <param name="type">The parameter definition.</param>
-		public VHDLType GetVHDLType(ParameterDefinition type)
+		public VHDLType GetVHDLType(IParameterSymbol type)
 		{
-			var tr = type.ParameterType;
+			var tr = type.Type;
 
 			if (!tr.IsArrayType())
 				return GetVHDLType(tr);
@@ -618,7 +630,7 @@ namespace SME.VHDL
 
 			var name =
 				string.IsNullOrWhiteSpace(eltype.Alias)
-				? ((MethodDefinition)type.Method).Name + "_" + type.Name + "_ARRAY"
+				? type.ContainingSymbol.Name + "_" + type.Name + "_ARRAY"
 				: eltype.ToString() + "_ARRAY";
 
 			if (!m_arrays.ContainsKey(name))
@@ -643,12 +655,12 @@ namespace SME.VHDL
 		{
 			var customtype = pi.GetCustomAttributes(typeof(VHDLTypeAttribute), true).FirstOrDefault() as VHDLTypeAttribute;
 			if (customtype != null)
-				return GetVHDLType(customtype, m_resolveModule.ImportReference(pi.PropertyType));
+				return GetVHDLType(customtype, m_resolveAssembly.GetTypeByMetadataName(pi.PropertyType.FullName));
 
 			// Try on-type declaration
 			customtype = pi.PropertyType.GetCustomAttributes(typeof(VHDLTypeAttribute), true).FirstOrDefault() as VHDLTypeAttribute;
 			if (customtype != null)
-				return GetVHDLType(customtype, m_resolveModule.ImportReference(pi.PropertyType));
+				return GetVHDLType(customtype, m_resolveAssembly.GetTypeByMetadataName(pi.PropertyType.FullName));
 
 			if (!pi.PropertyType.IsArrayType())
 				return GetVHDLType(pi.PropertyType);
@@ -679,7 +691,7 @@ namespace SME.VHDL
 		/// <returns>The VHDL type.</returns>
 		/// <param name="attr">The attribute.</param>
 		/// <param name="type">The underlying type.</param>
-		public VHDLType GetVHDLType(VHDLTypeAttribute attr, TypeReference type)
+		public VHDLType GetVHDLType(VHDLTypeAttribute attr, ITypeSymbol type)
 		{
 			return GetVHDLType(attr.Type, attr.Alias, type);
 		}
@@ -691,19 +703,19 @@ namespace SME.VHDL
 		/// <returns>The VHDL type.</returns>
 		/// <param name="type">The member definition.</param>
 		/// <param name="membertype">The forced type.</param>
-		public VHDLType GetVHDLType(IMemberDefinition type, TypeReference membertype = null)
+		public VHDLType GetVHDLType(IFieldSymbol type, ITypeSymbol membertype = null)
 		{
-			TypeReference tr = membertype;
+			ITypeSymbol tr = membertype;
 			var customtype = type.GetAttribute<VHDLTypeAttribute>();
 
 			if (tr == null)
 			{
-				if (type is FieldDefinition)
-					tr = (type as FieldDefinition).FieldType;
-				else if (type is PropertyDefinition)
-					tr = (type as PropertyDefinition).PropertyType;
-				else if (type is MethodDefinition)
-					tr = (type as MethodDefinition).ReturnType;
+				if (type is IFieldSymbol)
+					tr = (type as IFieldSymbol).Type;
+				else if (type is IPropertySymbol)
+					tr = (type as IPropertySymbol).Type;
+				else if (type is IMethodSymbol)
+					tr = (type as IMethodSymbol).ReturnType;
 				else
 					throw new Exception(string.Format("Not supported member type: {0}", type.GetType().FullName));
 			}
@@ -715,7 +727,7 @@ namespace SME.VHDL
 			if (customtype != null)
 			{
 				var argname = customtype.ConstructorArguments.First().Value as string;
-				var argalias = customtype.ConstructorArguments.Count > 1 ? customtype.ConstructorArguments.Last().Value as string : null;
+				var argalias = customtype.ConstructorArguments.Count() > 1 ? customtype.ConstructorArguments.Last().Value as string : null;
 				customvhdl = GetVHDLType(new VHDLTypeAttribute(argname, argalias), tr);
 			}
 
@@ -799,7 +811,7 @@ namespace SME.VHDL
 		/// </summary>
 		/// <returns>The VHDL type.</returns>
 		/// <param name="type">The ty[e reference to get the VHDL type for.</param>
-		public VHDLType GetVHDLType(TypeReference type)
+		public VHDLType GetVHDLType(ITypeSymbol type)
 		{
 			if (type.IsArrayType())
 				throw new Exception("Should call with a member reference");
@@ -808,7 +820,7 @@ namespace SME.VHDL
 			if (customtype != null)
 			{
 				var argname = customtype.ConstructorArguments.First().Value as string;
-				var argalias = customtype.ConstructorArguments.Count > 1 ? customtype.ConstructorArguments.Last().Value as string : null;
+				var argalias = customtype.ConstructorArguments.Count() > 1 ? customtype.ConstructorArguments.Last().Value as string : null;
 				return GetVHDLType(new VHDLTypeAttribute(argname, argalias), type);
 			}
 
@@ -846,11 +858,11 @@ namespace SME.VHDL
 				return VHDLTypes.SYSTEM_UINT64;
 			else if (type.IsType<bool>())
 				return VHDLTypes.SYSTEM_BOOL;
-			else if (type.Resolve().IsEnum)
-				return GetVHDLType(type.FullName, null, type);
+			else if (((INamedTypeSymbol)type).EnumUnderlyingType != null)
+				return GetVHDLType(type.Name, null, type);
 			else
 			{
-				return GetVHDLType(type.FullName, null, type);
+				return GetVHDLType(type.Name, null, type);
 				//throw new Exception(string.Format("Unsupported type: {0}", type.FullName));
 			}
 		}
@@ -881,7 +893,7 @@ namespace SME.VHDL
 			else if (type == typeof(bool))
 				return VHDLTypes.SYSTEM_BOOL;
 			else
-				return GetVHDLType(type.FullName, null, m_resolveModule.ImportReference(type));
+				return GetVHDLType(type.FullName, null, m_resolveAssembly.GetTypeByMetadataName(type.FullName));
 			//throw new Exception(string.Format("Unsupported type: {0}", type.FullName));
 		}
 
