@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using Mono.Cecil;
 using SME.AST;
 using System.Linq;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace SME.VHDL
 {
@@ -46,7 +47,7 @@ namespace SME.VHDL
             yield return $"{method.Name}: process (RST, FSM_Trigger)";
             foreach(var n in method.Variables.Union(proc.SharedVariables).Where(x => x != runvariable))
                 yield return $"    variable {n.Name}: {Parent.VHDLWrappedTypeName(n)} := reset_{n.Name};";
-            yield return $"    variable {runvariable.Name}: {Parent.VHDLWrappedTypeName(runvariable)} := {RenderExpression(new PrimitiveExpression("State0", runvariable.CecilType))};";
+            yield return $"    variable {runvariable.Name}: {Parent.VHDLWrappedTypeName(runvariable)} := {RenderExpression(new PrimitiveExpression("State0", runvariable.MSCAType))};";
             yield return $"    variable reentry_guard: std_logic := '0';";
             yield return "begin";
 
@@ -92,19 +93,19 @@ namespace SME.VHDL
             {
                 var margs = string.Join("; ",
                         from n in method.Parameters
-                        let inoutargstr = ((ParameterDefinition)n.Source).GetArgumentInOut().ToString().ToLowerInvariant()
+                        let inoutargstr = ((IParameterSymbol)n.Source).GetArgumentInOut().ToString().ToLowerInvariant()
 
                         select string.Format(
                             "{0}{1}: {2} {3}",
                             string.Equals(inoutargstr, "in", StringComparison.OrdinalIgnoreCase) ? "constant " : "",
                             n.Name,
                             inoutargstr,
-                            ((ParameterDefinition)n.Source).GetAttribute<RangeAttribute>() != null
+                            ((IParameterSymbol)n.Source).GetAttribute<RangeAttribute>() != null
                                 ? method.Name + "_" + n.Name + "_type"
                                 : Parent.VHDLType(n).ToSafeVHDLName()
                         ));
 
-                if (method.ReturnVariable == null || method.ReturnVariable.CecilType.IsSameTypeReference(typeof(void)))
+                if (method.ReturnVariable == null || method.ReturnVariable.MSCAType.IsSameTypeReference(typeof(void)))
                     yield return $"procedure {method.Name}({margs}) is";
                 else
                     yield return $"pure function {method.Name}({margs}) return {Parent.VHDLWrappedTypeName(method.ReturnVariable)} is";
@@ -476,9 +477,9 @@ namespace SME.VHDL
         {
             if (Parent.Config.AVOID_SLL_AND_SRL)
             {
-                if (e.Operator == ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.ShiftLeft)
+                if (e.Operator == SyntaxKind.LessThanLessThanToken)
                     return string.Format("shift_left({0}, {1})", RenderExpression(e.Left), RenderExpression(e.Right));
-                else if (e.Operator == ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.ShiftRight)
+                else if (e.Operator == SyntaxKind.GreaterThanGreaterThanToken)
                     return string.Format("shift_right({0}, {1})", RenderExpression(e.Left), RenderExpression(e.Right));
             }
 
@@ -594,10 +595,10 @@ namespace SME.VHDL
                     return ce.ArrayLengthSource.Name + "_type'LENGTH";
                 }
 
-                if (ce.CecilType != null && ce.CecilType.Resolve().IsEnum)
+                if (ce.MSCAType != null && ((INamedTypeSymbol)ce.MSCAType).EnumUnderlyingType != null)
                 {
-                    if (ce.DefaultValue is FieldDefinition)
-                        return Naming.ToValidName(ce.CecilType.FullName + "_" + ((FieldDefinition)ce.DefaultValue).Name);
+                    if (ce.DefaultValue is IFieldSymbol)
+                        return Naming.ToValidName(ce.MSCAType.ToDisplayString() + "_" + ((IFieldSymbol)ce.DefaultValue).Name);
                 }
             }
 
@@ -649,12 +650,12 @@ namespace SME.VHDL
             {
                 return ((bool)e.Value) ? "'1'" : "'0'";
             }
-            else if (e.SourceResultType.Resolve().IsEnum)
+            else if (((INamedTypeSymbol)e.SourceResultType).EnumUnderlyingType != null)
             {
                 if (e.Value is string)
-                    return Naming.ToValidName(e.SourceResultType.FullName + "_" + e.Value.ToString());
+                    return Naming.ToValidName(e.SourceResultType.ToDisplayString() + "_" + e.Value.ToString());
                 else
-                    return Naming.ToValidName(e.SourceResultType.FullName) + "'VAL(" + e.Value.ToString() + ")";
+                    return Naming.ToValidName(e.SourceResultType.ToDisplayString()) + "'VAL(" + e.Value.ToString() + ")";
             }
             else
             {
@@ -738,7 +739,7 @@ namespace SME.VHDL
                     if (v is AST.Parameter)
                         continue;
 
-                    if (v.CecilType.IsArrayType())
+                    if (v.MSCAType.IsArrayType())
                     {
                         int arraylen;
                         if (v.DefaultValue is EmptyArrayCreateExpression)
