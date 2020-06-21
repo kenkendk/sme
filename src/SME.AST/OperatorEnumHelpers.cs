@@ -1,5 +1,7 @@
 ﻿using System;
-using ICSharpCode.Decompiler.CSharp.Syntax;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace SME.AST
 {
@@ -36,58 +38,58 @@ namespace SME.AST
 			}
 		}
 
-		public static bool IsLogicalOperator(this BinaryOperatorType self)
+		public static bool IsLogicalOperator(this SyntaxToken self)
 		{
-			switch (self)
+			switch (self.RawKind)
 			{
-				case BinaryOperatorType.ConditionalAnd:
-				case BinaryOperatorType.ConditionalOr:
+				case (int)SyntaxKind.AmpersandAmpersandToken:
+				case (int)SyntaxKind.BarBarToken:
 					return true;
 			}
 
 			return false;
 		}
 
-		public static bool IsCompareOperator(this BinaryOperatorType self)
+		public static bool IsCompareOperator(this SyntaxToken self)
 		{
-			switch (self)
+			switch (self.RawKind)
 			{
-				case BinaryOperatorType.GreaterThan:
-				case BinaryOperatorType.GreaterThanOrEqual:
-				case BinaryOperatorType.Equality:
-				case BinaryOperatorType.InEquality:
-				case BinaryOperatorType.LessThan:
-				case BinaryOperatorType.LessThanOrEqual:
+				case (int)SyntaxKind.GreaterThanToken:
+				case (int)SyntaxKind.GreaterThanEqualsToken:
+				case (int)SyntaxKind.EqualsEqualsToken:
+				case (int)SyntaxKind.ExclamationEqualsToken:
+				case (int)SyntaxKind.LessThanToken:
+				case (int)SyntaxKind.LessThanEqualsToken:
 					return true;
 			}
 
 			return false;
 		}
 
-		public static bool IsBitwiseOperator(this BinaryOperatorType self)
+		public static bool IsBitwiseOperator(this SyntaxToken self)
 		{
-			switch (self)
+			switch (self.RawKind)
 			{
-				case BinaryOperatorType.BitwiseAnd:
-				case BinaryOperatorType.BitwiseOr:
-				case BinaryOperatorType.ShiftLeft:
-				case BinaryOperatorType.ShiftRight:
-				case BinaryOperatorType.ExclusiveOr:
+				case (int)SyntaxKind.AmpersandToken: // &
+				case (int)SyntaxKind.BarToken: // |
+				case (int)SyntaxKind.LessThanLessThanToken: // <<
+				case (int)SyntaxKind.GreaterThanGreaterThanToken: // >>
+				case (int)SyntaxKind.CaretToken: // ^
 					return true;
 			}
 
 			return false;
 		}
 
-		public static bool IsArithmeticOperator(this BinaryOperatorType self)
+		public static bool IsArithmeticOperator(this SyntaxToken self)
 		{
-			switch(self)
+			switch(self.RawKind)
 			{
-				case BinaryOperatorType.Add:
-				case BinaryOperatorType.Subtract:
-				case BinaryOperatorType.Multiply:
-				case BinaryOperatorType.Divide:
-				case BinaryOperatorType.Modulus:
+				case (int)SyntaxKind.PlusToken: // +
+				case (int)SyntaxKind.MinusToken: // -
+				case (int)SyntaxKind.AsteriskToken: // *
+				case (int)SyntaxKind.SlashToken: // /
+				case (int)SyntaxKind.PercentToken: // %
 					return true;
 			}
 

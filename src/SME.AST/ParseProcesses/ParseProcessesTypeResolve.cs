@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Mono.Cecil;
-using Mono.Cecil.Rocks;
+//using Mono.Cecil;
+//using Mono.Cecil.Rocks;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace SME.AST
 {
@@ -12,11 +15,16 @@ namespace SME.AST
 		/// <summary>
 		/// Cache with typenames
 		/// </summary>
-		protected Dictionary<Type, TypeReference> m_typelookup = new Dictionary<Type, TypeReference>();
+		protected Dictionary<Type, ITypeSymbol> m_typelookup = new Dictionary<Type, ITypeSymbol>();
 		/// <summary>
 		/// Cache with assemblies
 		/// </summary>
-		protected Dictionary<string, AssemblyDefinition> m_assemblies = new Dictionary<string, AssemblyDefinition>();
+		//protected Dictionary<string, AssemblyDefinition> m_assemblies = new Dictionary<string, AssemblyDefinition>();
+		protected Compilation m_compilation;
+
+		//protected SemanticModel m_semantic;
+		protected IEnumerable<SyntaxTree> m_syntaxtrees;
+		protected IEnumerable<SemanticModel> m_semantics;
 
 		/// <summary>
 		/// Examines the given expression and returns the resulting output type from the expression
@@ -27,40 +35,38 @@ namespace SME.AST
 		/// <param name="method">The method where the statement is found.</param>
 		/// <param name="statement">The statement where the expression is found.</param>
 		/// <param name="expression">The expression to examine.</param>
-        protected TypeReference ResolveExpressionType(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.Decompiler.CSharp.Syntax.Expression expression)
+        protected ITypeSymbol ResolveExpressionType(NetworkState network, ProcessState proc, MethodState method, Statement statement, ExpressionSyntax expression)
 		{
-            if (expression is ICSharpCode.Decompiler.CSharp.Syntax.AssignmentExpression)
-                return ResolveExpressionType(network, proc, method, statement, (expression as ICSharpCode.Decompiler.CSharp.Syntax.AssignmentExpression).Left);
-			else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.IdentifierExpression)
-				return LocateDataElement(network, proc, method, statement, expression as ICSharpCode.Decompiler.CSharp.Syntax.IdentifierExpression).CecilType;
-			else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.MemberReferenceExpression)
+            if (expression is AssignmentExpressionSyntax)
+                return ResolveExpressionType(network, proc, method, statement, (expression as AssignmentExpressionSyntax).Left);
+			else if (expression is IdentifierNameSyntax)
+				return LocateDataElement(network, proc, method, statement, expression as IdentifierNameSyntax).MSCAType;
+			else if (expression is MemberAccessExpressionSyntax)
 			{
-				var el = TryLocateElement(network, proc, method, statement, expression as ICSharpCode.Decompiler.CSharp.Syntax.MemberReferenceExpression);
+				var el = TryLocateElement(network, proc, method, statement, expression as MemberAccessExpressionSyntax);
 				if (el == null)
 					throw new Exception($"Location failed for expression {expression}");
 				else if (el is DataElement)
-					return ((DataElement)el).CecilType;
+					return ((DataElement)el).MSCAType;
 				else if (el is Method)
 				{
 					var rv = ((Method)el).ReturnVariable;
 					if (rv == null)
 						return null;
 
-					return rv.CecilType;
+					return rv.MSCAType;
 				}
 				else
 					throw new Exception($"Unexpected result for {expression} {el.GetType().FullName}");
 			}
-			else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression)
-				return LoadType((expression as ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression).Value.GetType());
-			else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorExpression)
+			else if (expression is LiteralExpressionSyntax)
+				return LoadType((expression as LiteralExpressionSyntax).Token.Value.GetType());
+			else if (expression is BinaryExpressionSyntax)
 			{
-				var e = expression as ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorExpression;
-				var op = e.Operator;
+				var e = expression as BinaryExpressionSyntax;
+				var op = e.OperatorToken;
 				if (op.IsCompareOperator() || op.IsLogicalOperator())
 					return LoadType(typeof(bool));
-
-
 
 				var lefttype = ResolveExpressionType(network, proc, method, statement, e.Left);
                 //var righttype = ResolveExpressionType(network, proc, method, statement, e.Right);
@@ -71,38 +77,38 @@ namespace SME.AST
 
                     // Custom resolve of the resulting type as dictated by the .Net rules
                     if (righttype.IsSameTypeReference<double>() || lefttype.IsSameTypeReference<double>())
-                        return lefttype.LoadType(typeof(double));
+						return m_compilation.GetSpecialType(SpecialType.System_Double);
                     if (righttype.IsSameTypeReference<float>() || lefttype.IsSameTypeReference<float>())
-                        return lefttype.LoadType(typeof(float));
+                        return m_compilation.GetSpecialType(SpecialType.System_Single);
                     if (righttype.IsSameTypeReference<ulong>() || lefttype.IsSameTypeReference<ulong>())
-                        return lefttype.LoadType(typeof(ulong));
+                        return m_compilation.GetSpecialType(SpecialType.System_UInt64);
                     if (righttype.IsSameTypeReference<long>() || lefttype.IsSameTypeReference<long>())
-                        return lefttype.LoadType(typeof(long));
+                        return m_compilation.GetSpecialType(SpecialType.System_Int64);
 
                     if (righttype.IsSameTypeReference<uint>() || lefttype.IsSameTypeReference<uint>())
                     {
                         if (lefttype.IsSameTypeReference<sbyte>() || lefttype.IsSameTypeReference<short>() || righttype.IsSameTypeReference<sbyte>() || righttype.IsSameTypeReference<short>())
-                            return lefttype.LoadType(typeof(long));
+                            return m_compilation.GetSpecialType(SpecialType.System_Int64);
                         else
-                            return lefttype.LoadType(typeof(uint));
+                            return m_compilation.GetSpecialType(SpecialType.System_UInt32);
                     }
 
                     if (righttype.IsSameTypeReference<int>() || lefttype.IsSameTypeReference<int>())
                     {
                         if (righttype.IsSameTypeReference<uint>() || lefttype.IsSameTypeReference<uint>())
-                            return lefttype.LoadType(typeof(uint));
+                            return m_compilation.GetSpecialType(SpecialType.System_UInt32);
                         else
-                            return lefttype.LoadType(typeof(int));
+                            return m_compilation.GetSpecialType(SpecialType.System_Int32);
                     }
 
                     if(righttype.IsSameTypeReference<ushort>() || lefttype.IsSameTypeReference<ushort>())
-                        return lefttype.LoadType(typeof(int));
+                        return m_compilation.GetSpecialType(SpecialType.System_Int32);
                     if (righttype.IsSameTypeReference<short>() || lefttype.IsSameTypeReference<short>())
-                        return lefttype.LoadType(typeof(int));
+                        return m_compilation.GetSpecialType(SpecialType.System_Int32);
                     if (righttype.IsSameTypeReference<sbyte>() || lefttype.IsSameTypeReference<sbyte>())
-                        return lefttype.LoadType(typeof(int));
+                        return m_compilation.GetSpecialType(SpecialType.System_Int32);
                     if (righttype.IsSameTypeReference<byte>() || lefttype.IsSameTypeReference<byte>())
-                        return lefttype.LoadType(typeof(int));
+                        return m_compilation.GetSpecialType(SpecialType.System_Int32);
 
 
                     Console.WriteLine("Warning: unable to determine result type for operation {0} on types {1} and {2}", op, lefttype, righttype);
@@ -115,54 +121,60 @@ namespace SME.AST
 					return lefttype;
 				}
 			}
-			else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorExpression)
-				return ResolveExpressionType(network, proc, method, statement, (expression as ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorExpression).Expression);
-			else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.IndexerExpression)
+			else if (expression is PostfixUnaryExpressionSyntax)
+				return ResolveExpressionType(network, proc, method, statement, (expression as PostfixUnaryExpressionSyntax).Operand);
+			else if (expression is PrefixUnaryExpressionSyntax)
+				return ResolveExpressionType(network, proc, method, statement, (expression as PrefixUnaryExpressionSyntax).Operand);
+			else if (expression is ElementAccessExpressionSyntax)
 			{
-				var arraytype = ResolveExpressionType(network, proc, method, statement, (expression as ICSharpCode.Decompiler.CSharp.Syntax.IndexerExpression).Target);
+				var arraytype = ResolveExpressionType(network, proc, method, statement, (expression as ElementAccessExpressionSyntax).Expression);
 				return arraytype.GetArrayElementType();
 			}
-			else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.CastExpression)
-				return LoadType((expression as ICSharpCode.Decompiler.CSharp.Syntax.CastExpression).Type, method);
-			else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.ConditionalExpression)
-				return ResolveExpressionType(network, proc, method, statement, (expression as ICSharpCode.Decompiler.CSharp.Syntax.ConditionalExpression).TrueExpression);
-			else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.InvocationExpression)
+			else if (expression is CastExpressionSyntax)
+				return LoadType((expression as CastExpressionSyntax).Type, method);
+			else if (expression is ConditionalExpressionSyntax)
+				return ResolveExpressionType(network, proc, method, statement, (expression as ConditionalExpressionSyntax).WhenTrue);
+			else if (expression is InvocationExpressionSyntax)
 			{
-				var si = expression as ICSharpCode.Decompiler.CSharp.Syntax.InvocationExpression;
-				var mt = si.Target as ICSharpCode.Decompiler.CSharp.Syntax.MemberReferenceExpression;
+				var si = expression as InvocationExpressionSyntax;
+				var mt = si.Expression as MemberAccessExpressionSyntax;
 
 				// Catch common translations
-				if (mt != null && (expression as ICSharpCode.Decompiler.CSharp.Syntax.InvocationExpression).Arguments.Count == 1)
+				// TODO jeg håber det bare var en decompile ting :)
+				/*if (mt != null && (expression as InvocationExpressionSyntax).ArgumentList.Arguments.Count == 1)
 				{
-					if (mt.MemberName == "op_Implicit" || mt.MemberName == "op_Explicit")
+					if (mt.TryGetInferredMemberName() == "op_Implicit" || mt.TryGetInferredMemberName() == "op_Explicit")
 					{
 						var mtm = Decompile(network, proc, method, statement, mt);
-						return ResolveExpressionType(network, proc, method, statement, new ICSharpCode.Decompiler.CSharp.Syntax.CastExpression(ICSharpCode.Decompiler.CSharp.Syntax.AstType.Create(mtm.SourceResultType.FullName), si.Arguments.First().Clone()));
+						return ResolveExpressionType(network, proc, method, statement, new ICSharpCode.Decompiler.CSharp.Syntax.CastExpression(ICSharpCode.Decompiler.CSharp.Syntax.AstType.Create(mtm.SourceResultType.FullName), si.ArgumentList.Arguments.First().Clone()));
 					}
-					else if (mt.MemberName == "op_Increment")
+					else if (mt.TryGetInferredMemberName() == "op_Increment")
 						return ResolveExpressionType(network, proc, method, statement, new ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorExpression(ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorType.Increment, si.Arguments.First().Clone()));
-					else if (mt.MemberName == "op_Decrement")
+					else if (mt.TryGetInferredMemberName() == "op_Decrement")
 						return ResolveExpressionType(network, proc, method, statement, new ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorExpression(ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorType.Decrement, si.Arguments.First().Clone()));
-				}
+				}*/
 
-				var m = proc.CecilType.Resolve().GetMethods().FirstOrDefault(x => x.Name == mt.MemberName);
+				var m = (proc.MSCAType.DeclaringSyntaxReferences.FirstOrDefault().GetSyntax() as ClassDeclarationSyntax).Members.OfType<MethodDeclarationSyntax>().FirstOrDefault(x => x.Identifier.Text == mt.TryGetInferredMemberName());
 				if (m != null)
-					return m.ReturnType;
+					return m_semantics.Select(x => x.GetTypeInfo(m).Type).FirstOrDefault(x => x != null);
 
-				return ResolveExpressionType(network, proc, method, statement, (expression as ICSharpCode.Decompiler.CSharp.Syntax.InvocationExpression).Target);
+				return ResolveExpressionType(network, proc, method, statement, (expression as InvocationExpressionSyntax).Expression);
 			}
-			else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.ParenthesizedExpression)
-				return ResolveExpressionType(network, proc, method, statement, (expression as ICSharpCode.Decompiler.CSharp.Syntax.ParenthesizedExpression).Expression);
-			else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.NullReferenceExpression)
-				return null;
-			else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.ArrayCreateExpression)
-				return ResolveExpressionType(network, proc, method, statement, (expression as ICSharpCode.Decompiler.CSharp.Syntax.ArrayCreateExpression).Initializer.FirstChild as ICSharpCode.Decompiler.CSharp.Syntax.Expression);
-			else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.CheckedExpression)
-				return ResolveExpressionType(network, proc, method, statement, (expression as ICSharpCode.Decompiler.CSharp.Syntax.CheckedExpression).Expression);
-			else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.UncheckedExpression)
-				return ResolveExpressionType(network, proc, method, statement, (expression as ICSharpCode.Decompiler.CSharp.Syntax.UncheckedExpression).Expression);
-			else if (expression == ICSharpCode.Decompiler.CSharp.Syntax.Expression.Null)
-				return null;
+			else if (expression is ParenthesizedExpressionSyntax)
+				return ResolveExpressionType(network, proc, method, statement, (expression as ParenthesizedExpressionSyntax).Expression);
+			// TODO den er nu dækket af literalexpressionsyntax
+			//else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.NullReferenceExpression)
+			//	return null;
+			else if (expression is ArrayCreationExpressionSyntax)
+				return ResolveExpressionType(network, proc, method, statement, (expression as ArrayCreationExpressionSyntax).Initializer.DescendantNodes().First() as ExpressionSyntax);
+			else if (expression is CheckedExpressionSyntax)
+				return ResolveExpressionType(network, proc, method, statement, (expression as CheckedExpressionSyntax).Expression);
+			// TODO den er nu dækket af CheckedExpressionSyntax
+			//else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.UncheckedExpression)
+			//	return ResolveExpressionType(network, proc, method, statement, (expression as ICSharpCode.Decompiler.CSharp.Syntax.UncheckedExpression).Expression);
+			// TODO idk?
+			//else if (expression == ICSharpCode.Decompiler.CSharp.Syntax.Expression.Null)
+			//	return null;
 			else
 				throw new Exception(string.Format("Unsupported expression: {0} ({1})", expression, expression.GetType().FullName));
 		}
@@ -172,26 +184,29 @@ namespace SME.AST
 		/// </summary>
 		/// <returns>The loaded type.</returns>
 		/// <param name="t">The type to load.</param>
-		protected virtual TypeReference LoadType(Type t)
+		protected virtual ITypeSymbol LoadType(Type t)
 		{
 			if (m_typelookup.ContainsKey(t))
 				return m_typelookup[t];
 
-			AssemblyDefinition asm;
+			/*AssemblyDefinition asm;
 			m_assemblies.TryGetValue(t.Assembly.Location, out asm);
 			if (asm == null)
 				asm = m_assemblies[t.Assembly.Location] = AssemblyDefinition.ReadAssembly(t.Assembly.Location);
-			
+
 			if (asm == null)
 				return null;
 
-			var res = LoadTypeByName(t.FullName, asm.Modules);
+			var res = LoadTypeByName(t.FullName, asm.Modules);*/
+			var res = LoadTypeByName(t.FullName);
 
+			/* TODO ?
 			if (res == null && t.IsGenericType)
 			{
 				var gt = t.GetGenericTypeDefinition();
 
-				var gtd = LoadTypeByName(gt.FullName, asm.Modules);
+				//var gtd = LoadTypeByName(gt.FullName, asm.Modules);
+				var gtd = LoadTypeByName(gt.FullName);
 				if (gtd != null)
 				{
 					var gtr = new GenericInstanceType(gtd);
@@ -206,14 +221,28 @@ namespace SME.AST
 			{
  				var el = t.GetElementType();
 				res = new Mono.Cecil.ArrayType(LoadType(el));
-			}
+			}*/
 
 			if (res == null)
-				throw new Exception($"Failed to load {t.FullName}, the following types were found in the assembly: {string.Join(",", asm.Modules.SelectMany(x => x.GetTypes()).Select(x => x.FullName))}");
+				//throw new Exception($"Failed to load {t.FullName}, the following types were found in the assembly: {string.Join(",", asm.Modules.SelectMany(x => x.GetTypes()).Select(x => x.FullName))}");
+				throw new Exception($"Failed to load {t.FullName}");
 
 			return m_typelookup[t] = res;
 		}
 
+		protected virtual ITypeSymbol LoadTypeByName(string name)
+		{
+			var syntax = m_compilation
+				.GetTypeByMetadataName(name)
+				.DeclaringSyntaxReferences
+				.First()
+				.GetSyntax();
+			return m_semantics
+				.Select(x => x.GetTypeInfo(syntax).Type)
+				.First(x => x != null);
+		}
+
+		/*
 		/// <summary>
 		/// Loads the specified reflection Type and returns the equivalent CeCil TypeDefinition
 		/// </summary>
@@ -243,14 +272,14 @@ namespace SME.AST
 				{
                     if (c != null && c.Name == parts[i])
                     {
-                        lastns = c.Namespace; 
+                        lastns = c.Namespace;
                         c = c.DeclaringType;
                     }
                     else
                     {
 						if (c == null && lastns == string.Join(".", parts.Skip(i).Reverse()))
 							return e;
-						
+
                         failed = true;
                         break;
                     }
@@ -263,19 +292,27 @@ namespace SME.AST
 
 			return null;
 		}
+		*/
 
 		/// <summary>
 		/// Loads the specified AstType and returns the equivalent CeCil TypeDefinition
 		/// </summary>
 		/// <returns>The loaded type.</returns>
 		/// <param name="t">The type to load.</param>
-		protected virtual TypeReference LoadType(ICSharpCode.Decompiler.CSharp.Syntax.AstType t, Method sourcemethod = null)
-		{ 
+		protected virtual ITypeSymbol LoadType(TypeSyntax t, Method sourcemethod = null)
+		{
+			var res = m_semantics.Select(x => x.GetTypeInfo(t).Type).First(x => x != null);
+			if (res == null)
+				throw new Exception($"Failed to load {t.ToString()}");
+			else
+				return res;
+
+			/*
 			if (t is ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveType)
 				switch (((ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveType)t).KnownTypeCode)
 				{
 					case ICSharpCode.Decompiler.TypeSystem.KnownTypeCode.Boolean:
-						return LoadType(typeof(bool));	
+						return LoadType(typeof(bool));
 					case ICSharpCode.Decompiler.TypeSystem.KnownTypeCode.Byte:
 						return LoadType(typeof(byte));
 					case ICSharpCode.Decompiler.TypeSystem.KnownTypeCode.SByte:
@@ -341,7 +378,7 @@ namespace SME.AST
 					return t0;
 			}
 
-			throw new Exception($"Failed to load {t.ToString()}");
+			throw new Exception($"Failed to load {t.ToString()}"); */
 		}
 
 

@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace SME.AST
 {
@@ -11,12 +14,12 @@ namespace SME.AST
         /// <summary>
         /// The source expression used in the statement
         /// </summary>
-        public ICSharpCode.Decompiler.CSharp.Syntax.Expression SourceExpression;
+        public ExpressionSyntax SourceExpression;
 
         /// <summary>
-        /// The source result type 
+        /// The source result type
         /// </summary>
-        public Mono.Cecil.TypeReference SourceResultType;
+        public ITypeSymbol SourceResultType;
 
         /// <summary>
         /// Returns a string representation of the Expression
@@ -158,7 +161,7 @@ namespace SME.AST
             this.SizeExpression = SizeExpression;
             this.SizeExpression.Parent = this;
         }
-        
+
         /// <summary>
         /// Returns a string representation of the Expression
         /// </summary>
@@ -177,7 +180,7 @@ namespace SME.AST
         /// <summary>
         /// The assignment operator
         /// </summary>
-        public ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType Operator = ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType.Assign;
+        public SyntaxKind Operator = SyntaxKind.EqualsToken;
         /// <summary>
         /// The left-hand-side of the assignment
         /// </summary>
@@ -200,7 +203,7 @@ namespace SME.AST
         /// <param name="left">The left-hand-side expression</param>
         /// <param name="op">The operator to use</param>
         /// <param name="right">The right-hand-size expression</param>
-        public AssignmentExpression(Expression left, ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType op, Expression right)
+        public AssignmentExpression(Expression left, SyntaxKind op, Expression right)
         {
             this.Left = left;
             this.Operator = op;
@@ -218,7 +221,7 @@ namespace SME.AST
         /// <param name="left">The left-hand-side expression</param>
         /// <param name="right">The right-hand-size expression</param>
         public AssignmentExpression(Expression left, Expression right)
-            : this(left, ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType.Assign, right)
+            : this(left, SyntaxKind.EqualsToken, right)
         {
         }
 
@@ -239,7 +242,7 @@ namespace SME.AST
         /// <summary>
         /// The operator being used
         /// </summary>
-        public ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType Operator;
+        public SyntaxKind Operator;
         /// <summary>
         /// The left-hand-side of the operation
         /// </summary>
@@ -262,7 +265,7 @@ namespace SME.AST
         /// <param name="left">The left-hand-side expression</param>
         /// <param name="op">The operator to use</param>
         /// <param name="right">The right-hand-size expression</param>
-        public BinaryOperatorExpression(Expression left, ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType op, Expression right)
+        public BinaryOperatorExpression(Expression left, SyntaxKind op, Expression right)
         {
             this.Left = left;
             this.Operator = op;
@@ -431,9 +434,9 @@ namespace SME.AST
         public IdentifierExpression(DataElement target)
         {
             this.Target = target;
-            this.SourceResultType = target.CecilType;
+            this.SourceResultType = target.MSCAType;
             this.Name = target.Name;
-        }    
+        }
 
         /// <summary>
         /// Returns a string representation of the Expression
@@ -530,10 +533,10 @@ namespace SME.AST
             this.Target = target;
             this.TargetExpression = targetExpression;
             this.ArgumentExpressions = argumentExpressions;
-            if (target.SourceMethod == null)
+            if (target.MSCAMethod == null)
                 this.SourceResultType = target.ReturnVariable == null ? target.GetNearestParent<Process>().CecilType.Module.ImportReference(typeof(void)) : target.ReturnVariable.CecilType;
             else
-                this.SourceResultType = target.SourceMethod.ReturnType;
+                this.SourceResultType = target.MSCAMethod.ReturnType;
 
             this.Target.Parent = this;
             foreach (var e in this.ArgumentExpressions ?? new Expression[0])
@@ -579,7 +582,7 @@ namespace SME.AST
         public MemberReferenceExpression(DataElement target)
         {
             this.Target = target;
-            this.SourceResultType = target.CecilType;
+            this.SourceResultType = target.MSCAType;
         }
 
         /// <summary>
@@ -615,10 +618,10 @@ namespace SME.AST
         public MethodReferenceExpression(Method target)
         {
             this.Target = target;
-            if (target.SourceMethod == null)
+            if (target.MSCAMethod == null)
                 this.SourceResultType = target.ReturnVariable == null ? target.GetNearestParent<Process>().CecilType.Module.ImportReference(typeof(void)) : target.ReturnVariable.CecilType;
             else
-                this.SourceResultType = target.SourceMethod.ReturnType;
+                this.SourceResultType = target.MSCAMethod.ReturnType.LoadSymbol(m_semantics);
         }
 
         /// <summary>
@@ -684,7 +687,7 @@ namespace SME.AST
         /// </summary>
         /// <param name="value">The item to use as the value</param>
         /// <param name="sourcetype">The data element type</param>
-        public PrimitiveExpression(object value, Mono.Cecil.TypeReference sourcetype)
+        public PrimitiveExpression(object value, ITypeSymbol sourcetype)
         {
             this.Value = value;
             this.SourceResultType = sourcetype;
@@ -710,7 +713,7 @@ namespace SME.AST
         /// <summary>
         /// The operator being applied
         /// </summary>
-        public ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorType Operator;
+        public SyntaxKind Operator;
         /// <summary>
         /// The expression the operand is applied to
         /// </summary>
@@ -728,7 +731,7 @@ namespace SME.AST
         /// </summary>
         /// <param name="op">The operation to apply</param>
         /// <param name="operand">The operand to apply the operation to</param>
-        public UnaryOperatorExpression(ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorType op, Expression operand)
+        public UnaryOperatorExpression(SyntaxKind op, Expression operand)
         {
             this.Operator = op;
             this.Operand = operand;
@@ -810,9 +813,9 @@ namespace SME.AST
         /// Initializes a new instance of the <see cref="T:SME.AST.AwaitExpression"/> class.
         /// </summary>
         /// <param name="expression">The expression to await.</param>
-        public AwaitExpression(Expression expression) 
+        public AwaitExpression(Expression expression)
         {
-            Expression = expression;    
+            Expression = expression;
         }
 
         /// <summary>

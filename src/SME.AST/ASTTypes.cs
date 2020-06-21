@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace SME.AST
 {
@@ -27,7 +29,12 @@ namespace SME.AST
 		/// <summary>
 		/// The assembly source
 		/// </summary>
-		public System.Reflection.Assembly Source;
+		//public System.Reflection.Assembly Source;
+		/// <summary>
+		/// The source project
+		/// </summary>
+		public Project project;
+
 		/// <summary>
 		/// The network busses
 		/// </summary>
@@ -98,7 +105,11 @@ namespace SME.AST
 		/// <summary>
 		/// The type as a Cecil type reference
 		/// </summary>
-		public Mono.Cecil.TypeReference CecilType;
+		//public Mono.Cecil.TypeReference CecilType;
+		/// <summary>
+		/// The Microsoft.Codeanalysis type
+		/// </summary>
+		public ITypeSymbol MSCAType;
 
 		/// <summary>
 		/// The source obtained with reflection, if any
@@ -296,7 +307,11 @@ namespace SME.AST
 		/// <summary>
 		/// The type that defines this process for Cecil
 		/// </summary>
-		public Mono.Cecil.TypeReference CecilType;
+		//public Mono.Cecil.TypeReference CecilType;
+		/// <summary>
+		/// The Microsoft.Codeanalysis type
+		/// </summary>
+		public ITypeSymbol MSCAType;
 
 		/// <summary>
 		/// A value indicating if the process is used for simulation only
@@ -327,7 +342,11 @@ namespace SME.AST
 		/// <summary>
 		/// The method obtained with Cecil
 		/// </summary>
-		public Mono.Cecil.MethodDefinition SourceMethod;
+		//public Mono.Cecil.MethodDefinition SourceMethod;
+		/// <summary>
+		/// The Microsoft.Codeanalysis type
+		/// </summary>
+		public MethodDeclarationSyntax MSCAMethod;
 		/// <summary>
 		/// The input parameters used by the method
 		/// </summary>

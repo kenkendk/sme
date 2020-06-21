@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Mono.Cecil;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace SME.AST
 {
@@ -17,7 +18,7 @@ namespace SME.AST
 		/// <param name="method">The method where the statement is found.</param>
 		/// <param name="statement">The statement where the expression is found.</param>
 		/// <param name="expression">The expression to examine.</param>
-		protected virtual DataElement LocateDataElement(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.Decompiler.CSharp.Syntax.Expression expression)
+		protected virtual DataElement LocateDataElement(NetworkState network, ProcessState proc, MethodState method, Statement statement, ExpressionSyntax expression)
 		{
 			var res = TryLocateDataElement(network, proc, method, statement, expression);
 			if (res == null)
@@ -35,24 +36,24 @@ namespace SME.AST
 		/// <param name="method">The method where the statement is found.</param>
 		/// <param name="statement">The statement where the expression is found.</param>
 		/// <param name="expression">The expression to examine.</param>
-		protected ASTItem TryLocateElement(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.Decompiler.CSharp.Syntax.Expression expression)
+		protected ASTItem TryLocateElement(NetworkState network, ProcessState proc, MethodState method, Statement statement, ExpressionSyntax expression)
 		{
-			if (expression is ICSharpCode.Decompiler.CSharp.Syntax.InvocationExpression)
+			if (expression is InvocationExpressionSyntax)
 			{
-				var e = expression as ICSharpCode.Decompiler.CSharp.Syntax.InvocationExpression;
-				var target = e.Target;
+				var e = expression as InvocationExpressionSyntax;
+				var target = e.Expression;
 				return LocateDataElement(network, proc, method, statement, target);
 			}
-			else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.IndexerExpression)
+			else if (expression is ElementAccessExpressionSyntax)
 			{
-				var e = expression as ICSharpCode.Decompiler.CSharp.Syntax.IndexerExpression;
-				var target = e.Target;
+				var e = expression as ElementAccessExpressionSyntax;
+				var target = e.Expression;
 				return LocateDataElement(network, proc, method, statement, target);
 			}
-			else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.IdentifierExpression)
+			else if (expression is IdentifierNameSyntax)
 			{
-				var e = expression as ICSharpCode.Decompiler.CSharp.Syntax.IdentifierExpression;
-				var name = e.Identifier;
+				var e = expression as IdentifierNameSyntax;
+				var name = e.Identifier.Text;
 
 				Variable variable;
 				if (method != null && method.TryGetVariable(name, out variable))
@@ -74,59 +75,60 @@ namespace SME.AST
 
 				return null;
 			}
-			else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.MemberReferenceExpression)
+			else if (expression is MemberAccessExpressionSyntax)
 			{
-				var e = expression as ICSharpCode.Decompiler.CSharp.Syntax.MemberReferenceExpression;
+				var e = expression as MemberAccessExpressionSyntax;
 
 				ASTItem current = null;
 
 				var parts = new List<string>();
-				ICSharpCode.Decompiler.CSharp.Syntax.Expression ec = e;
+				ExpressionSyntax ec = e;
 				while (ec != null)
 				{
-					if (ec is ICSharpCode.Decompiler.CSharp.Syntax.MemberReferenceExpression)
+					if (ec is MemberAccessExpressionSyntax)
 					{
-						parts.Add(((ICSharpCode.Decompiler.CSharp.Syntax.MemberReferenceExpression)ec).MemberName);
-						ec = ((ICSharpCode.Decompiler.CSharp.Syntax.MemberReferenceExpression)ec).Target;
+						parts.Add(((MemberAccessExpressionSyntax)ec).Name.Identifier.Text);
+						ec = ((MemberAccessExpressionSyntax)ec).Expression;
 					}
-					else if (ec is ICSharpCode.Decompiler.CSharp.Syntax.ThisReferenceExpression)
+					else if (ec is ThisExpressionSyntax)
 					{
 						//parts.Add("this");
 						ec = null;
 						break;
 					}
-					else if (ec is ICSharpCode.Decompiler.CSharp.Syntax.BaseReferenceExpression)
+					else if (ec is BaseExpressionSyntax)
 					{
 						//parts.Add("base");
 						ec = null;
 						break;
 					}
-					else if (ec is ICSharpCode.Decompiler.CSharp.Syntax.IdentifierExpression)
+					else if (ec is IdentifierNameSyntax)
 					{
-						parts.Add(((ICSharpCode.Decompiler.CSharp.Syntax.IdentifierExpression)ec).Identifier);
+						parts.Add(((IdentifierNameSyntax)ec).Identifier.Text);
 						ec = null;
 						break;
 					}
-					else if (ec is ICSharpCode.Decompiler.CSharp.Syntax.TypeReferenceExpression)
+					else if (ec is TypeSyntax) // ICSharpCode.Decompiler.CSharp.Syntax.TypeReferenceExpression)
 					{
-						TypeDefinition dc = null;
+						//TypeDefinition dc = null;
+						ISymbol dc = null;
 						if (method != null)
-							dc = method.SourceMethod.DeclaringType;
+							dc = m_semantics.Select(x => x.GetDeclaredSymbol(method.MSCAMethod)).Where(x => x != null).First();
 						else if (proc != null)
-							dc = proc.CecilType.Resolve();
+							dc = proc.MSCAType;
 
 						var ecs = ec.ToString();
 
 						if (dc != null)
 						{
-							if (ecs == dc.FullName || ecs == dc.Name)
+							if (ecs == dc.ToDisplayString() || ecs == dc.Name)
 							{
 								ec = null;
 								//parts.Add("this");
 								break;
 							}
 
-							var targetproc = network.Processes.FirstOrDefault(x => x.CecilType.Name == ecs || x.CecilType.FullName == ecs);
+							var targetproc = network.Processes.FirstOrDefault(x => x.MSCAType.Name == ecs || x.MSCAType.ToDisplayString() == ecs);
 							if (targetproc != null)
 							{
 								// This is a static reference
@@ -134,29 +136,29 @@ namespace SME.AST
 								break;
 							}
 
-							var bt = LoadTypeByName(ecs, dc.Module);
+							var bt = LoadTypeByName(ecs);
 							if (bt == null)
-								bt = LoadTypeByName(dc.FullName + "." + ecs, method.SourceMethod.Module);
+								bt = LoadTypeByName(dc.ToDisplayString() + "." + ecs);
 							if (bt == null)
-								bt = LoadTypeByName(dc.Namespace + "." + ecs, method.SourceMethod.Module);
-                            // In some cases dc.Namespace is empty ... 
+								bt = LoadTypeByName(dc.ContainingNamespace.ToDisplayString() + "." + ecs);
+                            // In some cases dc.Namespace is empty ...
                             if (bt == null && proc != null && proc.SourceType != null)
-                                bt = LoadTypeByName(proc.SourceType.Namespace + "." + ecs, method.SourceMethod.Module);
+                                bt = LoadTypeByName(proc.SourceType.Namespace + "." + ecs);
 
 							if (bt != null && parts.Count == 1)
 							{
-								var br = bt.Resolve();
-								var px = br.Fields.FirstOrDefault(x => x.Name == parts[0]);
+								var br = bt.ContainingType;
+								var px = br.GetMembers().OfType<IFieldSymbol>().FirstOrDefault(x => x.Name == parts[0]);
 
 								// Enum flags are encoded as constants
-								if (br.IsEnum)
+								if (br.EnumUnderlyingType != null)
 								{
 									if (px == null)
-										throw new Exception($"Unable to find enum value {parts[0]} in {br.FullName}");
+										throw new Exception($"Unable to find enum value {parts[0]} in {br.ToDisplayString()}");
 
 									return new Constant()
 									{
-										CecilType = bt,
+										MSCAType = bt,
 										DefaultValue = px,
 										Source = expression
 									};
@@ -170,7 +172,7 @@ namespace SME.AST
 
 									return network.ConstantLookup[px] = new Constant()
 									{
-										CecilType = px.FieldType,
+										MSCAType = px.ContainingType,
 										Name = parts[0],
 										Source = px,
 										Parent = network
@@ -296,7 +298,7 @@ namespace SME.AST
 
 					if (current is Variable)
 					{
-						var fi = ((Variable)current).CecilType.Resolve().Fields.FirstOrDefault(x => x.Name == el);
+						var fi = ((Variable)current).MSCAType.ContainingType.GetMembers().OfType<IFieldSymbol>().FirstOrDefault(x => x.Name == el);
 						if (fi != null)
 						{
 							current = new Variable()
@@ -304,14 +306,14 @@ namespace SME.AST
 								Name = el,
 								Parent = current,
 								Source = fi,
-								CecilType = fi.FieldType,
+								MSCAType = fi.ContainingType,
 								DefaultValue = null
 							};
 
 							continue;
 						}
 
-						var pi = ((Variable)current).CecilType.Resolve().Properties.FirstOrDefault(x => x.Name == el);
+						var pi = ((Variable)current).MSCAType.ContainingType.GetMembers().OfType<IPropertySymbol>().FirstOrDefault(x => x.Name == el);
 						if (pi != null)
 						{
 							current = new Variable()
@@ -319,7 +321,7 @@ namespace SME.AST
 								Name = el,
 								Parent = current,
 								Source = fi,
-								CecilType = fi.FieldType,
+								MSCAType = fi.ContainingType,
 								DefaultValue = null
 							};
 
@@ -327,12 +329,12 @@ namespace SME.AST
 						}
 					}
 
-					if (el == "Length" && (current is DataElement) && ((DataElement)current).CecilType.IsArrayType())
+					if (el == "Length" && (current is DataElement) && ((DataElement)current).MSCAType.ContainingType is IArrayTypeSymbol)
 					{
 						return new Constant()
 						{
 							ArrayLengthSource = current as DataElement,
-							CecilType = LoadType(typeof(int)),
+							MSCAType = LoadType(typeof(int)),
 							DefaultValue = null,
 							Source = (current as DataElement).Source
 						};
@@ -361,7 +363,7 @@ namespace SME.AST
 		/// <param name="method">The method where the statement is found.</param>
 		/// <param name="statement">The statement where the expression is found.</param>
 		/// <param name="expression">The expression to examine.</param>
-		protected DataElement TryLocateDataElement(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.Decompiler.CSharp.Syntax.Expression expression)
+		protected DataElement TryLocateDataElement(NetworkState network, ProcessState proc, MethodState method, Statement statement, ExpressionSyntax expression)
 		{
 			var el = TryLocateElement(network, proc, method, statement, expression);
 			if (el == null)
@@ -382,12 +384,12 @@ namespace SME.AST
 		/// <param name="method">The method to create the variable in.</param>
 		/// <param name="vartype">The data type of the variable.</param>
 		/// <param name="source">The source of the variable</param>
-		protected virtual Variable RegisterTemporaryVariable(NetworkState network, ProcessState proc, MethodState method, TypeReference vartype, object source)
+		protected virtual Variable RegisterTemporaryVariable(NetworkState network, ProcessState proc, MethodState method, ITypeSymbol vartype, object source)
 		{
 			var varname = "tmpvar_" + (network.VariableCount++).ToString();
 			var res = new Variable()
 			{
-				CecilType = vartype,
+				MSCAType = vartype,
 				Name = varname,
 				Source = source,
 				Parent = (ASTItem)method ?? proc
@@ -405,12 +407,12 @@ namespace SME.AST
 		/// <param name="method">The method where the initializer is found</param>
 		/// <param name="vartype">The variable type</param>
 		/// <param name="variable">The field to parse.</param>
-		protected virtual DataElement RegisterVariable(NetworkState network, ProcessState proc, MethodState method, TypeReference vartype, ICSharpCode.Decompiler.CSharp.Syntax.VariableInitializer variable)
+		protected virtual DataElement RegisterVariable(NetworkState network, ProcessState proc, MethodState method, ITypeSymbol vartype, VariableDeclaratorSyntax variable)
 		{
 			var c = new Variable()
 			{
-				CecilType = vartype,
-				Name = variable.Name,
+				MSCAType = vartype,
+				Name = variable.Identifier.Text,
 				DefaultValue = variable.Initializer,
 				Source = variable,
 				Parent = (ASTItem)method ?? proc
@@ -426,12 +428,12 @@ namespace SME.AST
 		/// <param name="network">The top-level network.</param>
 		/// <param name="proc">The process where the method is located.</param>
 		/// <param name="field">The field to parse.</param>
-		protected virtual void RegisterBusReference(NetworkState network, ProcessState proc, FieldDefinition field)
+		protected virtual void RegisterBusReference(NetworkState network, ProcessState proc, IFieldSymbol field)
 		{
             var fd = proc.SourceType.GetField(field.Name, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.FlattenHierarchy);
             if (fd == null)
                 throw new Exception($"No such field: {field.Name} on {proc.SourceType.FullName}");
-            
+
             var businstance = fd.GetValue(proc.SourceInstance.Instance);
             if (businstance == null)
                 return;
@@ -445,7 +447,7 @@ namespace SME.AST
                     var v = a.GetValue(i);
                     var bus = allBusses.FirstOrDefault(x => x.SourceInstance == v);
                     if (bus == null)
-                        throw new Exception($"No such bus: {field.FieldType.FullName}[{i}]");
+                        throw new Exception($"No such bus: {field.ToDisplayString()}[{i}]");
                     proc.BusInstances.Add(field.Name + $"[{i}]", bus);
                 }
             }
@@ -453,7 +455,7 @@ namespace SME.AST
             {
                 var bus = allBusses.FirstOrDefault(x => x.SourceInstance == businstance);
                 if (bus == null)
-                    throw new Exception($"No such bus: {field.FieldType.FullName}");
+                    throw new Exception($"No such bus: {field.ToDisplayString()}");
 
                 proc.BusInstances.Add(field.Name, bus);
             }
@@ -467,20 +469,20 @@ namespace SME.AST
 		/// <param name="network">The top-level network.</param>
 		/// <param name="proc">The process where the method is located.</param>
 		/// <param name="field">The field to parse.</param>
-		protected virtual DataElement RegisterVariable(NetworkState network, ProcessState proc, FieldDefinition field)
+		protected virtual DataElement RegisterVariable(NetworkState network, ProcessState proc, IFieldSymbol field)
 		{
 			DataElement res;
 
-            var ceciltype = proc.ResolveGenericType(field.FieldType);
+            var mscatype = proc.ResolveGenericType(field.ContainingType);
             object defaultvalue = null;
             proc.SourceInstance.Initialization.TryGetValue(field.Name, out defaultvalue);
-            defaultvalue = field.Constant ?? defaultvalue;
+            defaultvalue = field.ConstantValue ?? defaultvalue;
 
 
-			if (field.IsLiteral)
+			if (field.HasConstantValue)
 			{
 				var c = new Constant() {
-                    CecilType = ceciltype,
+					MSCAType = mscatype,
                     DefaultValue = defaultvalue,
 					Name = field.Name,
 					Source = field,
@@ -489,11 +491,12 @@ namespace SME.AST
 				res = c;
 				network.ConstantLookup.Add(field, c);
 			}
-			else if (field.IsStatic && field.IsInitOnly)
+			// TODO jeg er ikke sikker på om .IsInitOnly er det samme som .IsReadOnly
+			else if (field.IsStatic && field.IsReadOnly)
 			{
 				var c = new Constant()
 				{
-                    CecilType = ceciltype,
+					MSCAType = mscatype,
                     DefaultValue = defaultvalue,
 					Name = field.Name,
 					Source = field,
@@ -507,11 +510,11 @@ namespace SME.AST
 				//Don't care
 				res = null;
 			}
-			else if (field.GetAttribute<Signal>() == null)
+			else if (!field.GetAttributes().Any(x => Type.GetType(x.AttributeClass.ToDisplayString()) == typeof(Signal)))
 			{
 				var c = new Variable()
 				{
-                    CecilType = ceciltype,
+                    MSCAType = mscatype,
                     DefaultValue = defaultvalue,
 					Name = field.Name,
 					Source = field,
@@ -525,7 +528,7 @@ namespace SME.AST
 			{
 				var c = new Signal()
 				{
-                    CecilType = ceciltype,
+                    MSCAType = mscatype,
                     DefaultValue = defaultvalue,
 					Name = field.Name,
 					Source = field,
@@ -547,12 +550,12 @@ namespace SME.AST
 		/// <param name="proc">The process where the method is located.</param>
 		/// <param name="method">The method the parameter belongs to.</param>
 		/// <param name="parameter">The parameter to parse.</param>
-		protected virtual Parameter ParseParameter(NetworkState network, ProcessState proc, MethodState method, ParameterDefinition parameter)
+		protected virtual Parameter ParseParameter(NetworkState network, ProcessState proc, MethodState method, ParameterSyntax parameter)
 		{
 			return new Parameter()
 			{
-				CecilType = parameter.ParameterType,
-				Name = parameter.Name,
+				MSCAType = m_semantics.Select(x => x.GetTypeInfo(parameter).Type).First(x => x != null),
+				Name = parameter.Identifier.Text,
 				DefaultValue = null,
 				Source = parameter,
 				Parent = method
@@ -580,7 +583,7 @@ namespace SME.AST
 		/// <param name="proc">The process where the method is located.</param>
 		/// <param name="method">The method the expression is found.</param>
 		/// <param name="expression">The expression used to initialize the bus.</param>
-		protected virtual Bus LocateBus(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.Decompiler.CSharp.Syntax.Expression expression)
+		protected virtual Bus LocateBus(NetworkState network, ProcessState proc, MethodState method, ExpressionSyntax expression)
 		{
 			var de = TryLocateElement(network, proc, method, null, expression);
 			if (de is AST.Bus)

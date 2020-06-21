@@ -1,7 +1,8 @@
 ﻿using System;
-using Mono.Cecil;
 using System.Linq;
 using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace SME.AST
 {
@@ -80,9 +81,15 @@ namespace SME.AST
 		/// </summary>
 		/// <returns><c>true</c>, if the type definition is a bus type, <c>false</c> otherwise.</returns>
 		/// <param name="td">The type to evaluate.</param>
-		public static bool IsBusType(this TypeDefinition td)
+		public static bool IsBusType(this INamedTypeSymbol td)
 		{
-			return td.HasInterface<IBus>();
+			return td.Interfaces.Any(x => Type.GetType(x.ToDisplayString()) == typeof(IBus));
+			//return td.HasInterface<IBus>();
+		}
+
+		public static bool IsBusType(this ITypeSymbol its)
+		{
+			return ((INamedTypeSymbol)its).IsBusType();
 		}
 
 		/// <summary>
@@ -127,6 +134,55 @@ namespace SME.AST
 		public static bool HasAttribute(this IMemberDefinition mr, Type t)
 		{
 			return GetAttribute(mr, t) != null;
+		}
+
+		public static bool HasAttribute(this ISymbol its, Type t)
+		{
+			return its.GetAttribute(t) != null;
+		}
+
+		public static bool HasAttribute<T>(this ISymbol its)
+		{
+			return its.GetAttribute<T>() != null;
+		}
+
+		public static AttributeData GetAttribute(this ISymbol its, Type t)
+		{
+			return its.GetAttributes(t).FirstOrDefault();
+		}
+
+		public static AttributeData GetAttribute<T>(this ISymbol its)
+		{
+			return its.GetAttributes<T>().FirstOrDefault();
+		}
+
+		public static IEnumerable<AttributeData> GetAttributes(this ISymbol its, Type t)
+		{
+			return its.GetAttributes()
+				.Where(x => Type.GetType(x.AttributeClass.ToDisplayString()) == t);
+		}
+
+		public static IEnumerable<AttributeData> GetAttributes<T>(this ISymbol its)
+		{
+			return its.GetAttributes()
+				.Where(x => Type.GetType(x.AttributeClass.ToDisplayString()) == typeof(T));
+		}
+
+		public static ISymbol LoadSymbol(this SyntaxNode sn, IEnumerable<SemanticModel> m_semantics)
+		{
+			return m_semantics
+				.Select(x => x.GetDeclaredSymbol(sn))
+				.First(x => x != null);
+		}
+
+		public static SyntaxNode GetSyntax(this ISymbol isy)
+		{
+			return isy.DeclaringSyntaxReferences.First().GetSyntax();
+		}
+
+		public static ClassDeclarationSyntax GetClassDecl(this ISymbol isy)
+		{
+			return isy.GetSyntax() as ClassDeclarationSyntax;
 		}
 
 		/// <summary>
@@ -446,15 +502,32 @@ namespace SME.AST
 				select m.Parameters.First().ParameterType.Resolve() == td ? m.ReturnType : m.Parameters.First().ParameterType;
 		}
 
-		/// <summary>
+		public static bool IsSameTypeReference(this ITypeSymbol a, ITypeSymbol b)
+		{
+			return a.Equals(b);
+		}
+
+		public static bool IsSameTypeReference(this ITypeSymbol a, Type b)
+		{
+			var itb = a.ContainingAssembly.GetTypeByMetadataName(b.FullName);
+			return a.IsSameTypeReference(itb);
+		}
+
+		public static bool IsSameTypeReference<T>(this ITypeSymbol a)
+		{
+			return a.IsSameTypeReference(typeof(T));
+		}
+
+		/*/// <summary>
 		/// Returns a value indicating if the types are the same
 		/// </summary>
 		/// <returns><c>true</c>, if the types are the same, <c>false</c> otherwise.</returns>
 		/// <param name="a">The type reference to examine.</param>
 		/// <param name="b">The type to test for equality with.</param>
-		public static bool IsSameTypeReference(this TypeReference a, Type b)
+		public static bool IsSameTypeReference(this ISymbol a, Type b)
 		{
-			return IsSameTypeReference(a, a.Module.ImportReference(b));
+			var ta = Type.GetType(a.ToDisplayString());
+			return ta == b;
 		}
 
 		/// <summary>
@@ -463,7 +536,7 @@ namespace SME.AST
 		/// <returns><c>true</c>, if the types are the same, <c>false</c> otherwise.</returns>
 		/// <param name="a">The type reference to examine.</param>
 		/// <typeparam name="T">The type to test for equality with.</typeparam>
-		public static bool IsSameTypeReference<T>(this TypeReference a)
+		public static bool IsSameTypeReference<T>(this ISymbol a)
 		{
 			return IsSameTypeReference(a, typeof(T));
 		}
@@ -474,10 +547,11 @@ namespace SME.AST
 		/// <returns><c>true</c>, if the types are the same, <c>false</c> otherwise.</returns>
 		/// <param name="a">The type reference to examine.</param>
 		/// <param name="b">The type to test for equality with.</param>
-		public static bool IsSameTypeReference(this TypeReference a, TypeReference b)
+		public static bool IsSameTypeReference(this ISymbol a, ISymbol b)
 		{
-			return a.FullName == b.FullName;
-		}
+			var tb = Type.GetType(b.ToDisplayString());
+			return IsSameTypeReference(a, tb);
+		}*/
 
 		/// <summary>
 		/// Gets a field in the given type or its base types, with the given name
@@ -638,9 +712,10 @@ namespace SME.AST
 		/// </summary>
 		/// <returns><c>true</c>, the type reference is a fixed array, <c>false</c> otherwise.</returns>
 		/// <param name="tr">The type reference to examine.</param>
-		public static bool IsFixedArrayType(this TypeReference tr)
+		public static bool IsFixedArrayType(this ITypeSymbol tr)
 		{
-			return tr.IsGenericInstance && tr.GetElementType().IsSameTypeReference(typeof(IFixedArray<>));
+			var it = tr as INamedTypeSymbol;
+			return it.IsGenericType && tr.IsSameTypeReference(typeof(IFixedArray<>));
 		}
 
 		/// <summary>
@@ -685,14 +760,14 @@ namespace SME.AST
 		/// </summary>
 		/// <returns>The array element type.</returns>
 		/// <param name="tr">The type reference to examine.</param>
-		public static TypeReference GetArrayElementType(this TypeReference tr)
+		public static ITypeSymbol GetArrayElementType(this ITypeSymbol tr)
 		{
-			if (tr.IsArray)
-				return tr.GetElementType();
+			if (tr is IArrayTypeSymbol)
+				return (tr as IArrayTypeSymbol).ElementType;
 			else if (tr.IsFixedArrayType())
-				return (tr as GenericInstanceType).GenericArguments.First();
+				return (tr as INamedTypeSymbol).TypeParameters.First();
 			else
-				throw new Exception($"GetArrayElementType called on non-array: {tr.FullName}");
+				throw new Exception($"GetArrayElementType called on non-array: {tr.Name}");
 		}
 
 		/// <summary>
@@ -715,9 +790,9 @@ namespace SME.AST
 		/// </summary>
 		/// <returns>The fixed array length.</returns>
 		/// <param name="member">The member to examine.</param>
-		public static int GetFixedArrayLength(this IMemberDefinition member)
+		public static int GetFixedArrayLength(this MemberDeclarationSyntax member, IEnumerable<SemanticModel> m_semantics)
 		{
-			var attr = member.GetAttribute<FixedArrayLengthAttribute>();
+			var attr = member.LoadSymbol(m_semantics).GetAttribute<FixedArrayLengthAttribute>();
 			var arg = attr.ConstructorArguments.First().Value;
 			return (int)Convert.ChangeType(arg, typeof(int));
 		}
@@ -912,7 +987,7 @@ namespace SME.AST
                     throw new Exception($"Can only statically expand loops if the condition is a simple add/subtract operation: {boe.SourceExpression}");
 
                 var lefttarget = boe.Left.GetTarget();
-                if (lefttarget == null)    
+                if (lefttarget == null)
                     throw new Exception($"Can only statically expand loops if the condition is a simple add/subtract operation: {boe.SourceExpression}");
 
                 var left_opr = ResolveIntegerValue(boe.Left);

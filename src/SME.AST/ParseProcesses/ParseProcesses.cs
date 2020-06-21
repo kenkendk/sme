@@ -1,7 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.MSBuild;
 
 namespace SME.AST
 {
@@ -20,7 +25,7 @@ namespace SME.AST
 			/// <summary>
 			/// The table of all the constants in a convenient lookup table
 			/// </summary>
-			public readonly Dictionary<Mono.Cecil.FieldDefinition, Constant> ConstantLookup = new Dictionary<Mono.Cecil.FieldDefinition, Constant>();
+			public readonly Dictionary<IFieldSymbol, Constant> ConstantLookup = new Dictionary<IFieldSymbol, Constant>();
 			/// <summary>
 			/// A variable counter, used to make unique variable names
 			/// </summary>
@@ -29,6 +34,8 @@ namespace SME.AST
 			/// A lookup table of bus instances
 			/// </summary>
 			public readonly Dictionary<IBus, Bus> BusInstanceLookup = new Dictionary<IBus, Bus>();
+
+			public Compilation compilation;
 		}
 
 		/// <summary>
@@ -56,7 +63,11 @@ namespace SME.AST
 			/// <summary>
 			/// The decompiler context.
 			/// </summary>
-			public ICSharpCode.Decompiler.CSharp.CSharpDecompiler DecompilerContext;
+			//public ICSharpCode.Decompiler.CSharp.CSharpDecompiler DecompilerContext;
+			/// <summary>
+			/// The compilation of the project
+			/// </summary>
+			public Compilation compilation;
 			/// <summary>
 			/// The import statements
 			/// </summary>
@@ -69,12 +80,12 @@ namespace SME.AST
             /// <summary>
             /// The map of generic parameters on this process
             /// </summary>
-            public readonly Dictionary<string, Mono.Cecil.GenericParameter> GenericMap = new Dictionary<string, Mono.Cecil.GenericParameter>();
+            public readonly Dictionary<string, ITypeParameterSymbol> GenericMap = new Dictionary<string, ITypeParameterSymbol>();
 
             /// <summary>
             /// The map of generic types on this process
             /// </summary>
-            public readonly Dictionary<string, Mono.Cecil.TypeReference> GenericTypes = new Dictionary<string, Mono.Cecil.TypeReference>();
+            public readonly Dictionary<string, INamedTypeSymbol> GenericTypes = new Dictionary<string, INamedTypeSymbol>();
 
             /// <summary>
             /// Converts a generic type description into a non-generic version
@@ -82,17 +93,18 @@ namespace SME.AST
             /// <returns>The resolved type.</returns>
             /// <param name="ft">The type to resolve.</param>
             /// <param name="method">The method context, if any</param>
-            public Mono.Cecil.TypeReference ResolveGenericType(Mono.Cecil.TypeReference ft, MethodState method = null)
+            public INamedTypeSymbol ResolveGenericType(INamedTypeSymbol ft, MethodState method = null)
             {
                 if (ft != null)
                 {
-                    if (ft.IsArray)
+					if (ft.TypeKind is TypeKind.Array)
                     {
-                        var elt = ft.GetElementType();
-                        if (elt.IsGenericParameter)
+                        var elt = (ft as IArrayTypeSymbol).ElementType.ContainingType;
+                        if (elt.IsGenericType)
+							// https://stackoverflow.com/questions/43356807/how-to-create-a-roslyn-itypesymbol-for-an-arbitrary-type
                             return Mono.Cecil.Rocks.TypeReferenceRocks.MakeArrayType(this.GenericTypes[elt.Name]);
                     }
-                    else if (ft.IsGenericParameter)
+                    else if (ft.IsGenericType)
                     {
                         return this.GenericTypes[ft.Name];
                     }
@@ -155,13 +167,13 @@ namespace SME.AST
             {
 				if (scope == null)
 					throw new ArgumentNullException(nameof(scope));
-                
+
                 if (Scopes.Last().Key != scope)
                     throw new Exception("PopScope had incorrect scope");
 
                 if (scope is BlockStatement)
                     ((BlockStatement)scope).Variables = Scopes.Last().Value.Values.ToArray();
-                
+
                 Scopes.RemoveAt(Scopes.Count - 1);
             }
 
@@ -214,16 +226,43 @@ namespace SME.AST
 		/// <param name="decompile">Set to <c>true</c> to enable decompilation of the IL code.</param>
 		public virtual Network Parse(Simulation simulation, bool decompile = false)
 		{
+			// Get the path to the .csproj file
             var sourceasm = simulation.Processes.First().Instance.GetType().Assembly;
+            var folder_path = Directory.GetParent(sourceasm.Location).FullName;
+            var project_path = GetCSProjInParents(folder_path);
+
+			// Build the project
+			var instance = Microsoft.Build.Locator.MSBuildLocator.RegisterDefaults();
+            // workaround from https://github.com/microsoft/MSBuildLocator/issues/86
+            System.Runtime.Loader.AssemblyLoadContext.Default.Resolving += (assemblyLoadContext, assemblyName) =>
+            {
+                var path = Path.Combine(instance.MSBuildPath, assemblyName.Name + ".dll");
+                if (File.Exists(path))
+                {
+                    return assemblyLoadContext.LoadFromAssemblyPath(path);
+                }
+                return null;
+            };
+            var workspace = MSBuildWorkspace.Create();
+			var proj_task = workspace.OpenProjectAsync(project_path);
+			proj_task.Wait();
+			var project = proj_task.Result;
+			var compile_task = project.GetCompilationAsync();
+			compile_task.Wait();
+			m_compilation = compile_task.Result;
+			// TODO get the semantic model
+			m_syntaxtrees = m_compilation.SyntaxTrees;
+			m_semantics = m_compilation.SyntaxTrees.Select(x => m_compilation.GetSemanticModel(x));
+
 			var network = new NetworkState()
 			{
-				Source = sourceasm,
 				Name = sourceasm.GetName().Name,
-				Parent = null
+				Parent = null,
+				compilation = m_compilation
 			};
 
             network.Processes = simulation.Processes
-				.Where(n => 
+				.Where(n =>
                        n.Instance.GetType().GetCustomAttributes(typeof(IgnoreAttribute), true).FirstOrDefault() == null
 							&&
                        !(n.Instance is SimulationProcess))
@@ -232,7 +271,7 @@ namespace SME.AST
 
 			if (network.Processes.Length == 0)
 				throw new Exception("No processes were found in the list");
-			
+
             network.Busses = network.Processes.SelectMany(x => x.InternalBusses.Concat(x.InputBusses).Concat(x.OutputBusses)).Distinct().ToArray();
 			network.Constants = network.ConstantLookup.Values.ToArray();
 
@@ -266,14 +305,17 @@ namespace SME.AST
 			network.Constants = network.ConstantLookup.Values.ToArray();
 
 			// Patch up all types if they are missing
-			foreach (var el in network.All().OfType<DataElement>().Where(x => x.CecilType == null))
-				el.CecilType = LoadType(el.Type);
+			//foreach (var el in network.All().OfType<DataElement>().Where(x => x.CecilType == null))
+			//	el.CecilType = LoadType(el.Type);
+			foreach (var el in network.All().OfType<DataElement>().Where(x => x.MSCAType == null))
+				el.MSCAType = LoadType(el.Type);
 
             foreach (var el in network.All().OfType<DataElement>().Where(x => x.DefaultValue == null))
             {
-                if (new[] { typeof(byte), typeof(sbyte), typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong) }.Any(x => el.CecilType.IsSameTypeReference(x)))
+                if (new[] { typeof(byte), typeof(sbyte), typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong) }
+						.Any(x => Type.GetType(el.MSCAType.ToDisplayString()) == x))
                     el.DefaultValue = 0;
-                else if (el.CecilType.IsSameTypeReference(typeof(bool)))
+                else if (Type.GetType(el.MSCAType.ToDisplayString()) == typeof(bool))
                     el.DefaultValue = false;
             }
 
@@ -286,6 +328,18 @@ namespace SME.AST
 
 			return network;
 		}
+
+		/// <summary>
+		/// Recursively check folders parents until a *.csproj file is found
+		/// </summary>
+		private static string GetCSProjInParents(string folder_path)
+        {
+            var csprojs = Directory.GetFiles(folder_path, "*.csproj");
+            if (csprojs.Any())
+                return csprojs.First();
+            else
+                return GetCSProjInParents(Directory.GetParent(folder_path).FullName);
+        }
 
 		/// <summary>
 		/// Attempts to remove redundant prefixes to names
@@ -306,7 +360,7 @@ namespace SME.AST
 			if (fullname.StartsWith(network.Name + ".", StringComparison.Ordinal) && fullname.Length > network.Name.Length - 1)
                 fullname = fullname.Substring(network.Name.Length + 1);
 
-            return fullname + extras;			
+            return fullname + extras;
 		}
 
 		/// <summary>
@@ -325,13 +379,14 @@ namespace SME.AST
 			{
 				Name = NameWithoutPrefix(network, st.FullName, st),
 				SourceType = st,
-				CecilType = LoadType(st),
+				//CecilType = LoadType(st),
+				MSCAType = LoadType(st),
                 SourceInstance = process,
                 InstanceName = process.InstanceName,
 				Parent = network,
                 IsSimulation = process.Instance is SimulationProcess,
 				IsClocked = st.GetCustomAttribute<ClockedProcessAttribute>() != null,
-				Decompile = 
+				Decompile =
                     (
                         typeof(SimpleProcess).IsAssignableFrom(st)
                         ||
@@ -343,18 +398,16 @@ namespace SME.AST
 					!st.HasAttribute<SuppressBodyAttribute>()
 			};
 
-            var proctype = res.CecilType.Resolve();
+            //var proctype = res.CecilType.Resolve();
+			var proctype = res.MSCAType.ContainingType;
 
-            if (res.CecilType is Mono.Cecil.GenericInstanceType)
+            //if (res.CecilType is Mono.Cecil.GenericInstanceType)
+			if (proctype.IsGenericType)
             {
-                var gp = res.CecilType as Mono.Cecil.GenericInstanceType;
-                var names = gp.GenericArguments.ToArray();
-                var ga = proctype.GenericParameters.ToArray();
-
-                foreach (var g in ga)
+                foreach (var g in proctype.TypeParameters)
                 {
                     res.GenericMap[g.Name] = g;
-                    res.GenericTypes[g.Name] = names[g.Position];
+                    //res.GenericTypes[g.Identifier.Text] = names[g.Position];
                 }
             }
 
@@ -371,24 +424,33 @@ namespace SME.AST
                     .GetFields(BindingFlags.Instance | BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.NonPublic)
                     .FirstOrDefault(x => x.GetValue(process.Instance) == b.SourceInstance);
                 if (f != null)
-                    res.LocalBusNames[b] = f.Name;                    
+                    res.LocalBusNames[b] = f.Name;
             }
 
 			if (res.Decompile)
 			{
-				var Fields = proctype.Fields
-					.Where(x => x.GetAttributes(typeof(IgnoreAttribute)).FirstOrDefault() == null);
-				while (!proctype.BaseType.FullName.StartsWith("SME"))
+				//var Fields = proctype.Fields.Where(x => x.GetAttributes(typeof(IgnoreAttribute)).FirstOrDefault() == null);
+				// TODO Prøv at slå typen op i semantic istedet?
+				var Fields = proctype.GetMembers()
+                        .OfType<IFieldSymbol>()
+                        .Where(x => !x.GetAttributes()
+                            .Select(y => y.AttributeClass.ToDisplayString())
+                            .Select(y => Type.GetType(y) == typeof(IgnoreAttribute))
+                            .Any());
+				while (!proctype.BaseType.ToDisplayString().StartsWith("SME"))
 				{
-					proctype = proctype.BaseType.Resolve();
-					Fields = Fields.Union(
-						proctype.Fields
-							.Where(x => x.GetAttributes(typeof(IgnoreAttribute)).FirstOrDefault() == null));
+					proctype = proctype.BaseType;
+					Fields = Fields.Union(proctype.GetMembers()
+                        .OfType<IFieldSymbol>()
+                        .Where(x => !x.GetAttributes()
+                            .Select(y => y.AttributeClass.ToDisplayString())
+                            .Select(y => Type.GetType(y) == typeof(IgnoreAttribute))
+                            .Any()));
 				}
                 // Register all variables
                 foreach (var f in Fields)
                 {
-                    var ft = res.ResolveGenericType(f.FieldType);
+                    var ft = res.ResolveGenericType(f.ContainingType);
 
                     if (ft.IsBusType())
                         RegisterBusReference(network, res, f);
@@ -401,7 +463,7 @@ namespace SME.AST
             {
                 if (f.Value == null)
                     continue;
-                
+
                 Variable v;
                 if (res.Variables.TryGetValue(f.Key, out v))
                     SetDataElementDefaultValue(network, res, v, f.Value, false);
@@ -471,7 +533,7 @@ namespace SME.AST
 				Source = pi,
 				Parent = bus,
 				DefaultValue = defaultvalue,
-				CecilType = LoadType(pi.PropertyType)
+				MSCAType = LoadType(pi.PropertyType)
 			};
 		}
 

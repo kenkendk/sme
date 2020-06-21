@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ICSharpCode.Decompiler;
-using ICSharpCode.Decompiler.CSharp;
-using ICSharpCode.Decompiler.CSharp.Syntax;
-using Mono.Cecil;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace SME.AST
 {
@@ -19,29 +18,25 @@ namespace SME.AST
 		/// <param name="method">The method to decompile.</param>
 		protected virtual Statement[] Decompile(NetworkState network, ProcessState proc, MethodState method)
 		{
-            var sx = proc.DecompilerContext.Decompile(method.SourceMethod);
+            var sx = method.MSCAMethod.Body.Statements;
 
-			foreach (var s in sx.Members.Where(x => x is UsingDeclaration).Cast<UsingDeclaration>())
-				proc.Imports.Add(s.Import.ToString());
+			foreach (var s in sx.OfType<UsingStatementSyntax>())
+				proc.Imports.Add(s.Expression.ToString());
 
-			var methodnode = sx.Members.Where(x => x is MethodDeclaration).FirstOrDefault() as MethodDeclaration;
-			if (methodnode == null)
-				return null;
-
-			method.ReturnVariable = 
+			method.ReturnVariable =
                 (
-                    method.SourceMethod.ReturnType.FullName == typeof(void).FullName
+                    method.MSCAMethod.ReturnType.ToString() == typeof(void).FullName
                     ||
-                    method.SourceMethod.ReturnType.FullName == typeof(System.Threading.Tasks.Task).FullName
-                ) 
-                ? null 
-                : RegisterTemporaryVariable(network, proc, method, method.SourceMethod.ReturnType, method.SourceMethod);
-            
+                    method.MSCAMethod.ReturnType.ToString() == typeof(System.Threading.Tasks.Task).FullName
+                )
+                ? null
+                : RegisterTemporaryVariable(network, proc, method, LoadType(method.MSCAMethod.ReturnType, method), method.MSCAMethod);
+
 			if (method.ReturnVariable != null)
 				method.ReturnVariable.Parent = method;
-				      
+
 			var statements = new List<Statement>();
-            var instructions = methodnode.Body.Children;
+            var instructions = sx;
 
             //if (method.IsStateMachine)
             //{
@@ -52,24 +47,19 @@ namespace SME.AST
             //    instructions = (initial as AST.WhileStatement).Children.Skip(1);
             //    if (instructions.First() is ICSharpCode.Decompiler.CSharp.Syntax.BlockStatement && instructions.Count() == 1)
             //        instructions = instructions.First().Children;
-                    
+
             //}
 
             foreach (var n in instructions)
-				if (n.NodeType == NodeType.Statement)
+				try
 				{
-					try
-					{
-						statements.Add(Decompile(network, proc, method, n));
-					}
-					catch (Exception ex)
-					{
-						Console.WriteLine($"Failed to process statement: {n} -> {ex}");
-						statements.Add(new CommentStatement($"Failed to process statement: {n} -> {ex}"));
-					}
+					statements.Add(Decompile(network, proc, method, n));
 				}
-				else
-					throw new Exception(string.Format("Unsupported construct: {0}", n));
+				catch (Exception ex)
+				{
+					Console.WriteLine($"Failed to process statement: {n} -> {ex}");
+					statements.Add(new CommentStatement($"Failed to process statement: {n} -> {ex}"));
+				}
 
 			return statements.ToArray();
 		}
@@ -83,23 +73,24 @@ namespace SME.AST
 		protected virtual void Decompile(NetworkState network, ProcessState proc, System.Reflection.MethodInfo method)
 		{
 			var statements = new List<Statement>();
-			if (proc.CecilType == null)
-				proc.CecilType = LoadType(proc.SourceType);
+			if (proc.MSCAType == null)
+				proc.MSCAType = LoadType(proc.SourceType);
 
-			var proctype = proc.CecilType.Resolve();
-            proc.DecompilerContext = 
+			var proctype = proc.MSCAType;
+            /*proc.DecompilerContext =
                 new CSharpDecompiler(
-                    proc.CecilType.Module, 
-                    new DecompilerSettings() 
-                    { 
+                    proc.CecilType.Module,
+                    new DecompilerSettings()
+                    {
                         AsyncAwait = true,
                         UseDebugSymbols = true,
                     }
-            );
+            );*/
+			var methdecls = proctype.GetMembers().Select(x => x.DeclaringSyntaxReferences.First().GetSyntax()).OfType<MethodDeclarationSyntax>();
 
-			var m = proctype.Methods.FirstOrDefault(x => x.Name == method.Name && x.Parameters.Count == method.GetParameters().Length);
+			var m = methdecls.FirstOrDefault(x => x.Identifier.Text == method.Name && x.ParameterList.Parameters.Count == method.GetParameters().Length);
 			if (m == null)
-				throw new Exception($"Unable to find a method with the name {method.Name} in type {proc.CecilType.FullName}");
+				throw new Exception($"Unable to find a method with the name {method.Name} in type {proc.MSCAType.ToDisplayString()}");
 
 			proc.MainMethod = Decompile(network, proc, m);
 
@@ -117,14 +108,14 @@ namespace SME.AST
 				var tp = proc.MethodTargets.Dequeue();
 				var ix = tp.Item3;
 
-				var ic = (ix.SourceExpression as ICSharpCode.Decompiler.CSharp.Syntax.InvocationExpression);
-				var r = ic.Target as ICSharpCode.Decompiler.CSharp.Syntax.MemberReferenceExpression;
+				var ic = (ix.SourceExpression as InvocationExpressionSyntax);
+				var r = ic.Expression as MemberAccessExpressionSyntax;
 
 				// TODO: Maybe we can support overloads here as well
-				var dm = methods.FirstOrDefault(x => x.Name == r.MemberName);
+				var dm = methods.FirstOrDefault(x => x.Name == r.TryGetInferredMemberName());
 				if (dm == null)
 				{
-					var mr = proctype.Methods.FirstOrDefault(x => x.Name == r.MemberName);
+					var mr = methdecls.FirstOrDefault(x => x.Identifier.Text == r.TryGetInferredMemberName());
 					if (mr == null)
 						throw new Exception($"Unable to resolve method call to {r}");
 					dm = Decompile(network, proc, mr);
@@ -137,7 +128,7 @@ namespace SME.AST
 				{
 					Parent = ix,
 					SourceExpression = ix.SourceExpression,
-					SourceResultType = dm.ReturnVariable.CecilType,
+					SourceResultType = dm.ReturnVariable.MSCAType,
 					Target = dm
 				};
 				ix.SourceResultType = ix.TargetExpression.SourceResultType;
@@ -155,18 +146,18 @@ namespace SME.AST
 		/// <param name="network">The top-level network.</param>
 		/// <param name="proc">The process where the method is located.</param>
 		/// <param name="method">The method to decompile.</param>
-		protected virtual MethodState Decompile(NetworkState network, ProcessState proc, MethodDefinition method)
+		protected virtual MethodState Decompile(NetworkState network, ProcessState proc, MethodDeclarationSyntax method)
 		{
 			var res = new MethodState()
 			{
-				Name = method.Name,
-				SourceMethod = method,
+				Name = method.Identifier.Text,
+				MSCAMethod = method,
 				Parent = proc,
-				Ignore = method.GetAttribute<IgnoreAttribute>() != null,
+				Ignore = method.LoadSymbol(m_semantics).HasAttribute<IgnoreAttribute>(),
                 IsStateMachine = proc.SourceInstance.Instance is StateProcess
 			};
 
-			res.Parameters = method.Parameters.Select(x => ParseParameter(network, proc, res, x)).ToArray();
+			res.Parameters = method.ParameterList.Parameters.Select(x => ParseParameter(network, proc, res, x)).ToArray();
 
 			if (res.Ignore)
 			{
@@ -185,7 +176,7 @@ namespace SME.AST
 			{
 				res.ReturnVariable = new Variable()
 				{
-					CecilType = method.ReturnType,
+					MSCAType = LoadType(method.ReturnType),
 					Parent = res,
 					Source = method
 				};
