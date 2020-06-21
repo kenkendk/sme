@@ -64,7 +64,7 @@ namespace SME.AST
 			else if (expression is BinaryExpressionSyntax)
 			{
 				var e = expression as BinaryExpressionSyntax;
-				var op = e.OperatorToken;
+				var op = e.OperatorToken.Kind();
 				if (op.IsCompareOperator() || op.IsLogicalOperator())
 					return LoadType(typeof(bool));
 

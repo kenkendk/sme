@@ -36,58 +36,58 @@ namespace SME.AST
 			}
 		}
 
-		public static bool IsLogicalOperator(this SyntaxToken self)
+		public static bool IsLogicalOperator(this SyntaxKind self)
 		{
-			switch (self.RawKind)
+			switch (self)
 			{
-				case (int)SyntaxKind.AmpersandAmpersandToken:
-				case (int)SyntaxKind.BarBarToken:
+				case SyntaxKind.AmpersandAmpersandToken:
+				case SyntaxKind.BarBarToken:
 					return true;
 			}
 
 			return false;
 		}
 
-		public static bool IsCompareOperator(this SyntaxToken self)
+		public static bool IsCompareOperator(this SyntaxKind self)
 		{
-			switch (self.RawKind)
+			switch (self)
 			{
-				case (int)SyntaxKind.GreaterThanToken:
-				case (int)SyntaxKind.GreaterThanEqualsToken:
-				case (int)SyntaxKind.EqualsEqualsToken:
-				case (int)SyntaxKind.ExclamationEqualsToken:
-				case (int)SyntaxKind.LessThanToken:
-				case (int)SyntaxKind.LessThanEqualsToken:
+				case SyntaxKind.GreaterThanToken:
+				case SyntaxKind.GreaterThanEqualsToken:
+				case SyntaxKind.EqualsEqualsToken:
+				case SyntaxKind.ExclamationEqualsToken:
+				case SyntaxKind.LessThanToken:
+				case SyntaxKind.LessThanEqualsToken:
 					return true;
 			}
 
 			return false;
 		}
 
-		public static bool IsBitwiseOperator(this SyntaxToken self)
+		public static bool IsBitwiseOperator(this SyntaxKind self)
 		{
-			switch (self.RawKind)
+			switch (self)
 			{
-				case (int)SyntaxKind.AmpersandToken: // &
-				case (int)SyntaxKind.BarToken: // |
-				case (int)SyntaxKind.LessThanLessThanToken: // <<
-				case (int)SyntaxKind.GreaterThanGreaterThanToken: // >>
-				case (int)SyntaxKind.CaretToken: // ^
+				case SyntaxKind.AmpersandToken: // &
+				case SyntaxKind.BarToken: // |
+				case SyntaxKind.LessThanLessThanToken: // <<
+				case SyntaxKind.GreaterThanGreaterThanToken: // >>
+				case SyntaxKind.CaretToken: // ^
 					return true;
 			}
 
 			return false;
 		}
 
-		public static bool IsArithmeticOperator(this SyntaxToken self)
+		public static bool IsArithmeticOperator(this SyntaxKind self)
 		{
-			switch(self.RawKind)
+			switch(self)
 			{
-				case (int)SyntaxKind.PlusToken: // +
-				case (int)SyntaxKind.MinusToken: // -
-				case (int)SyntaxKind.AsteriskToken: // *
-				case (int)SyntaxKind.SlashToken: // /
-				case (int)SyntaxKind.PercentToken: // %
+				case SyntaxKind.PlusToken: // +
+				case SyntaxKind.MinusToken: // -
+				case SyntaxKind.AsteriskToken: // *
+				case SyntaxKind.SlashToken: // /
+				case SyntaxKind.PercentToken: // %
 					return true;
 			}
 
