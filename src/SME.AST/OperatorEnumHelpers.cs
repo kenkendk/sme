@@ -7,32 +7,30 @@ namespace SME.AST
 {
 	public static class OperatorEnumHelpers
 	{
-		public static BinaryOperatorType ToBinaryOperator(this AssignmentOperatorType op)
+		public static SyntaxKind ToBinaryOperator(this SyntaxKind op)
 		{
 			switch(op)
 			{
-				case AssignmentOperatorType.Add:
-					return BinaryOperatorType.Add;
-				case AssignmentOperatorType.Subtract:
-					return BinaryOperatorType.Subtract;
-				case AssignmentOperatorType.Multiply:
-					return BinaryOperatorType.Modulus;
-				case AssignmentOperatorType.Divide:
-					return BinaryOperatorType.Divide;
-				case AssignmentOperatorType.Modulus:
-					return BinaryOperatorType.Modulus;
-				case AssignmentOperatorType.ShiftLeft:
-					return BinaryOperatorType.ShiftLeft;
-				case AssignmentOperatorType.ShiftRight:
-					return BinaryOperatorType.ShiftRight;
-				case AssignmentOperatorType.BitwiseAnd:
-					return BinaryOperatorType.BitwiseAnd;
-				case AssignmentOperatorType.BitwiseOr:
-					return BinaryOperatorType.BitwiseOr;
-				case AssignmentOperatorType.ExclusiveOr:
-					return BinaryOperatorType.ExclusiveOr;
-				case AssignmentOperatorType.Assign:
-				case AssignmentOperatorType.Any:
+				case SyntaxKind.PlusEqualsToken:
+					return SyntaxKind.PlusToken;
+				case SyntaxKind.MinusEqualsToken:
+					return SyntaxKind.MinusToken;
+				case SyntaxKind.AsteriskEqualsToken:
+					return SyntaxKind.AsteriskToken;
+				case SyntaxKind.SlashEqualsToken:
+					return SyntaxKind.SlashToken;
+				case SyntaxKind.PercentEqualsToken:
+					return SyntaxKind.PercentToken;
+				case SyntaxKind.LessThanLessThanEqualsToken:
+					return SyntaxKind.LessThanLessThanToken;
+				case SyntaxKind.GreaterThanGreaterThanEqualsToken:
+					return SyntaxKind.GreaterThanGreaterThanToken;
+				case SyntaxKind.AmpersandEqualsToken:
+					return SyntaxKind.AmpersandToken;
+				case SyntaxKind.BarEqualsToken:
+					return SyntaxKind.BarToken;
+				case SyntaxKind.CaretEqualsToken:
+					return SyntaxKind.CaretToken;
 				default:
 					throw new Exception(string.Format("Cannot convert assignment operator {0} to BinaryOperator", op));
 			}
