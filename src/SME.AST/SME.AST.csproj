@@ -9,8 +9,8 @@
     <!--<PackageReference Include="ICSharpCode.Decompiler" Version="3.0.2.3465" />
     <PackageReference Include="Mono.Cecil" Version="0.10.0-beta7" />-->
     <PackageReference Include="Microsoft.Build.Locator" Version="1.2.6" />
-    <PackageReference Include="Microsoft.CodeAnalysis" Version="3.5.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="3.5.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis" Version="3.6.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="3.6.0" />
   </ItemGroup>
 
   <PropertyGroup>
