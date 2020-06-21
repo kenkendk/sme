@@ -13,6 +13,15 @@ namespace SME.AST
 	public static class HelperMethods
 	{
 
+		public static bool IsArrayType(this ITypeSymbol its)
+		{
+			return its is IArrayTypeSymbol || its.IsFixedArrayType();
+		}
+
+		public static bool IsType<T>(this ITypeSymbol its)
+		{
+			return LoadType(its, typeof(T)) == its;
+		}
 
 		/// <summary>
 		/// Returns a value indicating if the type is a Bus type
@@ -277,7 +286,8 @@ namespace SME.AST
 		/// <param name="t">The type to load.</param>
 		public static ITypeSymbol LoadType(this ITypeSymbol source, Type t)
 		{
-			return source.ContainingAssembly.GetTypeByMetadataName(t.ToString());
+			// TODO man skal slå op i compile, ikke i assembly!
+			return source.ContainingAssembly.GetTypeByMetadataName(t.FullName);
 		}
 
 		/// <summary>
