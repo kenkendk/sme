@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Linq;
 using SME.AST;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace SME.VHDL
 {
 	public static class VHDLTypeConversion
 	{
-		public static Expression ConvertExpression(RenderState render, Method method, Expression s, VHDLType target, Mono.Cecil.TypeReference targetsource, bool fromCast)
+		public static Expression ConvertExpression(RenderState render, Method method, Expression s, VHDLType target, ITypeSymbol targetsource, bool fromCast)
 		{
 			var svhdl = render.VHDLType(s);
 
@@ -48,7 +51,7 @@ namespace SME.VHDL
                         SourceExpression = s.SourceExpression,
                         SourceResultType = s.SourceResultType.LoadType(typeof(bool)),
                         Left = s,
-                        Operator = ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.InEquality,
+                        Operator = SyntaxKind.ExclamationEqualsToken,
                         Right = zero
                     };
 
@@ -176,7 +179,7 @@ namespace SME.VHDL
                                         SourceResultType = targetsource,
                                         WrappingTemplate = wstr,
                                     },
-                                    Operator = ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType.Assign,
+                                    Operator = SyntaxKind.EqualsToken,
                                     SourceExpression = s.SourceExpression,
                                     SourceResultType = targetsource
                                 },
@@ -327,7 +330,7 @@ namespace SME.VHDL
                         var asexp = new AssignmentExpression()
                         {
                             Left = iexp.Clone(),
-                            Operator = ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType.Assign,
+                            Operator = SyntaxKind.EqualsToken,
                             Right = new CustomNodes.ConversionExpression()
                             {
                                 Expression = s,
@@ -432,7 +435,7 @@ namespace SME.VHDL
 
                 if (target != VHDLTypes.INTEGER)
                     wrapped = ConvertExpression(render, method, wrapped, target, targetsource, false);
-                
+
                 return wrapped;
             }
 			else
@@ -496,8 +499,8 @@ namespace SME.VHDL
         {
             if (e is PrimitiveExpression)
                 e = (e as PrimitiveExpression).Value;
-            if (e is ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression)
-                e = (e as ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression).Value;
+            if (e is LiteralExpressionSyntax)
+                e = (e as LiteralExpressionSyntax).Token.Value;
 
             if (e == null)
                 return null;
@@ -542,14 +545,14 @@ namespace SME.VHDL
             // Structs TODO better fix? It captures VHDL.UINT_10
             else if (e.GetType().IsValueType && !e.GetType().IsPrimitive && !(e is SME.Tracer.ITracerSerializable))
             {
-                var fields = tvhdl.SourceType.Resolve().Fields.ToDictionary(x => x.Name);                
+                var fields = tvhdl.SourceType.GetMembers().OfType<IFieldSymbol>().ToDictionary(x => x.Name);
                 return "(" +
                     string.Join(", ",
                         e.GetType().GetFields()
                         .Select(x => {
                             var f = fields[x.Name];
 
-                            var exp = new AST.PrimitiveExpression(x.GetValue(e), f.FieldType);
+                            var exp = new AST.PrimitiveExpression(x.GetValue(e), f.Type);
                             var stm = new ExpressionStatement()
                             {
                                 Expression = new AssignmentExpression()
@@ -561,7 +564,7 @@ namespace SME.VHDL
                             exp.Parent = stm.Expression;
                             stm.Expression.Parent = stm;
 
-                            var conv = ConvertExpression(render, null, exp, render.TypeScope.GetVHDLType(f), f.FieldType, false);
+                            var conv = ConvertExpression(render, null, exp, render.TypeScope.GetVHDLType(f), f.Type, false);
 
                             return $"{x.Name} => {new RenderHelper(render, null).RenderExpression(conv)}";
                         })
