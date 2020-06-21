@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Mono.Cecil;
 using SME.AST;
 using SME.VHDL.Templates;
+using Microsoft.CodeAnalysis;
 
 namespace SME.VHDL
 {
@@ -17,7 +17,8 @@ namespace SME.VHDL
 		/// <summary>
 		/// A type reference comparer, used to compare type references loaded from different contexts
 		/// </summary>
-		private class TypeRefComp : IEqualityComparer<TypeReference>
+		// TODO jeg tror ikke man har brug for den her, når man har itypesymbol?
+		/*private class TypeRefComp : IEqualityComparer<ITypeSymbol>
 		{
 			/// <summary>
 			/// Returns a value indicating if x is equal to y.
@@ -25,7 +26,7 @@ namespace SME.VHDL
 			/// <returns><c>True</c> if x is equal to y, <c>false</c> otherwise.</returns>
 			/// <param name="x">The x value.</param>
 			/// <param name="y">The y value.</param>
-			public bool Equals(TypeReference x, TypeReference y)
+			public bool Equals(ITypeSymbol x, ITypeSymbol y)
 			{ return x.FullName == y.FullName; }
 
 			/// <summary>
@@ -35,7 +36,7 @@ namespace SME.VHDL
 			/// <param name="obj">The item to get the hash code for.</param>
 			public int GetHashCode(TypeReference obj)
 			{ return obj.FullName.GetHashCode(); }
-		}
+		}*/
 
 		/// <summary>
 		/// The network being rendered
@@ -73,7 +74,7 @@ namespace SME.VHDL
 		/// <summary>
 		/// The unique types found in the network
 		/// </summary>
-		public readonly Mono.Cecil.TypeReference[] Types;
+		public readonly ITypeSymbol[] Types;
 
 		/// <summary>
 		/// A lookup associating an AST node with a VHDL type
@@ -140,16 +141,17 @@ namespace SME.VHDL
             if (methodsource == null)
             {
                 // This happens if we only have components in the design
-                TypeScope = new VHDLTypeScope(Network.Processes.First().CecilType.Module);
+                TypeScope = new VHDLTypeScope(Network.Processes.First().MSCAType.ContainingAssembly);
             }
             else
-                TypeScope = new VHDLTypeScope(methodsource.MainMethod.SourceMethod.Module);
+                TypeScope = new VHDLTypeScope(methodsource.MSCAType.ContainingAssembly);
 
             Types = Network
                 .All()
                 .OfType<DataElement>()
-                .Select(x => x.CecilType)
-                .Distinct(new TypeRefComp())
+                .Select(x => x.MSCAType)
+                //.Distinct(new TypeRefComp())
+				.Distinct()
                 .ToArray();
 
             Network.Name = Naming.AssemblyToValidName(simulation);
@@ -272,7 +274,7 @@ namespace SME.VHDL
 
 
 
-            var protectedfiles = 
+            var protectedfiles =
                 filenames.GetType().GetFields().Where(x => x.FieldType == typeof(string)).Select(x => x.GetValue(x) as string)
                 .Concat(extrafiles)
                 .Concat(processes.Select(x => Naming.ProcessNameToFileName(x.SourceInstance.Instance)));
@@ -306,7 +308,7 @@ namespace SME.VHDL
             foreach (var vhdlfile in extrafiles)
 				using (var rs = new System.IO.StreamReader(System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(vhdlfile)))
 					File.WriteAllText(Path.Combine(TargetFolder, vhdlfile.Substring(typeof(Templates.TopLevel).Namespace.Length + 1)), rs.ReadToEnd());
-			
+
 		}
 
 		/// <summary>
@@ -451,7 +453,7 @@ namespace SME.VHDL
 
                 if (p is AST.Process)
                     return p.Name + "_" + element.Name + "_type";
-                        
+
                 return element.Name + "_type";
 			}
 
@@ -466,7 +468,7 @@ namespace SME.VHDL
 
             if (vt.IsSystemType || vt.IsVHDLSigned || vt.IsVHDLUnsigned)
                 return TypeScope.StdLogicVectorEquivalent(vt).ToSafeVHDLName();
-                
+
             // TODO: Figure out how to best export array types
             if (element.CecilType.IsArrayType())
             {
@@ -680,7 +682,7 @@ namespace SME.VHDL
 					.OfType<BusSignal>()
 					.Where(x => x.CecilType.IsFixedArrayType())
 					.Distinct();
-				
+
 				return res;
 			}
 		}
@@ -726,7 +728,7 @@ namespace SME.VHDL
 
             if (customs != null)
                 fields = fields.Concat(customs);
-                    
+
             return fields.ToArray();
         }
 
@@ -900,7 +902,7 @@ namespace SME.VHDL
                                 var elements = Enumerable.Range(0, arc.Length).Select(x => arc.GetValue(x));
 
                                 var values = string.Join(", ", elements.Select(x => string.Format("{0}({1})", convm,  VHDLTypeConversion.GetPrimitiveLiteral(x, vhdl_eltype, this))));
-                                yield return string.Format("constant {0}: {0}_type := ({1})", varname, values);                                
+                                yield return string.Format("constant {0}: {0}_type := ({1})", varname, values);
                             }
 							else
 							{
@@ -965,11 +967,11 @@ namespace SME.VHDL
 			var st = bus.SourceType;
             if (bus.SourceInstance != null && Simulation.BusNames.ContainsKey(bus.SourceInstance))
                 return (Simulation.BusNames[bus.SourceInstance] + "." + s.Name).Replace(",", "_");
-            
+
             var name = st.Name + "." + s.Name;
 			if (st.DeclaringType != null)
 				name = st.DeclaringType.Name + "." + name;
-			
+
             return name.Replace(",", "_");
 		}
 
@@ -1008,21 +1010,21 @@ namespace SME.VHDL
 		/// </summary>
 		/// <returns>The temporary variable to create.</returns>
 		/// <param name="variabletype">The type of the variable to use.</param>
-		public Variable RegisterTemporaryVariable(Method method, TypeReference variabletype)
+		public Variable RegisterTemporaryVariable(Method method, ITypeSymbol variabletype)
 		{
 			Dictionary<string, Variable> table;
 			if (!TemporaryVariables.TryGetValue(method, out table))
 				TemporaryVariables[method] = table = new Dictionary<string, Variable>();
 
 			object def = null;
-			if (variabletype.IsValueType && Type.GetType(variabletype.FullName) != null)
-				def = Activator.CreateInstance(Type.GetType(variabletype.FullName));
+			if (variabletype.IsValueType && Type.GetType(variabletype.ToDisplayString()) != null)
+				def = Activator.CreateInstance(Type.GetType(variabletype.ToDisplayString()));
 
 			var name = "local_var_" + table.Count.ToString();
 			return table[name] = new Variable()
 			{
 				Name = name,
-				CecilType = variabletype,
+				MSCAType = variabletype,
 				Parent = method,
 				DefaultValue = def
 			};
