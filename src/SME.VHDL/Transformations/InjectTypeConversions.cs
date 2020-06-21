@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ICSharpCode.Decompiler.CSharp.Syntax;
 using SME.AST;
 using SME.AST.Transform;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace SME.VHDL.Transformations
 {
@@ -60,14 +62,14 @@ namespace SME.VHDL.Transformations
                 var le_type = State.VHDLType(le);
                 var re_type = State.VHDLType(re);
 
-                Mono.Cecil.TypeReference tvhdlsource = boe.SourceResultType;
+                ITypeSymbol tvhdlsource = boe.SourceResultType;
 
                 if ((boe.Operator.IsArithmeticOperator() || boe.Operator.IsCompareOperator()))
                 {
                     if (tvhdl != VHDLTypes.INTEGER)
                         tvhdl = State.TypeScope.NumericEquivalent(tvhdl, false) ?? tvhdl;
                 }
-                else if (boe.Operator == BinaryOperatorType.ShiftLeft || boe.Operator == BinaryOperatorType.ShiftRight)
+                else if (boe.Operator == SyntaxKind.LessThanLessThanToken || boe.Operator == SyntaxKind.GreaterThanGreaterThanToken)
                 {
                     // Handle later
                 }
@@ -103,7 +105,7 @@ namespace SME.VHDL.Transformations
                         rhstype = lhstype;
                 }
 
-				if (boe.Operator == BinaryOperatorType.ShiftLeft || boe.Operator == BinaryOperatorType.ShiftRight)
+				if (boe.Operator == SyntaxKind.LessThanLessThanToken || boe.Operator == SyntaxKind.GreaterThanGreaterThanToken)
 				{
 					rhstype = VHDLTypes.INTEGER;
 					if (lhstype == VHDLTypes.INTEGER)
@@ -111,7 +113,7 @@ namespace SME.VHDL.Transformations
 						var p = boe.Parent;
 						while (p is AST.ParenthesizedExpression)
 							p = p.Parent;
-						
+
 						lhstype = State.VHDLType(p as AST.Expression);
 						lhssource = ((AST.Expression)p).SourceResultType;
 					}
@@ -122,8 +124,8 @@ namespace SME.VHDL.Transformations
 				// Overrides for special types
 				switch (boe.Operator)
 				{
-				case BinaryOperatorType.ShiftLeft:
-				case BinaryOperatorType.ShiftRight:
+				case SyntaxKind.LessThanLessThanToken:
+				case SyntaxKind.GreaterThanGreaterThanToken:
 					rhssource = boe.SourceResultType.LoadType(typeof(int));
 					rhstype = VHDLTypes.INTEGER;
 					break;
@@ -137,7 +139,7 @@ namespace SME.VHDL.Transformations
 				else
 					State.TypeLookup[boe] = tvhdl;
 
-				if (boe.Operator == BinaryOperatorType.Multiply && tvhdl != VHDLTypes.INTEGER)
+				if (boe.Operator == SyntaxKind.AsteriskToken && tvhdl != VHDLTypes.INTEGER)
 				{
 					VHDLTypeConversion.WrapExpression(State, boe, string.Format("resize({0}, {1})", "{0}", tvhdl.Length), tvhdl);
 					m_done[boe] = string.Empty;
@@ -167,7 +169,7 @@ namespace SME.VHDL.Transformations
 				if (cse.Parent is AST.BinaryOperatorExpression)
 				{
 					var pboe = cse.Parent as AST.BinaryOperatorExpression;
-					if (pboe.Right == cse && (pboe.Operator == BinaryOperatorType.ShiftLeft || pboe.Operator == BinaryOperatorType.ShiftRight))
+					if (pboe.Right == cse && (pboe.Operator == SyntaxKind.LessThanLessThanToken || pboe.Operator == SyntaxKind.GreaterThanGreaterThanToken))
 						tvhdl = VHDLTypes.INTEGER;
 				}
 
@@ -201,7 +203,7 @@ namespace SME.VHDL.Transformations
 			else if (el is AST.UnaryOperatorExpression)
 			{
 				var uoe = el as AST.UnaryOperatorExpression;
-				if (uoe.Operator == UnaryOperatorType.Not)
+				if (uoe.Operator == SyntaxKind.ExclamationToken)
 				{
 					var tvhdl = VHDLTypes.BOOL;
 					var n = VHDLTypeConversion.ConvertExpression(State, Method, uoe.Operand, tvhdl, uoe.SourceResultType.LoadType(typeof(bool)), false);
@@ -221,7 +223,7 @@ namespace SME.VHDL.Transformations
                     var a = ie.ArgumentExpressions[i];
 					if (a is AST.PrimitiveExpression)
 					{
-                        var tvhdl = State.TypeScope.GetVHDLType(method.Parameters[i].CecilType);
+                        var tvhdl = State.TypeScope.GetVHDLType(method.Parameters[i].MSCAType);
 						changed |= VHDLTypeConversion.ConvertExpression(State, Method, a, tvhdl, a.SourceResultType, false) != a;
 					}
 				}

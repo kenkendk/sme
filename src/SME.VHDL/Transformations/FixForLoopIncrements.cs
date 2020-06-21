@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using SME.AST;
 using SME.AST.Transform;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace SME.VHDL.Transformations
 {
@@ -62,11 +63,11 @@ namespace SME.VHDL.Transformations
                 return item;
             }
 
-            var incr = loopedges.Item3;			
+            var incr = loopedges.Item3;
 			if (incr == 1)
 				return item;
 
-			var tmp = State.RegisterTemporaryVariable(Method, stm.LoopIndex.CecilType);
+			var tmp = State.RegisterTemporaryVariable(Method, stm.LoopIndex.MSCAType);
 			State.TypeLookup[tmp] = VHDLTypes.INTEGER;
 
 			// Find the first expression, so we can inject the assignment before it
@@ -77,7 +78,7 @@ namespace SME.VHDL.Transformations
 			{
 				var target = x.GetTarget();
 				if (target == stm.LoopIndex)
-					x.SetTarget(tmp);	
+					x.SetTarget(tmp);
 			}
 
 			var exp = firstexp.SourceExpression;
@@ -92,9 +93,9 @@ namespace SME.VHDL.Transformations
 						Name = tmp.Name,
 						Target = tmp,
 						SourceExpression = exp,
-						SourceResultType = tmp.CecilType
+						SourceResultType = tmp.MSCAType
 					},
-					Operator = ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType.Assign,
+					Operator = SyntaxKind.EqualsToken,
 					Right = new BinaryOperatorExpression()
 					{
 						Left = new IdentifierExpression()
@@ -102,20 +103,20 @@ namespace SME.VHDL.Transformations
 							Name = stm.LoopIndex.Name,
 							Target = stm.LoopIndex,
 							SourceExpression = exp,
-							SourceResultType = stm.LoopIndex.CecilType
+							SourceResultType = stm.LoopIndex.MSCAType
 						},
-						Operator = ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.Multiply,
+						Operator = SyntaxKind.AsteriskToken,
 						Right = new PrimitiveExpression()
 						{
 							Value = incr,
-							SourceResultType = tmp.CecilType,
+							SourceResultType = tmp.MSCAType,
 							SourceExpression = exp,
 						},
 						SourceExpression = exp,
-						SourceResultType = tmp.CecilType
+						SourceResultType = tmp.MSCAType
 					},
 					SourceExpression = exp,
-					SourceResultType = tmp.CecilType
+					SourceResultType = tmp.MSCAType
 				}
 			};
 
@@ -130,20 +131,20 @@ namespace SME.VHDL.Transformations
                 new IdentifierExpression(stm.LoopIndex),
                 new BinaryOperatorExpression(
                     new IdentifierExpression(stm.LoopIndex),
-                    ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.Add,
-                    new PrimitiveExpression(1, tmp.CecilType)
+                    SyntaxKind.PlusToken,
+                    new PrimitiveExpression(1, tmp.MSCAType)
                 )
-                { SourceResultType = tmp.CecilType }
-            ) { Parent = stm, SourceResultType = tmp.CecilType };
+                { SourceResultType = tmp.MSCAType }
+            ) { Parent = stm, SourceResultType = tmp.MSCAType };
 
             stm.Condition = new BinaryOperatorExpression(
                 new IdentifierExpression(stm.LoopIndex),
-                ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.LessThan,
-                new PrimitiveExpression(loopedges.Item2 / loopedges.Item3, tmp.CecilType.Module.ImportReference(typeof(int)))
+                SyntaxKind.LessThanToken,
+                new PrimitiveExpression(loopedges.Item2 / loopedges.Item3, tmp.MSCAType.LoadType(typeof(int)))
             )
-            { 
+            {
                 Parent = stm,
-                SourceResultType = tmp.CecilType.Module.ImportReference(typeof(bool))
+                SourceResultType = tmp.MSCAType.LoadType(typeof(bool))
             };
 
 			return nstm;

@@ -1,6 +1,7 @@
 ﻿using System;
 using SME.AST;
 using SME.AST.Transform;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace SME.VHDL.Transformations
 {
@@ -64,7 +65,7 @@ namespace SME.VHDL.Transformations
 						var tvhdl = State.VHDLType(ase.Left);
 						var svhdl = State.VHDLType(ce);
 
-						if (tvhdl == VHDLTypes.SYSTEM_BOOL && svhdl == VHDLTypes.SYSTEM_BOOL && ase.Operator == ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType.Assign)
+						if (tvhdl == VHDLTypes.SYSTEM_BOOL && svhdl == VHDLTypes.SYSTEM_BOOL && ase.Operator == SyntaxKind.EqualsToken)
 						{
 							var tg = ase.Left.GetTarget();
 							CreateIfElse(ce, tg);
@@ -111,7 +112,7 @@ namespace SME.VHDL.Transformations
 				targetExp = new MemberReferenceExpression()
 				{
 					SourceExpression = sourceExp.SourceExpression,
-					SourceResultType = target.CecilType,
+					SourceResultType = target.MSCAType,
 					Target = target
 				};
 			}
@@ -120,8 +121,8 @@ namespace SME.VHDL.Transformations
 				targetExp = new IdentifierExpression()
 				{
 					SourceExpression = sourceExp.SourceExpression,
-					SourceResultType = target.CecilType,
-					Target = target					
+					SourceResultType = target.MSCAType,
+					Target = target
 				};
 			}
 
@@ -149,7 +150,7 @@ namespace SME.VHDL.Transformations
 					}
 				},
 			};
-						   
+
 			sourceExp.PrependStatement(ies);
 			ies.UpdateParents();
 

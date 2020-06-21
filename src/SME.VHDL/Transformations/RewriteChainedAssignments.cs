@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using SME.AST;
 using SME.AST.Transform;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace SME.VHDL.Transformations
 {
@@ -88,7 +89,7 @@ namespace SME.VHDL.Transformations
 				{
 					Name = tmp.Name,
 					Target = tmp,
-					SourceResultType = tmp.CecilType,
+					SourceResultType = tmp.MSCAType,
 					SourceExpression = ase.SourceExpression,
 				};
 
@@ -96,11 +97,11 @@ namespace SME.VHDL.Transformations
 				{
                     Expression = new AssignmentExpression()
 					{
-						Operator = ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType.Assign,
+						Operator = SyntaxKind.EqualsToken,
 						Left = assignWith(),
 						Right = last.Right,
 						SourceExpression = ase.SourceExpression,
-						SourceResultType = tmp.CecilType
+						SourceResultType = tmp.MSCAType
 					}
 				};
 				statements.Add(tmpstm);
@@ -112,12 +113,12 @@ namespace SME.VHDL.Transformations
 				{
 					Expression = new AssignmentExpression()
 					{
-						Operator = ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType.Assign,
+						Operator = SyntaxKind.EqualsToken,
 						Left = el,
 						Right = assignWith(),
 						SourceExpression = ase.SourceExpression,
 						SourceResultType = el.SourceResultType
-					}					
+					}
 				};
 				statements.Add(s);
 			}
@@ -138,7 +139,7 @@ namespace SME.VHDL.Transformations
 
 			/*
 
-			// If we have another assignment somewhere, break it up 
+			// If we have another assignment somewhere, break it up
 			var sue = ase.Right.All().FirstOrDefault(x => x is AssignmentExpression) as AssignmentExpression;
 			if (sue != null)
 			{

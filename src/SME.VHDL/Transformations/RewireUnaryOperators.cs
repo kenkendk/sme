@@ -2,6 +2,7 @@
 using System.Linq;
 using SME.AST;
 using SME.AST.Transform;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace SME.VHDL.Transformations
 {
@@ -34,10 +35,8 @@ namespace SME.VHDL.Transformations
 
 			var incr =
 				new[] {
-					ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorType.Increment,
-					ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorType.Decrement,
-					ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorType.PostIncrement,
-					ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorType.PostDecrement
+					SyntaxKind.PlusPlusToken,
+					SyntaxKind.MinusMinusToken
 				}.Contains(uoe.Operator);
 
 			if (!incr)
@@ -60,12 +59,10 @@ namespace SME.VHDL.Transformations
 				SourceExpression = uoe.SourceExpression,
 				SourceResultType = uoe.SourceResultType,
 				Operator =
-					uoe.Operator == ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorType.Decrement
-					||
-					uoe.Operator == ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorType.PostDecrement
+					uoe.Operator == SyntaxKind.MinusMinusToken
 
-				   ? ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.Subtract
-				   : ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.Add
+				   ? SyntaxKind.MinusToken
+				   : SyntaxKind.PlusToken
 			};
 
 			State.TypeLookup[boe] = State.VHDLType(uoe.Operand);
@@ -75,7 +72,7 @@ namespace SME.VHDL.Transformations
 			{
 				Left = uoe.Operand.Clone(),
 				Right = boe,
-				Operator = ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType.Assign,
+				Operator = SyntaxKind.EqualsToken,
 				SourceExpression = uoe.SourceExpression,
 				SourceResultType = uoe.SourceResultType
 			};
@@ -87,7 +84,7 @@ namespace SME.VHDL.Transformations
 
 			exps.UpdateParents();
 
-			if (uoe.Operator == ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorType.PostIncrement || uoe.Operator == ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorType.PostDecrement)
+			if (uoe.Operator == SyntaxKind.PlusPlusToken || uoe.Operator == SyntaxKind.MinusMinusToken)
 			{
                 if (uoe.Parent is ExpressionStatement || uoe.Parent is ForStatement)
 				{

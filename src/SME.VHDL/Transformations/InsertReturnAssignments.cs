@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using SME.AST;
 using SME.AST.Transform;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace SME.VHDL.Transformations
 {
@@ -53,12 +54,12 @@ namespace SME.VHDL.Transformations
 						Target = Method.ReturnVariable,
 						Name = Method.ReturnVariable.Name,
 						SourceExpression = rs.ReturnExpression.SourceExpression,
-						SourceResultType = Method.ReturnVariable.CecilType
+						SourceResultType = Method.ReturnVariable.MSCAType
 					},
 					Right = rs.ReturnExpression,
 					SourceExpression = rs.ReturnExpression.SourceExpression,
-					SourceResultType = Method.ReturnVariable.CecilType,
-					Operator = ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType.Assign
+					SourceResultType = Method.ReturnVariable.MSCAType,
+					Operator = SyntaxKind.EqualsToken
 				}
 			};
 
@@ -69,7 +70,7 @@ namespace SME.VHDL.Transformations
 			{
 				ReturnExpression = new EmptyExpression() {
 					SourceExpression = rs.ReturnExpression.SourceExpression,
-					SourceResultType = Method.ReturnVariable.CecilType.LoadType(typeof(void))
+					SourceResultType = Method.ReturnVariable.MSCAType.LoadType(typeof(void))
 				},
 			});
 

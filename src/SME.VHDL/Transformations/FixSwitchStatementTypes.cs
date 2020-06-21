@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using SME.AST;
 using SME.AST.Transform;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace SME.VHDL.Transformations
 {
@@ -46,7 +47,7 @@ namespace SME.VHDL.Transformations
                 .Distinct()
                 .ToArray();
 
-            // Case where the expressions are all integer literals, 
+            // Case where the expressions are all integer literals,
             // but the source is some numeric
             if (targets.Length == 1 && targets.First() != exptype)
             {
@@ -70,7 +71,7 @@ namespace SME.VHDL.Transformations
                     {
                         Name = nvar.Name,
                         SourceExpression = ss.SwitchExpression.SourceExpression,
-                        SourceResultType = nvar.CecilType,
+                        SourceResultType = nvar.MSCAType,
                         Target = nvar
                     };
 
@@ -79,10 +80,10 @@ namespace SME.VHDL.Transformations
                         Expression = new AST.AssignmentExpression()
                         {
                             Left = nvexp,
-                            Operator = ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType.Assign,
+                            Operator = SyntaxKind.EqualsToken,
                             Right = ss.SwitchExpression,
                             SourceExpression = ss.SwitchExpression.SourceExpression,
-                            SourceResultType = nvar.CecilType
+                            SourceResultType = nvar.MSCAType
                         }
                     };
 
