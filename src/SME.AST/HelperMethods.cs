@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
@@ -229,6 +229,13 @@ namespace SME.AST
 				return t.GetGenericArguments().First();
 			else
 				throw new Exception($"GetArrayElementType called on non-array: {t.FullName}");
+		}
+
+		public static int GetFixedArrayLength(this ITypeSymbol its)
+		{
+			var attr = its.GetAttribute<FixedArrayLengthAttribute>();
+			var arg = attr.ConstructorArguments.First().Value;
+			return (int)Convert.ChangeType(arg, typeof(int));
 		}
 
 		/// <summary>
