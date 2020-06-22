@@ -48,7 +48,7 @@ namespace SimpleComponents
 			/// Gets or sets the value read from the buffer.
 			/// </summary>
 			T Value { get; set; }
-			
+
             /// <summary>
             /// Gets or sets a value indicating if the buffer is full
             /// </summary>
@@ -56,7 +56,7 @@ namespace SimpleComponents
 			bool Filled { get; set; }
 
             /// <summary>
-            /// Gets or sets the buffer index, used for debugging the AST 
+            /// Gets or sets the buffer index, used for debugging the AST
             /// </summary>
             /// <value>The index.</value>
             byte Index { get; set; }
@@ -77,7 +77,7 @@ namespace SimpleComponents
         /// <summary>
         /// Test element for the AST parser, not used in code
         /// </summary>
-        private T m_test;
+        //private T m_test;
         /// <summary>
         /// The index value
         /// </summary>
@@ -86,7 +86,7 @@ namespace SimpleComponents
         /// <summary>
         /// A dummy static variable for testing statically initialized variables in the AST and code generator
         /// </summary>
-        private static readonly int m_dummy_static = 4;
+        //private static readonly int m_dummy_static = 4;
 
         /// <summary>
         /// A dummy static array for testing statically initialized arrays in the AST and code generator
