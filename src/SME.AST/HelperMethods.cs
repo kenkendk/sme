@@ -97,7 +97,34 @@ namespace SME.AST
 		public static ISymbol LoadSymbol(this SyntaxNode sn, IEnumerable<SemanticModel> m_semantics)
 		{
 			return m_semantics
-				.Select(x => x.GetDeclaredSymbol(sn))
+				.Select(x =>
+				{
+					try
+					{
+						return x.GetDeclaredSymbol(sn);
+					}
+					catch (Exception _)
+					{
+						return null;
+					}
+				})
+				.First(x => x != null);
+		}
+
+		public static ITypeSymbol LoadType(this SyntaxNode sn, IEnumerable<SemanticModel> m_semantics)
+		{
+			return m_semantics
+				.Select(x =>
+				{
+					try
+					{
+						return x.GetTypeInfo(sn).Type;
+					}
+					catch (Exception _)
+					{
+						return null;
+					}
+				})
 				.First(x => x != null);
 		}
 
