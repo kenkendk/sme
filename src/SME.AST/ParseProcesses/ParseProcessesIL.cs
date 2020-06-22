@@ -77,15 +77,6 @@ namespace SME.AST
 				proc.MSCAType = LoadType(proc.SourceType);
 
 			var proctype = proc.MSCAType;
-            /*proc.DecompilerContext =
-                new CSharpDecompiler(
-                    proc.CecilType.Module,
-                    new DecompilerSettings()
-                    {
-                        AsyncAwait = true,
-                        UseDebugSymbols = true,
-                    }
-            );*/
 			var methdecls = proctype.GetMembers().Select(x => x.DeclaringSyntaxReferences.First().GetSyntax()).OfType<MethodDeclarationSyntax>();
 
 			var m = methdecls.FirstOrDefault(x => x.Identifier.Text == method.Name && x.ParameterList.Parameters.Count == method.GetParameters().Length);

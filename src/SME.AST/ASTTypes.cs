@@ -103,10 +103,6 @@ namespace SME.AST
 		public Type Type;
 
 		/// <summary>
-		/// The type as a Cecil type reference
-		/// </summary>
-		//public Mono.Cecil.TypeReference CecilType;
-		/// <summary>
 		/// The Microsoft.Codeanalysis type
 		/// </summary>
 		public ITypeSymbol MSCAType;
@@ -304,10 +300,6 @@ namespace SME.AST
 		/// </summary>
         public SME.ProcessMetadata SourceInstance;
 
-		/// <summary>
-		/// The type that defines this process for Cecil
-		/// </summary>
-		//public Mono.Cecil.TypeReference CecilType;
 		/// <summary>
 		/// The Microsoft.Codeanalysis type
 		/// </summary>

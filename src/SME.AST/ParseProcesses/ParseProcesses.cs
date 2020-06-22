@@ -308,8 +308,6 @@ namespace SME.AST
 			network.Constants = network.ConstantLookup.Values.ToArray();
 
 			// Patch up all types if they are missing
-			//foreach (var el in network.All().OfType<DataElement>().Where(x => x.CecilType == null))
-			//	el.CecilType = LoadType(el.Type);
 			foreach (var el in network.All().OfType<DataElement>().Where(x => x.MSCAType == null))
 				el.MSCAType = LoadType(el.Type);
 
@@ -382,7 +380,6 @@ namespace SME.AST
 			{
 				Name = NameWithoutPrefix(network, st.FullName, st),
 				SourceType = st,
-				//CecilType = LoadType(st),
 				MSCAType = LoadType(st),
                 SourceInstance = process,
                 InstanceName = process.InstanceName,
@@ -401,10 +398,8 @@ namespace SME.AST
 					!st.HasAttribute<SuppressBodyAttribute>()
 			};
 
-            //var proctype = res.CecilType.Resolve();
 			var proctype = res.MSCAType.ContainingType;
 
-            //if (res.CecilType is Mono.Cecil.GenericInstanceType)
 			if (proctype.IsGenericType)
             {
                 foreach (var g in proctype.TypeParameters)
