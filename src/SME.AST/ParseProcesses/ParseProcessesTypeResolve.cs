@@ -232,14 +232,7 @@ namespace SME.AST
 
 		protected virtual ITypeSymbol LoadTypeByName(string name)
 		{
-			var syntax = m_compilation
-				.GetTypeByMetadataName(name)
-				.DeclaringSyntaxReferences
-				.First()
-				.GetSyntax();
-			return m_semantics
-				.Select(x => x.GetTypeInfo(syntax).Type)
-				.First(x => x != null);
+			return m_compilation.GetTypeByMetadataName(name);
 		}
 
 		/*
@@ -301,7 +294,7 @@ namespace SME.AST
 		/// <param name="t">The type to load.</param>
 		protected virtual ITypeSymbol LoadType(TypeSyntax t, Method sourcemethod = null)
 		{
-			var res = m_semantics.Select(x => x.GetTypeInfo(t).Type).First(x => x != null);
+			var res = t.LoadType(m_semantics);
 			if (res == null)
 				throw new Exception($"Failed to load {t.ToString()}");
 			else
