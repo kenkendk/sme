@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Mono.Cecil;
 using SME.AST;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace SME.CPP
 {
@@ -13,7 +14,7 @@ namespace SME.CPP
 		/// <summary>
 		/// A type reference comparer, used to compare type references loaded from different contexts
 		/// </summary>
-		private class TypeRefComp : IEqualityComparer<TypeReference>
+		private class TypeRefComp : IEqualityComparer<ITypeSymbol>
 		{
 			/// <summary>
 			/// Returns a value indicating if x is equal to y.
@@ -21,16 +22,16 @@ namespace SME.CPP
 			/// <returns><c>True</c> if x is equal to y, <c>false</c> otherwise.</returns>
 			/// <param name="x">The x value.</param>
 			/// <param name="y">The y value.</param>
-			public bool Equals(TypeReference x, TypeReference y)
-			{ return x.FullName == y.FullName; }
+			public bool Equals(ITypeSymbol x, ITypeSymbol y)
+			{ return x.ToDisplayString() == y.ToDisplayString(); }
 
 			/// <summary>
 			/// Gets the hash code of an object.
 			/// </summary>
 			/// <returns>The hash code.</returns>
 			/// <param name="obj">The item to get the hash code for.</param>
-			public int GetHashCode(TypeReference obj)
-			{ return obj.FullName.GetHashCode(); }
+			public int GetHashCode(ITypeSymbol obj)
+			{ return obj.ToDisplayString().GetHashCode(); }
 		}
 
 		/// <summary>
@@ -64,7 +65,7 @@ namespace SME.CPP
 		/// <summary>
 		/// The unique types found in the network
 		/// </summary>
-		public readonly TypeReference[] Types;
+		public readonly ITypeSymbol[] Types;
 
 		/// <summary>
 		/// The type scope
@@ -96,12 +97,12 @@ namespace SME.CPP
 
 			ValidateNetwork(Network);
 
-			TypeScope = new CppTypeScope(Network.Processes.First(x => x.MainMethod != null).MainMethod.SourceMethod.Module);
+			TypeScope = new CppTypeScope(Network.Processes.First(x => x.MainMethod != null).MainMethod.MSCAReturnType.ContainingAssembly);
 
 			Types = Network
 				.All()
 				.OfType<DataElement>()
-				.Select(x => x.CecilType)
+				.Select(x => x.MSCAType)
 				.Distinct(new TypeRefComp())
 				.ToArray();
 
@@ -177,18 +178,18 @@ namespace SME.CPP
 				var cppfile in from f in System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceNames()
 								where
 								(
-									f.EndsWith(".cpp", StringComparison.InvariantCultureIgnoreCase) 
+									f.EndsWith(".cpp", StringComparison.InvariantCultureIgnoreCase)
 									||
-								 	f.EndsWith(".hpp", StringComparison.InvariantCultureIgnoreCase) 
+								 	f.EndsWith(".hpp", StringComparison.InvariantCultureIgnoreCase)
 								)
 								&&
 								f.StartsWith(typeof(Templates.TopLevel).Namespace + ".", StringComparison.InvariantCultureIgnoreCase)
 								select f)
 				using (var rs = new System.IO.StreamReader(System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(cppfile)))
 					File.WriteAllText(Path.Combine(TargetFolder, cppfile.Substring(typeof(Templates.TopLevel).Namespace.Length + 1)), rs.ReadToEnd());
-			
+
 		}
-			
+
 
 		/// <summary>
 		/// Performs some checks to see if the network uses features that are not supported by the CPP render
@@ -221,8 +222,8 @@ namespace SME.CPP
 
 				Directory.CreateDirectory(backupname);
 
-                foreach (var fn in new[] { 
-                    Path.ChangeExtension(Naming.AssemblyNameToFileName(Network), ".cpp"), 
+                foreach (var fn in new[] {
+                    Path.ChangeExtension(Naming.AssemblyNameToFileName(Network), ".cpp"),
                     Naming.SharedDefinitionsFileName(Network),
                     Naming.BusDefinitionsFileName(Network),
                     Path.ChangeExtension(Naming.SimulatorFileName(Network), ".cpp"),
@@ -274,30 +275,30 @@ namespace SME.CPP
 		/// <summary>
 		/// Gets all enum types in the network
 		/// </summary>
-        public IEnumerable<TypeDefinition> EnumTypes
+        public IEnumerable<ITypeSymbol> EnumTypes
 		{
 			get
 			{
                 return Types
-                    .Where(x => x.Resolve().IsEnum)
-                    .Select(x => x.Resolve());
+                    .Where(x => x.IsEnum())
+                    .Select(x => x);
 			}
 		}
 
 		/// <summary>
 		/// Gets all enum types in the network
 		/// </summary>
-		public IEnumerable<TypeDefinition> StructTypes
+		public IEnumerable<ITypeSymbol> StructTypes
 		{
 			get
 			{
 				return Types
                     .Where(x =>
                     {
-                        var tr = x.Resolve();
-                        return !tr.IsEnum && tr.IsValueType && !tr.IsPrimitive && !tr.IsSameTypeReference(typeof(void));
+                        var tr = x;
+                        return !tr.IsEnum() && tr.IsValueType && tr.SpecialType == SpecialType.None && !tr.IsSameTypeReference(typeof(void));
                     })
-					.Select(x => x.Resolve());
+					.Select(x => x);
 			}
 		}
 
@@ -306,18 +307,18 @@ namespace SME.CPP
 		/// </summary>
 		/// <returns>The member VHDL strings.</returns>
 		/// <param name="type">The VHDL type.</param>
-		public IEnumerable<string> ListMembers(TypeDefinition type)
+		public IEnumerable<string> ListMembers(ITypeSymbol type)
 		{
-			if (type.IsEnum)
+			if (type.IsEnum())
 			{
-                foreach (var e in type.Fields.Where(x => x.Name != "value__"))
+                foreach (var e in type.GetMembers().OfType<IFieldSymbol>().Where(x => x.Name != "value__"))
                     yield return e.Name;
 			}
-			else if (type.IsValueType && !type.IsPrimitive)
+			else if (type.IsValueType && type.SpecialType == SpecialType.None)
 			{
-				foreach (var m in type.Fields)
+				foreach (var m in type.GetMembers().OfType<IFieldSymbol>())
 					if (!m.IsStatic)
-                        yield return string.Format("{0} {1}", TypeScope.GetType(m.FieldType), Naming.ToValidName(m.Name));
+                        yield return string.Format("{0} {1}", TypeScope.GetType(m.Type), Naming.ToValidName(m.Name));
 			}
 		}
 
@@ -332,28 +333,28 @@ namespace SME.CPP
                 {
 					object nx = n.DefaultValue;
 
-                    if (nx is ICSharpCode.Decompiler.CSharp.Syntax.ArrayCreateExpression)
+                    if (nx is ArrayCreationExpressionSyntax)
                     {
-                        var arc = nx as ICSharpCode.Decompiler.CSharp.Syntax.ArrayCreateExpression;
-                        var eltype = n.CecilType.GetElementType();
+                        var arc = nx as ArrayCreationExpressionSyntax;
+                        var eltype = n.MSCAType.GetArrayElementType();
                         var cpptype = TypeScope.GetType(n);
 
                         string values;
-                        if (new[] { typeof(sbyte), typeof(byte), typeof(ushort), typeof(short), typeof(int), typeof(uint), typeof(long), typeof(ulong) }.Select(x => eltype.Module.ImportReference(x).Resolve()).Contains(eltype.Resolve()))
-                            values = string.Join(", ", arc.Initializer.Elements.Select(x => string.Format("{0}", x)));
+                        if (new[] { typeof(sbyte), typeof(byte), typeof(ushort), typeof(short), typeof(int), typeof(uint), typeof(long), typeof(ulong) }.Select(x => eltype.LoadType(x)).Contains(eltype))
+                            values = string.Join(", ", arc.Initializer.Expressions.Select(x => string.Format("{0}", x)));
                         else
                             throw new Exception("Unexpected initializer type");
 
-                        yield return string.Format("const {0} {1}[{2}] = {{ {3} }}", cpptype.ElementName, n.Name, arc.Initializer.Elements.Count, values);
+                        yield return string.Format("const {0} {1}[{2}] = {{ {3} }}", cpptype.ElementName, n.Name, arc.Initializer.Expressions.Count, values);
                     }
                     else if (nx is AST.ArrayCreateExpression)
                     {
                         var arc = nx as AST.ArrayCreateExpression;
-                        var eltype = n.CecilType.GetElementType();
+                        var eltype = n.MSCAType.GetArrayElementType();
                         var cpptype = TypeScope.GetType(n);
 
                         string values;
-                        if (new[] { typeof(sbyte), typeof(byte), typeof(ushort), typeof(short), typeof(int), typeof(uint), typeof(long), typeof(ulong) }.Select(x => eltype.Module.ImportReference(x).Resolve()).Contains(eltype.Resolve()))
+                        if (new[] { typeof(sbyte), typeof(byte), typeof(ushort), typeof(short), typeof(int), typeof(uint), typeof(long), typeof(ulong) }.Select(x => eltype.LoadType(x)).Contains(eltype))
                             values = string.Join(", ", arc.ElementExpressions.Select(x => Renderer.RenderExpression(x)));
                         else
                             throw new Exception("Unexpected initializer type");
@@ -370,11 +371,11 @@ namespace SME.CPP
                     else if (nx is Array)
                     {
                         var arc = nx as Array;
-                        var eltype = n.CecilType.GetElementType();
+                        var eltype = n.MSCAType.GetArrayElementType();
                         var cpptype = TypeScope.GetType(n);
 
                         string values;
-                        if (new[] { typeof(sbyte), typeof(byte), typeof(ushort), typeof(short), typeof(int), typeof(uint), typeof(long), typeof(ulong) }.Select(x => eltype.Module.ImportReference(x).Resolve()).Contains(eltype.Resolve()))
+                        if (new[] { typeof(sbyte), typeof(byte), typeof(ushort), typeof(short), typeof(int), typeof(uint), typeof(long), typeof(ulong) }.Select(x => eltype.LoadType(x)).Contains(eltype))
                             values = string.Join(", ", Enumerable.Range(0, arc.GetLength(0)).Select(x => arc.GetValue(x).ToString()));
                         else
                             throw new Exception("Unexpected initializer type");
@@ -384,7 +385,7 @@ namespace SME.CPP
                     }
                     else if (nx != null)
                     {
-                        var cpptype = TypeScope.GetType(n);                        
+                        var cpptype = TypeScope.GetType(n);
                         yield return $"const {cpptype.Name} {n.Name} = {nx}";
                     }
                     else
@@ -484,15 +485,15 @@ namespace SME.CPP
         /// <param name="element">The element to get the length for.</param>
         public AST.Constant GetArrayLength(AST.DataElement element)
         {
-            if (element.CecilType.IsFixedArrayType())
+            if (element.MSCAType.IsFixedArrayType())
             {
-                if (element.Source is IMemberDefinition)
+                if (element.Source is IFieldSymbol)
                 {
                     return new Constant
                     {
                         Source = element,
-                        DefaultValue = ((IMemberDefinition)element.Source).GetFixedArrayLength(),
-                        CecilType = element.CecilType.LoadType(typeof(uint))
+                        DefaultValue = ((IFieldSymbol)element.Source).Type.GetFixedArrayLength(),
+                        MSCAType = element.MSCAType.LoadType(typeof(uint))
                     };
                 }
                 else if (element.Source is System.Reflection.MemberInfo)
@@ -501,7 +502,7 @@ namespace SME.CPP
                     {
                         Source = element,
                         DefaultValue = ((System.Reflection.MemberInfo)element.Source).GetFixedArrayLength(),
-                        CecilType = element.CecilType.LoadType(typeof(uint))
+                        MSCAType = element.MSCAType.LoadType(typeof(uint))
                     };
                 }
             }
@@ -512,7 +513,7 @@ namespace SME.CPP
                 {
                     Source = element,
                     DefaultValue = (element.DefaultValue as Array).Length,
-                    CecilType = element.CecilType.LoadType(typeof(uint))
+                    MSCAType = element.MSCAType.LoadType(typeof(uint))
                 };
             }
 

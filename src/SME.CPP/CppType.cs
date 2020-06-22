@@ -1,5 +1,5 @@
 ﻿using System;
-using Mono.Cecil;
+using Microsoft.CodeAnalysis;
 
 namespace SME.CPP
 {
@@ -23,7 +23,7 @@ namespace SME.CPP
 		/// <summary>
 		/// Gets or sets the source CeCiL type
 		/// </summary>
-		public TypeReference SourceType { get; set; }
+		public ITypeSymbol SourceType { get; set; }
 		/// <summary>
 		/// Gets or sets the length of the array
 		/// </summary>

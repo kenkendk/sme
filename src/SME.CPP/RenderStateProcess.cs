@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-using Mono.Cecil;
 using SME.AST;
 
 namespace SME.CPP

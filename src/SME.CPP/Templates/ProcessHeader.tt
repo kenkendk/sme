@@ -27,7 +27,7 @@ private:
     // Shared variables
 <#     foreach(var v in RSP.Process.SharedVariables) { #>
     <#= Type(v) #> <#= v.Name #>;
-<#         if (v.CecilType.IsArrayType()) { #>
+<#         if (v.MSCAType.IsArrayType()) { #>
     size_t size_<#= v.Name #>;
 <#         } #>
 <#     } #>
@@ -37,7 +37,7 @@ private:
     // Shared signals
 <#     foreach(var v in RSP.Process.SharedSignals) { #>
     <#= Type(v) #> <#= v.Name #>;
-<#         if (v.CecilType.IsArrayType()) { #>
+<#         if (v.MSCAType.IsArrayType()) { #>
     size_t size_<#= v.Name #>;
 <#         } #>
 <#     } #>
@@ -52,7 +52,7 @@ private:
     // Internal methods
 <#     foreach (var s in RSP.Process.Methods.Where(x => !x.Ignore)) { #>
 <#
-           var rettype = (s.ReturnVariable == null || s.ReturnVariable.CecilType.IsSameTypeReference(typeof(void))) ? "void" : Type(s.ReturnVariable);
+           var rettype = (s.ReturnVariable == null || s.ReturnVariable.MSCAType.IsSameTypeReference(typeof(void))) ? "void" : Type(s.ReturnVariable);
 #>
     <#= rettype #> <#= s.Name #>(<#= string.Join(", ", s.Parameters.Select(x => $"{Type(x)} {x.Name}")) #>);
 <#     } #>
@@ -63,7 +63,7 @@ public:
 <#     foreach(var bus in busses) { #>
         <#= bus.Name #>* p<#= Naming.BusNameToValidName(bus, RSP.Process) #><#= (bus == busses.Last() && members.Length == 0) ? "" : "," #>
 <#      } #>
-<# foreach(var v in members) { 
+<# foreach(var v in members) {
        var rt = RS.TypeScope.GetType(v);
        if (rt.IsArray) { #>
         size_t init_size_<#= v.Name #>,

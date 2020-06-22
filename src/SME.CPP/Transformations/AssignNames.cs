@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using SME.AST;
+using Microsoft.CodeAnalysis;
 
 namespace SME.CPP.Transformations
 {
@@ -21,8 +22,8 @@ namespace SME.CPP.Transformations
 
 			if (el is AST.Constant)
 			{
-				if (((Constant)el).Source is Mono.Cecil.FieldDefinition)
-					el.Name = Naming.ToValidName((((Constant)el).Source as Mono.Cecil.FieldDefinition).DeclaringType.FullName + "." + el.Name);
+				if (((Constant)el).Source is IFieldSymbol)
+					el.Name = Naming.ToValidName((((Constant)el).Source as IFieldSymbol).Type.ToDisplayString() + "." + el.Name);
 				else if (el.Parent != null && !string.IsNullOrWhiteSpace(el.Parent.Name))
 					el.Name = Naming.ToValidName(el.Parent.Name + "." + el.Name);
 			}

@@ -1,6 +1,6 @@
 ﻿using System;
-using Mono.Cecil;
 using SME.AST;
+using Microsoft.CodeAnalysis;
 
 namespace SME.CPP
 {
@@ -9,13 +9,13 @@ namespace SME.CPP
 		/// <summary>
 		/// The Mono.Cecil module definition
 		/// </summary>
-		private readonly ModuleDefinition m_resolveModule;
+		private readonly IAssemblySymbol m_resolveModule;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="T:SME.CPP.CppTypeScope"/> class.
 		/// </summary>
 		/// <param name="resolveModule">The module used to resolve types.</param>
-		public CppTypeScope(ModuleDefinition resolveModule)
+		public CppTypeScope(IAssemblySymbol resolveModule)
 		{
 			m_resolveModule = resolveModule;
 		}
@@ -26,7 +26,7 @@ namespace SME.CPP
 		/// <param name="signal">The input signal.</param>
 		public CppType GetType(AST.Signal signal)
 		{
-			return GetType(signal.CecilType);
+			return GetType(signal.MSCAType);
 		}
 		/// <summary>
 		/// Gets the Cpp type for the signal
@@ -35,7 +35,7 @@ namespace SME.CPP
 		/// <param name="element">The input signal.</param>
         public CppType GetType(AST.DataElement element)
 		{
-			return GetType(element.CecilType);
+			return GetType(element.MSCAType);
 		}
 
 		/// <summary>
@@ -45,7 +45,7 @@ namespace SME.CPP
 		/// <param name="signal">The input variable.</param>
 		public CppType GetType(AST.Variable signal)
 		{
-			return GetType(signal.CecilType);
+			return GetType(signal.MSCAType);
 		}
 
 		/// <summary>
@@ -55,7 +55,7 @@ namespace SME.CPP
 		/// <param name="parameter">The input parameter.</param>
 		public CppType GetType(AST.Parameter parameter)
 		{
-			return GetType(parameter.CecilType);
+			return GetType(parameter.MSCAType);
 		}
 
 		/// <summary>
@@ -63,7 +63,7 @@ namespace SME.CPP
 		/// </summary>
 		/// <returns>The cpp type.</returns>
 		/// <param name="sourcetype">The Cecil sourcetype.</param>
-		public CppType GetType(TypeReference sourcetype)
+		public CppType GetType(ITypeSymbol sourcetype)
 		{
             if (sourcetype.IsArrayType())
             {
@@ -94,7 +94,7 @@ namespace SME.CPP
 				return CppTypes.INT64;
 			if (sourcetype.IsSameTypeReference<ulong>())
 				return CppTypes.UINT64;
-            
+
             if (sourcetype.IsSameTypeReference(typeof(IntPtr)))
             {
 				if (IntPtr.Size == 4)

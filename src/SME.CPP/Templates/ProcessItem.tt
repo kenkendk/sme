@@ -23,7 +23,7 @@ var members = RSP.Process.SharedVariables.Cast<DataElement>().Union(RSP.Process.
 <# foreach(var bus in busses) { #>
     <#= bus.Name #>* p<#= Naming.BusNameToValidName(bus, RSP.Process) #><#= (bus == busses.Last() && members.Length == 0) ? "" : "," #>
 <#  } #>
-<# foreach(var v in members) { 
+<# foreach(var v in members) {
        var rt = RS.TypeScope.GetType(v);
        if (rt.IsArray) { #>
     size_t init_size_<#= v.Name #>,
@@ -37,7 +37,7 @@ var members = RSP.Process.SharedVariables.Cast<DataElement>().Union(RSP.Process.
 
 <# foreach(var v in members) {
        var rt = RS.TypeScope.GetType(v);
-       if (rt.IsArray) { 
+       if (rt.IsArray) {
            var eltype = rt.ElementName;
 #>
     size_<#= v.Name #> = init_size_<#= v.Name #>;
@@ -71,7 +71,7 @@ void <#= RSP.Process.Name #>::onTick() {
 // Internal methods
 <#     foreach (var s in RSP.Process.Methods.Where(x => !x.Ignore)) { #>
 <#
-           var rettype = (s.ReturnVariable == null || s.ReturnVariable.CecilType.IsSameTypeReference(typeof(void))) ? "void" : Type(s.ReturnVariable);
+           var rettype = (s.ReturnVariable == null || s.ReturnVariable.MSCAType.IsSameTypeReference(typeof(void))) ? "void" : Type(s.ReturnVariable);
 #>
 <#= rettype #> <#= RSP.Process.Name #>::<#= s.Name #>(<#= string.Join(", ", s.Parameters.Select(x => $"{Type(x)} {x.Name}")) #>) {
 <#         foreach(var line in RS.Renderer.RenderMethod(s)) { #>

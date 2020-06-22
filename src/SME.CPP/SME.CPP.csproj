@@ -6,9 +6,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ICSharpCode.Decompiler" Version="3.0.2.3465" />
-    <PackageReference Include="Mono.Cecil" Version="0.10.0-beta7" />
     <PackageReference Include="System.CodeDom" Version="*" />
+    <PackageReference Include="Microsoft.CodeAnalysis" Version="3.6.0" />
   </ItemGroup>
 
   <ItemGroup>
