@@ -56,7 +56,7 @@ namespace SME.VHDL.Transformations
                 { // TODO kun hvis den er member reference?
                     ss.SwitchExpression = VHDL.VHDLTypeConversion.ConvertExpression(State, mp, ss.SwitchExpression, targets.First(), ss.SwitchExpression.SourceResultType, false);
                     return el;
-                    var targettype = ss
+                    /*var targettype = ss
                         .Cases
                         .SelectMany(x => x.Item1)
                         .First(x => x != null && !(x is EmptyExpression))
@@ -92,7 +92,7 @@ namespace SME.VHDL.Transformations
 
                     asss.UpdateParents();
                     ss.PrependStatement(asss);
-                    return null;
+                    return null;*/
                 }
             }
 
