@@ -93,8 +93,9 @@ namespace SME.AST
             /// <returns>The resolved type.</returns>
             /// <param name="ft">The type to resolve.</param>
             /// <param name="method">The method context, if any</param>
-            public INamedTypeSymbol ResolveGenericType(INamedTypeSymbol ft, MethodState method = null)
+            public INamedTypeSymbol ResolveGenericType(ITypeSymbol its, MethodState method = null)
             {
+				var ft = its as INamedTypeSymbol;
                 if (ft != null)
                 {
 					if (ft.TypeKind is TypeKind.Array)
@@ -398,7 +399,7 @@ namespace SME.AST
 					!st.HasAttribute<SuppressBodyAttribute>()
 			};
 
-			var proctype = res.MSCAType.ContainingType;
+			var proctype = res.MSCAType as INamedTypeSymbol;
 
 			if (proctype.IsGenericType)
             {
@@ -431,24 +432,20 @@ namespace SME.AST
 				// TODO Prøv at slå typen op i semantic istedet?
 				var Fields = proctype.GetMembers()
                         .OfType<IFieldSymbol>()
-                        .Where(x => !x.GetAttributes()
-                            .Select(y => y.AttributeClass.ToDisplayString())
-                            .Select(y => Type.GetType(y) == typeof(IgnoreAttribute))
-                            .Any());
+                        .Where(x => !x.GetAttributes<IgnoreAttribute>()
+						.Any());
 				while (!proctype.BaseType.ToDisplayString().StartsWith("SME"))
 				{
 					proctype = proctype.BaseType;
 					Fields = Fields.Union(proctype.GetMembers()
                         .OfType<IFieldSymbol>()
-                        .Where(x => !x.GetAttributes()
-                            .Select(y => y.AttributeClass.ToDisplayString())
-                            .Select(y => Type.GetType(y) == typeof(IgnoreAttribute))
-                            .Any()));
+						.Where(x => !x.GetAttributes<IgnoreAttribute>()
+						.Any()));
 				}
                 // Register all variables
                 foreach (var f in Fields)
                 {
-                    var ft = res.ResolveGenericType(f.ContainingType);
+                    var ft = res.ResolveGenericType(f.Type);
 
                     if (ft.IsBusType())
                         RegisterBusReference(network, res, f);
