@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
@@ -20,7 +20,7 @@ namespace SME.AST
 
 		public static bool IsType<T>(this ITypeSymbol its)
 		{
-			return LoadType(its, typeof(T)) == its;
+			return SymbolEqualityComparer.Default.Equals(LoadType(its, typeof(T)), its);
 		}
 
 		/// <summary>
@@ -113,7 +113,7 @@ namespace SME.AST
 
 		public static bool IsSameTypeReference(this ITypeSymbol a, ITypeSymbol b)
 		{
-			return a.Equals(b);
+			return SymbolEqualityComparer.Default.Equals(a, b);
 		}
 
 		public static bool IsSameTypeReference(this ITypeSymbol a, Type b)
