@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -473,7 +473,7 @@ namespace SME.AST
 		{
 			DataElement res;
 
-            var mscatype = proc.ResolveGenericType(field.ContainingType);
+            var mscatype = proc.ResolveGenericType(field.Type);
             object defaultvalue = null;
             proc.SourceInstance.Initialization.TryGetValue(field.Name, out defaultvalue);
             defaultvalue = field.ConstantValue ?? defaultvalue;

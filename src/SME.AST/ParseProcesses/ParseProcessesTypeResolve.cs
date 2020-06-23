@@ -20,7 +20,8 @@ namespace SME.AST
 		/// Cache with assemblies
 		/// </summary>
 		//protected Dictionary<string, AssemblyDefinition> m_assemblies = new Dictionary<string, AssemblyDefinition>();
-		protected Compilation m_compilation;
+		// TODO compilation is used for looking up types...
+		public static Compilation m_compilation;
 
 		//protected SemanticModel m_semantic;
 		protected IEnumerable<SyntaxTree> m_syntaxtrees;

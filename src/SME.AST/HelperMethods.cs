@@ -30,7 +30,8 @@ namespace SME.AST
 		/// <param name="td">The type to evaluate.</param>
 		public static bool IsBusType(this INamedTypeSymbol td)
 		{
-			return td.Interfaces.Any(x => Type.GetType(x.ToDisplayString()) == typeof(IBus));
+			//return td.Interfaces.Any(x => Type.GetType(x.ToDisplayString()) == typeof(IBus));
+			return td.Interfaces.Any(x => SymbolEqualityComparer.Default.Equals(ParseProcesses.m_compilation.GetTypeByMetadataName(typeof(IBus).FullName), x));
 			//return td.HasInterface<IBus>();
 		}
 
