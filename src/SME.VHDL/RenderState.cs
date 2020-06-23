@@ -1170,7 +1170,7 @@ namespace SME.VHDL
             }
             else if (element.DefaultValue is SyntaxNode)
             {
-                var eltype = Type.GetType(element.MSCAType.ToDisplayString());
+                var eltype = Type.GetType(element.MSCAType.GetFullMetadataName());
                 var defaultvalue = eltype != null && element.MSCAType.IsValueType ? Activator.CreateInstance(eltype) : null;
 
                 exp.Right = new AST.PrimitiveExpression()

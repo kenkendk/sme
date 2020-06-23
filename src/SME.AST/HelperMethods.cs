@@ -129,6 +129,18 @@ namespace SME.AST
 				.First(x => x != null);
 		}
 
+		public static string GetFullMetadataName(this ISymbol isy)
+		{
+			string res = isy.Name;
+			var tmp = isy.ContainingNamespace;
+			while (!tmp.IsGlobalNamespace)
+			{
+				res = $"{tmp.Name}.{res}";
+				tmp = tmp.ContainingNamespace;
+			}
+			return res;
+		}
+
 		public static SyntaxNode GetSyntax(this ISymbol isy)
 		{
 			return isy.DeclaringSyntaxReferences.First().GetSyntax();
