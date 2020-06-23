@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -68,6 +68,10 @@ namespace SME.AST
 
 				if (proc.Variables.TryGetValue(name, out variable))
 					return variable;
+
+				Constant constant;
+				if (proc.Constants.TryGetValue(name, out constant))
+					return constant;
 
 				Signal signal;
 				if (proc != null && proc.Signals.TryGetValue(name, out signal))
@@ -489,6 +493,7 @@ namespace SME.AST
 					Parent = proc
 				};
 				res = c;
+				proc.Constants.Add(field.Name, c);
 				network.ConstantLookup.Add(field, c);
 			}
 			// TODO jeg er ikke sikker på om .IsInitOnly er det samme som .IsReadOnly
@@ -503,7 +508,7 @@ namespace SME.AST
 					Parent = proc
 				};
 				res = c;
-                network.ConstantLookup[field] = c;
+                network.ConstantLookup.Add(field, c);
 			}
 			else if (field.IsStatic)
 			{

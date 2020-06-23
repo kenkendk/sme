@@ -56,6 +56,7 @@ namespace SME.AST
 			/// The signals shared in the current process
 			/// </summary>
 			public readonly Dictionary<string, Signal> Signals = new Dictionary<string, Signal>();
+			public readonly Dictionary<string, Constant> Constants = new Dictionary<string, Constant>();
 			/// <summary>
 			/// The list of methods to process
 			/// </summary>
