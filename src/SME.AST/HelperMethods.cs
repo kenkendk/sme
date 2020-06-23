@@ -104,7 +104,7 @@ namespace SME.AST
 					{
 						return x.GetDeclaredSymbol(sn);
 					}
-					catch (Exception _)
+					catch (Exception)
 					{
 						return null;
 					}
@@ -121,7 +121,7 @@ namespace SME.AST
 					{
 						return x.GetTypeInfo(sn).Type;
 					}
-					catch (Exception _)
+					catch (Exception)
 					{
 						return null;
 					}
