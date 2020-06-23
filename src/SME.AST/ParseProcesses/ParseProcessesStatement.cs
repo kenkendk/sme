@@ -185,7 +185,7 @@ namespace SME.AST
 					if (n.Initializer.Value != null)
 						statements.Add(Decompile(network, proc, method, SyntaxFactory.ExpressionStatement(
 								SyntaxFactory.AssignmentExpression(
-									SyntaxKind.EqualsExpression,
+									SyntaxKind.SimpleAssignmentExpression,
 									SyntaxFactory.IdentifierName(n.Identifier.ValueText),
 									SyntaxFactory.Token(SyntaxKind.EqualsToken),
 									n.Initializer.Value))));
