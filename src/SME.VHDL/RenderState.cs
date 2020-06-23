@@ -1170,6 +1170,7 @@ namespace SME.VHDL
             }
             else if (element.DefaultValue is SyntaxNode)
             {
+				// TODO tjek om det kun er når det er en ValueType?
                 var eltype = Type.GetType(element.MSCAType.GetFullMetadataName());
                 var defaultvalue = eltype != null && element.MSCAType.IsValueType ? Activator.CreateInstance(eltype) : null;
 

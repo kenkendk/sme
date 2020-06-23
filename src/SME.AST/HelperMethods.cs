@@ -158,7 +158,7 @@ namespace SME.AST
 
 		public static bool IsSameTypeReference(this ITypeSymbol a, Type b)
 		{
-			var itb = a.ContainingAssembly.GetTypeByMetadataName(b.FullName);
+			var itb = ParseProcesses.m_compilation.GetTypeByMetadataName(b.FullName);
 			return a.IsSameTypeReference(itb);
 		}
 
@@ -334,7 +334,7 @@ namespace SME.AST
 		public static ITypeSymbol LoadType(this ITypeSymbol source, Type t)
 		{
 			// TODO man skal slå op i compile, ikke i assembly!
-			return source.ContainingAssembly.GetTypeByMetadataName(t.FullName);
+			return ParseProcesses.m_compilation.GetTypeByMetadataName(t.FullName);
 		}
 
 		/// <summary>

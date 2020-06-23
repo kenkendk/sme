@@ -23,11 +23,12 @@ namespace SME.AST
 			foreach (var s in sx.OfType<UsingStatementSyntax>())
 				proc.Imports.Add(s.Expression.ToString());
 
+			method.MSCAReturnType = LoadType(method.MSCAMethod.ReturnType);
 			method.ReturnVariable =
                 (
-                    method.MSCAMethod.ReturnType.ToString() == typeof(void).FullName
+					method.MSCAReturnType.IsSameTypeReference(typeof(void))
                     ||
-                    method.MSCAMethod.ReturnType.ToString() == typeof(System.Threading.Tasks.Task).FullName
+					method.MSCAReturnType.IsSameTypeReference(typeof(System.Threading.Tasks.Task))
                 )
                 ? null
                 : RegisterTemporaryVariable(network, proc, method, LoadType(method.MSCAMethod.ReturnType, method), method.MSCAMethod);
