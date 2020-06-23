@@ -52,6 +52,8 @@ namespace SME.AST
                 return Decompile(network, proc, method, statement as LabeledStatementSyntax);
             else if (statement is WhileStatementSyntax)
                 return Decompile(network, proc, method, statement as WhileStatementSyntax);
+			else if (statement is null)
+				return new EmptyStatement();
 			else
 				throw new Exception(string.Format("Unsupported statement: {0} ({1})", statement, statement.GetType().FullName));
 		}
@@ -89,7 +91,7 @@ namespace SME.AST
 			var s = new IfElseStatement()
 			{
 				TrueStatement = Decompile(network, proc, method, statement.Statement),
-				FalseStatement = Decompile(network, proc, method, statement.Else.Statement),
+				FalseStatement = Decompile(network, proc, method, statement.Else?.Statement),
 				Parent = method
 			};
 
