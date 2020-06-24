@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
@@ -219,8 +219,13 @@ namespace SME.AST
         /// <param name="tr">The type reference to examine.</param>
         public static bool IsFixedArrayType(this ITypeSymbol tr)
         {
-            var it = tr as INamedTypeSymbol;
-            return it.IsGenericType && tr.IsSameTypeReference(typeof(IFixedArray<>));
+            if (tr is INamedTypeSymbol)
+            {
+                var it = tr as INamedTypeSymbol;
+                return it.IsGenericType && tr.IsSameTypeReference(typeof(IFixedArray<>));
+            }
+            else
+                return false;
         }
 
         /// <summary>
@@ -346,7 +351,10 @@ namespace SME.AST
 
         public static bool IsEnum(this ITypeSymbol its)
         {
-            return ((INamedTypeSymbol)its).EnumUnderlyingType != null;
+            if (its is INamedTypeSymbol)
+                return ((INamedTypeSymbol)its).EnumUnderlyingType != null;
+            else
+                return false;
         }
 
         /// <summary>
