@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 //using Mono.Cecil;
@@ -138,7 +138,21 @@ namespace SME.AST
             else if (expression is InvocationExpressionSyntax)
             {
                 var si = expression as InvocationExpressionSyntax;
-                var mt = si.Expression as MemberAccessExpressionSyntax;
+                string method_name = "";
+                if (si.Expression is MemberAccessExpressionSyntax)
+                {
+                    var mt = si.Expression as MemberAccessExpressionSyntax;
+                    method_name = mt.TryGetInferredMemberName();
+                }
+                if (si.Expression is IdentifierNameSyntax)
+                    method_name = ((IdentifierNameSyntax)si.Expression).Identifier.ValueText;
+
+                var proc_syntax = proc.MSCAType.DeclaringSyntaxReferences.FirstOrDefault().GetSyntax();
+                var proc_decl = proc_syntax as ClassDeclarationSyntax;
+                var members = proc_decl.Members.OfType<MethodDeclarationSyntax>();
+                var m = members.FirstOrDefault(x => x.Identifier.ValueText.Equals(method_name));
+                if (m != null)
+                    return m_semantics.Select(x => x.GetTypeInfo(m).Type).FirstOrDefault(x => x != null);
 
                 // Catch common translations
                 // TODO jeg håber det bare var en decompile ting :)
@@ -154,10 +168,6 @@ namespace SME.AST
                     else if (mt.TryGetInferredMemberName() == "op_Decrement")
                         return ResolveExpressionType(network, proc, method, statement, new ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorExpression(ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorType.Decrement, si.Arguments.First().Clone()));
                 }*/
-
-                var m = (proc.MSCAType.DeclaringSyntaxReferences.FirstOrDefault().GetSyntax() as ClassDeclarationSyntax).Members.OfType<MethodDeclarationSyntax>().FirstOrDefault(x => x.Identifier.Text == mt.TryGetInferredMemberName());
-                if (m != null)
-                    return m_semantics.Select(x => x.GetTypeInfo(m).Type).FirstOrDefault(x => x != null);
 
                 return ResolveExpressionType(network, proc, method, statement, (expression as InvocationExpressionSyntax).Expression);
             }

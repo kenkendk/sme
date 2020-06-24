@@ -42,21 +42,24 @@ namespace SME.AST
             else if (expression is InvocationExpressionSyntax)
             {
                 var si = expression as InvocationExpressionSyntax;
-                var mt = si.Expression as MemberAccessExpressionSyntax;
+                if (si.Expression is MemberAccessExpressionSyntax)
+                {
+                    var mt = si.Expression as MemberAccessExpressionSyntax;
 
-                if (mt.ToString() == "base.PrintDebug" || mt.ToString() == "base.SimulationOnly")
-                    return new EmptyExpression()
-                    {
-                        SourceExpression = si,
-                        Parent = statement
-                    };
+                    if (mt.ToString() == "base.PrintDebug" || mt.ToString() == "base.SimulationOnly")
+                        return new EmptyExpression()
+                        {
+                            SourceExpression = si,
+                            Parent = statement
+                        };
 
-                if (mt.ToString() == "Console.WriteLine" || mt.ToString() == "Console.Write")
-                    return new EmptyExpression()
-                    {
-                        SourceExpression = si,
-                        Parent = statement
-                    };
+                    if (mt.ToString() == "Console.WriteLine" || mt.ToString() == "Console.Write")
+                        return new EmptyExpression()
+                        {
+                            SourceExpression = si,
+                            Parent = statement
+                        };
+                }
 
 
                 // Catch common translations

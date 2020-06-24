@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -101,13 +101,19 @@ namespace SME.AST
                 var ix = tp.Item3;
 
                 var ic = (ix.SourceExpression as InvocationExpressionSyntax);
-                var r = ic.Expression as MemberAccessExpressionSyntax;
+                string r;
+                if (ic.Expression is MemberAccessExpressionSyntax)
+                    r = ((MemberAccessExpressionSyntax)ic.Expression).TryGetInferredMemberName();
+                else if (ic.Expression is IdentifierNameSyntax)
+                    r = ((IdentifierNameSyntax)ic.Expression).Identifier.ValueText;
+                else
+                    r = "";
 
                 // TODO: Maybe we can support overloads here as well
-                var dm = methods.FirstOrDefault(x => x.Name == r.TryGetInferredMemberName());
+                var dm = methods.FirstOrDefault(x => x.Name.Equals(r));
                 if (dm == null)
                 {
-                    var mr = methdecls.FirstOrDefault(x => x.Identifier.Text == r.TryGetInferredMemberName());
+                    var mr = methdecls.FirstOrDefault(x => x.Identifier.Text.Equals(r));
                     if (mr == null)
                         throw new Exception($"Unable to resolve method call to {r}");
                     dm = Decompile(network, proc, mr);
