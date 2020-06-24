@@ -510,22 +510,25 @@ namespace SME.AST
         /// <param name="statement">The decompiler statement to process.</param>
         protected virtual ForStatement Decompile(NetworkState network, ProcessState proc, MethodState method, ForStatementSyntax statement)
         {
-            if (statement.Initializers.Count != 1)
-                throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
+            // TODO dobbelt tjek lige om det altid er Declaration.Variables, og ikke initializers?
+            /*var initializers = statement.Initializers.Union(statement.Declaration.Variables.Select(x => x.Initializer.Value));
+            if (initializers.Count() != 1)
+                throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));*/
 
             if (statement.Incrementors.Count != 1)
                 throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
 
 
-            var init = statement.Initializers.First() as InitializerExpressionSyntax;
+            /*var init = initializers.First() as InitializerExpressionSyntax;
             if (init == null)
-                throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
+                throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));*/
 
             if (statement.Declaration.Variables.Count != 1)
                 throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
 
-            var name = statement.Declaration.Variables.First().Identifier.ValueText;
-            var initial = statement.Declaration.Variables.First().Initializer;
+            var vari = statement.Declaration.Variables.First();
+            var name = vari.Identifier.ValueText;
+            var initial = vari.Initializer;
 
             var itr = statement.Incrementors.First();
             if (itr == null)
@@ -535,7 +538,7 @@ namespace SME.AST
             {
                 MSCAType = LoadType(typeof(int)),
                 Name = name,
-                // TODO clone...
+                // TODO clone...?
                 Source = statement,//.Clone(),
                 isLoopIndex = true
             };
