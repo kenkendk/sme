@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -71,6 +71,10 @@ namespace SME.AST
 
                 Constant constant;
                 if (proc.Constants.TryGetValue(name, out constant))
+                    return constant;
+
+                constant = network.ConstantLookup.Values.FirstOrDefault(x => x.Name.Equals(name));
+                if (constant != null)
                     return constant;
 
                 Signal signal;
@@ -170,7 +174,7 @@ namespace SME.AST
                                 else
                                 {
                                     // This is a constant of sorts
-                                    var pe = network.ConstantLookup.Keys.FirstOrDefault(x => x.Name == parts[0]);
+                                    var pe = network.ConstantLookup.Keys.FirstOrDefault(x => x.Name.Equals(parts[0]));
                                     if (pe != null)
                                         return network.ConstantLookup[pe];
 
