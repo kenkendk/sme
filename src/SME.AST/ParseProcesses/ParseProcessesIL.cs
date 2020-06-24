@@ -52,15 +52,16 @@ namespace SME.AST
             //}
 
             foreach (var n in instructions)
-                try
-                {
+                /*try
+                {*/
                     statements.Add(Decompile(network, proc, method, n));
-                }
+                /*}
                 catch (Exception ex)
                 {
                     Console.WriteLine($"Failed to process statement: {n} -> {ex}");
                     statements.Add(new CommentStatement($"Failed to process statement: {n} -> {ex}"));
-                }
+                    throw ex;
+                }*/
 
             return statements.ToArray();
         }
