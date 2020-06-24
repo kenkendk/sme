@@ -104,78 +104,91 @@ namespace UnitTest
         [TestMethod]
         public void RunAES256()
         {
+            SME.Simulation.ProjectPath = "../../../../Examples/AES256CBC/AES256CBC.csproj";
             RunTest(typeof(AES256CBC.Tester), true, false);
         }
 
         [TestMethod]
         public void RunColorBin()
         {
+            SME.Simulation.ProjectPath = "../../../../Examples/ColorBin/ColorBin.csproj";
             RunTest(typeof(ColorBin.ImageInputSimulator), true, false);
         }
 
         [TestMethod]
         public void RunExternalComponent()
         {
+            SME.Simulation.ProjectPath = "../../../../Examples/ExternalComponent/ExternalComponent.csproj";
             RunTest(typeof(ExternalComponent.SimpleDualPortBlockRamTester<>), true, false);
         }
 
         [TestMethod]
         public void RunNoiseFilter()
         {
+            SME.Simulation.ProjectPath = "../../../../Examples/NoiseFilter/NoiseFilter.csproj";
             RunTest(typeof(NoiseFilter.ImageInputSimulator), true, false);
         }
 
         [TestMethod]
         public void RunSimpleComponents()
         {
+            SME.Simulation.ProjectPath = "../../../../Examples/SimpleComponents/SimpleComponents.csproj";
             RunTest(typeof(SimpleComponents.ComponentTester), true, false);
         }
 
         [TestMethod]
         public void RunSimpleMemoryBus()
         {
+            SME.Simulation.ProjectPath = "../../../../Examples/SimpleMemoryBus/SimpleMemoryBus.csproj";
             RunTest(typeof(SimpleMemoryBus.MemoryTester), true, false);
         }
 
         [TestMethod]
         public void RunSimpleMIPS()
         {
+            SME.Simulation.ProjectPath = "../../../../Examples/SimpleMIPS/SimpleMIPS.csproj";
             RunTest(typeof(SimpleMIPS.Tester), true, false);
         }
 
         [TestMethod]
         public void RunSimpleNestedComponent()
         {
+            SME.Simulation.ProjectPath = "../../../../Examples/SimpleNestedComponent/SimpleNestedComponent.csproj";
             RunTest(typeof(SimpleNestedComponent.TestDriver), true, false);
         }
 
         [TestMethod]
         public void RunSimpleTrader()
         {
+            SME.Simulation.ProjectPath = "../../../../Examples/SimpleTrader/SimpleTrader.csproj";
             RunTest(typeof(SimpleTrader.ITraderInput), true, false);
         }
 
         [TestMethod]
         public void RunStatebasedCounter()
         {
+            SME.Simulation.ProjectPath = "../../../../Examples/StatebasedCounter/StatebasedCounter.csproj";
             RunTest(typeof(StatebasedCounter.MainClass), true, false);
         }
 
         [TestMethod]
         public void RunStatedAdder()
         {
+            SME.Simulation.ProjectPath = "../../../../Examples/StatedAdder/StatedAdder.csproj";
             RunTest(typeof(StatedAdder.Adder), true, false);
         }
 
         [TestMethod]
         public void RunStateMachineTester()
         {
+            SME.Simulation.ProjectPath = "../../../../Examples/StateMachineTester/StateMachineTester.csproj";
             RunTest(typeof(StateMachineTester.MainClass), true, false);
         }
 
         [TestMethod]
         public void RunStopwatch()
         {
+            SME.Simulation.ProjectPath = "../../../../Examples/Stopwatch/Stopwatch.csproj";
             RunTest(typeof(Stopwatch.MainClass), true, false);
         }
 

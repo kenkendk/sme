@@ -85,6 +85,8 @@ namespace SME
         /// </summary>
         public DependencyGraph Graph { get; private set; }
 
+        public static string ProjectPath { get; set; }
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="T:SME.Runner"/> class.
 		/// </summary>
@@ -280,7 +282,7 @@ namespace SME
             {
                 if (b == null)
                     continue;
-                
+
                 List<IRuntimeBus> lp;
                 if (!busmap.TryGetValue(b.BusType, out lp))
                     busmap[b.BusType] = lp = new List<IRuntimeBus>();
@@ -442,7 +444,7 @@ namespace SME
                     _scopes.Remove(key);
                 else if (_scopes.ContainsKey(key) && _scopes[key] != null)
                     throw new InvalidOperationException("Cannot use nested simulations");
-                else                    
+                else
 					_scopes[key] = value;
 			}
 		}

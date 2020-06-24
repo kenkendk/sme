@@ -232,11 +232,18 @@ namespace SME.AST
 		public virtual Network Parse(Simulation simulation, bool decompile = false)
 		{
 			// Get the path to the .csproj file
-            var sourceasm = simulation.Processes.First().Instance.GetType().Assembly;
-            var folder_path = Directory.GetParent(sourceasm.Location).FullName;
-            var project_path = GetCSProjInParents(folder_path);
+			var sourceasm = simulation.Processes.First().Instance.GetType().Assembly;
+			var project_path = Simulation.ProjectPath;
+			if (project_path == null)
+			{
+				var folder_path = Directory.GetParent(sourceasm.Location).FullName;
+				project_path = GetCSProjInParents(folder_path);
+			}
 
 			// Build the project
+			// TODO den er ikke glad hvis den laver den her flere gange
+			try
+			{
 			var instance = Microsoft.Build.Locator.MSBuildLocator.RegisterDefaults();
             // workaround from https://github.com/microsoft/MSBuildLocator/issues/86
             System.Runtime.Loader.AssemblyLoadContext.Default.Resolving += (assemblyLoadContext, assemblyName) =>
@@ -248,6 +255,8 @@ namespace SME.AST
                 }
                 return null;
             };
+			}
+			catch (Exception) { }
             var workspace = MSBuildWorkspace.Create();
 			var proj_task = workspace.OpenProjectAsync(project_path);
 			proj_task.Wait();
