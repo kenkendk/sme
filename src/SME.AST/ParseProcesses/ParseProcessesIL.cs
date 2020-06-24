@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -79,7 +79,12 @@ namespace SME.AST
                 proc.MSCAType = LoadType(proc.SourceType);
 
             var proctype = proc.MSCAType;
-            var methdecls = proctype.GetMembers().Select(x => x.DeclaringSyntaxReferences.First().GetSyntax()).OfType<MethodDeclarationSyntax>();
+            var methdecls = proctype
+                .GetMembers()
+                .Select(x => x.DeclaringSyntaxReferences.FirstOrDefault())
+                .Where(x => x != null)
+                .Select(x => x.GetSyntax())
+                .OfType<MethodDeclarationSyntax>();
 
             var m = methdecls.FirstOrDefault(x => x.Identifier.Text == method.Name && x.ParameterList.Parameters.Count == method.GetParameters().Length);
             if (m == null)
