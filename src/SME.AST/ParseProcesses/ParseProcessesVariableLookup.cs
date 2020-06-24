@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -565,7 +565,7 @@ namespace SME.AST
         {
             return new Parameter()
             {
-                MSCAType = m_semantics.Select(x => x.GetTypeInfo(parameter).Type).First(x => x != null),
+                MSCAType = m_semantics.Select(x => x.GetTypeInfo(parameter.Type).Type).First(x => x != null),
                 Name = parameter.Identifier.Text,
                 DefaultValue = null,
                 Source = parameter,
