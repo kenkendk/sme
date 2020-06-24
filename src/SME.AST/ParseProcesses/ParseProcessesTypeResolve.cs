@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 //using Mono.Cecil;
@@ -305,6 +305,21 @@ namespace SME.AST
         /// <param name="t">The type to load.</param>
         protected virtual ITypeSymbol LoadType(TypeSyntax t, Method sourcemethod = null)
         {
+            if (t is PredefinedTypeSyntax)
+                switch (((PredefinedTypeSyntax)t).Keyword.Kind())
+                {
+                    case SyntaxKind.BoolKeyword: return LoadType(typeof(bool));
+                    case SyntaxKind.ByteKeyword: return LoadType(typeof(byte));
+                    case SyntaxKind.SByteKeyword: return LoadType(typeof(sbyte));
+                    case SyntaxKind.ShortKeyword: return LoadType(typeof(short));
+                    case SyntaxKind.UShortKeyword: return LoadType(typeof(ushort));
+                    case SyntaxKind.IntKeyword: return LoadType(typeof(int));
+                    case SyntaxKind.UIntKeyword: return LoadType(typeof(uint));
+                    case SyntaxKind.LongKeyword: return LoadType(typeof(long));
+                    case SyntaxKind.ULongKeyword: return LoadType(typeof(ulong));
+                    case SyntaxKind.FloatKeyword: return LoadType(typeof(float));
+                    case SyntaxKind.DoubleKeyword: return LoadType(typeof(double));
+                }
             var res = t.LoadType(m_semantics);
             if (res == null)
                 throw new Exception($"Failed to load {t.ToString()}");
