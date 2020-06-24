@@ -94,25 +94,26 @@ namespace SME.AST
             /// <returns>The resolved type.</returns>
             /// <param name="ft">The type to resolve.</param>
             /// <param name="method">The method context, if any</param>
-            public INamedTypeSymbol ResolveGenericType(ITypeSymbol its, MethodState method = null)
+            public ITypeSymbol ResolveGenericType(ITypeSymbol its, MethodState method = null)
             {
-                var ft = its as INamedTypeSymbol;
-                if (ft != null)
+                if (its.TypeKind is TypeKind.Array)
                 {
-                    if (ft.TypeKind is TypeKind.Array)
+                    var elt = (its as IArrayTypeSymbol).ElementType;
+                    if (elt is INamedTypeSymbol && ((INamedTypeSymbol) elt).IsGenericType)
                     {
-                        var elt = (ft as IArrayTypeSymbol).ElementType.ContainingType;
-                        if (elt.IsGenericType)
-                        {
-                            // https://stackoverflow.com/questions/43356807/how-to-create-a-roslyn-itypesymbol-for-an-arbitrary-type
-                            // TODO ok jeg ved ikke om compilation tillader det?
-                            return (INamedTypeSymbol)compilation.CreateArrayTypeSymbol(GenericTypes[elt.Name]);
-                        }
+                        // https://stackoverflow.com/questions/43356807/how-to-create-a-roslyn-itypesymbol-for-an-arbitrary-type
+                        // TODO ok jeg ved ikke om compilation tillader det?
+                        return (INamedTypeSymbol)compilation.CreateArrayTypeSymbol(GenericTypes[elt.Name]);
                     }
-                    else if (ft.IsGenericType)
+                    else
                     {
-                        return this.GenericTypes[ft.Name];
+                        return its;
                     }
+                }
+                var ft = its as INamedTypeSymbol;
+                if (ft != null && ft.IsGenericType)
+                {
+                    return this.GenericTypes[ft.Name];
                 }
                 return ft;
             }
