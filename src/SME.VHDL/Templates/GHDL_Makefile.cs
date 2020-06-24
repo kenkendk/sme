@@ -10,45 +10,45 @@ namespace SME.VHDL.Templates
     {
 
         public readonly RenderState RS;
-		public GHDL_Makefile(RenderState renderer)
-		{
-			RS = renderer;
-		}
+        public GHDL_Makefile(RenderState renderer)
+        {
+            RS = renderer;
+        }
 
-		public IEnumerable<string> CustomFiles
-		{
-			get
-			{
-				return RS.CustomFiles;
-			}
-		}
+        public IEnumerable<string> CustomFiles
+        {
+            get
+            {
+                return RS.CustomFiles;
+            }
+        }
 
-		public IEnumerable<string> Filenames
-		{
-			get
-			{
+        public IEnumerable<string> Filenames
+        {
+            get
+            {
                 foreach (var p in RS.Network.Processes.Select(x => x.SourceType).Distinct())
-					yield return Naming.ProcessNameToValidName(p);
+                    yield return Naming.ProcessNameToValidName(p);
 
-				foreach (var p in RawVHDL)
-					yield return p;
-			}
-		}
+                foreach (var p in RawVHDL)
+                    yield return p;
+            }
+        }
 
-		public IEnumerable<string> RawVHDL
-		{
-			get
-			{
-				var prefix = typeof(Templates.TopLevel).Namespace + ".";
-				return
-					System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceNames()
-						  .Where(x => x.EndsWith(".vhdl", StringComparison.InvariantCultureIgnoreCase))
-						  .Where(x => x.StartsWith(prefix, StringComparison.InvariantCultureIgnoreCase))
-						  .Select(x => x.Substring(prefix.Length))
-						  .Where(x => x != "system_types.vhdl")
-					      .Select(x => x.Substring(0, x.Length - ".vhdl".Length));
-			}
-		}
+        public IEnumerable<string> RawVHDL
+        {
+            get
+            {
+                var prefix = typeof(Templates.TopLevel).Namespace + ".";
+                return
+                    System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                          .Where(x => x.EndsWith(".vhdl", StringComparison.InvariantCultureIgnoreCase))
+                          .Where(x => x.StartsWith(prefix, StringComparison.InvariantCultureIgnoreCase))
+                          .Select(x => x.Substring(prefix.Length))
+                          .Where(x => x != "system_types.vhdl")
+                          .Select(x => x.Substring(0, x.Length - ".vhdl".Length));
+            }
+        }
 
         public override string TransformText()
         {

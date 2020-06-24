@@ -132,7 +132,7 @@ namespace StateMachineTester
         {
             result.State = 0;
             await ClockAsync();
-            while (control.Go1) 
+            while (control.Go1)
             {
                 result.State = 1;
             }

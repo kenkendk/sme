@@ -81,7 +81,7 @@ namespace SME.Tracer
                         value = new SME.ReadViolationException("Signal not written");
                     else
                         value = p.Property.GetValue(p.Bus);
-                    
+
                 }
                 catch (Exception ex)
                 {
@@ -105,7 +105,7 @@ namespace SME.Tracer
         {
             if (m_skipInitializationData)
                 return;
-            
+
             // For the very first clock tick we emit the reset state
             // of the model
             if (m_first)
@@ -136,7 +136,7 @@ namespace SME.Tracer
 
             //OutputSignalData(GetValues().Skip(m_driversignalcount), true);
             OutputSignalData(GetValues(), true);
-		}
+        }
 
         /// <summary>
         /// Callback handler invoked after the clocked processes are invoked
@@ -150,9 +150,9 @@ namespace SME.Tracer
         /// Dispose the current instance.
         /// </summary>
         /// <param name="disposing">If set to <c>true</c> the call originates from the dispose method.</param>
-		protected virtual void Dispose(bool disposing)
-		{
-		}
+        protected virtual void Dispose(bool disposing)
+        {
+        }
 
         /// <summary>
         /// Releases all resource used by the <see cref="T:SME.Tracer.Tracer"/> object.
@@ -161,10 +161,10 @@ namespace SME.Tracer
         /// <see cref="Dispose"/> method leaves the <see cref="T:SME.Tracer.Tracer"/> in an unusable state. After
         /// calling <see cref="Dispose"/>, you must release all references to the <see cref="T:SME.Tracer.Tracer"/> so
         /// the garbage collector can reclaim the memory that the <see cref="T:SME.Tracer.Tracer"/> was occupying.</remarks>
-		public void Dispose()
-		{
-			Dispose(true);
-		}
-	}
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+    }
 }
 

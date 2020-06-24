@@ -3,52 +3,52 @@ using SME.AST;
 
 namespace SME.VHDL.CustomNodes
 {
-	/// <summary>
-	/// An expression that converts the inner expression
-	/// </summary>
-	public class ConversionExpression : CustomExpression
-	{
-		/// <summary>
-		/// The expression being wrapped
-		/// </summary>
-		public Expression Expression;
+    /// <summary>
+    /// An expression that converts the inner expression
+    /// </summary>
+    public class ConversionExpression : CustomExpression
+    {
+        /// <summary>
+        /// The expression being wrapped
+        /// </summary>
+        public Expression Expression;
 
-		/// <summary>
-		/// The template used to wrap the expression
-		/// </summary>
-		public string WrappingTemplate;
+        /// <summary>
+        /// The template used to wrap the expression
+        /// </summary>
+        public string WrappingTemplate;
 
-		/// <summary>
-		/// Gets or sets the child expression.
-		/// </summary>
-		public override Expression[] Children 
-		{ 
-			get { return new[] { Expression }; }
-			set
-			{
-				if (value == null)
-					Expression = null;
-				else if (value.Length == 1)
-					Expression = value[0];
-				else
-					throw new Exception("Conversion can only have a single child");
-			}
-		}
+        /// <summary>
+        /// Gets or sets the child expression.
+        /// </summary>
+        public override Expression[] Children
+        {
+            get { return new[] { Expression }; }
+            set
+            {
+                if (value == null)
+                    Expression = null;
+                else if (value.Length == 1)
+                    Expression = value[0];
+                else
+                    throw new Exception("Conversion can only have a single child");
+            }
+        }
 
         /// <summary>
         /// Gets the target of the conversion operation, or null
         /// </summary>
-		public override DataElement GetTarget()
-		{
+        public override DataElement GetTarget()
+        {
             return Expression.GetTarget();
-		}
+        }
 
-		/// <summary>
+        /// <summary>
         /// Returns a string representation of the Expression
         /// </summary>
-		public override string ToString()
-		{
-			return Expression.ToString();
-		}
-	}
+        public override string ToString()
+        {
+            return Expression.ToString();
+        }
+    }
 }

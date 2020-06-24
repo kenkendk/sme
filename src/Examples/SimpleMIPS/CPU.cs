@@ -92,10 +92,10 @@ namespace SimpleMIPS
     [ClockedProcess]
     public class CPU : StateProcess
     {
-        public CPU() 
+        public CPU()
         {
             // Set the stack pointer to the maximum memory address
-            registers[29] = ((uint)MemoryConstants.max_addr) << 2;    
+            registers[29] = ((uint)MemoryConstants.max_addr) << 2;
         }
 
         [InputBus]
@@ -131,14 +131,14 @@ namespace SimpleMIPS
             byte rd     = (byte)((instruction >> 11) & 0x1F);
             byte shamt  = (byte)((instruction >> 6)  & 0x1F);
             Funcs funct = (Funcs)(instruction        & 0x3F);
-            uint jaddr  = (uint) (instruction        & 0x03FFFFFF); 
+            uint jaddr  = (uint) (instruction        & 0x03FFFFFF);
             short imm   = (short)(instruction        & 0xFFFF);
             int ext   = (int)imm;
             uint zext = (uint) (0x0 | imm);
             await ClockAsync();
 
             // Run the instruction
-            switch (opcode) 
+            switch (opcode)
             {
                 case Opcodes.j:
                     // ignore top bits from pc
@@ -149,7 +149,7 @@ namespace SimpleMIPS
                     iptr = jaddr;
                     break;
                 case Opcodes.Rformat:
-                    switch (funct) 
+                    switch (funct)
                     {
                         case Funcs.sll:
                             registers[rd] = registers[rt] << shamt; break;
@@ -171,13 +171,13 @@ namespace SimpleMIPS
                             registers[rd] = registers[rs] | registers[rt]; break;
                         case Funcs.slt:
                             if ((int)registers[rs] < (int)registers[rt])
-                                registers[rd] = 1; 
+                                registers[rd] = 1;
                             else
                                 registers[rd] = 0;
                             break;
                         case Funcs.sltu:
                             if (registers[rs] < registers[rt])
-                                registers[rd] = 1; 
+                                registers[rd] = 1;
                             else
                                 registers[rd] = 0;
                             break;
@@ -205,7 +205,7 @@ namespace SimpleMIPS
                     registers[rt] = registers[rs] & zext;
                     break;
                 case Opcodes.ori:
-                    registers[rt] = registers[rs] | zext; 
+                    registers[rt] = registers[rs] | zext;
                     break;
                 case Opcodes.lw:
                     memin.ena = true;

@@ -3,7 +3,7 @@
 namespace SimpleMIPS
 {
     [InitializedBus]
-    public interface MemoryInput : IBus 
+    public interface MemoryInput : IBus
     {
         bool ena { get; set; }
         uint addr { get; set; }
@@ -18,7 +18,7 @@ namespace SimpleMIPS
     }
 
     [InitializedBus]
-    public interface Terminate : IBus 
+    public interface Terminate : IBus
     {
         bool flg { get; set; }
     }

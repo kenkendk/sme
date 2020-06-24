@@ -130,7 +130,7 @@ namespace SME.VHDL.CustomRenders.Inferred
     signal { controlb_bus_addr_name }_Vector: std_logic_vector ({addrwidth - 1} downto 0);
     signal FIN_A : std_logic;
     signal FIN_B : std_logic;
-begin 
+begin
 
     process (CLK, RST)
     begin

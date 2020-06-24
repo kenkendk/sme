@@ -12,7 +12,7 @@ namespace SimpleMIPS
     [ClockedProcess]
     public class Memory : SimpleProcess
     {
-        public Memory(string program_name) 
+        public Memory(string program_name)
         {
             // Read the binary file in the given path
             using (var reader = new BinaryReader(File.Open(program_name, FileMode.Open)))
@@ -23,7 +23,7 @@ namespace SimpleMIPS
                 {
                     mem[position >> 2] = reader.ReadUInt32();
                     position += sizeof(UInt32);
-                }    
+                }
                 mem[position >> 2] = 0xFFFFFFFF; // Put in a terminate instruction
             }
         }
@@ -38,7 +38,7 @@ namespace SimpleMIPS
 
         protected override void OnTick()
         {
-            if (input.ena) 
+            if (input.ena)
             {
                 output.rddata = mem[input.addr];
                 if (input.wrena)

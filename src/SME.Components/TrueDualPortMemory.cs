@@ -132,7 +132,7 @@ namespace SME.Components
         {
             m_memory = new T[size];
             if (initial != null)
-                Array.Copy(initial, 0, m_memory, 0, Math.Min(initial.Length, size));                        
+                Array.Copy(initial, 0, m_memory, 0, Math.Min(initial.Length, size));
         }
 
         /// <summary>
@@ -157,7 +157,7 @@ namespace SME.Components
 
             if (ControlA.Enabled && ControlA.IsWriting)
                 m_memory[ControlA.Address] = ControlA.Data;
-                
+
             if (ControlB.Enabled && ControlB.IsWriting)
                 m_memory[ControlB.Address] = ControlB.Data;
         }

@@ -7,36 +7,36 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace SME.AST
 {
-	// This partial part deals with the IL side of the parsing
-	public partial class ParseProcesses
-	{
-		/// <summary>
-		/// Processes a single method and extracts all the statements in it
-		/// </summary>
-		/// <param name="network">The top-level network.</param>
-		/// <param name="proc">The process where the method is located.</param>
-		/// <param name="method">The method to decompile.</param>
-		protected virtual Statement[] Decompile(NetworkState network, ProcessState proc, MethodState method)
-		{
+    // This partial part deals with the IL side of the parsing
+    public partial class ParseProcesses
+    {
+        /// <summary>
+        /// Processes a single method and extracts all the statements in it
+        /// </summary>
+        /// <param name="network">The top-level network.</param>
+        /// <param name="proc">The process where the method is located.</param>
+        /// <param name="method">The method to decompile.</param>
+        protected virtual Statement[] Decompile(NetworkState network, ProcessState proc, MethodState method)
+        {
             var sx = method.MSCAMethod.Body.Statements;
 
-			foreach (var s in sx.OfType<UsingStatementSyntax>())
-				proc.Imports.Add(s.Expression.ToString());
+            foreach (var s in sx.OfType<UsingStatementSyntax>())
+                proc.Imports.Add(s.Expression.ToString());
 
-			method.MSCAReturnType = LoadType(method.MSCAMethod.ReturnType);
-			method.ReturnVariable =
+            method.MSCAReturnType = LoadType(method.MSCAMethod.ReturnType);
+            method.ReturnVariable =
                 (
-					method.MSCAReturnType.IsSameTypeReference(typeof(void))
+                    method.MSCAReturnType.IsSameTypeReference(typeof(void))
                     ||
-					method.MSCAReturnType.IsSameTypeReference(typeof(System.Threading.Tasks.Task))
+                    method.MSCAReturnType.IsSameTypeReference(typeof(System.Threading.Tasks.Task))
                 )
                 ? null
                 : RegisterTemporaryVariable(network, proc, method, LoadType(method.MSCAMethod.ReturnType, method), method.MSCAMethod);
 
-			if (method.ReturnVariable != null)
-				method.ReturnVariable.Parent = method;
+            if (method.ReturnVariable != null)
+                method.ReturnVariable.Parent = method;
 
-			var statements = new List<Statement>();
+            var statements = new List<Statement>();
             var instructions = sx;
 
             //if (method.IsStateMachine)
@@ -52,129 +52,129 @@ namespace SME.AST
             //}
 
             foreach (var n in instructions)
-				try
-				{
-					statements.Add(Decompile(network, proc, method, n));
-				}
-				catch (Exception ex)
-				{
-					Console.WriteLine($"Failed to process statement: {n} -> {ex}");
-					statements.Add(new CommentStatement($"Failed to process statement: {n} -> {ex}"));
-				}
+                try
+                {
+                    statements.Add(Decompile(network, proc, method, n));
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to process statement: {n} -> {ex}");
+                    statements.Add(new CommentStatement($"Failed to process statement: {n} -> {ex}"));
+                }
 
-			return statements.ToArray();
-		}
+            return statements.ToArray();
+        }
 
-		/// <summary>
-		/// Decompile the specified process, using the specified entry method
-		/// </summary>
-		/// <param name="network">The top-level network.</param>
-		/// <param name="proc">The process where the method is located.</param>
-		/// <param name="method">The entry method to start decompilation from.</param>
-		protected virtual void Decompile(NetworkState network, ProcessState proc, System.Reflection.MethodInfo method)
-		{
-			var statements = new List<Statement>();
-			if (proc.MSCAType == null)
-				proc.MSCAType = LoadType(proc.SourceType);
+        /// <summary>
+        /// Decompile the specified process, using the specified entry method
+        /// </summary>
+        /// <param name="network">The top-level network.</param>
+        /// <param name="proc">The process where the method is located.</param>
+        /// <param name="method">The entry method to start decompilation from.</param>
+        protected virtual void Decompile(NetworkState network, ProcessState proc, System.Reflection.MethodInfo method)
+        {
+            var statements = new List<Statement>();
+            if (proc.MSCAType == null)
+                proc.MSCAType = LoadType(proc.SourceType);
 
-			var proctype = proc.MSCAType;
-			var methdecls = proctype.GetMembers().Select(x => x.DeclaringSyntaxReferences.First().GetSyntax()).OfType<MethodDeclarationSyntax>();
+            var proctype = proc.MSCAType;
+            var methdecls = proctype.GetMembers().Select(x => x.DeclaringSyntaxReferences.First().GetSyntax()).OfType<MethodDeclarationSyntax>();
 
-			var m = methdecls.FirstOrDefault(x => x.Identifier.Text == method.Name && x.ParameterList.Parameters.Count == method.GetParameters().Length);
-			if (m == null)
-				throw new Exception($"Unable to find a method with the name {method.Name} in type {proc.MSCAType.ToDisplayString()}");
+            var m = methdecls.FirstOrDefault(x => x.Identifier.Text == method.Name && x.ParameterList.Parameters.Count == method.GetParameters().Length);
+            if (m == null)
+                throw new Exception($"Unable to find a method with the name {method.Name} in type {proc.MSCAType.ToDisplayString()}");
 
-			proc.MainMethod = Decompile(network, proc, m);
+            proc.MainMethod = Decompile(network, proc, m);
 
-			// If we have comments from the constructors, add them here
-			if (statements.Count > 0)
-			{
-				statements.AddRange(proc.MainMethod.Statements);
-				proc.MainMethod.Statements = statements.ToArray();
-			}
+            // If we have comments from the constructors, add them here
+            if (statements.Count > 0)
+            {
+                statements.AddRange(proc.MainMethod.Statements);
+                proc.MainMethod.Statements = statements.ToArray();
+            }
 
-			var methods = new List<MethodState>();
+            var methods = new List<MethodState>();
 
-			while(proc.MethodTargets.Count > 0)
-			{
-				var tp = proc.MethodTargets.Dequeue();
-				var ix = tp.Item3;
+            while(proc.MethodTargets.Count > 0)
+            {
+                var tp = proc.MethodTargets.Dequeue();
+                var ix = tp.Item3;
 
-				var ic = (ix.SourceExpression as InvocationExpressionSyntax);
-				var r = ic.Expression as MemberAccessExpressionSyntax;
+                var ic = (ix.SourceExpression as InvocationExpressionSyntax);
+                var r = ic.Expression as MemberAccessExpressionSyntax;
 
-				// TODO: Maybe we can support overloads here as well
-				var dm = methods.FirstOrDefault(x => x.Name == r.TryGetInferredMemberName());
-				if (dm == null)
-				{
-					var mr = methdecls.FirstOrDefault(x => x.Identifier.Text == r.TryGetInferredMemberName());
-					if (mr == null)
-						throw new Exception($"Unable to resolve method call to {r}");
-					dm = Decompile(network, proc, mr);
-					methods.Add(dm);
-				}
+                // TODO: Maybe we can support overloads here as well
+                var dm = methods.FirstOrDefault(x => x.Name == r.TryGetInferredMemberName());
+                if (dm == null)
+                {
+                    var mr = methdecls.FirstOrDefault(x => x.Identifier.Text == r.TryGetInferredMemberName());
+                    if (mr == null)
+                        throw new Exception($"Unable to resolve method call to {r}");
+                    dm = Decompile(network, proc, mr);
+                    methods.Add(dm);
+                }
 
-				proc.Methods = methods.ToArray();
-				ix.Target = dm;
-				ix.TargetExpression = new MethodReferenceExpression()
-				{
-					Parent = ix,
-					SourceExpression = ix.SourceExpression,
-					SourceResultType = dm.ReturnVariable.MSCAType,
-					Target = dm
-				};
-				ix.SourceResultType = ix.TargetExpression.SourceResultType;
-			}
+                proc.Methods = methods.ToArray();
+                ix.Target = dm;
+                ix.TargetExpression = new MethodReferenceExpression()
+                {
+                    Parent = ix,
+                    SourceExpression = ix.SourceExpression,
+                    SourceResultType = dm.ReturnVariable.MSCAType,
+                    Target = dm
+                };
+                ix.SourceResultType = ix.TargetExpression.SourceResultType;
+            }
 
-			methods.Reverse();
-			proc.Methods = methods.ToArray();
-			proc.SharedSignals = proc.Signals.Values.ToArray();
-			proc.SharedVariables = proc.Variables.Values.ToArray();
-		}
+            methods.Reverse();
+            proc.Methods = methods.ToArray();
+            proc.SharedSignals = proc.Signals.Values.ToArray();
+            proc.SharedVariables = proc.Variables.Values.ToArray();
+        }
 
-		/// <summary>
-		/// Decompiles the specified method
-		/// </summary>
-		/// <param name="network">The top-level network.</param>
-		/// <param name="proc">The process where the method is located.</param>
-		/// <param name="method">The method to decompile.</param>
-		protected virtual MethodState Decompile(NetworkState network, ProcessState proc, MethodDeclarationSyntax method)
-		{
-			var res = new MethodState()
-			{
-				Name = method.Identifier.Text,
-				MSCAMethod = method,
-				Parent = proc,
-				Ignore = method.LoadSymbol(m_semantics).HasAttribute<IgnoreAttribute>(),
+        /// <summary>
+        /// Decompiles the specified method
+        /// </summary>
+        /// <param name="network">The top-level network.</param>
+        /// <param name="proc">The process where the method is located.</param>
+        /// <param name="method">The method to decompile.</param>
+        protected virtual MethodState Decompile(NetworkState network, ProcessState proc, MethodDeclarationSyntax method)
+        {
+            var res = new MethodState()
+            {
+                Name = method.Identifier.Text,
+                MSCAMethod = method,
+                Parent = proc,
+                Ignore = method.LoadSymbol(m_semantics).HasAttribute<IgnoreAttribute>(),
                 IsStateMachine = proc.SourceInstance.Instance is StateProcess
-			};
+            };
 
-			res.Parameters = method.ParameterList.Parameters.Select(x => ParseParameter(network, proc, res, x)).ToArray();
+            res.Parameters = method.ParameterList.Parameters.Select(x => ParseParameter(network, proc, res, x)).ToArray();
 
-			if (res.Ignore)
-			{
-				res.Statements = new Statement[0];
-				res.AllVariables = new Variable[0];
+            if (res.Ignore)
+            {
+                res.Statements = new Statement[0];
+                res.AllVariables = new Variable[0];
                 res.Variables = new Variable[0];
-			}
-			else
-			{
-				res.Statements = Decompile(network, proc, res);
+            }
+            else
+            {
+                res.Statements = Decompile(network, proc, res);
                 res.AllVariables = res.CollectedVariables.ToArray();
                 res.Variables = res.Scopes.First().Value.Values.ToArray();
-			}
+            }
 
-			if (res.ReturnVariable == null)
-			{
-				res.ReturnVariable = new Variable()
-				{
-					MSCAType = LoadType(method.ReturnType),
-					Parent = res,
-					Source = method
-				};
-			}
+            if (res.ReturnVariable == null)
+            {
+                res.ReturnVariable = new Variable()
+                {
+                    MSCAType = LoadType(method.ReturnType),
+                    Parent = res,
+                    Source = method
+                };
+            }
 
-			return res;
-		}
-	}
+            return res;
+        }
+    }
 }

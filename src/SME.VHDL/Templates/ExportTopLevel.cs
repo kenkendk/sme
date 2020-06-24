@@ -13,13 +13,13 @@ namespace SME.VHDL.Templates
     {
 
         public readonly Network Network;
-		public readonly RenderState RS;
+        public readonly RenderState RS;
 
-		public ExportTopLevel(RenderState renderer)
-		{
-			RS = renderer;
-			Network = renderer.Network;
-		}
+        public ExportTopLevel(RenderState renderer)
+        {
+            RS = renderer;
+            Network = renderer.Network;
+        }
 
         public override string TransformText()
         {

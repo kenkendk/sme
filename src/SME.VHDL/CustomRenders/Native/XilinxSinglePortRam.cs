@@ -47,7 +47,7 @@ signal ADDR_internal{index_suffix}: std_logic_vector({(overrideAddrWidth <= 0 ? 
         {
             var cases = Enumerable
                 .Range(0, blocks)
-                .Select(i => $@"    when ""{VHDLHelper.GetDataBitString(i, fullAddressWidth - blockAddrWidth).Substring(32 - (fullAddressWidth - blockAddrWidth))}"" => 
+                .Select(i => $@"    when ""{VHDLHelper.GetDataBitString(i, fullAddressWidth - blockAddrWidth).Substring(32 - (fullAddressWidth - blockAddrWidth))}"" =>
         DO_internal <= DO_internal_{i};");
 
             return $@"
@@ -113,11 +113,11 @@ generic map (
 { paritylines },
 
     INIT => X""{ initialvalue}"" --Initial values on output port
-)   
+)
 port map (
     DO => DO_internal{index_suffix},         -- Output read data port, width defined by READ_WIDTH parameter
     DI => DI_internal{index_suffix},         -- Input write data port, width defined by WRITE_WIDTH parameter
-    ADDR => ADDR_internal{index_suffix},     -- Input address, width defined by read/write port depth    
+    ADDR => ADDR_internal{index_suffix},     -- Input address, width defined by read/write port depth
     CLK => CLK,                -- 1-bit input clock
     EN => EN_internal{index_suffix},         -- 1-bit input enable
     REGCE => '0',              -- 1-bit input read output register enable
@@ -125,7 +125,7 @@ port map (
     WE => WE_internal{index_suffix}          -- Input write enable, width defined by write port depth
 );
 -- End of BRAM_SINGLE_MACRO instantiation
-";        
+";
         }
 
         public string BodyRegion(RenderStateProcess renderer, int indentation)
@@ -230,7 +230,7 @@ begin
 {self.InstanceName}_Helper: process(RST,CLK, RDY)
 begin
 if RST = '1' then
-    FIN <= '0';                        
+    FIN <= '0';
 elsif rising_edge(CLK) then
     FIN <= not RDY;
     {clocktemplate}

@@ -54,7 +54,7 @@ signal ADDRB_internal{index_suffix}: std_logic_vector({(overrideAddrWidth <= 0 ?
         {
             var cases = Enumerable
                 .Range(0, blocks)
-                .Select(i => $@"    when ""{VHDLHelper.GetDataBitString(i, fullAddressWidth - blockAddrWidth).Substring(32 - (fullAddressWidth - blockAddrWidth))}"" => 
+                .Select(i => $@"    when ""{VHDLHelper.GetDataBitString(i, fullAddressWidth - blockAddrWidth).Substring(32 - (fullAddressWidth - blockAddrWidth))}"" =>
         DO{port}_internal <= DO{port}_internal_{i};");
 
             return $@"
@@ -127,7 +127,7 @@ generic map (
 
     INIT_A => X""{ initialvalue}"", --Initial values on A output port
     INIT_B => X""{ initialvalue}""  --Initial values on B output port
-)   
+)
 port map (
     DOA => DOA_internal{index_suffix},         -- Output port-A, width defined by READ_WIDTH_A parameter
     DOB => DOB_internal{index_suffix},         -- Output port-B, width defined by READ_WIDTH_B parameter
@@ -273,7 +273,7 @@ begin
 {self.InstanceName}_Helper: process(RST,CLK, RDY)
 begin
 if RST = '1' then
-    FIN <= '0';                        
+    FIN <= '0';
 elsif rising_edge(CLK) then
     FIN <= not RDY;
     {clocktemplate}

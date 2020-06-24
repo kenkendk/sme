@@ -49,7 +49,7 @@ signal WRADDR_internal{index_suffix}: std_logic_vector({(overrideAddrWidth <= 0 
         {
             var cases = Enumerable
                 .Range(0, blocks)
-                .Select(i => $@"    when ""{VHDLHelper.GetDataBitString(i, fullAddressWidth - blockAddrWidth).Substring(32 - (fullAddressWidth - blockAddrWidth))}"" => 
+                .Select(i => $@"    when ""{VHDLHelper.GetDataBitString(i, fullAddressWidth - blockAddrWidth).Substring(32 - (fullAddressWidth - blockAddrWidth))}"" =>
         DO_internal <= DO_internal_{i};");
 
             return $@"
@@ -119,11 +119,11 @@ generic map (
 { paritylines },
 
     INIT => X""{ initialvalue}"" --Initial values on output port
-)   
+)
 port map (
     DO => DO_internal{index_suffix},         -- Output read data port, width defined by READ_WIDTH parameter
     DI => DI_internal{index_suffix},         -- Input write data port, width defined by WRITE_WIDTH parameter
-    RDADDR => RDADDR_internal{index_suffix}, -- Input read address, width defined by read port depth    
+    RDADDR => RDADDR_internal{index_suffix}, -- Input read address, width defined by read port depth
     RDCLK => CLK,              -- 1-bit input read clock
     RDEN => RDEN_internal{index_suffix},     -- 1-bit input read port enable
     REGCE => '0',   -- 1-bit input read output register enable
@@ -253,7 +253,7 @@ begin
 {self.InstanceName}_Helper: process(RST,CLK, RDY)
 begin
 if RST = '1' then
-    FIN <= '0';                        
+    FIN <= '0';
 elsif rising_edge(CLK) then
     FIN <= not RDY;
     {clocktemplate}

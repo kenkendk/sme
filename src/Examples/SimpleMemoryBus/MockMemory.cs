@@ -4,38 +4,38 @@ using System.Threading.Tasks;
 
 namespace SimpleMemoryBus
 {
-	public class MockMemory : Process
-	{
-		[InputBus, OutputBus]
+    public class MockMemory : Process
+    {
+        [InputBus, OutputBus]
         public IMemoryInterface Interface = Scope.CreateBus<IMemoryInterface>();
 
-		private ulong[] m_data;
-		private int m_cycle = 0;
+        private ulong[] m_data;
+        private int m_cycle = 0;
 
-		public MockMemory()
-			: base()
-		{
-			m_data = new ulong[1024];
-		}
+        public MockMemory()
+            : base()
+        {
+            m_data = new ulong[1024];
+        }
 
-		public async override Task Run()
-		{
-			while (true)
-			{
-				await ClockAsync();
+        public async override Task Run()
+        {
+            while (true)
+            {
+                await ClockAsync();
 
                 PrintDebug("Phase: {0}", ++m_cycle);
 
-				if (Interface.ReadEnabled)
-				{
-					PrintDebug("Setting readvalue to {0}", m_data[Interface.ReadAddr]);
-					Interface.ReadValue = m_data[Interface.ReadAddr];
-				}
+                if (Interface.ReadEnabled)
+                {
+                    PrintDebug("Setting readvalue to {0}", m_data[Interface.ReadAddr]);
+                    Interface.ReadValue = m_data[Interface.ReadAddr];
+                }
 
-				if (Interface.WriteEnabled)
-					m_data[Interface.WriteAddr] = Interface.WriteValue;
-			}
-		}
-	}
+                if (Interface.WriteEnabled)
+                    m_data[Interface.WriteAddr] = Interface.WriteValue;
+            }
+        }
+    }
 }
 

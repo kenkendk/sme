@@ -11,7 +11,7 @@ namespace StateMachineTester
             go1s = new bool[] { };
             go2s = new bool[] { };
             values = new int[] { };
-            states = new int[] { 
+            states = new int[] {
                 1, 1, 1, 1, 1, 2, 3, 3, 3, 3, 3,
                 1, 1, 1, 1, 1, 2, 3, 3, 3, 3, 3,
                 1, 1, 1, 1, 1, 2, 3, 3, 3, 3, 3,
@@ -58,14 +58,14 @@ namespace StateMachineTester
             while (control.Go1)
             {
                 result.State = 1;
-                for (int i = 0; i < 5; i++) 
+                for (int i = 0; i < 5; i++)
                 {
                     result.State = 2;
                     await ClockAsync();
                     result.State = 3;
                 }
                 await ClockAsync();
-                for (int i = 0; i < 5; i++) 
+                for (int i = 0; i < 5; i++)
                 {
                     result.State = 4;
                     await ClockAsync();
@@ -262,7 +262,7 @@ namespace StateMachineTester
                 result.State = 1;
                 switch (control.Value)
                 {
-                    case 0: 
+                    case 0:
                         result.State = 2;
                         await ClockAsync();
                         result.State = 3;

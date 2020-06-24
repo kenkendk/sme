@@ -57,7 +57,7 @@ namespace SME.VHDL.CustomRenders.Inferred
             // Assign the vhdl types so the type conversion is done correctly
             renderer.Parent.TypeLookup[asm_write.Left]
              = renderer.Parent.TypeLookup[((AST.IdentifierExpression)asm_write.Left).Target]
-             = renderer.Parent.TypeLookup[asm_read.Right] 
+             = renderer.Parent.TypeLookup[asm_read.Right]
              = renderer.Parent.TypeLookup[((AST.IdentifierExpression)asm_read.Right).Target]
                 = renderer.Parent.TypeScope.GetStdLogicVector(datawidth);
 
@@ -84,7 +84,7 @@ namespace SME.VHDL.CustomRenders.Inferred
     signal { control_bus_data_name }_Vector: std_logic_vector ({datawidth - 1} downto 0);
     signal { readresult_bus_data_name }_Vector: std_logic_vector ({datawidth - 1} downto 0);
     signal { control_bus_addr_name }_Vector: std_logic_vector ({addrwidth - 1} downto 0);
-begin 
+begin
 
     process (CLK)
     begin
@@ -102,7 +102,7 @@ begin
     {Naming.ProcessNameToValidName(renderer.Process.SourceInstance.Instance)}_Helper: process(RST, CLK, RDY)
     begin
     if RST = '1' then
-        FIN <= '0';                        
+        FIN <= '0';
     elsif rising_edge(CLK) then
         FIN <= not RDY;
     end if;

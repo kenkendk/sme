@@ -2,10 +2,10 @@
 
 namespace ColorBin
 {
-	class MainClass
-	{
-		public static void Main(string[] args)
-		{
+    class MainClass
+    {
+        public static void Main(string[] args)
+        {
             using (var sim = new Simulation())
             {
                 var tester = new ImageInputSimulator("input/image1.png");
@@ -23,6 +23,6 @@ namespace ColorBin
                     //.BuildCPP()
                     .Run();
             }
-		}
-	}
+        }
+    }
 }

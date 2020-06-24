@@ -77,7 +77,7 @@ namespace ExternalComponent
                 m_control.Address = i;
                 await ClockAsync();
                 TData expected = init_is_random ? m_initial[i-1] : VHDLHelper.CreateIntType<TData>((ulong)(i-1));
-                Debug.Assert(m_rddata.Data.Equals(expected), 
+                Debug.Assert(m_rddata.Data.Equals(expected),
                     $"Read problem at offset {i - 1}, value is {m_rddata.Data} but should be {expected}");
             }
 
@@ -106,7 +106,7 @@ namespace ExternalComponent
                 m_control.Address = i;
                 await ClockAsync();
                 TData expected = m_rnd[i-1];
-                Debug.Assert(m_rddata.Data.Equals(expected), 
+                Debug.Assert(m_rddata.Data.Equals(expected),
                     $"Read random problem at offset {i - 1}, value is {m_rddata.Data} but should be {expected}");
             }
         }

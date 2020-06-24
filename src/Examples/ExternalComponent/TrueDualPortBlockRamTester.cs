@@ -140,7 +140,7 @@ namespace ExternalComponent
                 m_controlb.Address = i;
                 await ClockAsync();
                 TData expected = m_rnd[i-1];
-                Debug.Assert(m_rdb.Data.Equals(expected), 
+                Debug.Assert(m_rdb.Data.Equals(expected),
                     $"Read problem at offset {i-1}, value is {m_rdb.Data} but should be {expected}");
             }
 
@@ -177,7 +177,7 @@ namespace ExternalComponent
                 m_controla.Address = i;
                 await ClockAsync();
                 TData expected = m_rnd[m_rnd.Length-i];
-                Debug.Assert(m_rda.Data.Equals(expected), 
+                Debug.Assert(m_rda.Data.Equals(expected),
                     $"Read problem at offset {i-1}, value is {m_rda.Data} but should be {expected}");
             }
 

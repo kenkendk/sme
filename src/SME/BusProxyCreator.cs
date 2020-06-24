@@ -17,9 +17,9 @@ namespace SME
         /// Creates a new runtime defined type and instance for the given interface type
         /// </summary>
         /// <param name="interface">The interface to create to instance for</param>
-		/// <param name="clock">The clock to tick with</param>
-		/// <param name="isClocked">A value indicating if the bus is clocked</param>
-		/// <param name="isInternal">A value indicating if the bus is internal</param>
+        /// <param name="clock">The clock to tick with</param>
+        /// <param name="isClocked">A value indicating if the bus is clocked</param>
+        /// <param name="isInternal">A value indicating if the bus is internal</param>
         internal static IRuntimeBus CreateBusProxy(Type @interface, Clock clock, bool isClocked, bool isInternal)
         {
             if (@interface == null)
@@ -71,7 +71,7 @@ namespace SME
                 // To avoid name clashes with the user-defined properties, we use an interface mapping,
                 // aka explicit interface implementation in C#
                 //
-                // The proxy does not have IRuntimeBus properties itself, so these properties cannot be 
+                // The proxy does not have IRuntimeBus properties itself, so these properties cannot be
                 // directly accessed on the proxy instance, and cannot be found via reflection.
                 // But when the proxy is cast as a IRuntimeBus, the properties can be accessed
                 // as the getter/setter methods are wired correctly.

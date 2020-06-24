@@ -24,14 +24,14 @@ namespace SimpleComponents
             /// <summary>
             /// Gets or sets the value to insert into the buffer.
             /// </summary>
-			T Value { get; set; }
+            T Value { get; set; }
 
             /// <summary>
             /// A flag indicating if the output is consumed
             /// </summary>
             [InitialValue]
-			bool Read { get; set; }
-		}
+            bool Read { get; set; }
+        }
 
         /// <summary>
         /// The output bus
@@ -39,28 +39,28 @@ namespace SimpleComponents
         [TopLevelOutputBus]
         public interface IOutputBus : IBus
         {
-			/// <summary>
-			/// Gets or sets a value indicating whether the value is valid.
-			/// </summary>
-			[InitialValue]
-			bool Valid { get; set; }
-			/// <summary>
-			/// Gets or sets the value read from the buffer.
-			/// </summary>
-			T Value { get; set; }
+            /// <summary>
+            /// Gets or sets a value indicating whether the value is valid.
+            /// </summary>
+            [InitialValue]
+            bool Valid { get; set; }
+            /// <summary>
+            /// Gets or sets the value read from the buffer.
+            /// </summary>
+            T Value { get; set; }
 
             /// <summary>
             /// Gets or sets a value indicating if the buffer is full
             /// </summary>
             [InitialValue]
-			bool Filled { get; set; }
+            bool Filled { get; set; }
 
             /// <summary>
             /// Gets or sets the buffer index, used for debugging the AST
             /// </summary>
             /// <value>The index.</value>
             byte Index { get; set; }
-		}
+        }
 
         /// <summary>
         /// The buffer storing the intermediate values
@@ -137,18 +137,18 @@ namespace SimpleComponents
                 m_head = (m_head + 1) % m_buffer.Length;
             }
 
-			SimulationOnly(() => {
-				if (Input.Valid && m_count >= m_buffer.Length)
-					Console.WriteLine("Buffer overflow attempted");
-			});
+            SimulationOnly(() => {
+                if (Input.Valid && m_count >= m_buffer.Length)
+                    Console.WriteLine("Buffer overflow attempted");
+            });
 
-			if (Input.Valid && m_count < m_buffer.Length)
-			{
-				m_buffer[(m_head + m_count) % m_buffer.Length] = Input.Value;
-				m_count++;
-			}
+            if (Input.Valid && m_count < m_buffer.Length)
+            {
+                m_buffer[(m_head + m_count) % m_buffer.Length] = Input.Value;
+                m_count++;
+            }
 
-			if (m_count > 0)
+            if (m_count > 0)
             {
                 Output.Valid = true;
                 Output.Value = m_buffer[m_head];

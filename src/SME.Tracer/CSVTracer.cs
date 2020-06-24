@@ -6,133 +6,133 @@ using System.Reflection;
 
 namespace SME.Tracer
 {
-	public class CSVTracer : Tracer
-	{
-		private string m_filename;
+    public class CSVTracer : Tracer
+    {
+        private string m_filename;
         private bool m_firstEntry = true;
 
-		public CSVTracer(string filename = null, string targetfolder = null)
-		{
-			m_filename = Path.GetFullPath(Path.Combine(targetfolder ?? ".", filename ?? DateTime.Now.ToString("yyyyMMddTHHmmss") + ".csv"));
+        public CSVTracer(string filename = null, string targetfolder = null)
+        {
+            m_filename = Path.GetFullPath(Path.Combine(targetfolder ?? ".", filename ?? DateTime.Now.ToString("yyyyMMddTHHmmss") + ".csv"));
 
-			while (filename == null && File.Exists(m_filename))
-			{
-				System.Threading.Thread.Sleep(TimeSpan.FromSeconds(1.5));
-				m_filename = Path.GetFullPath(Path.Combine(targetfolder ?? ".", filename ?? DateTime.Now.ToString("yyyyMMddTHHmmss") + ".csv"));
-			}
+            while (filename == null && File.Exists(m_filename))
+            {
+                System.Threading.Thread.Sleep(TimeSpan.FromSeconds(1.5));
+                m_filename = Path.GetFullPath(Path.Combine(targetfolder ?? ".", filename ?? DateTime.Now.ToString("yyyyMMddTHHmmss") + ".csv"));
+            }
 
-			using (File.Create(m_filename)) { }
-		}
+            using (File.Create(m_filename)) { }
+        }
 
-		protected override void OutputSignalNames(SignalEntry[] signals)
-		{
-			var firstentry = true;
-			using (var af = File.AppendText(m_filename))
-			{
-				foreach (var p in signals)
-				{
-					if (firstentry)
-						firstentry = false;
-					else
-						af.Write(",");
+        protected override void OutputSignalNames(SignalEntry[] signals)
+        {
+            var firstentry = true;
+            using (var af = File.AppendText(m_filename))
+            {
+                foreach (var p in signals)
+                {
+                    if (firstentry)
+                        firstentry = false;
+                    else
+                        af.Write(",");
 
-					if (p.Property.PropertyType.IsGenericType && p.Property.PropertyType.GetGenericTypeDefinition() == typeof(IFixedArray<>))
-					{
-						var attr = p.Property.GetCustomAttributes(typeof(FixedArrayLengthAttribute), false).Cast<FixedArrayLengthAttribute>().FirstOrDefault();
-						var propname = BusSignalToName(p);
-						foreach (var n in Enumerable.Range(0, attr.Length))
-							af.Write(string.Format("{0}({1}){2}", propname, n, n == attr.Length - 1 ? "" : ","));
-					}
-					else
-						af.Write(BusSignalToName(p));
-				}
+                    if (p.Property.PropertyType.IsGenericType && p.Property.PropertyType.GetGenericTypeDefinition() == typeof(IFixedArray<>))
+                    {
+                        var attr = p.Property.GetCustomAttributes(typeof(FixedArrayLengthAttribute), false).Cast<FixedArrayLengthAttribute>().FirstOrDefault();
+                        var propname = BusSignalToName(p);
+                        foreach (var n in Enumerable.Range(0, attr.Length))
+                            af.Write(string.Format("{0}({1}){2}", propname, n, n == attr.Length - 1 ? "" : ","));
+                    }
+                    else
+                        af.Write(BusSignalToName(p));
+                }
 
-				af.WriteLine();
-			}
-		}
+                af.WriteLine();
+            }
+        }
 
-		protected override void OutputSignalData(IEnumerable<Tuple<SignalEntry, object>> values, bool last)
-		{
-			using (var af = File.AppendText(m_filename))
-			{
-				foreach (var signal in values)
-				{
+        protected override void OutputSignalData(IEnumerable<Tuple<SignalEntry, object>> values, bool last)
+        {
+            using (var af = File.AppendText(m_filename))
+            {
+                foreach (var signal in values)
+                {
                     if (m_firstEntry)
                         m_firstEntry = false;
-					else
-						af.Write(",");
+                    else
+                        af.Write(",");
 
-					var p = signal.Item1;
-					var value = signal.Item2;
+                    var p = signal.Item1;
+                    var value = signal.Item2;
 
-					if (p.Property.PropertyType.IsGenericType && p.Property.PropertyType.GetGenericTypeDefinition() == typeof(IFixedArray<>))
-					{
-						var attr = p.Property.GetCustomAttributes(typeof(FixedArrayLengthAttribute), false).Cast<FixedArrayLengthAttribute>().FirstOrDefault();
+                    if (p.Property.PropertyType.IsGenericType && p.Property.PropertyType.GetGenericTypeDefinition() == typeof(IFixedArray<>))
+                    {
+                        var attr = p.Property.GetCustomAttributes(typeof(FixedArrayLengthAttribute), false).Cast<FixedArrayLengthAttribute>().FirstOrDefault();
 
-						try
-						{
-							var eltype = p.Property.PropertyType.GetGenericArguments().First();
-							var m = value.GetType().GetProperties().FirstOrDefault(x => x.GetIndexParameters().Length == 1);
+                        try
+                        {
+                            var eltype = p.Property.PropertyType.GetGenericArguments().First();
+                            var m = value.GetType().GetProperties().FirstOrDefault(x => x.GetIndexParameters().Length == 1);
                             var fixedInteraction = (IFixedArrayInteraction)value;
                             foreach (var n in Enumerable.Range(0, attr.Length))
-							{
-								try
-								{
-									if (!fixedInteraction.CanRead(n))
-										af.Write("U");
-									else
-										af.Write(ConvertToString(m.GetValue(value, new object[] { n }), eltype));
-								}
-								catch (Exception ex)
-								{
-									if (ex is TargetInvocationException)
-										ex = ((TargetInvocationException)ex).InnerException;
+                            {
+                                try
+                                {
+                                    if (!fixedInteraction.CanRead(n))
+                                        af.Write("U");
+                                    else
+                                        af.Write(ConvertToString(m.GetValue(value, new object[] { n }), eltype));
+                                }
+                                catch (Exception ex)
+                                {
+                                    if (ex is TargetInvocationException)
+                                        ex = ((TargetInvocationException)ex).InnerException;
 
-									if (ex is ReadViolationException)
-										af.Write("U");
-									else
-										af.Write("X");
+                                    if (ex is ReadViolationException)
+                                        af.Write("U");
+                                    else
+                                        af.Write("X");
 
-								}
-								if (n != attr.Length - 1)
-									af.Write(",");
-							}
-						}
-						catch (Exception ex)
-						{
-							if (ex is TargetInvocationException)
-								ex = ((TargetInvocationException)ex).InnerException;
+                                }
+                                if (n != attr.Length - 1)
+                                    af.Write(",");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            if (ex is TargetInvocationException)
+                                ex = ((TargetInvocationException)ex).InnerException;
 
-							string c = "X";
-							if (ex is ReadViolationException)
-								c = "U";
+                            string c = "X";
+                            if (ex is ReadViolationException)
+                                c = "U";
 
-							foreach (var n in Enumerable.Range(0, attr.Length))
-							{
-								af.Write(c);
-								if (n != attr.Length - 1)
-									af.Write(",");
-							}
-						}
-					}
-					else
-					{
-						af.Write(ConvertToString(value, p.Property.PropertyType));
-					}
-				}
+                            foreach (var n in Enumerable.Range(0, attr.Length))
+                            {
+                                af.Write(c);
+                                if (n != attr.Length - 1)
+                                    af.Write(",");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        af.Write(ConvertToString(value, p.Property.PropertyType));
+                    }
+                }
 
                 if (last)
                 {
                     af.WriteLine();
                     m_firstEntry = true;
                 }
-			}
-		}
+            }
+        }
 
-		protected virtual string ConvertToString(object value, Type itemtype)
-		{
-			if (value == null)
-				throw new ArgumentNullException(nameof(value));
+        protected virtual string ConvertToString(object value, Type itemtype)
+        {
+            if (value == null)
+                throw new ArgumentNullException(nameof(value));
 
             if (value is ReadViolationException)
                 return "U";
@@ -147,42 +147,42 @@ namespace SME.Tracer
                 var v = value.ToString();
                 if (!Enum.GetNames(value.GetType()).Any(x => x == v))
                     v = Enum.GetNames(value.GetType()).First();
-                
+
                 return ConvertToValidName(value.GetType().FullName + "." + v).ToLower();
             }
-			else if (itemtype == typeof(byte))
-				return Convert.ToString((byte)value, 2).PadLeft(8, '0');
-			else if (itemtype == typeof(ushort))
-				return Convert.ToString((ushort)value, 2).PadLeft(16, '0');
-			else if (itemtype == typeof(uint))
-				return Convert.ToString((uint)value, 2).PadLeft(32, '0');
-			else if (itemtype == typeof(sbyte))
-				return Convert.ToString((sbyte)value, 2).PadLeft(8, '0');
-			else if (itemtype == typeof(short))
-				return Convert.ToString((short)value, 2).PadLeft(16, '0');
-			else if (itemtype == typeof(int))
-				return Convert.ToString((int)value, 2).PadLeft(32, '0');
-			else if (itemtype == typeof(long))
-				return
-					Convert.ToString((int)(((long)value >> 32) & 0xffffffff), 2).PadLeft(32, '0') +
-					Convert.ToString((int)((long)value & 0xffffffff), 2).PadLeft(32, '0')
-				;
-			else if (itemtype == typeof(ulong))
-				return
-					Convert.ToString((int)(((ulong)value >> 32) & 0xffffffff), 2).PadLeft(32, '0') +
-					Convert.ToString((int)((ulong)value & 0xffffffff), 2).PadLeft(32, '0')
-				;
-			else
-				return (value ?? string.Empty).ToString();
-		}
+            else if (itemtype == typeof(byte))
+                return Convert.ToString((byte)value, 2).PadLeft(8, '0');
+            else if (itemtype == typeof(ushort))
+                return Convert.ToString((ushort)value, 2).PadLeft(16, '0');
+            else if (itemtype == typeof(uint))
+                return Convert.ToString((uint)value, 2).PadLeft(32, '0');
+            else if (itemtype == typeof(sbyte))
+                return Convert.ToString((sbyte)value, 2).PadLeft(8, '0');
+            else if (itemtype == typeof(short))
+                return Convert.ToString((short)value, 2).PadLeft(16, '0');
+            else if (itemtype == typeof(int))
+                return Convert.ToString((int)value, 2).PadLeft(32, '0');
+            else if (itemtype == typeof(long))
+                return
+                    Convert.ToString((int)(((long)value >> 32) & 0xffffffff), 2).PadLeft(32, '0') +
+                    Convert.ToString((int)((long)value & 0xffffffff), 2).PadLeft(32, '0')
+                ;
+            else if (itemtype == typeof(ulong))
+                return
+                    Convert.ToString((int)(((ulong)value >> 32) & 0xffffffff), 2).PadLeft(32, '0') +
+                    Convert.ToString((int)((ulong)value & 0xffffffff), 2).PadLeft(32, '0')
+                ;
+            else
+                return (value ?? string.Empty).ToString();
+        }
 
-		public virtual string ConvertToValidName(string name)
-		{
-			return name;
-		}
+        public virtual string ConvertToValidName(string name)
+        {
+            return name;
+        }
 
-		public virtual string BusSignalToName(SignalEntry p)
-		{
+        public virtual string BusSignalToName(SignalEntry p)
+        {
             return p.SortKey.Replace(",", "_");
-		}
-	}}
+        }
+    }}

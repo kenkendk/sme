@@ -8,7 +8,7 @@ namespace StatedAdder
     {
         public static void Main(string[] args)
         {
-            using (new Simulation()) 
+            using (new Simulation())
             {
                 var manual_adder = new Adder();
                 var stated_adder = new StatedAdder();
@@ -30,7 +30,7 @@ namespace StatedAdder
     }
 
     [InitializedBus]
-    public interface IControl : IBus 
+    public interface IControl : IBus
     {
         uint a { get; set; }
         uint b { get; set; }
@@ -38,14 +38,14 @@ namespace StatedAdder
     }
 
     [InitializedBus]
-    public interface IResult : IBus 
+    public interface IResult : IBus
     {
         uint sum { get; set; }
     }
 
 
     [ClockedProcess]
-    public class StatedAdder : StateProcess 
+    public class StatedAdder : StateProcess
     {
         [InputBus]
         public IControl input;
@@ -64,7 +64,7 @@ namespace StatedAdder
     }
 
     [ClockedProcess]
-    public class Adder : SimpleProcess 
+    public class Adder : SimpleProcess
     {
         [InputBus]
         public IControl input;
@@ -89,7 +89,7 @@ namespace StatedAdder
         }
     }
 
-    public class Tester : SimulationProcess 
+    public class Tester : SimulationProcess
     {
 
         [OutputBus]

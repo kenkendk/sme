@@ -87,7 +87,7 @@ namespace SME.VHDL
         {
             var ind = new string(' ', indentation);
             return
-                ind 
+                ind
                 + string.Join(
                     Environment.NewLine + ind,
 
@@ -283,7 +283,7 @@ namespace SME.VHDL
                     var pb = new StringBuilder();
                     for (var j = 0; j < fullpline.Length; j += 4)
                         pb.Append(Convert.ToByte(fullpline.Substring(j, 4), 2).ToString("X1"));
-                        
+
                     plines.Add(pb.ToString());
                     line.Clear();
                     pcount = 0;
@@ -395,7 +395,7 @@ use unimacro.Vcomponents.all;
                     sb.Append(string.Format(typecasttemplate, last, datawidth));
             }
 
-            return "(" + sb + ")";        
+            return "(" + sb + ")";
         }
     }
 }

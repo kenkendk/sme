@@ -13,18 +13,18 @@ namespace SME.VHDL.Templates
     {
 
         public readonly RenderState RS;
-		public readonly RenderStateProcess RSP;
+        public readonly RenderStateProcess RSP;
 
-		public readonly Network Network;
-		public readonly AST.Process Process;
+        public readonly Network Network;
+        public readonly AST.Process Process;
 
-		public Entity(RenderState renderer, RenderStateProcess renderproc)
-		{
-			RS = renderer;
-			RSP = renderproc;
-			Network = renderer.Network;
-			Process = renderproc.Process;
-		}
+        public Entity(RenderState renderer, RenderStateProcess renderproc)
+        {
+            RS = renderer;
+            RSP = renderproc;
+            Network = renderer.Network;
+            Process = renderproc.Process;
+        }
 
         public override string TransformText()
         {

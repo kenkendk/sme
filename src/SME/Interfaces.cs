@@ -9,31 +9,31 @@ namespace SME
     /// The interface for a Bus, which is a collection of signals
     /// </summary>
     public interface IBus
-	{
-	}
+    {
+    }
 
     /// <summary>
     /// The interface for a Bus, which is a collection of signals
     /// </summary>
     public interface IRuntimeBus : IBus
-	{
-		/// <summary>
-		/// The type of the mapped bus
-		/// </summary>
-		/// <value></value>
-		Type BusType { get; }
-		/// <summary>
-		/// Propagates staged values
-		/// </summary>
-		void Propagate();
-		/// <summary>
-		/// Forwards staged values
-		/// </summary>
-		void Forward();
-		/// <summary>
-		/// Returns a value indicating if any values are staged
-		/// </summary>
-		bool AnyStaged();
+    {
+        /// <summary>
+        /// The type of the mapped bus
+        /// </summary>
+        /// <value></value>
+        Type BusType { get; }
+        /// <summary>
+        /// Propagates staged values
+        /// </summary>
+        void Propagate();
+        /// <summary>
+        /// Forwards staged values
+        /// </summary>
+        void Forward();
+        /// <summary>
+        /// Returns a value indicating if any values are staged
+        /// </summary>
+        bool AnyStaged();
         /// <summary>
         /// Returns a list of non-staged properties
         /// </summary>
@@ -50,9 +50,9 @@ namespace SME
         /// Returns a value indicating if the bus is internal
         /// </summary>
         bool IsInternal { get; }
-		/// <summary>
-		/// Returns a value indicating if the bus is clocked
-		/// </summary>
+        /// <summary>
+        /// Returns a value indicating if the bus is clocked
+        /// </summary>
         bool IsClocked { get; }
         /// <summary>
         /// Checks if the property can be read
@@ -60,7 +60,7 @@ namespace SME
         /// <param name="property">The property to check</param>
         /// <returns><c>true</c> if the property can be read, <c>false</c> otherwise</returns>
         bool CanRead(string property);
-	}
+    }
 
     /// <summary>
     /// The interface for a special Bus that only exists once in the application
@@ -68,13 +68,13 @@ namespace SME
     public interface ISingletonBus : IBus
     {
     }
-		
-	/// <summary>
-	/// The interface of a component, which can be structural or functional
-	/// </summary>
-	public interface IProcess
-	{
-		bool IsClockedProcess { get; }
+
+    /// <summary>
+    /// The interface of a component, which can be structural or functional
+    /// </summary>
+    public interface IProcess
+    {
+        bool IsClockedProcess { get; }
         string Name { get; }
 
         IRuntimeBus[] ClockedInputBusses { get; }
@@ -82,16 +82,16 @@ namespace SME
         IRuntimeBus[] InternalBusses { get; }
         IRuntimeBus[] OutputBusses { get; }
 
-		Task ClockAsync();
+        Task ClockAsync();
         Task Finished();
         Task ProcessReady();
-		Task ResetInputReady();
+        Task ResetInputReady();
         Task ResetProcessReady();
-		Task Run();
+        Task Run();
         void SignalFinished();
         Task SignalInputReady();
-		Task WaitUntilAsync(Func<bool> condition);
-	}
+        Task WaitUntilAsync(Func<bool> condition);
+    }
 
 }
 

@@ -6,7 +6,7 @@ var ctrlScope = null;
 var ctrl = app.controller('simCtrl', function($scope) {
     $scope.simcycle = 0;
     $scope.currentitem = null;
-    $scope.setSimCycle = function(index) { 
+    $scope.setSimCycle = function(index) {
       $scope.simcycle = Math.max(0, Math.min($scope.values.length - 1, index));
     };
 
@@ -48,9 +48,9 @@ var ctrl = app.controller('simCtrl', function($scope) {
 });
 
 window.onload = function() {
-  $.getJSON('./trace.json', null, function(data, status) { 
+  $.getJSON('./trace.json', null, function(data, status) {
     var ctrl = setupAngular(data);
-    setupCanvas(data, ctrl); 
+    setupCanvas(data, ctrl);
   });
 };
 
@@ -86,7 +86,7 @@ function createProcess(data) {
     top: BUS_CON_DIAMETER,
     width: Math.max(30, label.width) + PADDING + BUS_CON_DIAMETER,
     height: 50,
-    fill: '#faa'      
+    fill: '#faa'
   });
 
   var inbusses = [];
@@ -152,7 +152,7 @@ function createBus(data) {
     top: BUS_CON_DIAMETER,
     width: Math.max(30, label.width) + PADDING + BUS_CON_DIAMETER,
     height: 50,
-    fill: '#ffa'      
+    fill: '#ffa'
   });
   label.top = ((core.height - label.height) / 2) + core.top;
   label.left = ((core.width - label.width) / 2) + core.left;
@@ -203,7 +203,7 @@ function createBusConnection(output, input) {
     fill: 'red',
     stroke: 'red',
     strokeWidth: 2,
-    selectable: false    
+    selectable: false
   });
 
   ln.conn1 = output;
@@ -269,7 +269,7 @@ for (var i = data.config.busses.length - 1; i >= 0; i--) {
 while(remain_processes.length > 0) {
   for (var i = 0 ; i < remain_processes.length; i++) {
     var allcomplete = true;
-    
+
     for (var j = remain_processes[i].parents.length - 1; j >= 0; j--) {
       allcomplete &= complete.indexOf(remain_processes[i].parents[j]) >= 0;
     }
@@ -299,7 +299,7 @@ while(remain_processes.length > 0) {
 
     for(var j = layers[layers.length - 1].length - 1; j >= 0; j--) {
       var p = idmap[layers[layers.length - 1][j]];
-      
+
       for(var k = p.outbusses.length - 1; k >= 0; k--) {
         if (p.outbusses[k].busid == remain_busses[i]) {
           currentlayer.push(remain_busses[i]);
@@ -316,7 +316,7 @@ while(remain_processes.length > 0) {
   // If we added busses, make a new layer now
   if (currentlayer.length > 0) {
     layers.push(currentlayer);
-    currentlayer = [];    
+    currentlayer = [];
   }
 
 }
@@ -348,7 +348,7 @@ for (var i = 0; i < layers.length; i++) {
   for (var j = layers[i].length - 1; j >= 0; j--) {
     el = idmap[layers[i][j]];
     if (el != null) {
-      el.top = j * (maxheight + 50);    
+      el.top = j * (maxheight + 50);
       el.left = offsetleft;
       maxwidth = Math.max(el.width, maxwidth);
     }
@@ -442,7 +442,7 @@ canvas.on('mouse:wheel', function(opt) {
 
 canvas.on('object:selected', function(e) {
   var p = e.target;
-  ctrlScope.$applyAsync(function(){  
+  ctrlScope.$applyAsync(function(){
     ctrlScope.setCurrentItem(p);
   });
 });

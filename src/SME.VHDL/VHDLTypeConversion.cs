@@ -7,26 +7,26 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace SME.VHDL
 {
-	public static class VHDLTypeConversion
-	{
-		public static Expression ConvertExpression(RenderState render, Method method, Expression s, VHDLType target, ITypeSymbol targetsource, bool fromCast)
-		{
-			var svhdl = render.VHDLType(s);
+    public static class VHDLTypeConversion
+    {
+        public static Expression ConvertExpression(RenderState render, Method method, Expression s, VHDLType target, ITypeSymbol targetsource, bool fromCast)
+        {
+            var svhdl = render.VHDLType(s);
 
             // Deal with pesky integers that overflow the 32bit VHDL specs
             if (IsTooLargeIntegerLiteral(s, target, render))
                 svhdl = render.TypeScope.StdLogicVectorEquivalent(target);
 
-			// Already the real target type, just return it
-			if (svhdl == target)
-				return s;
+            // Already the real target type, just return it
+            if (svhdl == target)
+                return s;
 
-			// Stuff we do not care about
-			if (!svhdl.IsStdLogicVector && !svhdl.IsUnsigned && !svhdl.IsSigned && svhdl.IsArray && target.IsArray && render.TypeScope.GetByName(svhdl.ElementName) == render.TypeScope.GetByName(target.ElementName))
-				return s;
+            // Stuff we do not care about
+            if (!svhdl.IsStdLogicVector && !svhdl.IsUnsigned && !svhdl.IsSigned && svhdl.IsArray && target.IsArray && render.TypeScope.GetByName(svhdl.ElementName) == render.TypeScope.GetByName(target.ElementName))
+                return s;
 
-			// Array lengths
-			var targetlengthstr = string.IsNullOrWhiteSpace(target.Alias) ? target.Length.ToString() : target.Alias + "'length";
+            // Array lengths
+            var targetlengthstr = string.IsNullOrWhiteSpace(target.Alias) ? target.Length.ToString() : target.Alias + "'length";
 
             if (target == VHDLTypes.SYSTEM_BOOL)
             {
@@ -205,10 +205,10 @@ namespace SME.VHDL
 
 
                 /*if (svhdl.IsStdLogicVector && target.IsSigned)
-					return new VHDLConvertedExpression(s, target, "SIGNED({0})");
-				else if (svhdl.IsStdLogicVector && target.IsUnsigned)
-					return new VHDLConvertedExpression(s, target, "UNSIGNED({0})");
-				else*/
+                    return new VHDLConvertedExpression(s, target, "SIGNED({0})");
+                else if (svhdl.IsStdLogicVector && target.IsUnsigned)
+                    return new VHDLConvertedExpression(s, target, "UNSIGNED({0})");
+                else*/
                 throw new Exception(string.Format("Unexpected conversion from {0} to {1}", svhdl, target));
             }
             else if (target.IsStdLogicVector)
@@ -438,43 +438,43 @@ namespace SME.VHDL
 
                 return wrapped;
             }
-			else
-				throw new Exception(string.Format("Unexpected target type: {0} for source: {1}", target, svhdl));
-		}
+            else
+                throw new Exception(string.Format("Unexpected target type: {0} for source: {1}", target, svhdl));
+        }
 
-		public static AST.ParenthesizedExpression WrapInParenthesis(RenderState render, Expression expression)
-		{
-			var self = new AST.ParenthesizedExpression()
-			{
-				Expression = expression,
-				Parent = expression.Parent,
-				SourceExpression = expression.SourceExpression,
-				SourceResultType = expression.SourceResultType
-			};
+        public static AST.ParenthesizedExpression WrapInParenthesis(RenderState render, Expression expression)
+        {
+            var self = new AST.ParenthesizedExpression()
+            {
+                Expression = expression,
+                Parent = expression.Parent,
+                SourceExpression = expression.SourceExpression,
+                SourceResultType = expression.SourceResultType
+            };
 
-			expression.ReplaceWith(self);
-			expression.Parent = self;
+            expression.ReplaceWith(self);
+            expression.Parent = self;
 
-			render.TypeLookup[self] = render.VHDLType(expression);
+            render.TypeLookup[self] = render.VHDLType(expression);
 
-			return self;
-		}
+            return self;
+        }
 
-		public static Expression WrapExpression(RenderState render, Expression expression, string template, VHDLType vhdltarget)
-		{
-			var self = expression.ReplaceWith(new CustomNodes.ConversionExpression()
-			{
-				Expression = expression,
-				WrappingTemplate = template,
-				SourceExpression = expression.SourceExpression,
-				SourceResultType = expression.SourceResultType
-			});
+        public static Expression WrapExpression(RenderState render, Expression expression, string template, VHDLType vhdltarget)
+        {
+            var self = expression.ReplaceWith(new CustomNodes.ConversionExpression()
+            {
+                Expression = expression,
+                WrappingTemplate = template,
+                SourceExpression = expression.SourceExpression,
+                SourceResultType = expression.SourceResultType
+            });
 
-			expression.Parent = self;
-			render.TypeLookup[self] = vhdltarget;
+            expression.Parent = self;
+            render.TypeLookup[self] = vhdltarget;
 
-			return self;
-		}
+            return self;
+        }
 
         /// <summary>
         /// Evaluates if the given expression is an integer literal that is too large to be represented as a VHDL integer literal
@@ -583,5 +583,5 @@ namespace SME.VHDL
             return e.ToString();
 
         }
-	}
+    }
 }

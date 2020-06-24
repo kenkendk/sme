@@ -18,7 +18,7 @@
     <RootNamespace>ColorBin</RootNamespace>
   </PropertyGroup>
 
-  <ItemGroup>  
+  <ItemGroup>
     <None Update="input/*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 

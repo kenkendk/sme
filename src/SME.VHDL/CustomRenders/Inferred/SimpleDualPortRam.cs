@@ -84,7 +84,7 @@ namespace SME.VHDL.CustomRenders.Inferred
     signal { write_control_data_name }_Vector: std_logic_vector ({datawidth - 1} downto 0);
     signal { read_control_addr_name }_Vector: std_logic_vector ({addrwidth - 1} downto 0);
     signal { write_control_addr_name }_Vector: std_logic_vector ({addrwidth - 1} downto 0);
-begin 
+begin
 
     process (CLK)
     begin
@@ -107,7 +107,7 @@ begin
     {Naming.ProcessNameToValidName(renderer.Process.SourceInstance.Instance)}_Helper: process(RST, CLK, RDY)
     begin
     if RST = '1' then
-        FIN <= '0';                        
+        FIN <= '0';
     elsif rising_edge(CLK) then
         FIN <= not RDY;
     end if;

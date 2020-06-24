@@ -131,26 +131,26 @@ namespace SME
             return bus;
         }
 
-		/// <summary>
-		/// Creates a new bus with the given name
-		/// </summary>
-		/// <returns>The created bus.</returns>
-		/// <param name="name">The name of the bus to create.</param>
-		/// <typeparam name="T">The bus type</typeparam>
-		/// <param name="internalBus">A flag indicating if this is an internal bus</param>
-		public static T CreateBus<T>(string name = null, bool internalBus = false) where T : class, IBus
-		{
+        /// <summary>
+        /// Creates a new bus with the given name
+        /// </summary>
+        /// <returns>The created bus.</returns>
+        /// <param name="name">The name of the bus to create.</param>
+        /// <typeparam name="T">The bus type</typeparam>
+        /// <param name="internalBus">A flag indicating if this is an internal bus</param>
+        public static T CreateBus<T>(string name = null, bool internalBus = false) where T : class, IBus
+        {
             return (T)CreateBus(typeof(T), name, internalBus);
-		}
+        }
 
-		/// <summary>
-		/// Creates a new bus with the given name
-		/// </summary>
-		/// <returns>The created bus.</returns>
-		/// <param name="name">The name of the bus to create.</param>
+        /// <summary>
+        /// Creates a new bus with the given name
+        /// </summary>
+        /// <returns>The created bus.</returns>
+        /// <param name="name">The name of the bus to create.</param>
         /// <param name="bustype">The bus type</param>
         /// <param name="internalBus">A flag indicating if this is an internal bus</param>
-		public static IBus CreateBus(Type bustype, string name = null, bool internalBus = false)
+        public static IBus CreateBus(Type bustype, string name = null, bool internalBus = false)
         {
             return CreateOrLoadBus(bustype, name, internalBus, true);
         }
@@ -183,15 +183,15 @@ namespace SME
             return CreateOrLoadBus(bustype, name, internalBus, false);
         }
 
-		/// <summary>
-		/// Finds the bus with the given name and type, or creates a new if none is found
-		/// </summary>
-		/// <returns>The loaded or created bus.</returns>
-		/// <param name="name">The name of the bus to find.</param>
-		/// <typeparam name="T">The bus type</typeparam>
-		/// <param name="internalBus">A flag indicating if this is an internal bus</param>
+        /// <summary>
+        /// Finds the bus with the given name and type, or creates a new if none is found
+        /// </summary>
+        /// <returns>The loaded or created bus.</returns>
+        /// <param name="name">The name of the bus to find.</param>
+        /// <typeparam name="T">The bus type</typeparam>
+        /// <param name="internalBus">A flag indicating if this is an internal bus</param>
         /// <param name="forceCreate">A flag indicating if the bus should be created even if it exists</param>
-		public static T CreateOrLoadBus<T>(string name = null, bool internalBus = false, bool forceCreate = false) where T : class, IBus
+        public static T CreateOrLoadBus<T>(string name = null, bool internalBus = false, bool forceCreate = false) where T : class, IBus
         {
             return (T)CreateOrLoadBus(typeof(T), name, internalBus, forceCreate);
         }
@@ -230,15 +230,15 @@ namespace SME
             return targetScope;
         }
 
-		/// <summary>
-		/// Finds the bus with the given name and type, or creates a new if none is found
-		/// </summary>
-		/// <returns>The loaded or created bus.</returns>
-		/// <param name="name">The name of the bus to find.</param>
-		/// <param name="bustype">The bus type</param>
-		/// <param name="internalBus">A flag indicating if this is an internal bus</param>
-		/// <param name="forceCreate">A flag indicating if the bus should be created even if it exists</param>
-		public static IBus CreateOrLoadBus(Type bustype, string name = null, bool internalBus = false, bool forceCreate = false)
+        /// <summary>
+        /// Finds the bus with the given name and type, or creates a new if none is found
+        /// </summary>
+        /// <returns>The loaded or created bus.</returns>
+        /// <param name="name">The name of the bus to find.</param>
+        /// <param name="bustype">The bus type</param>
+        /// <param name="internalBus">A flag indicating if this is an internal bus</param>
+        /// <param name="forceCreate">A flag indicating if the bus should be created even if it exists</param>
+        public static IBus CreateOrLoadBus(Type bustype, string name = null, bool internalBus = false, bool forceCreate = false)
         {
             var targetScope = GetTargetScope(bustype, ref name, internalBus);
             var isClocked = (bustype.GetCustomAttributes(typeof(ClockedBusAttribute), true).FirstOrDefault() as ClockedBusAttribute) != null;

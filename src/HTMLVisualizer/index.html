@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
@@ -8,30 +8,30 @@
 <script type="text/javascript" src="./drawlib.js" ></script>
 </head>
 <body>
-	<canvas id="canvas" style="border: 1px solid #cccccc"></canvas>
-  
-	<div ng-app="SMEApp" ng-controller="simCtrl">
-		<h1>Simulation is currently in cycle {{simcycle == 0 ? "-initialization-" : (simcycle + '')}}</h1>
-		<a href ng-click="setSimCycle(simcycle - 1)" class="{{simcycle == 0 ? 'disabled' : 'enabled'}}">&lt; Previous cycle</a>
-		<a href ng-click="setSimCycle(0)" class="{{simcycle == 0 ? 'disabled' : 'enabled'}}">Reset</a>
-		<a href ng-click="setSimCycle(simcycle + 1)" class="{{simcycle == values.length - 1 ? 'disabled' : 'enabled'}}" >Next cycle &gt;</a>
-		<h2 ng-show="currentitem==null">Click an element to see the values</h2>
-		<h2 ng-hide="currentitem==null">{{selectedType}}: {{selectedName}} <span ng-hide="sourceClass == null">({{sourceClass}})</span></h2>
+    <canvas id="canvas" style="border: 1px solid #cccccc"></canvas>
 
-	  	<table ng-hide="currentitem==null">
-	  		<tr>
-	  			<th>{{selectedType == 'Bus' ? 'Signal' : 'Variable'}}</th>
-	  			<th>Value</th>
-	  		</tr>
+    <div ng-app="SMEApp" ng-controller="simCtrl">
+        <h1>Simulation is currently in cycle {{simcycle == 0 ? "-initialization-" : (simcycle + '')}}</h1>
+        <a href ng-click="setSimCycle(simcycle - 1)" class="{{simcycle == 0 ? 'disabled' : 'enabled'}}">&lt; Previous cycle</a>
+        <a href ng-click="setSimCycle(0)" class="{{simcycle == 0 ? 'disabled' : 'enabled'}}">Reset</a>
+        <a href ng-click="setSimCycle(simcycle + 1)" class="{{simcycle == values.length - 1 ? 'disabled' : 'enabled'}}" >Next cycle &gt;</a>
+        <h2 ng-show="currentitem==null">Click an element to see the values</h2>
+        <h2 ng-hide="currentitem==null">{{selectedType}}: {{selectedName}} <span ng-hide="sourceClass == null">({{sourceClass}})</span></h2>
 
-	  		<tr ng-repeat="n in signals">
-	  			<td>{{signals[$index].name}}</td>
-				<td>{{values[simcycle][signalmap[$index]]}}</td>
-	  		</tr>
-	  	</table>
-	</div>
+          <table ng-hide="currentitem==null">
+              <tr>
+                  <th>{{selectedType == 'Bus' ? 'Signal' : 'Variable'}}</th>
+                  <th>Value</th>
+              </tr>
 
-	<script>
-	</script>
+              <tr ng-repeat="n in signals">
+                  <td>{{signals[$index].name}}</td>
+                <td>{{values[simcycle][signalmap[$index]]}}</td>
+              </tr>
+          </table>
+    </div>
+
+    <script>
+    </script>
 </body>
 </html>

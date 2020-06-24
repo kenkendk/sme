@@ -6,7 +6,7 @@ namespace SimpleMIPS
     {
         public static void Main(string[] args)
         {
-            using (new Simulation()) 
+            using (new Simulation())
             {
                 var cpu = new CPU();
                 var mem = new Memory("programs/fib");

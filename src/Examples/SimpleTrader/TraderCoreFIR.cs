@@ -2,30 +2,30 @@
 
 namespace SimpleTrader
 {
-	[ClockedProcess]
-	public class TraderCoreFIR : SimpleProcess
-	{
-		[InitializedBus]
-		public interface ITraderOutput : IBus
-		{
-			bool Valid { get; set; }
-			bool GoingDown { get; set; }
-			bool GoingUp { get; set; }
+    [ClockedProcess]
+    public class TraderCoreFIR : SimpleProcess
+    {
+        [InitializedBus]
+        public interface ITraderOutput : IBus
+        {
+            bool Valid { get; set; }
+            bool GoingDown { get; set; }
+            bool GoingUp { get; set; }
 
-			ulong DebugShort { get; set; }
-			ulong DebugLong { get; set; }
-		}
+            ulong DebugShort { get; set; }
+            ulong DebugLong { get; set; }
+        }
 
-		[InitializedBus]
-		public interface IInternal : IBus
-		{
-			ulong ShortValue { get; set; }
-			ulong LongValue { get; set; }
+        [InitializedBus]
+        public interface IInternal : IBus
+        {
+            ulong ShortValue { get; set; }
+            ulong LongValue { get; set; }
 
-			uint StartCounter { get; set; }
-		}
+            uint StartCounter { get; set; }
+        }
 
-		[InputBus]
+        [InputBus]
         public ITraderInput Input;
 
         [OutputBus]
@@ -35,75 +35,75 @@ namespace SimpleTrader
         public IInternal Internal = Scope.CreateInternalBus<IInternal>();
 
 
-		// Weights for the short tap
-		private readonly byte[] WeightsShort = new byte[] { 1, 1, 1, 1 };
-		// Weights for the long tap
-		private readonly byte[] WeightsLong = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1 };
+        // Weights for the short tap
+        private readonly byte[] WeightsShort = new byte[] { 1, 1, 1, 1 };
+        // Weights for the long tap
+        private readonly byte[] WeightsLong = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1 };
 
-		// Storage for short sample list
-		private readonly uint[] SamplesShort = new uint[4];
-		// Storage for long sample list
-		private readonly uint[] SamplesLong = new uint[8];
+        // Storage for short sample list
+        private readonly uint[] SamplesShort = new uint[4];
+        // Storage for long sample list
+        private readonly uint[] SamplesLong = new uint[8];
 
-		/// <summary>
-		/// The number of values to read before setting outputs
-		/// </summary>
-		private const uint STARTUP_VALUE_COUNT = 10;
+        /// <summary>
+        /// The number of values to read before setting outputs
+        /// </summary>
+        private const uint STARTUP_VALUE_COUNT = 10;
 
-		protected override void OnTick()
-		{
-			Output.Valid = false;
-			Output.GoingDown = false;
-			Output.GoingUp = false;
+        protected override void OnTick()
+        {
+            Output.Valid = false;
+            Output.GoingDown = false;
+            Output.GoingUp = false;
 
-			if (Input.Restart)
-			{
-				Internal.StartCounter = 0;
-			}
-			else if (Input.Valid)
-			{
-				// Shift values right to make room for new sample
-				for (var i = 0; i < WeightsShort.Length - 1; i++)
-					SamplesShort[i + 1] = SamplesShort[i];
-				
-				for (var i = 0; i < WeightsLong.Length - 1; i++)
-					SamplesLong[i + 1] = SamplesLong[i];
+            if (Input.Restart)
+            {
+                Internal.StartCounter = 0;
+            }
+            else if (Input.Valid)
+            {
+                // Shift values right to make room for new sample
+                for (var i = 0; i < WeightsShort.Length - 1; i++)
+                    SamplesShort[i + 1] = SamplesShort[i];
 
-				SamplesLong[0] = SamplesShort[0] = Input.Value;
+                for (var i = 0; i < WeightsLong.Length - 1; i++)
+                    SamplesLong[i + 1] = SamplesLong[i];
 
-				// Compute new gradients
-				var newShortValue = 0uL;
-				var newLongValue = 0uL;
+                SamplesLong[0] = SamplesShort[0] = Input.Value;
 
-				for (var i = 0; i < SamplesShort.Length; i++)
-					newShortValue += SamplesShort[i] * WeightsShort[i];
+                // Compute new gradients
+                var newShortValue = 0uL;
+                var newLongValue = 0uL;
 
-				for (var i = 0; i < SamplesLong.Length; i++)
-					newLongValue += SamplesLong[i] * WeightsLong[i];
+                for (var i = 0; i < SamplesShort.Length; i++)
+                    newShortValue += SamplesShort[i] * WeightsShort[i];
 
-				newShortValue /= 4;
-				newLongValue /= 8;
+                for (var i = 0; i < SamplesLong.Length; i++)
+                    newLongValue += SamplesLong[i] * WeightsLong[i];
 
-				// Startup delay over, update outputs
-				if (Internal.StartCounter >= STARTUP_VALUE_COUNT)
-				{
-					// If the short projection is going down, and the long projection is going up
-					Output.GoingDown = newLongValue > newShortValue && Internal.LongValue <= Internal.ShortValue;
-					Output.GoingUp = newLongValue < newShortValue && Internal.LongValue >= Internal.ShortValue;
-					Output.Valid = true;
-				}
+                newShortValue /= 4;
+                newLongValue /= 8;
 
-				Internal.StartCounter++;
+                // Startup delay over, update outputs
+                if (Internal.StartCounter >= STARTUP_VALUE_COUNT)
+                {
+                    // If the short projection is going down, and the long projection is going up
+                    Output.GoingDown = newLongValue > newShortValue && Internal.LongValue <= Internal.ShortValue;
+                    Output.GoingUp = newLongValue < newShortValue && Internal.LongValue >= Internal.ShortValue;
+                    Output.Valid = true;
+                }
 
-				Internal.ShortValue = newShortValue;
-				Internal.LongValue = newLongValue;
+                Internal.StartCounter++;
 
-				Output.DebugShort = newShortValue;
-				Output.DebugLong = newLongValue;
+                Internal.ShortValue = newShortValue;
+                Internal.LongValue = newLongValue;
 
-			}
+                Output.DebugShort = newShortValue;
+                Output.DebugLong = newLongValue;
 
-		}
-	}
+            }
+
+        }
+    }
 }
 

@@ -123,13 +123,13 @@ namespace SME.CPP
         /// <param name="indentation">The indentation to use.</param>
         private IEnumerable<string> RenderStatement(AST.Method method, AST.ReturnStatement s, int indentation)
         {
-			var indent = new string(' ', indentation);
+            var indent = new string(' ', indentation);
 
-			if (s.ReturnExpression is EmptyExpression && method != ((AST.Process)method.Parent).MainMethod)
+            if (s.ReturnExpression is EmptyExpression && method != ((AST.Process)method.Parent).MainMethod)
                 yield return $"{indent}return {method.ReturnVariable.Name};";
             else
                 yield return $"{indent}return {RenderExpression(s.ReturnExpression)};";
-		}
+        }
 
         /// <summary>
         /// Renders a single BlockStatement with the given indentation
@@ -451,7 +451,7 @@ namespace SME.CPP
             if (e.Target.Parent is AST.Bus)
                 return $"bus_{Naming.BusNameToValidName(e.Target.Parent as AST.Bus, Process)}->{e.Target.Name}()";
 
-			else if (e.Target is AST.Constant)
+            else if (e.Target is AST.Constant)
             {
                 var ce = e.Target as AST.Constant;
 
@@ -520,15 +520,15 @@ namespace SME.CPP
                 else
                     return lv.ToString();
             }
-			else if (e.SourceResultType.IsSameTypeReference(typeof(ulong)))
-			{
+            else if (e.SourceResultType.IsSameTypeReference(typeof(ulong)))
+            {
                 var lv = (ulong)Convert.ChangeType(e.Value, typeof(ulong));
-				if (lv > int.MaxValue)
-					return lv + "ull";
-				else
+                if (lv > int.MaxValue)
+                    return lv + "ull";
+                else
                     return lv.ToString();
-			}
-			else
+            }
+            else
             {
                 return e.Value.ToString();
             }
@@ -543,7 +543,7 @@ namespace SME.CPP
         {
             if (e.Operator == SyntaxKind.MinusMinusToken || e.Operator == SyntaxKind.PlusPlusToken)
                 return string.Format("{1} {0}", e.Operator.ToCpp(), RenderExpression(e.Operand));
-			else
+            else
                 return string.Format("{0} {1}", e.Operator.ToCpp(), RenderExpression(e.Operand));
         }
 
@@ -557,38 +557,38 @@ namespace SME.CPP
             return RenderExpression(e.Expression);
         }
 
-		/// <summary>
-		/// Gets the initializer statement, if any.
-		/// </summary>
-		/// <returns>The initializer.</returns>
-		/// <param name="element">The variable to get the initializer for.</param>
-		public string GetInitializer(AST.DataElement element)
-		{
-			if (element.DefaultValue == null)
-				return string.Empty;
+        /// <summary>
+        /// Gets the initializer statement, if any.
+        /// </summary>
+        /// <returns>The initializer.</returns>
+        /// <param name="element">The variable to get the initializer for.</param>
+        public string GetInitializer(AST.DataElement element)
+        {
+            if (element.DefaultValue == null)
+                return string.Empty;
 
-			if (element.DefaultValue is AST.ArrayCreateExpression)
-			{
-				var asexp = (AST.ArrayCreateExpression)element.DefaultValue;
+            if (element.DefaultValue is AST.ArrayCreateExpression)
+            {
+                var asexp = (AST.ArrayCreateExpression)element.DefaultValue;
 
-				var nae = new ArrayCreateExpression()
-				{
-					SourceExpression = asexp.SourceExpression,
-					SourceResultType = asexp.SourceResultType,
-				};
+                var nae = new ArrayCreateExpression()
+                {
+                    SourceExpression = asexp.SourceExpression,
+                    SourceResultType = asexp.SourceResultType,
+                };
 
-				nae.ElementExpressions = asexp.ElementExpressions
-					.Select(x => new PrimitiveExpression()
-					{
-						SourceExpression = x.SourceExpression,
-						SourceResultType = x.SourceResultType,
-						Parent = nae,
-						Value = ((PrimitiveExpression)x).Value
-					}).Cast<Expression>().ToArray();
+                nae.ElementExpressions = asexp.ElementExpressions
+                    .Select(x => new PrimitiveExpression()
+                    {
+                        SourceExpression = x.SourceExpression,
+                        SourceResultType = x.SourceResultType,
+                        Parent = nae,
+                        Value = ((PrimitiveExpression)x).Value
+                    }).Cast<Expression>().ToArray();
 
-				return RenderExpression(nae);
+                return RenderExpression(nae);
 
-			}
+            }
             else if (element.DefaultValue is Array)
             {
                 var arr = (Array)element.DefaultValue;
@@ -611,51 +611,51 @@ namespace SME.CPP
                 return RenderExpression(nae);
 
             }
-			else if (element.DefaultValue is SyntaxNode)
-			{
-				var eltype = Type.GetType(element.MSCAType.ToDisplayString());
-				var defaultvalue = eltype != null && element.MSCAType.IsValueType ? Activator.CreateInstance(eltype) : null;
+            else if (element.DefaultValue is SyntaxNode)
+            {
+                var eltype = Type.GetType(element.MSCAType.ToDisplayString());
+                var defaultvalue = eltype != null && element.MSCAType.IsValueType ? Activator.CreateInstance(eltype) : null;
 
-				return RenderExpression(new AST.PrimitiveExpression()
-				{
-					Value = defaultvalue,
-					SourceResultType = element.MSCAType
-				});
-			}
-			else if (element.DefaultValue is AST.EmptyArrayCreateExpression)
-			{
-				var ese = element.DefaultValue as AST.EmptyArrayCreateExpression;
-				return RenderExpression(new AST.EmptyArrayCreateExpression()
-				{
-					SizeExpression = ese.SizeExpression.Clone(),
-					SourceExpression = ese.SourceExpression,
-					SourceResultType = ese.SourceResultType
-				});
+                return RenderExpression(new AST.PrimitiveExpression()
+                {
+                    Value = defaultvalue,
+                    SourceResultType = element.MSCAType
+                });
+            }
+            else if (element.DefaultValue is AST.EmptyArrayCreateExpression)
+            {
+                var ese = element.DefaultValue as AST.EmptyArrayCreateExpression;
+                return RenderExpression(new AST.EmptyArrayCreateExpression()
+                {
+                    SizeExpression = ese.SizeExpression.Clone(),
+                    SourceExpression = ese.SourceExpression,
+                    SourceResultType = ese.SourceResultType
+                });
 
-			}
-			else if (element.MSCAType.IsArrayType() && element.DefaultValue == null)
-			{
-				return RenderExpression(new EmptyArrayCreateExpression()
-				{
-					SourceExpression = null,
-					SourceResultType = element.MSCAType,
-					SizeExpression = new MemberReferenceExpression()
-					{
-						Name = element.Name,
-						SourceExpression = null,
-						SourceResultType = element.MSCAType,
-						Target = element
-					}
-				});
-			}
-			else
-			{
-				return RenderExpression(new AST.PrimitiveExpression()
-				{
-					Value = element.DefaultValue,
-					SourceResultType = element.MSCAType
-				});
-			}
-		}
+            }
+            else if (element.MSCAType.IsArrayType() && element.DefaultValue == null)
+            {
+                return RenderExpression(new EmptyArrayCreateExpression()
+                {
+                    SourceExpression = null,
+                    SourceResultType = element.MSCAType,
+                    SizeExpression = new MemberReferenceExpression()
+                    {
+                        Name = element.Name,
+                        SourceExpression = null,
+                        SourceResultType = element.MSCAType,
+                        Target = element
+                    }
+                });
+            }
+            else
+            {
+                return RenderExpression(new AST.PrimitiveExpression()
+                {
+                    Value = element.DefaultValue,
+                    SourceResultType = element.MSCAType
+                });
+            }
+        }
     }
 }

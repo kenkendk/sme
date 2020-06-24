@@ -92,7 +92,7 @@ namespace SME.Components
         {
             m_memory = new T[size];
             if (initial != null)
-                Array.Copy(initial, 0, m_memory, 0, Math.Min(initial.Length, size));            
+                Array.Copy(initial, 0, m_memory, 0, Math.Min(initial.Length, size));
         }
 
         /// <summary>
