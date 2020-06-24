@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
@@ -28,18 +28,10 @@ namespace SME.AST
         /// </summary>
         /// <returns><c>true</c>, if the type definition is a bus type, <c>false</c> otherwise.</returns>
         /// <param name="td">The type to evaluate.</param>
-        public static bool IsBusType(this INamedTypeSymbol td)
+        public static bool IsBusType(this ITypeSymbol td)
         {
-            //return td.Interfaces.Any(x => Type.GetType(x.ToDisplayString()) == typeof(IBus));
             return td.Interfaces.Any(x => SymbolEqualityComparer.Default.Equals(ParseProcesses.m_compilation.GetTypeByMetadataName(typeof(IBus).FullName), x));
-            //return td.HasInterface<IBus>();
         }
-
-        public static bool IsBusType(this ITypeSymbol its)
-        {
-            return ((INamedTypeSymbol)its).IsBusType();
-        }
-
         /// <summary>
         /// Returns <c>true</c> if the type has an attribute of the given type
         /// </summary>
