@@ -324,6 +324,8 @@ namespace SME.AST
         /// A lookup table with the names of the busses within this process
         /// </summary>
         public readonly Dictionary<Bus, string> LocalBusNames = new Dictionary<Bus, string>();
+
+		public Constant[] SharedConstants;
 	}
 
 	/// <summary>

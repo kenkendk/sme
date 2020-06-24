@@ -911,7 +911,7 @@ namespace SME.VHDL
                             }
 							else
 							{
-								yield return string.Format("constant {0}: {1} := {2}({3})", Naming.ToValidName(n.Name), VHDLType(n), convm, nx);
+								yield return string.Format("constant {0}: {1} := {2}({3})", Naming.ToValidName($"{n.Parent.Name}.{n.Name}"), VHDLType(n), convm, nx);
 							}
 						}
 						else

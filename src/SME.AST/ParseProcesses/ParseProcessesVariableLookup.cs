@@ -493,8 +493,10 @@ namespace SME.AST
 					Parent = proc
 				};
 				res = c;
-				proc.Constants.Add(field.Name, c);
-				network.ConstantLookup.Add(field, c);
+				if (field.DeclaredAccessibility == Accessibility.Public)
+					network.ConstantLookup.Add(field, c);
+				else
+					proc.Constants.Add(field.Name, c);
 			}
 			// TODO jeg er ikke sikker på om .IsInitOnly er det samme som .IsReadOnly
 			else if (field.IsStatic && field.IsReadOnly)

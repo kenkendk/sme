@@ -467,6 +467,7 @@ namespace SME.AST
 
 			res.SharedSignals = res.Signals.Values.ToArray();
 			res.SharedVariables = res.Variables.Values.ToArray();
+			res.SharedConstants = res.Constants.Values.ToArray();
             res.InternalDataElements = new DataElement[0];
 			return res;
 		}

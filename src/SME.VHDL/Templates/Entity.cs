@@ -229,7 +229,6 @@ end ");
                     Write("\n");
                 }
 
-
                 Write(
 @"    -- User defined signals, procedures and components here
     -- #### USER-DATA-SIGNALS-START
@@ -276,9 +275,24 @@ begin
                     }
                     Write("\n");
                 }
-                Write("        variable reentry_guard: std_logic;\n");
-                Write(@"
-        -- #### USER-DATA-NONCLOCKEDVARIABLES-START
+                Write("        variable reentry_guard: std_logic;\n\n");
+
+                if (Process.SharedConstants.Any())
+                {
+                    Write("        -- Internal constants\n");
+                    foreach (var c in Process.SharedConstants)
+                    {
+                        var constname = ToStringHelper.ToStringWithCulture( c.Name );
+                        var consttype = ToStringHelper.ToStringWithCulture( RS.VHDLWrappedTypeName(c) );
+                        var defaultvalue = c.DefaultValue;
+                        var convm = RS.VHDLType(c).ToString().Substring("T_".Length);
+                        var reset = ToStringHelper.ToStringWithCulture( $"constant {constname} : {consttype} := {convm}({defaultvalue})" );
+                        Write($"        {reset};\n");
+                    }
+                    Write("\n");
+                }
+
+                Write(@"        -- #### USER-DATA-NONCLOCKEDVARIABLES-START
         -- #### USER-DATA-NONCLOCKEDVARIABLES-END
     begin
         -- Initialize code here
