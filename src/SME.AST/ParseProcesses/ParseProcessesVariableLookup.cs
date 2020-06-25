@@ -568,7 +568,7 @@ namespace SME.AST
                 MSCAType = m_semantics.Select(x => x.GetTypeInfo(parameter.Type).Type).First(x => x != null),
                 Name = parameter.Identifier.Text,
                 DefaultValue = null,
-                Source = parameter,
+                Source = parameter.LoadSymbol(m_semantics),
                 Parent = method
             };
         }
