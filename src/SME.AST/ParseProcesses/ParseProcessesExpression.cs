@@ -60,6 +60,16 @@ namespace SME.AST
                             Parent = statement
                         };
                 }
+                if (si.Expression is IdentifierNameSyntax)
+                {
+                    var method_name = ((IdentifierNameSyntax)si.Expression).Identifier.ValueText;
+                    if (method_name.Equals("PrintDebug") || method_name.Equals("SimulationOnly"))
+                        return new EmptyExpression()
+                        {
+                            SourceExpression = si,
+                            Parent = statement
+                        };
+                }
 
 
                 // Catch common translations
