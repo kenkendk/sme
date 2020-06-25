@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
@@ -478,7 +478,7 @@ namespace SME.AST
         {
             int start, end, incr;
 
-            if (!(self.Initializer is AST.PrimitiveExpression))
+            if (!(self.Initializer is AST.PrimitiveExpression) && !(self.Initializer.GetTarget() is Constant))
                 throw new Exception($"Unable to statically expand loop initializer: {self.Initializer.SourceExpression}");
             if (!(self.Condition is AST.BinaryOperatorExpression))
                 throw new Exception($"Unable to statically expand loop initializer: {self.Condition.SourceExpression}");

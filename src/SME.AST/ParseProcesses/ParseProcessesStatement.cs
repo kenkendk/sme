@@ -143,7 +143,7 @@ namespace SME.AST
         {
             ITypeSymbol vartype = null;
 
-            var init = statement.Declaration.Variables.FirstOrDefault(x => x.Initializer.Value is MemberAccessExpressionSyntax);
+            var init = statement.Declaration.Variables.FirstOrDefault(x => x.Initializer != null && x.Initializer.Value is MemberAccessExpressionSyntax);
             if (init != null)
             {
                 var mt = TryLocateElement(network, proc, method, null, init.Initializer.Value);
@@ -184,7 +184,7 @@ namespace SME.AST
                 foreach (var n in statement.Declaration.Variables)
                 {
                     RegisterVariable(network, proc, method, vartype, n);
-                    if (n.Initializer.Value != null)
+                    if (n.Initializer != null)
                         statements.Add(Decompile(network, proc, method, SyntaxFactory.ExpressionStatement(
                                 SyntaxFactory.AssignmentExpression(
                                     SyntaxKind.SimpleAssignmentExpression,
@@ -528,7 +528,6 @@ namespace SME.AST
 
             var vari = statement.Declaration.Variables.First();
             var name = vari.Identifier.ValueText;
-            var initial = vari.Initializer;
 
             var itr = statement.Incrementors.First();
             if (itr == null)
@@ -543,8 +542,11 @@ namespace SME.AST
                 isLoopIndex = true
             };
 
-            if (initial.Value is LiteralExpressionSyntax)
-                loopvar.DefaultValue = (initial.Value as LiteralExpressionSyntax).Token.Value;
+            var initial = SyntaxFactory.AssignmentExpression(
+                SyntaxKind.SimpleAssignmentExpression,
+                SyntaxFactory.IdentifierName(vari.Identifier.ValueText),
+                SyntaxFactory.Token(SyntaxKind.EqualsToken),
+                vari.Initializer.Value);
 
             var res = new ForStatement()
             {
@@ -556,7 +558,7 @@ namespace SME.AST
             method.AddVariable(loopvar);
 
             loopvar.Parent = res;
-            res.Initializer = Decompile(network, proc, method, res, initial.Value);
+            res.Initializer = Decompile(network, proc, method, res, vari.Initializer.Value);
             res.Condition = Decompile(network, proc, method, res, statement.Condition);
             res.Increment = Decompile(network, proc, method, res, itr);
             res.LoopBody = Decompile(network, proc, method, statement.Statement);
