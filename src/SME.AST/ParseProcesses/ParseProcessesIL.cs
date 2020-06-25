@@ -156,6 +156,7 @@ namespace SME.AST
             {
                 Name = method.Identifier.Text,
                 MSCAMethod = method,
+                MSCAFlow = method.LoadDataFlow(m_semantics),
                 Parent = proc,
                 Ignore = method.LoadSymbol(m_semantics).HasAttribute<IgnoreAttribute>(),
                 IsStateMachine = proc.SourceInstance.Instance is StateProcess

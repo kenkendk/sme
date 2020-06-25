@@ -342,6 +342,7 @@ namespace SME.AST
         /// </summary>
         public MethodDeclarationSyntax MSCAMethod;
         public ITypeSymbol MSCAReturnType;
+        public DataFlowAnalysis MSCAFlow;
         /// <summary>
         /// The input parameters used by the method
         /// </summary>

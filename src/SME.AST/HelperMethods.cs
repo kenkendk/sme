@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
@@ -119,6 +119,23 @@ namespace SME.AST
                     }
                 })
                 .First(x => x != null);
+        }
+
+        public static DataFlowAnalysis LoadDataFlow(this MethodDeclarationSyntax mds, IEnumerable<SemanticModel> m_semantics)
+        {
+            return m_semantics
+                .Select(x =>
+                {
+                    try
+                    {
+                        return x.AnalyzeDataFlow(mds.Body);
+                    }
+                    catch (Exception)
+                    {
+                        return null;
+                    }
+                })
+                .FirstOrDefault(x => x != null);
         }
 
         public static string GetFullMetadataName(this ISymbol isy)
@@ -339,10 +356,12 @@ namespace SME.AST
         /// </summary>
         /// <returns>The argument directions.</returns>
         /// <param name="n">The argument to examine.</param>
-        public static ArgumentInOut GetArgumentInOut(this IParameterSymbol n)
+        public static ArgumentInOut GetArgumentInOut(this IParameterSymbol n, DataFlowAnalysis MSCAFlow)
         {
-            var inarg = n.RefKind == RefKind.In;
-            var outarg = n.RefKind == RefKind.Out;
+            var inarg = MSCAFlow.DataFlowsIn.Contains(n) || n.HasAttribute<System.Runtime.InteropServices.InAttribute>();
+            var outarg = MSCAFlow.DataFlowsOut.Contains(n) || n.HasAttribute<System.Runtime.InteropServices.OutAttribute>();
+            //var inarg = n.RefKind == RefKind.In;
+            //var outarg = n.RefKind == RefKind.Out;
             var inoutarg = inarg && outarg;
             var inoutoverride = inarg || outarg;
             var isarray = n.Type.IsArrayType();
