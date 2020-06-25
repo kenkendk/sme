@@ -202,6 +202,21 @@ end ");
                     Write("\n");
                 }
 
+                if (Process.SharedConstants.Any())
+                {
+                    Write("    -- Internal constants\n");
+                    foreach (var c in Process.SharedConstants)
+                    {
+                        var constname = ToStringHelper.ToStringWithCulture( c.Name );
+                        var consttype = ToStringHelper.ToStringWithCulture( RS.VHDLWrappedTypeName(c) );
+                        var defaultvalue = c.DefaultValue;
+                        var convm = RS.VHDLType(c).ToString().Substring("T_".Length);
+                        var reset = ToStringHelper.ToStringWithCulture( $"constant {constname} : {consttype} := {convm}({defaultvalue})" );
+                        Write($"    {reset};\n");
+                    }
+                    Write("\n");
+                }
+
                 if (Process.Methods != null && Process.Methods.Any(x => !(x.Ignore || x.IsStateMachine)))
                 {
                     Write("    -- Internal methods\n");
@@ -276,21 +291,6 @@ begin
                     Write("\n");
                 }
                 Write("        variable reentry_guard: std_logic;\n\n");
-
-                if (Process.SharedConstants.Any())
-                {
-                    Write("        -- Internal constants\n");
-                    foreach (var c in Process.SharedConstants)
-                    {
-                        var constname = ToStringHelper.ToStringWithCulture( c.Name );
-                        var consttype = ToStringHelper.ToStringWithCulture( RS.VHDLWrappedTypeName(c) );
-                        var defaultvalue = c.DefaultValue;
-                        var convm = RS.VHDLType(c).ToString().Substring("T_".Length);
-                        var reset = ToStringHelper.ToStringWithCulture( $"constant {constname} : {consttype} := {convm}({defaultvalue})" );
-                        Write($"        {reset};\n");
-                    }
-                    Write("\n");
-                }
 
                 Write(@"        -- #### USER-DATA-NONCLOCKEDVARIABLES-START
         -- #### USER-DATA-NONCLOCKEDVARIABLES-END
