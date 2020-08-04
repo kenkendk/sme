@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
@@ -83,8 +83,9 @@ namespace SME.AST
 
         public static IEnumerable<AttributeData> GetAttributes<T>(this ISymbol its)
         {
-            return its.GetAttributes()
-                .Where(x => Type.GetType(x.AttributeClass.ToDisplayString()) == typeof(T));
+            var target = typeof(T);
+            var asm = target.Assembly;
+            return its.GetAttributes().Where(x => asm.GetType(x.AttributeClass.GetFullMetadataName()) == target);
         }
 
         public static ISymbol LoadSymbol(this SyntaxNode sn, IEnumerable<SemanticModel> m_semantics)
