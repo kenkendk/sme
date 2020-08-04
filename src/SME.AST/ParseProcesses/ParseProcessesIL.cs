@@ -78,7 +78,11 @@ namespace SME.AST
             if (proc.MSCAType == null)
                 proc.MSCAType = LoadType(proc.SourceType);
 
+            // TODO jeg tror ikke der er brug for både syns og symbol. Tror jeg dog også godt kan fikses mange andre steder
             var proctype = proc.MSCAType;
+            var methsyns = proctype
+                .GetMembers()
+                .OfType<IMethodSymbol>();
             var methdecls = proctype
                 .GetMembers()
                 .Select(x => x.DeclaringSyntaxReferences.FirstOrDefault())
@@ -86,11 +90,12 @@ namespace SME.AST
                 .Select(x => x.GetSyntax())
                 .OfType<MethodDeclarationSyntax>();
 
-            var m = methdecls.FirstOrDefault(x => x.Identifier.Text == method.Name && x.ParameterList.Parameters.Count == method.GetParameters().Length);
+            var msy = methsyns.FirstOrDefault(x => x.Name.Equals(method.Name) && x.Parameters.Length == method.GetParameters().Length);
+            var m = methdecls.FirstOrDefault(x => x.Identifier.Text.Equals(method.Name) && x.ParameterList.Parameters.Count == method.GetParameters().Length);
             if (m == null)
                 throw new Exception($"Unable to find a method with the name {method.Name} in type {proc.MSCAType.ToDisplayString()}");
 
-            proc.MainMethod = Decompile(network, proc, m);
+            proc.MainMethod = Decompile(network, proc, msy);
 
             // If we have comments from the constructors, add them here
             if (statements.Count > 0)
@@ -120,9 +125,10 @@ namespace SME.AST
                 if (dm == null)
                 {
                     var mr = methdecls.FirstOrDefault(x => x.Identifier.Text.Equals(r));
+                    var mrsy = methsyns.FirstOrDefault(x => x.Name.Equals(r));
                     if (mr == null)
                         throw new Exception($"Unable to resolve method call to {r}");
-                    dm = Decompile(network, proc, mr);
+                    dm = Decompile(network, proc, mrsy);
                     methods.Add(dm);
                 }
 
@@ -150,19 +156,21 @@ namespace SME.AST
         /// <param name="network">The top-level network.</param>
         /// <param name="proc">The process where the method is located.</param>
         /// <param name="method">The method to decompile.</param>
-        protected virtual MethodState Decompile(NetworkState network, ProcessState proc, MethodDeclarationSyntax method)
+        protected virtual MethodState Decompile(NetworkState network, ProcessState proc, IMethodSymbol method)
         {
+            // aoeu
+            var synmeth = method.GetSyntax() as MethodDeclarationSyntax;
             var res = new MethodState()
             {
-                Name = method.Identifier.Text,
-                MSCAMethod = method,
-                MSCAFlow = method.LoadDataFlow(m_semantics),
+                Name = synmeth.Identifier.Text,
+                MSCAMethod = synmeth,
+                MSCAFlow = synmeth.LoadDataFlow(m_semantics),
                 Parent = proc,
-                Ignore = method.LoadSymbol(m_semantics).HasAttribute<IgnoreAttribute>(),
+                Ignore = method.HasAttribute<IgnoreAttribute>(),
                 IsStateMachine = proc.SourceInstance.Instance is StateProcess
             };
 
-            res.Parameters = method.ParameterList.Parameters.Select(x => ParseParameter(network, proc, res, x)).ToArray();
+            res.Parameters = synmeth.ParameterList.Parameters.Select(x => ParseParameter(network, proc, res, x)).ToArray();
 
             if (res.Ignore)
             {
@@ -181,7 +189,7 @@ namespace SME.AST
             {
                 res.ReturnVariable = new Variable()
                 {
-                    MSCAType = LoadType(method.ReturnType),
+                    MSCAType = LoadType(synmeth.ReturnType),
                     Parent = res,
                     Source = method
                 };
