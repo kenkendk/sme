@@ -86,7 +86,7 @@ namespace SME.AST
             /// <summary>
             /// The map of generic types on this process
             /// </summary>
-            public readonly Dictionary<string, INamedTypeSymbol> GenericTypes = new Dictionary<string, INamedTypeSymbol>();
+            public readonly Dictionary<string, ITypeSymbol> GenericTypes = new Dictionary<string, ITypeSymbol>();
 
             /// <summary>
             /// Converts a generic type description into a non-generic version
@@ -99,17 +99,19 @@ namespace SME.AST
                 if (its.TypeKind is TypeKind.Array)
                 {
                     var elt = (its as IArrayTypeSymbol).ElementType;
-                    if (elt is INamedTypeSymbol && ((INamedTypeSymbol) elt).IsGenericType)
+                    if ((elt is INamedTypeSymbol && ((INamedTypeSymbol) elt).IsGenericType) || elt is ITypeParameterSymbol)
                     {
                         // https://stackoverflow.com/questions/43356807/how-to-create-a-roslyn-itypesymbol-for-an-arbitrary-type
                         // TODO ok jeg ved ikke om compilation tillader det?
-                        return (INamedTypeSymbol)compilation.CreateArrayTypeSymbol(GenericTypes[elt.Name]);
+                        return m_compilation.CreateArrayTypeSymbol(GenericTypes[elt.Name]);
                     }
                     else
                     {
                         return its;
                     }
                 }
+                if (its.IsBusType())
+                    return its;
                 var ft = its as INamedTypeSymbol;
                 if (ft != null && ft.IsGenericType)
                 {
@@ -242,7 +244,7 @@ namespace SME.AST
             }
 
             // Build the project
-            // TODO den er ikke glad hvis den laver den her flere gange
+            // TODO den er ikke glad hvis den laver den her flere gange, hvilket er derfor try-catch
             try
             {
                 var instance = Microsoft.Build.Locator.MSBuildLocator.RegisterDefaults();
@@ -265,7 +267,6 @@ namespace SME.AST
             var compile_task = project.GetCompilationAsync();
             compile_task.Wait();
             m_compilation = compile_task.Result;
-            // TODO get the semantic model
             m_syntaxtrees = m_compilation.SyntaxTrees;
             m_semantics = m_compilation.SyntaxTrees.Select(x => m_compilation.GetSemanticModel(x));
 
@@ -414,11 +415,12 @@ namespace SME.AST
 
             if (proctype.IsGenericType)
             {
-                foreach (var g in proctype.TypeParameters)
-                {
-                    res.GenericMap[g.Name] = g;
-                    //res.GenericTypes[g.Identifier.Text] = names[g.Position];
-                }
+                var gennames = proctype.TypeParameters.Select(x => x.Name).ToArray();
+                var gentypes = LoadGenericTypes(st).ToArray();
+                if (gennames.Length != gentypes.Length)
+                    throw new Exception("Error when mapping generic parameters to instance types.");
+                for (int i = 0; i < gennames.Length; i++)
+                    res.GenericTypes[gennames[i]] = gentypes[i];
             }
 
             res.InputBusses = inputbusses.Select(x => Parse(network, res, x, simulation)).ToArray();

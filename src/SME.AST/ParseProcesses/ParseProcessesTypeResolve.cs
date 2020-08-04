@@ -190,6 +190,20 @@ namespace SME.AST
                 throw new Exception(string.Format("Unsupported expression: {0} ({1})", expression, expression.GetType().FullName));
         }
 
+        protected virtual IEnumerable<ITypeSymbol> LoadGenericTypes(Type t)
+        {
+            foreach (var p in t.GenericTypeArguments)
+                yield return LoadType(p);
+        }
+
+        protected virtual ITypeSymbol LoadGenericType(Type t, ITypeParameterSymbol tps)
+        {
+            foreach (var p in t.GetGenericArguments())
+                if (p.Name.Equals(tps.Name))
+                    return LoadType(p);
+            return null;
+        }
+
         /// <summary>
         /// Loads the specified reflection Type and returns the equivalent CeCil TypeDefinition
         /// </summary>
@@ -211,23 +225,14 @@ namespace SME.AST
             var res = LoadTypeByName(t.FullName, asm.Modules);*/
             var res = LoadTypeByName(t.FullName);
 
-            /* TODO ?
             if (res == null && t.IsGenericType)
             {
                 var gt = t.GetGenericTypeDefinition();
 
-                //var gtd = LoadTypeByName(gt.FullName, asm.Modules);
-                var gtd = LoadTypeByName(gt.FullName);
-                if (gtd != null)
-                {
-                    var gtr = new GenericInstanceType(gtd);
-                    foreach(var ga in t.GetGenericArguments().Select(x => LoadType(x)))
-                        gtr.GenericArguments.Add(ga);
-
-                    res = gtr;
-                }
+                res = LoadTypeByName(gt.FullName);
             }
 
+            /* TODO ?
             if (res == null && t.IsArray)
             {
                  var el = t.GetElementType();
@@ -319,6 +324,8 @@ namespace SME.AST
                     case SyntaxKind.ULongKeyword: return LoadType(typeof(ulong));
                     case SyntaxKind.FloatKeyword: return LoadType(typeof(float));
                     case SyntaxKind.DoubleKeyword: return LoadType(typeof(double));
+                    // TODO Det er fordi det er void fra en anden assembly... ffs
+                    case SyntaxKind.VoidKeyword: return LoadType(typeof(void));
                 }
             var res = t.LoadType(m_semantics);
             if (res == null)
