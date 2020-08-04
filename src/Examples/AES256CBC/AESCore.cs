@@ -147,7 +147,7 @@ namespace AES256CBC
 
 
         [Compile]
-        public static void ExpandKey([In] byte[] key, uint[] expandedKey)
+        public static void ExpandKey([In] byte[] key, [Out] uint[] expandedKey)
         {
             int pos = 0;
             for (int i=0; i < Nk; i++) {
