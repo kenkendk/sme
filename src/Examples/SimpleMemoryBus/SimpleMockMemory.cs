@@ -13,7 +13,8 @@ namespace SimpleMemoryBus
 
         protected override void OnTick()
         {
-            DebugOutput = true;
+            // TODO jeg kan ikke se at den bliver brugt nogle steder.
+            //DebugOutput = true;
             PrintDebug("Phase: {0}", ++m_cycle);
 
             if (Interface.ReadEnabled)

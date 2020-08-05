@@ -76,7 +76,8 @@ namespace SME
         /// <summary>
         /// Flag indicating if the process produces debug output
         /// </summary>
-        protected bool DebugOutput;
+        // TODO jeg kan ikke se at den bliver brugt nogle steder
+        //protected bool DebugOutput;
 
         /// <summary>
         /// Gets the name of this process
@@ -300,7 +301,8 @@ namespace SME
         /// <param name="arg">The arguments</param>
         protected void PrintDebug(string msg, params object[] arg)
         {
-            if (DebugOutput)
+            // TODO jeg kan ikke se at den bliver brugt nogle steder
+            //if (DebugOutput)
                 Console.WriteLine(msg, arg);
         }
 
