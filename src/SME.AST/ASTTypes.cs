@@ -33,7 +33,8 @@ namespace SME.AST
         /// <summary>
         /// The source project
         /// </summary>
-        public Project project;
+        //public Project project;
+        public Compilation compilation;
 
         /// <summary>
         /// The network busses

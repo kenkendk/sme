@@ -34,8 +34,6 @@ namespace SME.AST
             /// A lookup table of bus instances
             /// </summary>
             public readonly Dictionary<IBus, Bus> BusInstanceLookup = new Dictionary<IBus, Bus>();
-
-            public Compilation compilation;
         }
 
         /// <summary>
