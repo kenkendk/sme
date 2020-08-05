@@ -31,7 +31,7 @@ namespace SME.AST
                 return Decompile(network, proc, method, statement, expression as BinaryExpressionSyntax);
             else if (expression is PrefixUnaryExpressionSyntax)
                 return Decompile(network, proc, method, statement, expression as PrefixUnaryExpressionSyntax);
-                else if (expression is PostfixUnaryExpressionSyntax)
+            else if (expression is PostfixUnaryExpressionSyntax)
                 return Decompile(network, proc, method, statement, expression as PostfixUnaryExpressionSyntax);
             else if (expression is ElementAccessExpressionSyntax)
                 return Decompile(network, proc, method, statement, expression as ElementAccessExpressionSyntax);
@@ -104,6 +104,8 @@ namespace SME.AST
             // TODO idk
             //else if (expression == ICSharpCode.Decompiler.CSharp.Syntax.Expression.Null)
             //    return new EmptyExpression() { SourceExpression = expression };
+            else if (expression is AwaitExpressionSyntax)
+                return Decompile(network, proc, method, statement, expression as AwaitExpressionSyntax);
             else
                 throw new Exception(string.Format("Unsupported expression: {0} ({1})", expression, expression.GetType().FullName));
         }
@@ -149,6 +151,23 @@ namespace SME.AST
 
             res.Left.Parent = res;
             res.Right.Parent = res;
+
+            return res;
+        }
+
+        protected AwaitExpression Decompile(NetworkState network1, ProcessState process, MethodState method, Statement statement, AwaitExpressionSyntax expression)
+        {
+            var res = new AwaitExpression()
+            {
+                SourceResultType = LoadType(typeof(void)),
+                SourceExpression = expression,
+                Parent = statement
+            };
+
+            var pred = expression.Expression as InvocationExpressionSyntax;
+            if (pred == null || !((pred.Expression as IdentifierNameSyntax).Identifier.Text.Equals("ClockAsync")))
+            //if (expression.Expression.ToString() != "base.ClockAsync ()")
+                throw new Exception("Only clock waits are supported for now");
 
             return res;
         }
@@ -246,37 +265,18 @@ namespace SME.AST
         /// <param name="expression">The expression to decompile</param>
         protected Expression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, PrefixUnaryExpressionSyntax expression)
         {
-            if (expression.OperatorToken.RawKind == (int)SyntaxKind.AwaitKeyword)
+            var res = new UnaryOperatorExpression()
             {
-                var res = new AwaitExpression()
-                {
-                    SourceResultType = LoadType(typeof(void)),
-                    SourceExpression = expression,
-                    Parent = statement
-                };
+                SourceResultType = ResolveExpressionType(network, proc, method, statement, expression),
+                SourceExpression = expression,
+                Operator = (SyntaxKind) expression.OperatorToken.RawKind,
+                Operand = Decompile(network, proc, method, statement, expression.Operand),
+                Parent = statement
+            };
 
-                // TODO jeg ved ikke om tostring virker her!
-                if (expression.Operand.ToString() != "base.ClockAsync ()")
-                    throw new Exception("Only clock waits are supported for now");
+            res.Operand.Parent = res;
 
-                return res;
-            }
-            else
-            {
-
-                var res = new UnaryOperatorExpression()
-                {
-                    SourceResultType = ResolveExpressionType(network, proc, method, statement, expression),
-                    SourceExpression = expression,
-                    Operator = (SyntaxKind) expression.OperatorToken.RawKind,
-                    Operand = Decompile(network, proc, method, statement, expression.Operand),
-                    Parent = statement
-                };
-
-                res.Operand.Parent = res;
-
-                return res;
-            }
+            return res;
         }
 
         protected Expression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, PostfixUnaryExpressionSyntax expression)
