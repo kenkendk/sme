@@ -119,7 +119,8 @@ namespace SME.AST
         /// <param name="expression">The expression to decompile</param>
         protected Expression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, AssignmentExpressionSyntax expression)
         {
-            if (expression.ToString().StartsWith("base.DebugOutput = ", StringComparison.Ordinal))
+            // TODO jeg tror ikke det bliver brugt
+            /*if (expression.ToString().StartsWith("base.DebugOutput = ", StringComparison.Ordinal))
                 return new EmptyExpression()
                 {
                     Parent = statement,
@@ -131,7 +132,7 @@ namespace SME.AST
                 {
                     Parent = statement,
                     SourceExpression = expression,
-                };
+                };*/
 
             var lhs = Decompile(network, proc, method, statement, expression.Left);
             var rhs = Decompile(network, proc, method, statement, expression.Right);
