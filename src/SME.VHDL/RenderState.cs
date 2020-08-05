@@ -162,7 +162,7 @@ namespace SME.VHDL
                 new SME.AST.Transform.IASTTransform[] {
                     new Transformations.AssignNames(),
                     new SME.AST.Transform.RenameDuplicateVariables(),
-                    new SME.AST.Transform.BuildStateMachine(),
+                    new SME.AST.Transform.BuildStateMachine(Network.compilation),
                 },
                 m => new SME.AST.Transform.IASTTransform[] {
                     new Transformations.RewriteChainedAssignments(this, m),
