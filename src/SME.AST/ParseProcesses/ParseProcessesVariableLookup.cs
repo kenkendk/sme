@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -76,6 +76,21 @@ namespace SME.AST
                 constant = network.ConstantLookup.Values.FirstOrDefault(x => x.Name.Equals(name));
                 if (constant != null)
                     return constant;
+
+                var constsymbol = m_compilation.GetSymbolsWithName(name).FirstOrDefault() as IFieldSymbol;
+                if (constsymbol != null && constsymbol.IsStatic && constsymbol.HasConstantValue)
+                {
+                    var global_constant = new Constant()
+                    {
+                        DefaultValue = constsymbol.ConstantValue,
+                        MSCAType = constsymbol.Type,
+                        Name = name,
+                        Source = constsymbol,
+                        Parent = network
+                    };
+                    network.ConstantLookup.Add(constsymbol, global_constant);
+                    return global_constant;
+                }
 
                 Signal signal;
                 if (proc != null && proc.Signals.TryGetValue(name, out signal))
@@ -156,7 +171,7 @@ namespace SME.AST
                             if (bt != null && parts.Count == 1)
                             {
                                 var br = bt.ContainingType;
-                                var px = br.GetMembers().OfType<IFieldSymbol>().FirstOrDefault(x => x.Name == parts[0]);
+                                var px = br.GetMembers().OfType<IFieldSymbol>().FirstOrDefault(x => x.Name.Equals(parts[0]));
 
                                 // Enum flags are encoded as constants
                                 if (br.EnumUnderlyingType != null)
@@ -223,7 +238,7 @@ namespace SME.AST
 
                     if (current == null)
                     {
-                        var pe = network.ConstantLookup.Keys.FirstOrDefault(x => x.Name == el);
+                        var pe = network.ConstantLookup.Keys.FirstOrDefault(x => x.Name.Equals(el));
                         if (pe != null)
                         {
                             current = network.ConstantLookup[pe];
@@ -246,7 +261,7 @@ namespace SME.AST
                                 continue;
                             }
 
-                            var p = mt.Parameters.FirstOrDefault(x => x.Name == el);
+                            var p = mt.Parameters.FirstOrDefault(x => x.Name.Equals(el));
                             if (p != null)
                             {
                                 current = p;
@@ -287,7 +302,7 @@ namespace SME.AST
 
                             if (pr.Methods != null)
                             {
-                                var p = pr.Methods.FirstOrDefault(x => x.Name == el);
+                                var p = pr.Methods.FirstOrDefault(x => x.Name.Equals(el));
                                 if (p != null)
                                 {
                                     current = p;
@@ -299,14 +314,14 @@ namespace SME.AST
 
                     if (current is Bus)
                     {
-                        current = ((Bus)current).Signals.FirstOrDefault(x => x.Name == el);
+                        current = ((Bus)current).Signals.FirstOrDefault(x => x.Name.Equals(el));
                         if (current != null)
                             continue;
                     }
 
                     if (current is Variable)
                     {
-                        var fi = ((Variable)current).MSCAType.ContainingType.GetMembers().OfType<IFieldSymbol>().FirstOrDefault(x => x.Name == el);
+                        var fi = ((Variable)current).MSCAType.GetMembers().OfType<IFieldSymbol>().FirstOrDefault(x => x.Name.Equals(el));
                         if (fi != null)
                         {
                             current = new Variable()
@@ -321,7 +336,7 @@ namespace SME.AST
                             continue;
                         }
 
-                        var pi = ((Variable)current).MSCAType.ContainingType.GetMembers().OfType<IPropertySymbol>().FirstOrDefault(x => x.Name == el);
+                        var pi = ((Variable)current).MSCAType.GetMembers().OfType<IPropertySymbol>().FirstOrDefault(x => x.Name.Equals(el));
                         if (pi != null)
                         {
                             current = new Variable()

@@ -909,6 +909,10 @@ namespace SME.VHDL
                                 var values = string.Join(", ", elements.Select(x => string.Format("{0}({1})", convm,  VHDLTypeConversion.GetPrimitiveLiteral(x, vhdl_eltype, this))));
                                 yield return string.Format("constant {0}: {0}_type := ({1})", varname, values);
                             }
+                            else if (n.Parent is Network)
+                            {
+                                yield return string.Format("constant {0}: {1} := {2}({3})", Naming.ToValidName($"{n.Name}"), VHDLType(n), convm, nx);
+                            }
                             else
                             {
                                 yield return string.Format("constant {0}: {1} := {2}({3})", Naming.ToValidName($"{n.Parent.Name}.{n.Name}"), VHDLType(n), convm, nx);
