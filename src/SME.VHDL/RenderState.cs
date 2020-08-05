@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -1223,7 +1223,8 @@ namespace SME.VHDL
             {
                 exp.Right = new AST.PrimitiveExpression()
                 {
-                    Value = element.DefaultValue,
+                    // TODO den her burde blive lavet der hvor variablen rigtigt bliver lavet...
+                    Value = element.DefaultValue == null ? 0 : element.DefaultValue,
                     Parent = exp,
                     SourceResultType = element.MSCAType
                 };
