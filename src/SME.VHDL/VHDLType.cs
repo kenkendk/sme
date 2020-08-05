@@ -416,12 +416,7 @@ namespace SME.VHDL
                 };
 
                 if (res.IsEnum)
-                    res.ElementName = GetVHDLType(
-                        tr
-                            .GetMembers()
-                            .OfType<IFieldSymbol>()
-                            .First(x => x.Name == "value__"))
-                        .ToString();
+                    res.ElementName = GetVHDLType(tr.EnumUnderlyingType).ToString();
             }
 
             if (!m_stringTypes.ContainsKey(res.Name))
@@ -859,7 +854,7 @@ namespace SME.VHDL
             else if (type.IsType<bool>())
                 return VHDLTypes.SYSTEM_BOOL;
             else if (((INamedTypeSymbol)type).EnumUnderlyingType != null)
-                return GetVHDLType(type.Name, null, type);
+                return GetVHDLType(type.GetFullMetadataName(), null, type);
             else
             {
                 return GetVHDLType(type.Name, null, type);
