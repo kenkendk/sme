@@ -331,7 +331,9 @@ namespace SME.AST
                     // TODO Det er fordi det er void fra en anden assembly... ffs
                     case SyntaxKind.VoidKeyword: return LoadType(typeof(void));
                 }
-            var res = t.LoadType(m_semantics);
+            var res = t.LoadType(m_semantics) ?? m_compilation.GetSymbolsWithName(t.ToString()).FirstOrDefault() as ITypeSymbol;
+            //if (res == null)
+            //    res = m_compilation.GetSymbolsWithName(t.ToString()).FirstOrDefault() as ITypeSymbol;
             if (res == null)
                 throw new Exception($"Failed to load {t.ToString()}");
             else

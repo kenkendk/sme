@@ -134,11 +134,12 @@ namespace SME.AST
                     else if (ec is TypeSyntax) // ICSharpCode.Decompiler.CSharp.Syntax.TypeReferenceExpression)
                     {
                         //TypeDefinition dc = null;
-                        ISymbol dc = null;
-                        if (method != null)
-                            dc = m_semantics.Select(x => x.GetDeclaredSymbol(method.MSCAMethod)).Where(x => x != null).First();
+                        ISymbol dc = method?.MSCAMethod.LoadSymbol(m_semantics) ?? proc?.MSCAType;
+                        /*if (method != null)
+                            dc = method.MSCAMethod.LoadSymbol(m_semantics);
+                            //dc = m_semantics.Select(x => x.GetDeclaredSymbol(method.MSCAMethod)).Where(x => x != null).First();
                         else if (proc != null)
-                            dc = proc.MSCAType;
+                            dc = proc.MSCAType;*/
 
                         var ecs = ec.ToString();
 
@@ -362,6 +363,16 @@ namespace SME.AST
                             Source = (current as DataElement).Source
                         };
                     }
+
+                    var sy = m_compilation.GetSymbolsWithName(el).FirstOrDefault() as ITypeSymbol;
+                    var px = sy.GetMembers().OfType<IFieldSymbol>().FirstOrDefault(x => x.Name.Equals(parts.Last()));
+                    if (sy != null && sy.IsEnum())
+                        return new Constant()
+                        {
+                            MSCAType = sy,
+                            DefaultValue = px,
+                            Source = expression
+                        };
 
                     throw new Exception($"Failed lookup at {el} in {fullname}");
                 }
