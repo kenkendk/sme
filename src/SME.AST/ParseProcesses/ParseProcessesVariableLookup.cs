@@ -529,7 +529,9 @@ namespace SME.AST
                     Parent = proc
                 };
                 res = c;
-                network.ConstantLookup.Add(field, c);
+                // TODO constants are added twice?? Investigate!
+                if (!network.ConstantLookup.ContainsKey(field))
+                    network.ConstantLookup.Add(field, c);
             }
             else if (field.IsStatic)
             {
