@@ -102,7 +102,7 @@ namespace SME.AST
                         return null;
                     }
                 })
-                .First(x => x != null);
+                .FirstOrDefault(x => x != null);
         }
 
         public static ITypeSymbol LoadType(this SyntaxNode sn, IEnumerable<SemanticModel> m_semantics)
@@ -119,7 +119,7 @@ namespace SME.AST
                         return null;
                     }
                 })
-                .First(x => x != null);
+                .FirstOrDefault(x => x != null);
         }
 
         public static DataFlowAnalysis LoadDataFlow(this MethodDeclarationSyntax mds, IEnumerable<SemanticModel> m_semantics)
