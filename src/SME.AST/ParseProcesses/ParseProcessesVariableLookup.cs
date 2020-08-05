@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -337,7 +337,7 @@ namespace SME.AST
                         }
                     }
 
-                    if (el == "Length" && (current is DataElement) && ((DataElement)current).MSCAType.ContainingType is IArrayTypeSymbol)
+                    if (el == "Length" && (current is DataElement) && ((DataElement)current).MSCAType.IsArrayType())
                     {
                         return new Constant()
                         {

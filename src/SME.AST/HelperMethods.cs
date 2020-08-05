@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
@@ -359,6 +359,7 @@ namespace SME.AST
         /// <param name="n">The argument to examine.</param>
         public static ArgumentInOut GetArgumentInOut(this IParameterSymbol n, DataFlowAnalysis MSCAFlow)
         {
+            // TODO husk at tjek for MSCAFlow.Succeeded
             var inarg = MSCAFlow.DataFlowsIn.Contains(n) || n.HasAttribute<System.Runtime.InteropServices.InAttribute>();
             var outarg = MSCAFlow.DataFlowsOut.Contains(n) || n.HasAttribute<System.Runtime.InteropServices.OutAttribute>();
             //var inarg = n.RefKind == RefKind.In;

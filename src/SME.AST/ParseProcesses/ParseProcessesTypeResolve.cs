@@ -230,14 +230,18 @@ namespace SME.AST
                 var gt = t.GetGenericTypeDefinition();
 
                 res = LoadTypeByName(gt.FullName);
+
+                if (res.IsArrayType())
+                {
+                    res = m_compilation.CreateArrayTypeSymbol(LoadType(t.GenericTypeArguments[0]));
+                }
             }
 
-            /* TODO ?
             if (res == null && t.IsArray)
             {
-                 var el = t.GetElementType();
-                res = new Mono.Cecil.ArrayType(LoadType(el));
-            }*/
+                var el = t.GetElementType();
+                res = m_compilation.CreateArrayTypeSymbol(LoadType(el));
+            }
 
             if (res == null)
                 //throw new Exception($"Failed to load {t.FullName}, the following types were found in the assembly: {string.Join(",", asm.Modules.SelectMany(x => x.GetTypes()).Select(x => x.FullName))}");

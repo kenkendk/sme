@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -683,7 +683,7 @@ namespace SME.VHDL
                 var res = Network
                     .All()
                     .OfType<BusSignal>()
-                    .Where(x => x.MSCAType.IsFixedArrayType())
+                    .Where(x => x.MSCAType.IsArrayType())
                     .Distinct();
 
                 return res;
