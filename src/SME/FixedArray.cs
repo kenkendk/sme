@@ -1,27 +1,26 @@
 ﻿using System;
-using System.Linq;
 
 namespace SME
 {
     /// <summary>
-    /// Interface for requesting a fixed-length delay-assigned array
+    /// Interface for requesting a fixed-length delay-assigned array.
     /// </summary>
     public interface IFixedArray<T>
     {
         /// <summary>
-        /// Gets or sets the <see cref="T:SME.IFixedArray`1"/> at the specified index.
+        /// Gets or sets the value at the specified index.
         /// </summary>
         /// <param name="index">The index to use.</param>
         T this[int index] { get; set; }
 
         /// <summary>
-        /// Gets the length of the array
+        /// Gets the length of the array.
         /// </summary>
         int Length { get; }
     }
 
     /// <summary>
-    /// Helper interface to access methods in an untyped manner
+    /// Helper interface to access methods in an untyped manner.
     /// </summary>
     public interface IFixedArrayInteraction
     {
@@ -31,7 +30,7 @@ namespace SME
     }
 
     /// <summary>
-    /// Implemnetation of an array with a fixed length
+    /// Implemnetation of an array with a fixed length.
     /// </summary>
     internal class FixedArray<T> : IFixedArray<T>, IFixedArrayInteraction
     {
@@ -45,7 +44,7 @@ namespace SME
         /// <summary>
         /// Initializes a new instance of the <see cref="T:SME.FixedArray`1"/> class.
         /// </summary>
-        /// <param name="size">Size.</param>
+        /// <param name="size">The size of the internal array.</param>
         public FixedArray(int size)
         {
             m_stage = new T[size];
@@ -57,7 +56,7 @@ namespace SME
         }
 
         /// <summary>
-        /// Propagates all writen signals into the read side
+        /// Propagates all writen signals into the read side.
         /// </summary>
         public virtual void Propagate()
         {
@@ -68,7 +67,7 @@ namespace SME
         }
 
         /// <summary>
-        /// Forwards all staged values to the write area
+        /// Forwards all staged values to the write area.
         /// </summary>
         public virtual void Forward()
         {
@@ -86,7 +85,7 @@ namespace SME
         }
 
         /// <summary>
-        /// Gets or sets the <see cref="T:SME.FixedArray`1"/> at the specified index.
+        /// Gets or sets the value at the specified index.
         /// </summary>
         /// <param name="index">The index to use.</param>
         public T this[int index]
@@ -105,7 +104,7 @@ namespace SME
         }
 
         /// <summary>
-        /// Gets the length of the array
+        /// Gets the length of the internal array.
         /// </summary>
         public int Length
         {
@@ -113,10 +112,10 @@ namespace SME
         }
 
         /// <summary>
-        /// Gets a value indicating if the index can be read
+        /// Gets a value indicating if the index can be read.
         /// </summary>
-        /// <param name="index">The index to read</param>
-        /// <returns><c>true</c> if the index can be read, <c>false</c> otherwise</returns>
+        /// <param name="index">The index to read.</param>
+        /// <returns><c>true</c> if the index can be read, <c>false</c> otherwise.</returns>
         public bool CanRead(int index)
         {
             return m_initialized[index];

@@ -1,28 +1,25 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Threading.Tasks;
-using System.Threading;
-using System.Collections.Generic;
 
 namespace SME
 {
     /// <summary>
-    /// Defines the system clock driver
+    /// Defines the system clock driver.
     /// </summary>
     public sealed class Clock
     {
         /// <summary>
-        /// The clock waiting source
+        /// The clock waiting source.
         /// </summary>
         private TaskCompletionSource<bool> m_release = new TaskCompletionSource<bool>();
 
         /// <summary>
-        /// Guard to prevent overlapping ticks of the clock
+        /// Guard to prevent overlapping ticks of the clock.
         /// </summary>
         private TaskCompletionSource<bool> m_previousRelease = null;
 
         /// <summary>
-        /// Gets the number of ticks issued by this clock
+        /// Gets the number of ticks issued by this clock.
         /// </summary>
         /// <value>The ticks.</value>
         public long Ticks { get; private set; }
@@ -35,21 +32,23 @@ namespace SME
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SME.Clock"/> class with a multiplier.
+        /// Initializes a new instance of the <see cref="SME.Clock"/> class with a divider.
         /// </summary>
         /// <param name="parent">The clock this clock is based on.</param>
-        /// <param name="multiplier">The number of ticks the parent must run before this clock runs.</param>
-        public Clock(Clock parent, int multiplier)
+        /// <param name="divider">The number of ticks the parent must run before this clock runs.</param>
+        public Clock(Clock parent, int divider)
         {
-            // TODO: Inverse? Inner clock should be faster....
-            RunClockWithMultiplier(parent, multiplier);
+            RunClockWithDivider(parent, divider);
         }
 
-        private async void RunClockWithMultiplier(Clock parent, int multiplier)
+        /// <summary>
+        /// Runs the clock at the specified division.
+        /// </summary>
+        private async void RunClockWithDivider(Clock parent, int divider)
         {
             while (true)
             {
-                for (var i = 0; i < multiplier; i++)
+                for (var i = 0; i < divider; i++)
                     await parent.WaitAsync();
 
                 this.Tick();
@@ -57,7 +56,7 @@ namespace SME
         }
 
         /// <summary>
-        /// Waits for the clock to tick
+        /// Waits for the clock to tick.
         /// </summary>
         /// <returns>The async awaitable Task.</returns>
         public Task WaitAsync()
@@ -66,7 +65,7 @@ namespace SME
         }
 
         /// <summary>
-        /// Advances the clock one tick
+        /// Advances the clock one tick.
         /// </summary>
         private void Release()
         {
@@ -92,7 +91,7 @@ namespace SME
         }
 
         /// <summary>
-        /// Advances the clock with one tick, and notifies all waiters
+        /// Advances the clock with one tick, and notifies all waiters.
         /// </summary>
         public void Tick()
         {
@@ -100,7 +99,7 @@ namespace SME
         }
 
         /// <summary>
-        /// Clears all waiters and resets the instance, only supported for internal reset
+        /// Clears all waiters and resets the instance, only supported for internal reset.
         /// </summary>
         internal void Clear()
         {
@@ -116,4 +115,3 @@ namespace SME
 
     }
 }
-

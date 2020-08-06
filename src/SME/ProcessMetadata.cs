@@ -5,12 +5,12 @@ using System.Linq;
 namespace SME
 {
     /// <summary>
-    /// Description of a process with captured metadata and associated methods
+    /// Description of a process with captured metadata and associated methods.
     /// </summary>
     public class ProcessMetadata
     {
         /// <summary>
-        /// The definition for the fields to read
+        /// The definition for the fields to read.
         /// </summary>
         private const System.Reflection.BindingFlags FIELD_FLAGS = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic;
 
@@ -20,7 +20,7 @@ namespace SME
         public string InstanceName { get; set; }
 
         /// <summary>
-        /// The instance that is recorded
+        /// The instance that is recorded.
         /// </summary>
         public readonly IProcess Instance;
 
@@ -40,7 +40,7 @@ namespace SME
         }
 
         /// <summary>
-        /// Captures all initial values and records them as reset values
+        /// Captures all initial values and records them as reset values.
         /// </summary>
         public void RegisterInitializationData()
         {
@@ -82,7 +82,7 @@ namespace SME
         }
 
         /// <summary>
-        /// Writes all value from the recorded initialization data back to the instance
+        /// Writes all value from the recorded initialization data back to the instance.
         /// </summary>
         public void ResetInstance()
         {

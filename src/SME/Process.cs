@@ -1,55 +1,55 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace SME
 {
     /// <summary>
-    /// Base class for implementing a component
+    /// Base class for implementing a component.
     /// </summary>
     public abstract class Process : IProcess
     {
         /// <summary>
-        /// The clock that drives this process
+        /// The clock that drives this process.
         /// </summary>
         protected readonly Clock m_clock = Scope.Current.Clock;
 
         /// <summary>
-        /// The clocked input busses
+        /// The collection of clocked input buses.
         /// </summary>
         private IRuntimeBus[] m_clockedinputbusses;
         /// <summary>
-        /// The input busses.
+        /// The collection of input buses.
         /// </summary>
         private IRuntimeBus[] m_inputbusses;
         /// <summary>
-        /// The output busses.
+        /// The collection of output buses.
         /// </summary>
         private IRuntimeBus[] m_outputbusses;
         /// <summary>
-        /// The internal busses
+        /// The collection of internal buses.
         /// </summary>
         private IRuntimeBus[] m_internalbusses;
 
         /// <summary>
-        /// Gets the clocked input busses.
+        /// Gets the collection of clocked input buses.
         /// </summary>
-        /// <value>The input busses.</value>
+        /// <value>The collection of input buses.</value>
         IRuntimeBus[] IProcess.ClockedInputBusses { get { return m_clockedinputbusses; } }
         /// <summary>
-        /// Gets the input busses.
+        /// Gets the collection of input buses.
         /// </summary>
-        /// <value>The input busses.</value>
+        /// <value>The collection of input buses.</value>
         IRuntimeBus[] IProcess.InputBusses { get { return m_inputbusses; } }
         /// <summary>
-        /// Gets the output busses.
+        /// Gets the collection of output buses.
         /// </summary>
-        /// <value>The output busses.</value>
+        /// <value>The collection of output buses.</value>
         IRuntimeBus[] IProcess.OutputBusses { get { return m_outputbusses; } }
         /// <summary>
-        /// Gets the output busses.
+        /// Gets the collection of output buses.
         /// </summary>
-        /// <value>The output busses.</value>
+        /// <value>The collection of output buses.</value>
         IRuntimeBus[] IProcess.InternalBusses { get { return m_internalbusses; } }
 
         /// <summary>
@@ -69,12 +69,12 @@ namespace SME
         private TaskCompletionSource<bool> m_procready = new TaskCompletionSource<bool>();
 
         /// <summary>
-        /// The finished task
+        /// The finished task.
         /// </summary>
         private TaskCompletionSource<bool> m_finished = new TaskCompletionSource<bool>();
 
         /// <summary>
-        /// Gets the name of this <see cref="T:SME.Process"/>.
+        /// Gets the name of this process.
         /// </summary>
         string IProcess.Name { get { return null; } }
 
@@ -109,14 +109,6 @@ namespace SME
         }
 
         /// <summary>
-        /// Gets the processready task
-        /// </summary>
-        Task IProcess.ProcessReady()
-        {
-            return m_procready.Task.ContinueWith(x => { });
-        }
-
-        /// <summary>
         /// Signals the process is ready, allowing all waiters to procceed.
         /// </summary>
         void SignalProcessReady()
@@ -125,7 +117,7 @@ namespace SME
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SME.Component"/> class
+        /// Initializes a new instance of the <see cref="SME.Process"/> class
         /// </summary>
         public Process()
         {
@@ -136,7 +128,7 @@ namespace SME
         }
 
         /// <summary>
-        /// Helper method to refresh the internal list of input and output busses
+        /// Helper method to refresh the internal collections of input and output buses.
         /// </summary>
         public void LoadBusMapsIfRequired()
         {
@@ -145,7 +137,7 @@ namespace SME
         }
 
         /// <summary>
-        /// Helper method to refresh the internal list of input and output busses
+        /// Helper method to refresh the internal collections of input and output buses.
         /// </summary>
         protected void ReloadBusMaps()
         {
@@ -207,11 +199,11 @@ namespace SME
         }
 
         /// <summary>
-        /// Manually register the busses in this instance, overrides the automatic bus detection system
+        /// Manually register the collections of buses in this instance, overrides the automatic bus detection system
         /// </summary>
-        /// <param name="inputBusses">The input busses.</param>
-        /// <param name="outputBusses">The output busses.</param>
-        /// <param name="internalBusses">The internal busses.</param>
+        /// <param name="inputBusses">The collection of input buses.</param>
+        /// <param name="outputBusses">The collection of output buses.</param>
+        /// <param name="internalBusses">The collection of internal buses.</param>
         protected void RegisterBusses(IBus[] inputBusses, IBus[] outputBusses, IBus[] internalBusses)
         {
             m_internalbusses = (internalBusses ?? new IBus[0]).Cast<IRuntimeBus>().ToArray();
@@ -229,9 +221,8 @@ namespace SME
         }
 
         /// <summary>
-        /// Returns an awaitable task that is signaled when the process can run
+        /// Returns an awaitable task that is signaled when the process can run.
         /// </summary>
-        /// <returns>The async awaitable task.</returns>
         public async Task ClockAsync()
         {
             SignalProcessReady();
@@ -240,7 +231,7 @@ namespace SME
         }
 
         /// <summary>
-        /// Returns an awaitable task indicating that the process has finished
+        /// Returns an awaitable task indicating that the process has finished.
         /// </summary>
         Task IProcess.Finished()
         {
@@ -248,7 +239,7 @@ namespace SME
         }
 
         /// <summary>
-        /// Method to be called after Run()
+        /// Method to be called after Run().
         /// </summary>
         void IProcess.SignalFinished()
         {
@@ -256,7 +247,7 @@ namespace SME
         }
 
         /// <summary>
-        /// Yields until a specific condition is met
+        /// Yields until a specific condition is met.
         /// </summary>
         /// <returns>The async awaitable task.</returns>
         /// <param name="condition">The condition to wait for.</param>
@@ -269,32 +260,17 @@ namespace SME
         }
 
         /// <summary>
-        /// Repeat the specified piece of code each clock cycle.
-        /// </summary>
-        /// <param name="code">The code to run.</param>
-        public async Task RepeatAsync(Action code)
-        {
-            while (true)
-            {
-                await ClockAsync();
-
-                code();
-            }
-        }
-
-        /// <summary>
         /// Run this instance.
         /// </summary>
         public abstract Task Run();
 
         /// <summary>
-        /// Helper method for performing an operation that only occurs during simulation
+        /// Helper method for performing an operation that only occurs during simulation.
         /// </summary>
-        /// <returns>The input value</returns>
+        /// <returns>The input value.</returns>
         protected void SimulationOnly(Action f)
         {
             f();
         }
     }
 }
-

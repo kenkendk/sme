@@ -1,24 +1,22 @@
-﻿using SME;
-using System;
+﻿using System;
 using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace SME
 {
     /// <summary>
-    /// The class that initializes and starts all defined processes as well as loads all busses
+    /// The class that initializes and starts all defined processes as well as loads all instances of buses.
     /// </summary>
     public static class Loader
     {
         /// <summary>
-        /// Helper variable to toggle assignment debug output
+        /// Helper variable to toggle assignment debug output.
         /// </summary>
         public static bool DebugBusAssignments = false;
 
         /// <summary>
-        /// Gets all IBus fields in the specified type
+        /// Gets all the bus fields in the specified type.
         /// </summary>
         /// <returns>The bus fields.</returns>
         /// <param name="t">The type to examine.</param>
@@ -39,9 +37,9 @@ namespace SME
         }
 
         /// <summary>
-        /// Gets all IBus instances from the specified field
+        /// Gets all <see cref="T:SME.Bus"/> instances from the specified field.
         /// </summary>
-        /// <returns>The bus instances.</returns>
+        /// <returns>The <see cref="T:SME.Bus"/> instances.</returns>
         /// <param name="source">The object to extract the instances from.</param>
         /// <param name="field">The field to extract the instances from</param>
         public static IEnumerable<IBus> GetBusInstances(object source, FieldInfo field)
@@ -61,11 +59,11 @@ namespace SME
         }
 
         /// <summary>
-        /// Loads all IBus interface fields for the given object
+        /// Loads all <see cref="T:SME.Bus"/> interface fields for the given object.
         /// </summary>
-        /// <returns>The object with the busses loaded.</returns>
-        /// <param name="o">The object instance to load busses for.</param>
-        /// <param name="forceautoload">Forces automatic bus loading, even if the <see cref="AutoloadBusAttribute"/> is not set</param>
+        /// <returns>The object with the bus loaded.</returns>
+        /// <param name="o">The object instance to load bus for.</param>
+        /// <param name="forceautoload">Forces automatic bus loading, even if the <see cref="SME.AutoloadBusAttribute"/> is not set.</param>
         public static object AutoloadBusses(object o, bool forceautoload = false)
         {
             if (DebugBusAssignments)
@@ -95,10 +93,10 @@ namespace SME
         }
 
         /// <summary>
-        /// Creates a single process for each class that implements <see cref="IProcess"/> and runs the simulation on that
+        /// Creates a single bus for each class that implements <see cref="SME.IProcess"/> and runs the simulation on that.
         /// </summary>
         /// <param name="asm">The assembly to load.</param>
-        /// <param name="autoloadbusses">Forces automatic bus loading on the processes, even if the <see cref="AutoloadBusAttribute"/> is not set</param>
+        /// <param name="autoloadbusses">Forces automatic bus loading on the processes, even if the <see cref="SME.AutoloadBusAttribute"/> is not set</param>
         public static IProcess[] StartProcesses(Assembly asm, bool autoloadbusses)
         {
             var procs = asm
@@ -114,4 +112,3 @@ namespace SME
         }
     }
 }
-

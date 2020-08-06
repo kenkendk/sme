@@ -6,77 +6,129 @@ using System.Threading.Tasks;
 namespace SME
 {
     /// <summary>
-    /// Class for statically analysis to build a dependecy graph
+    /// Class for statically analysis to build an acyclic dependecy graph.
     /// </summary>
     public class DependencyGraph
     {
         /// <summary>
-        /// A representation of a graph node
+        /// A representation of a graph node.
         /// </summary>
         public interface INode
         {
+            /// <summary>
+            /// The parents of the node.
+            /// </summary>
             INode[] Parents { get; }
+            /// <summary>
+            /// The children of the node.
+            /// </summary>
             INode[] Children { get; }
+            /// <summary>
+            /// The <see cref="T:SME.Process"/> instance inside the node.
+            /// </summary>
             IProcess Item { get; }
+            /// <summary>
+            /// The instances of <see cref="T:SME.Bus"/>, which should propagate after this node has finished.
+            /// </summary>
             IRuntimeBus[] PropagateAfter { get; }
+            /// <summary>
+            /// Flag indicating if the node has finished.
+            /// </summary>
             bool Fired { get; set; }
+            /// <summary>
+            /// Counter indicating how many of the nodes inputs are ready.
+            /// </summary>
             int InputsReady { get; set; }
+            /// <summary>
+            /// Method, which resets the node.
+            /// </summary>
             void Reset();
         }
 
         /// <summary>
-        /// the graph element
+        /// the graph element.
         /// </summary>
         private class Node : INode
         {
-            public Node[] Parents = new Node[0];
-            public Node[] Children = new Node[0];
+            /// <summary>
+            /// The parents of the node.
+            /// </summary>
+            public List<Node> Parents = new List<Node>();
+            /// <summary>
+            /// The children of the node.
+            /// </summary>
+            public List<Node> Children = new List<Node>();
+            /// <summary>
+            /// The <see cref="T:SME.Process"/> instance inside the node.
+            /// </summary>
             public readonly IProcess Item;
-            public IRuntimeBus[] PropagateAfter = new IRuntimeBus[0];
+            /// <summary>
+            /// The instances of <see cref="T:SME.Bus"/>, which should propagate after this node has finished.
+            /// </summary>
+            public List<IRuntimeBus> PropagateAfter = new List<IRuntimeBus>();
+            /// <summary>
+            /// Flag indicating if the node has finished.
+            /// </summary>
             public bool Fired { get; set; } = false;
+            /// <summary>
+            /// Counter indicating how many of the nodes inputs are ready.
+            /// </summary>
             public int InputsReady { get; set; } = 0;
 
+            /// <summary>
+            /// Creates a new instance of the <see cref="SME.Node"> class with the given process inside.
+            /// </summary>
+            /// <param name="component">The process inside the node.</param>
             public Node(IProcess component)
             {
                 Item = component;
             }
 
+            /// <summary>
+            /// Adds the given node into the list of parents.
+            /// </summary>
+            /// <param name="parent">The parent node to insert.</param>
             public void AddParent(Node parent)
             {
                 if (parent == this)
                     return;
-
-                var p = new Node[Parents.Length + 1];
-                Array.Copy(Parents, p, Parents.Length);
-                Parents = p;
-                Parents[Parents.Length - 1] = parent;
+                Parents.Add(parent);
             }
 
+            /// <summary>
+            /// Adds the given node into the list of children.
+            /// </summary>
+            /// <param name="child">The child node to insert.</param>
             public void AddChild(Node child)
             {
                 if (child == this)
                     return;
-
-                var c = new Node[Children.Length + 1];
-                Array.Copy(Children, c, Children.Length);
-                Children = c;
-                Children[Children.Length - 1] = child;
+                Children.Add(child);
             }
 
-            public void AddBus(IEnumerable<IRuntimeBus> bus)
+            /// <summary>
+            /// Adds the given collection of buses into the list of buses.
+            /// </summary>
+            /// <param name="buses">The collection of buses to insert.</param>
+            public void AddBus(IEnumerable<IRuntimeBus> buses)
             {
-                foreach (var b in bus)
-                    AddBus(b);
+                foreach (var bus in buses)
+                    AddBus(bus);
             }
 
+            /// <summary>
+            /// Adds the given buses into the list of buses.
+            /// </summary>
+            /// <param name="bus">The buses to insert.</param>
             public void AddBus(IRuntimeBus bus)
             {
-                var b = new IRuntimeBus[PropagateAfter.Length + 1];
-                Array.Copy(PropagateAfter, b, PropagateAfter.Length);
-                PropagateAfter = b;
-                PropagateAfter[PropagateAfter.Length - 1] = bus;
+                PropagateAfter.Add(bus);
             }
 
+            /// <summary>
+            /// Returns true if the given node is a child of the current node.
+            /// <summary>
+            /// <param name="n">The node to check for.</param>
             public bool IsInChildren(Node n)
             {
                 var work = new Queue<Node>();
@@ -87,13 +139,16 @@ namespace SME
                     foreach (var v in w.Children)
                         if (v == n)
                             return true;
-                        else if (v.Children.Length > 0)
+                        else if (v.Children.Count > 0)
                             work.Enqueue(v);
                 }
 
                 return false;
             }
 
+            /// <summary>
+            /// Resets the internal state of the node.
+            /// </summary>
             public void Reset()
             {
                 Fired = false;
@@ -105,44 +160,44 @@ namespace SME
             INode[] INode.Parents { get { return Parents.Cast<INode>().ToArray(); } }
             INode[] INode.Children { get { return Children.Cast<INode>().ToArray(); } }
             IProcess INode.Item { get { return Item; } }
-            IRuntimeBus[] INode.PropagateAfter { get { return PropagateAfter; } }
+            IRuntimeBus[] INode.PropagateAfter { get { return PropagateAfter.ToArray(); } }
 
             #endregion
         }
 
         /// TODO lave kombinatoriske processer? så man har clockede, ikke clockede og kombinatoriske
         /// <summary>
-        /// The order in which the processes are told to continue
+        /// The order in which the processes are told to continue.
         /// </summary>
         private readonly Node[] m_executionPlan;
 
         /// <summary>
-        /// A callback method to invoke before each tick
+        /// A callback method to invoke before each tick.
         /// </summary>
         private readonly Action<DependencyGraph> m_pretickcallback;
 
         /// <summary>
-        /// A callback method to invoke before each tick
+        /// A callback method to invoke before each tick.
         /// </summary>
         private readonly Action<DependencyGraph> m_posttickcallback;
 
         /// <summary>
-        /// A callback method to invoke after propagating clocked processes
+        /// A callback method to invoke after propagating clocked processes.
         /// </summary>
         private readonly Action<DependencyGraph> m_clocktickcallback;
 
         /// <summary>
-        /// List of all clocked busses
+        /// List of all clocked busses.
         /// </summary>
         private readonly IRuntimeBus[] m_clockedBusses;
 
         /// <summary>
-        /// List of all busses
+        /// List of all busses.
         /// </summary>
         public IRuntimeBus[] AllBusses { get; private set; }
 
         /// <summary>
-        /// Readonly access to the execution plan, i.e. the root nodes
+        /// Readonly access to the execution plan, i.e. the root nodes.
         /// </summary>
         /// <value>The execution plan.</value>
         public INode[] ExecutionPlan { get { return m_executionPlan.Cast<INode>().ToArray(); } }
@@ -276,10 +331,13 @@ namespace SME
             m_executionPlan = finished.ToArray();
         }
 
+        /// <summary>
+        /// A collection of buses, which will latch some of their signals. These should raise a warning.
+        /// </summary>
         private Dictionary<string, string> m_warnedLatches = new Dictionary<string, string>();
 
         /// <summary>
-        /// Advances all processes a tick according to the execution plan
+        /// Advances all processes a tick according to the execution plan.
         /// </summary>
         public void Execute()
         {
@@ -345,7 +403,7 @@ namespace SME
 
                 // Find the next candidates
                 next = m_executionPlan
-                    .Where(x => !x.Fired && x.InputsReady == x.Parents.Length)
+                    .Where(x => !x.Fired && x.InputsReady == x.Parents.Count)
                     .ToArray();
             } while (next.Any());
 
@@ -369,4 +427,3 @@ namespace SME
         }
     }
 }
-

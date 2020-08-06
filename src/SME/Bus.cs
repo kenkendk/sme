@@ -7,12 +7,19 @@ using System.Reflection;
 namespace SME
 {
     /// <summary>
-    /// Bus property for manually defining a Bus instance
+    /// Bus property for manually defining a <see cref="T:SME.Bus"/> instance.
     /// </summary>
     public class BusProperty<T>
     {
+        /// <summary>
+        /// The name of the bus.
+        /// </summary>
         public readonly string Name;
 
+        /// <summary>
+        /// Creates a new instance of the <see cref="T:SME.Bus"/> class with the given name.
+        /// </summary>
+        /// <param name="name">The name the bus will have.</param>
         public BusProperty(string name)
         {
             Name = name;
@@ -26,11 +33,15 @@ namespace SME
     }
 
     /// <summary>
-    /// Read violation exception.
+    /// Read violation exception. This exception is thrown if a process attempts to read from a signal, which has not yet been written to.
     /// </summary>
     [Serializable]
     public class ReadViolationException : Exception
     {
+        /// <summary>
+        /// Creates a new instance of the <see cref="SME.ReadViolation"> exception with the given message.
+        /// <param name="message">The message of the exception.</param>
+        /// </summary>
         public ReadViolationException(string message)
             : base(message)
         {
@@ -38,11 +49,15 @@ namespace SME
     }
 
     /// <summary>
-    /// Write violation exception.
+    /// Write violation exception. This exception is thrown if a multiple processes attempt to write to the same signal on the same <see cref="T:SME.Bus"/>.
     /// </summary>
     [Serializable]
     public class WriteViolationException : Exception
     {
+        /// <summary>
+        /// Creates a new instance of the <see cref="SME.WriteViolation"> exception with the given message.
+        /// <param name="message">The message of the exception.</param>
+        /// </summary>
         public WriteViolationException(string message)
             : base(message)
         {
@@ -50,20 +65,39 @@ namespace SME
     }
 
     /// <summary>
-    /// Backend for a DynamicProxy instance of an interface
+    /// Backend for a DynamicProxy instance of an interface.
     /// </summary>
     public class Bus : IRuntimeBus
     {
+        /// <summary>
+        /// Contains the values on the bus, which can be read.
+        /// </summary>
         private Dictionary<string, object> m_readValues = new Dictionary<string, object>();
+        /// <summary>
+        /// Contains the values on the bus, which are forwarded into <see cref="T:SME.Bus.m_writeValues"/>.
+        /// </summary>
         private Dictionary<string, object> m_stageValues = new Dictionary<string, object>();
+        /// <summary>
+        /// Contains the values on the bus, which will propegate into <see cref="T:SME.Bus.m_readValues"/> after the writer processes have been triggered, unless the bus is clocked, in which case it propegates once triggered by the global clock.
+        /// </summary>
         private Dictionary<string, object> m_writeValues = new Dictionary<string, object>();
+        /// <summary>
+        /// A List specifying the type of the signals on the bus.
+        /// </summary>
         private Dictionary<string, Type> m_signalTypes = new Dictionary<string, Type>();
+
+        /// <summary>
+        /// A list containing all of the processes, which depend on the bus.
+        /// </summary>
         private List<TaskCompletionSource<bool>> m_waiters = new List<TaskCompletionSource<bool>>();
 
+        /// <summary>
+        /// The global clock.
+        /// </summary>
         public Clock Clock { get; private set; }
 
         /// <summary>
-        /// The type the Bus represents
+        /// The type the Bus represents.
         /// </summary>
         public readonly Type BusType;
 
@@ -74,27 +108,27 @@ namespace SME
         Type IRuntimeBus.BusType { get { return BusType; } }
 
         /// <summary>
-        /// Gets a self reference
+        /// Gets a self reference.
         /// </summary>
         /// <value>The manager.</value>
         IBus IRuntimeBus.Manager { get { return this; } }
 
         /// <summary>
-        /// Gets a value indicating whether this <see cref="T:SME.Bus"/> is clocked.
+        /// Gets a value indicating whether this bus is clocked.
         /// </summary>
         public bool IsClocked { get; private set; }
         /// <summary>
-        /// Gets a value indicating whether this <see cref="T:SME.Bus"/> is internal.
+        /// Gets a value indicating whether this bus is internal.
         /// </summary>
         public bool IsInternal { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SME.Bus"/> class from an interface definition.
         /// </summary>
-        /// <param name="t">The interface type to map</param>
-        /// <param name="clock">The clock to tick with</param>
-        /// <param name="isClocked">A value indicating if the bus is clocked</param>
-        /// <param name="isInternal">A value indicating if the bus is internal</param>
+        /// <param name="t">The interface type to map.</param>
+        /// <param name="clock">The clock to tick with.</param>
+        /// <param name="isClocked">A value indicating if the bus is clocked.</param>
+        /// <param name="isInternal">A value indicating if the bus is internal.</param>
         public Bus(Type t, Clock clock, bool isClocked, bool isInternal)
         {
             if (!t.IsInterface)
@@ -125,9 +159,8 @@ namespace SME
         }
 
         /// <summary>
-        /// Sets the default value for a bus signal
+        /// Sets the default value for a bus signal.
         /// </summary>
-        /// <param name="t">The declaring type for the bus</param>
         /// <param name="n">The reflectioninfo for the signal.</param>
         /// <param name="memberType">The data type of the bus.</param>
         private void SetDefaultValues(MemberInfo n, Type memberType)
@@ -149,7 +182,7 @@ namespace SME
         }
 
         /// <summary>
-        /// Set a specific value on the bus and check for multiple drivers
+        /// Set a specific value on the bus and check for multiple drivers.
         /// </summary>
         /// <param name="name">Name of the signal to write.</param>
         /// <param name="value">Value to write.</param>
@@ -163,7 +196,7 @@ namespace SME
         }
 
         /// <summary>
-        /// Read a value from the bus
+        /// Read a value from the bus.
         /// </summary>
         /// <param name="name">Name of the signal to read.</param>
         public object Read(string name)
@@ -179,7 +212,7 @@ namespace SME
         }
 
         /// <summary>
-        /// Read a value from the bus
+        /// Read a value from the bus.
         /// </summary>
         /// <param name="name">Name of the signal to read.</param>
         /// <typeparam name="T">The type of data to read.</typeparam>
@@ -189,17 +222,17 @@ namespace SME
         }
 
         /// <summary>
-        /// Checks if the property can be read
+        /// Checks if the property can be read.
         /// </summary>
-        /// <param name="name">The property to check</param>
-        /// <returns><c>true</c> if the property can be read, <c>false</c> otherwise</returns>
+        /// <param name="name">The property to check.</param>
+        /// <returns><c>true</c> if the property can be read, <c>false</c> otherwise.</returns>
         public bool CanRead(string name)
         {
             return m_readValues.ContainsKey(name);
         }
 
         /// <summary>
-        /// Drives the bus and propagates all writen signals into the read side
+        /// Drives the bus and propagates all written signals into the read side.
         /// </summary>
         public virtual void Propagate()
         {
@@ -220,7 +253,7 @@ namespace SME
         }
 
         /// <summary>
-        /// Forwards all staged values to the write area
+        /// Forwards all staged values to the write area.
         /// </summary>
         public virtual void Forward()
         {
@@ -238,16 +271,15 @@ namespace SME
         }
 
         /// <summary>
-        /// Returns true if any values are staged, false otherwise
+        /// Returns true if any values are staged, false otherwise.
         /// </summary>
-        /// <returns><c>true</c>, if the bus contains staged values, <c>false</c> otherwise.</returns>
         public virtual bool AnyStaged()
         {
             return m_stageValues.Count() > 0;
         }
 
         /// <summary>
-        /// Returns the name of all non-staged properties
+        /// Returns the name of all non-staged properties.
         /// </summary>
         public virtual IEnumerable<string> NonStaged()
         {
@@ -258,11 +290,13 @@ namespace SME
         }
 
         /// <summary>
-        /// Creates a bus from an interface.
+        /// Creates a <see cref="T:SME.Bus"/> from an interface.
         /// </summary>
         /// <returns>The DynamicProxy instance.</returns>
         /// <param name="t">The interface type to map.</param>
-        /// <param name="clock">The clock to keep the Bus on.</param>
+        /// <param name="clock">The clock to keep the bus on.</param>
+        /// <param name="isClocked">Flag indicating if the bus is clocked.</param>
+        /// <param name="isInternal">Flag indicating if the bus is internal.</param>
         public static IRuntimeBus CreateFromInterface(Type t, Clock clock, bool isClocked, bool isInternal)
         {
             if (!t.IsInterface)
@@ -273,11 +307,13 @@ namespace SME
         }
 
         /// <summary>
-        /// Creates a bus from an interface.
+        /// Creates a <see cref="T:SME.Bus"/> from an interface.
         /// </summary>
         /// <returns>The DynamicProxy instance.</returns>
-        /// <param name="clock">The clock to keep the Bus on.</param>
         /// <typeparam name="T">The interface type to map.</typeparam>
+        /// <param name="clock">The clock to keep the bus on.</param>
+        /// <param name="isClocked">Flag indicating if the bus is clocked.</param>
+        /// <param name="isInternal">Flag indicating if the bus is internal.</param>
         public static T CreateFromInterface<T>(Clock clock, bool isClocked, bool isInternal)
             where T : class, IBus
         {
@@ -289,4 +325,3 @@ namespace SME
         }
     }
 }
-
