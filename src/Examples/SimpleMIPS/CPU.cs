@@ -228,7 +228,7 @@ namespace SimpleMIPS
                     break;
                 case Opcodes.terminate: // TODO Not quite MIPS standard, is it? :)
                     terminate.flg = true;
-                    return;
+                    break; //return;
                 default:
                     SimulationOnly(() => throw new Exception($"Opcode not found: {opcode}"));
                     break;
