@@ -12,7 +12,19 @@ install:
 script:
   - dotnet build -c Debug src/UnitTest
   - echo "travis_fold:start:unit_test"
-  - dotnet test -c Debug src/UnitTest -v n --no-build --logger:"console;verbosity=detailed"
+  - dotnet test -c Debug src/UnitTest -v n --no-build --logger:"console;verbosity=detailed" --filter "FullyQualifiedName=UnitTest.TestRunner.RunAES256"
+  - dotnet test -c Debug src/UnitTest -v n --no-build --logger:"console;verbosity=detailed" --filter "FullyQualifiedName=UnitTest.TestRunner.RunColorBin"
+  - dotnet test -c Debug src/UnitTest -v n --no-build --logger:"console;verbosity=detailed" --filter "FullyQualifiedName=UnitTest.TestRunner.RunExternalComponent"
+  - dotnet test -c Debug src/UnitTest -v n --no-build --logger:"console;verbosity=detailed" --filter "FullyQualifiedName=UnitTest.TestRunner.RunNoiseFilter"
+  - dotnet test -c Debug src/UnitTest -v n --no-build --logger:"console;verbosity=detailed" --filter "FullyQualifiedName=UnitTest.TestRunner.RunSimpleComponents"
+  - dotnet test -c Debug src/UnitTest -v n --no-build --logger:"console;verbosity=detailed" --filter "FullyQualifiedName=UnitTest.TestRunner.RunSimpleMIPS"
+  - dotnet test -c Debug src/UnitTest -v n --no-build --logger:"console;verbosity=detailed" --filter "FullyQualifiedName=UnitTest.TestRunner.RunSimpleMemoryBus"
+  - dotnet test -c Debug src/UnitTest -v n --no-build --logger:"console;verbosity=detailed" --filter "FullyQualifiedName=UnitTest.TestRunner.RunSimpleNestedComponent"
+  - dotnet test -c Debug src/UnitTest -v n --no-build --logger:"console;verbosity=detailed" --filter "FullyQualifiedName=UnitTest.TestRunner.RunSimpleTrader"
+  - dotnet test -c Debug src/UnitTest -v n --no-build --logger:"console;verbosity=detailed" --filter "FullyQualifiedName=UnitTest.TestRunner.RunStateMachineTester"
+  - dotnet test -c Debug src/UnitTest -v n --no-build --logger:"console;verbosity=detailed" --filter "FullyQualifiedName=UnitTest.TestRunner.RunStatebasedCounter"
+  - dotnet test -c Debug src/UnitTest -v n --no-build --logger:"console;verbosity=detailed" --filter "FullyQualifiedName=UnitTest.TestRunner.RunStatedAdder"
+  - dotnet test -c Debug src/UnitTest -v n --no-build --logger:"console;verbosity=detailed" --filter "FullyQualifiedName=UnitTest.TestRunner.RunStopwatch"
   - echo "travis_fold:end:unit_test"
 
 
