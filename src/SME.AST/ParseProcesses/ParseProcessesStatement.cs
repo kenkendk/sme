@@ -235,9 +235,7 @@ namespace SME.AST
                 Parent = method,
                 // Default expression is a null expression
                 HasDefault = statement.Sections
-                    .SelectMany(x =>
-                        x.Labels.Select(y =>
-                        y is DefaultSwitchLabelSyntax))
+                    .SelectMany(x => x.Labels.OfType<DefaultSwitchLabelSyntax>())
                     .Any()
             };
 
