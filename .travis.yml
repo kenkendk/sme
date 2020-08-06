@@ -12,7 +12,7 @@ install:
 script:
   - dotnet build -c Debug src/UnitTest
   - echo "travis_fold:start:unit_test"
-  - dotnet test -c Debug src/UnitTest
+  - dotnet test -c Debug src/UnitTest -v n
   - echo "travis_fold:end:unit_test"
 
 
