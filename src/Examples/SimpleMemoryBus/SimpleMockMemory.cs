@@ -1,5 +1,5 @@
-﻿using System;
-using SME;
+﻿using SME;
+using System;
 
 namespace SimpleMemoryBus
 {
@@ -13,13 +13,11 @@ namespace SimpleMemoryBus
 
         protected override void OnTick()
         {
-            // TODO jeg kan ikke se at den bliver brugt nogle steder.
-            //DebugOutput = true;
-            PrintDebug("Phase: {0}", ++m_cycle);
+            Console.WriteLine("Phase: {0}", ++m_cycle);
 
             if (Interface.ReadEnabled)
             {
-                PrintDebug("Setting readvalue to {0}", m_data[Interface.ReadAddr]);
+                Console.WriteLine("Setting readvalue to {0}", m_data[Interface.ReadAddr]);
                 Interface.ReadValue = m_data[Interface.ReadAddr];
             }
 

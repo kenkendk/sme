@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -74,15 +74,8 @@ namespace SME
         private TaskCompletionSource<bool> m_finished = new TaskCompletionSource<bool>();
 
         /// <summary>
-        /// Flag indicating if the process produces debug output
+        /// Gets the name of this <see cref="T:SME.Process"/>.
         /// </summary>
-        // TODO jeg kan ikke se at den bliver brugt nogle steder
-        //protected bool DebugOutput;
-
-        /// <summary>
-        /// Gets the name of this process
-        /// </summary>
-        /// <value>The name.</value>
         string IProcess.Name { get { return null; } }
 
         /// <summary>
@@ -293,18 +286,6 @@ namespace SME
         /// Run this instance.
         /// </summary>
         public abstract Task Run();
-
-        /// <summary>
-        /// Prints debug output if the process has debug enabled
-        /// </summary>
-        /// <param name="msg">The format string</param>
-        /// <param name="arg">The arguments</param>
-        protected void PrintDebug(string msg, params object[] arg)
-        {
-            // TODO jeg kan ikke se at den bliver brugt nogle steder
-            //if (DebugOutput)
-                Console.WriteLine(msg, arg);
-        }
 
         /// <summary>
         /// Helper method for performing an operation that only occurs during simulation

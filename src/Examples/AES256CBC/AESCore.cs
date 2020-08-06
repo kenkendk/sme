@@ -1,4 +1,5 @@
 ﻿﻿using SME;
+using System;
 using System.Runtime.InteropServices;
 
 namespace AES256CBC
@@ -109,20 +110,20 @@ namespace AES256CBC
                 UnpackLongToArray(m_input, 0, Input.Data0);
                 UnpackLongToArray(m_input, 8, Input.Data1);
 
-                PrintDebug("Input data string: {0}", Tester.ByteArrayToString(m_input));
-                PrintDebug("IV data string: {0}", Tester.ByteArrayToString(m_iv));
+                Console.WriteLine("Input data string: {0}", Tester.ByteArrayToString(m_input));
+                Console.WriteLine("IV data string: {0}", Tester.ByteArrayToString(m_iv));
 
                 for(var i = 0; i < 16; i++)
                     m_input[i] = (byte)(m_input[i] ^ m_iv[i]);
 
-                PrintDebug("Washed input data string: {0}", Tester.ByteArrayToString(m_input));
+                Console.WriteLine("Washed input data string: {0}", Tester.ByteArrayToString(m_input));
 
                 Encrypt128(m_input, m_output, m_expandedKey);
 
                 for(var i = 0; i < 16; i++)
                     m_iv[i] = m_output[i];
 
-                PrintDebug("Output/next IV data string: {0}", Tester.ByteArrayToString(m_output));
+                Console.WriteLine("Output/next IV data string: {0}", Tester.ByteArrayToString(m_output));
 
                 Output.Data0 = PackArrayToLong(m_output, 0);
                 Output.Data1 = PackArrayToLong(m_output, 8);

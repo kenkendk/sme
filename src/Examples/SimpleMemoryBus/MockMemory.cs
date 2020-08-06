@@ -24,11 +24,11 @@ namespace SimpleMemoryBus
             {
                 await ClockAsync();
 
-                PrintDebug("Phase: {0}", ++m_cycle);
+                Console.WriteLine("Phase: {0}", ++m_cycle);
 
                 if (Interface.ReadEnabled)
                 {
-                    PrintDebug("Setting readvalue to {0}", m_data[Interface.ReadAddr]);
+                    Console.WriteLine("Setting readvalue to {0}", m_data[Interface.ReadAddr]);
                     Interface.ReadValue = m_data[Interface.ReadAddr];
                 }
 
