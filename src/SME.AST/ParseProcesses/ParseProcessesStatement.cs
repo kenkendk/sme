@@ -274,7 +274,7 @@ namespace SME.AST
                 Parent = method
             };
 
-            s.ReturnExpression = Decompile(network, proc, method, s, statement.Expression);
+            s.ReturnExpression = statement.Expression == null ? new EmptyExpression() : Decompile(network, proc, method, s, statement.Expression);
 
             return s;
         }

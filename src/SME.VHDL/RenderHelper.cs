@@ -204,7 +204,7 @@ namespace SME.VHDL
                 throw new Exception("Expected return expression to be empty");
 
             var indent = new string(' ', indentation);
-            yield return $"{indent}return {method.ReturnVariable.Name};";
+            yield return $"{indent}return {method.ReturnVariable?.Name};";
         }
 
         /// <summary>

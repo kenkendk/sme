@@ -165,18 +165,24 @@ namespace SME.AST.Transform
                         else // Trailing cases should not have break statements, and all following statements should be ignored
                             break;
                     }
-                else
+                    else
                     {
                         if (c.Item2[i] is ExpressionStatement && ((ExpressionStatement)(c.Item2[i])).Expression is AwaitExpression)
                         { // Stop adding, and inject a goto statement to rest of the block
                             found = true;
                             initial.Add(new CaseGotoStatement(-1, false));
                             initial.Add(new BreakStatement());
-            }
+                        }
                         else
                         { // Add all statements up until await statement
                             if (c.Item2[i] is BreakStatement)
                                 initial.Add(new CaseGotoStatement(selflabel, true));
+                            else if (c.Item2[i] is ReturnStatement)
+                            {
+                                initial.Add(new CaseGotoStatement(0, false));
+                                initial.Add(new BreakStatement());
+                                break;
+                            }
                             initial.Add(c.Item2[i]);
                             if (c.Item2[i] is BreakStatement)
                                 break;
@@ -199,11 +205,11 @@ namespace SME.AST.Transform
                     c.CaseLabel = fragments.Count;
                     trailings[i].Select(x => SplitStatement(x, collected, fragments)).ToList();
                     EndFragment(collected, fragments, selflabel, true);
-            }
+                }
                 else
-            {
+                {
                     c.CaseLabel = selflabel;
-            }
+                }
             }
 
             for (int i = selflabel; i < fragments.Count; i++)
