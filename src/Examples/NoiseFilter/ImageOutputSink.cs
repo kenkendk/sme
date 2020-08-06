@@ -48,7 +48,8 @@ namespace NoiseFilter
 
             public void Dispose()
             {
-                 var filename = string.Format("output-{0}.png", System.Threading.Interlocked.Increment(ref _imageIndex));
+                System.IO.Directory.CreateDirectory("output");
+                var filename = string.Format("output/output-{0}.png", System.Threading.Interlocked.Increment(ref _imageIndex));
                 m_image.Save(filename, System.Drawing.Imaging.ImageFormat.Png);
                 m_image.Dispose();
             }
@@ -80,7 +81,7 @@ namespace NoiseFilter
 
                     if (cur.IsComplete)
                     {
-                        Console.WriteLine("--------------> Wrote image to disk");
+                        Console.WriteLine("--------------> Wrote image to disk in output/ folder");
                         work.Dequeue().Dispose();
                     }
                 }
@@ -92,7 +93,7 @@ namespace NoiseFilter
 
                     if (cur.IsComplete)
                     {
-                        Console.WriteLine("--------------> Wrote padded image to disk");
+                        Console.WriteLine("--------------> Wrote padded image to disk in output/ folder");
                         workPadded.Dequeue().Dispose();
                     }
                 }
