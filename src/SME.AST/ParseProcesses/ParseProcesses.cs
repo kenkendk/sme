@@ -406,7 +406,8 @@ namespace SME.AST
                     &&
                     !st.HasAttribute<SuppressOutputAttribute>()
                     &&
-                    !st.HasAttribute<SuppressBodyAttribute>()
+                    !st.HasAttribute<SuppressBodyAttribute>(),
+                compilation = network.compilation
             };
 
             var proctype = res.MSCAType as INamedTypeSymbol;
