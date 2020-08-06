@@ -246,9 +246,10 @@ namespace SME.AST
             s.Cases = statement
                 .Sections
                 .Select(x => new Tuple<Expression[], Statement[]>(
-                    x.Labels.OfType<CaseSwitchLabelSyntax>().Select(y => Decompile(network, proc, method, s, y.Value)).ToArray(),
+                    x.Labels.Select(y => y is CaseSwitchLabelSyntax ? Decompile(network, proc, method, s, (y as CaseSwitchLabelSyntax).Value) : new EmptyExpression()).ToArray(),
                     x.Statements.Select(y => Decompile(network, proc, method, y)).ToArray()
-                )).ToArray();
+                ))
+                .ToArray();
 
             foreach (var c in s.Cases)
             {

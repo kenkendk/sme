@@ -434,7 +434,7 @@ namespace SME.VHDL
         /// <param name="type">The type to evaluate.</param>
         private bool IsEnumIrregular(INamedTypeSymbol type)
         {
-            if (type.EnumUnderlyingType != null)
+            if (!type.IsEnum())
                 return false;
 
             var fields = type
