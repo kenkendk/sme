@@ -8,34 +8,41 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace SME.AST
 {
     /// <summary>
-    /// A collection of static extension methods
+    /// A collection of static extension methods.
     /// </summary>
     public static class HelperMethods
     {
-
+        
+        /// <summary>
+        /// Returns true, if the given type is an array type.
+        /// </summary>
+        /// <param name="its">The type to check.</param>
         public static bool IsArrayType(this ITypeSymbol its)
         {
             return its is IArrayTypeSymbol || its.IsFixedArrayType();
         }
 
+        /// <summary>
+        /// Returns true, if the given type is a type of the type parameter.
+        /// </summary>
+        /// <typeparam name="T">The type parameter to compare against.<typeparam>
+        /// <param name="its">The given type.</param>
         public static bool IsType<T>(this ITypeSymbol its)
         {
             return SymbolEqualityComparer.Default.Equals(LoadType(its, typeof(T)), its);
         }
 
         /// <summary>
-        /// Returns a value indicating if the type is a Bus type
+        /// Returns true, if the given type is a Bus type.
         /// </summary>
-        /// <returns><c>true</c>, if the type definition is a bus type, <c>false</c> otherwise.</returns>
         /// <param name="td">The type to evaluate.</param>
         public static bool IsBusType(this ITypeSymbol td)
         {
             return td.Interfaces.Any(x => SymbolEqualityComparer.Default.Equals(ParseProcesses.m_compilation.GetTypeByMetadataName(typeof(IBus).FullName), x));
         }
         /// <summary>
-        /// Returns <c>true</c> if the type has an attribute of the given type
+        /// Returns <c>true</c> if the type has an attribute of the given type.
         /// </summary>
-        /// <returns><c>true</c>, if the type has an attribute of the given type, <c>false</c> otherwise.</returns>
         /// <param name="bt">The type to evaluate.</param>
         /// <typeparam name="T">The attribute type to check for.</typeparam>
         public static bool HasAttribute<T>(this Type bt)
@@ -44,9 +51,8 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Returns <c>true</c> if the type has an attribute of the given type
+        /// Returns <c>true</c>, if the type has an attribute of the given type.
         /// </summary>
-        /// <returns><c>true</c>, if the type has an attribute of the given type, <c>false</c> otherwise.</returns>
         /// <param name="bt">The type to evaluate.</param>
         /// <param name="attrtype">The attribute type to check for.</param>
         public static bool HasAttribute(this Type bt, Type attrtype)
@@ -54,33 +60,62 @@ namespace SME.AST
             return bt.GetCustomAttributes(attrtype, true).Any();
         }
 
-
+        /// <summary>
+        /// Returns true, if the given symbol has the given attribute.
+        /// </summary>
+        /// <param name="its">The given symbol.</param>
+        /// <param name="t">The given attribute.</param>
         public static bool HasAttribute(this ISymbol its, Type t)
         {
             return its.GetAttribute(t) != null;
         }
 
+        /// <summary>
+        /// Returns true, if the given symbol has the given attribute.
+        /// </summary>
+        /// <typeparam name="T">The given attribute.</typeparam>
+        /// <param name="its">The given symbol</param>
         public static bool HasAttribute<T>(this ISymbol its)
         {
             return its.GetAttribute<T>() != null;
         }
 
+        /// <summary>
+        /// Gets the attribute of the given type, associated with the given symbol.
+        /// </summary>
+        /// <param name="its">The given symbol.</param>
+        /// <param name="t">The given type.</param>
         public static AttributeData GetAttribute(this ISymbol its, Type t)
         {
             return its.GetAttributes(t).FirstOrDefault();
         }
 
+        /// <summary>
+        /// Gets the attribute of the given type, associated with the given symbol.
+        /// </summary>
+        /// <typeparam name="T">The given attribute type.</typeparam>
+        /// <param name"its">The given symbol.</param>
         public static AttributeData GetAttribute<T>(this ISymbol its)
         {
             return its.GetAttributes<T>().FirstOrDefault();
         }
 
+        /// <summary>
+        /// Gets the collection of attributes of the given type, associated with the given symbol.
+        /// </summary>
+        /// <param name="its">The given symbol.</param>
+        /// <param name="t">The given type.</param>
         public static IEnumerable<AttributeData> GetAttributes(this ISymbol its, Type t)
         {
             return its.GetAttributes()
                 .Where(x => Type.GetType(x.AttributeClass.ToDisplayString()) == t);
         }
 
+        /// <summary>
+        /// Gets the collection of attributes of the given type, associated with the given symbol.
+        /// </summary>
+        /// <typeparam name="T">The given attribute type.</typeparam>
+        /// <param name="its">The given symbol.</param>
         public static IEnumerable<AttributeData> GetAttributes<T>(this ISymbol its)
         {
             var target = typeof(T);
@@ -88,6 +123,11 @@ namespace SME.AST
             return its.GetAttributes().Where(x => asm.GetType(x.AttributeClass.GetFullMetadataName()) == target);
         }
 
+        /// <summary>
+        /// Loads the symbol of the given syntax node, by looking in the given semantic models.
+        /// </summary>
+        /// <param name="sn">The given syntax node.</param>
+        /// <param name="m_semantics">The given semantic models.</param>
         public static ISymbol LoadSymbol(this SyntaxNode sn, IEnumerable<SemanticModel> m_semantics)
         {
             return m_semantics
@@ -105,6 +145,11 @@ namespace SME.AST
                 .FirstOrDefault(x => x != null);
         }
 
+        /// <summary>
+        /// Loads the type of the given syntax node, by looking in the given semantic models.
+        /// </summary>
+        /// <param name="sn">The given syntax node.</param>
+        /// <param name="m_semantics">The given semantic models.</param>
         public static ITypeSymbol LoadType(this SyntaxNode sn, IEnumerable<SemanticModel> m_semantics)
         {
             return m_semantics
@@ -122,6 +167,11 @@ namespace SME.AST
                 .FirstOrDefault(x => x != null);
         }
 
+        /// <summary>
+        /// Loads a data flow analysis of the given method, by looking through the given semantic models.
+        /// </summary>
+        /// <param name="mds">The given method.</param>
+        /// <param name="m_semantics">The given semantic models.</param>
         public static DataFlowAnalysis LoadDataFlow(this MethodDeclarationSyntax mds, IEnumerable<SemanticModel> m_semantics)
         {
             return m_semantics
@@ -139,6 +189,10 @@ namespace SME.AST
                 .FirstOrDefault(x => x != null);
         }
 
+        /// <summary>
+        /// Gets the full name of the given symbol.
+        /// </summary>
+        /// <param name="isy">The given symobl.</param>
         public static string GetFullMetadataName(this ISymbol isy)
         {
             string res = isy.Name;
@@ -151,34 +205,57 @@ namespace SME.AST
             return res;
         }
 
+        /// <summary>
+        /// Gets the syntax node corresponding to the given symbol.
+        /// </summary>
+        /// <param name="isy">The given symbol.</param>
         public static SyntaxNode GetSyntax(this ISymbol isy)
         {
             return isy.DeclaringSyntaxReferences.First().GetSyntax();
         }
 
+        /// <summary>
+        /// Gets the class declaration of the given symbol, if any.
+        /// </summary>
+        /// <param name="isy">The given symbol.</param>
         public static ClassDeclarationSyntax GetClassDecl(this ISymbol isy)
         {
             return isy.GetSyntax() as ClassDeclarationSyntax;
         }
 
+        /// <summary>
+        /// Returns true, if the two given symbols are equal.
+        /// <summary>
+        /// <param name="a">The first symbol to compare.</param>
+        /// <param name="b">The second symbol to compare.</param>
         public static bool IsSameTypeReference(this ITypeSymbol a, ITypeSymbol b)
         {
             return SymbolEqualityComparer.Default.Equals(a, b);
         }
 
+        /// <summary>
+        /// Returns true, if the given symbol is equal to the given reflection type.
+        /// </summary>
+        /// <param name="a">The given symbol.</param>
+        /// <param name="b">The given reflection type.</param>
         public static bool IsSameTypeReference(this ITypeSymbol a, Type b)
         {
             var itb = ParseProcesses.m_compilation.GetTypeByMetadataName(b.FullName);
             return a.IsSameTypeReference(itb);
         }
 
+        /// <summary>
+        /// Returns true, if the given symbol is equal to the given type parameter.
+        /// </summary>
+        /// <typeparam name="T">The given type parameter.</typeparameter>
+        /// <param name="a">The given symbol.</param>
         public static bool IsSameTypeReference<T>(this ITypeSymbol a)
         {
             return a.IsSameTypeReference(typeof(T));
         }
 
         /// <summary>
-        /// Returns all properties found in the type and its base types
+        /// Returns all properties found in the type and its base types.
         /// </summary>
         /// <returns>The properties found.</returns>
         /// <param name="self">The type to get the fields from.</param>
@@ -202,28 +279,27 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Argument input/output types
+        /// Argument input/output types.
         /// </summary>
         public enum ArgumentInOut
         {
             /// <summary>
-            /// The argument is an exclusive input argument
+            /// The argument is an exclusive input argument.
             /// </summary>
             In,
             /// <summary>
-            /// The argument is an exclusive output argument
+            /// The argument is an exclusive output argument.
             /// </summary>
             Out,
             /// <summary>
-            /// The argument is both an input and an output argument
+            /// The argument is both an input and an output argument.
             /// </summary>
             InOut
         }
 
         /// <summary>
-        /// Returns a value indicating if the supplied type is an array
+        /// Returns true, if the given type is an array.
         /// </summary>
-        /// <returns><c>true</c>, the type is an array, <c>false</c> otherwise.</returns>
         /// <param name="t">The type to examine.</param>
         public static bool IsArrayType(this Type t)
         {
@@ -231,10 +307,9 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Returns a value indicating if the supplied type reference is a fixed array
+        /// Returns true, if the supplied symbol is a fixed array.
         /// </summary>
-        /// <returns><c>true</c>, the type reference is a fixed array, <c>false</c> otherwise.</returns>
-        /// <param name="tr">The type reference to examine.</param>
+        /// <param name="tr">The symbol to examine.</param>
         public static bool IsFixedArrayType(this ITypeSymbol tr)
         {
             if (tr is INamedTypeSymbol)
@@ -247,9 +322,8 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Returns a value indicating if the supplied type is a fixed array
+        /// Returns true, if the supplied type is a fixed array.
         /// </summary>
-        /// <returns><c>true</c>, the type is a fixed array, <c>false</c> otherwise.</returns>
         /// <param name="t">The type to examine.</param>
         public static bool IsFixedArrayType(this Type t)
         {
@@ -259,7 +333,6 @@ namespace SME.AST
         /// <summary>
         /// Gets the type of the array elements.
         /// </summary>
-        /// <returns>The array element type.</returns>
         /// <param name="tr">The type reference to examine.</param>
         public static ITypeSymbol GetArrayElementType(this ITypeSymbol tr)
         {
@@ -274,7 +347,6 @@ namespace SME.AST
         /// <summary>
         /// Gets the type of the array elements.
         /// </summary>
-        /// <returns>The array element type.</returns>
         /// <param name="t">The type to examine.</param>
         public static Type GetArrayElementType(this Type t)
         {
@@ -286,6 +358,10 @@ namespace SME.AST
                 throw new Exception($"GetArrayElementType called on non-array: {t.FullName}");
         }
 
+        /// <summary>
+        /// Gets the length of the given fixed array through its attributes.
+        /// </summary>
+        /// <param name="its">The given fixed array</param>
         public static int GetFixedArrayLength(this ITypeSymbol its)
         {
             var attr = its.GetAttribute<FixedArrayLengthAttribute>();
@@ -317,7 +393,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Gets the length of a fixed-length array
+        /// Gets the length of a fixed-length array.
         /// </summary>
         /// <returns>The fixed array length.</returns>
         /// <param name="element">The element to get the length for.</param>
@@ -334,17 +410,15 @@ namespace SME.AST
                 return ((ArrayCreateExpression)element.DefaultValue).ElementExpressions.Length;
             else if (element.Source is System.Reflection.MemberInfo)
                 return GetFixedArrayLength((System.Reflection.MemberInfo)element.Source);
-            //else if (element.Source is IMemberDefinition)
-            //    return GetFixedArrayLength((IMemberDefinition)element.Source);
 
             throw new Exception($"Unable to get size of array: {element.Name}");
         }
 
         /// <summary>
-        /// Loads the specified reflection Type and returns the equivalent CeCil TypeDefinition
+        /// Loads the specified reflection Type and returns the equivalent Microsoft.CodeAnalysis symbol.
         /// </summary>
         /// <returns>The loaded type.</returns>
-        /// <param name="source">The source that provides the context</param>
+        /// <param name="source">The source that provides the context.</param>
         /// <param name="t">The type to load.</param>
         public static ITypeSymbol LoadType(this ITypeSymbol source, Type t)
         {
@@ -370,6 +444,10 @@ namespace SME.AST
             return inoutarg || (isarray && !inoutoverride) ? ArgumentInOut.InOut : (inarg ? ArgumentInOut.In : ArgumentInOut.Out);
         }
 
+        /// <summary>
+        /// Returns true, if the given symbol is an enum type.
+        /// </summary>
+        /// <param name="its">The given symbol.</param>
         public static bool IsEnum(this ITypeSymbol its)
         {
             if (its is INamedTypeSymbol)
@@ -379,7 +457,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Returns the target variable or signal, or null
+        /// Returns the target variable or signal, or null.
         /// </summary>
         /// <returns>The target variable or signal.</returns>
         /// <param name="self">The item to examine.</param>
@@ -402,7 +480,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Removes parenthesis and type casts to get the underlying item
+        /// Removes parenthesis and type casts to get the underlying item.
         /// </summary>
         /// <returns>The unwrapped expression.</returns>
         /// <param name="self">The expression to unwrap.</param>
@@ -423,11 +501,11 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Sets the target value
+        /// Sets the target value.
         /// </summary>
         /// <returns>The target variable or signal.</returns>
         /// <param name="self">The item to set the element on.</param>
-        /// <param name="target">The value to set</param>
+        /// <param name="target">The value to set.</param>
         public static void SetTarget(this ASTItem self, DataElement target)
         {
             if (self is IdentifierExpression)
@@ -443,7 +521,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Reverse walks the tree to find the next parent of the given type or null
+        /// Reverse walks the tree to find the next parent of the given type or null.
         /// </summary>
         /// <returns>The nearest parent or null.</returns>
         /// <param name="self">The item ot get the parent for.</param>
@@ -455,7 +533,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Reverse walks the tree to find the next parent of the given type or null
+        /// Reverse walks the tree to find the next parent of the given type or null.
         /// </summary>
         /// <returns>The nearest parent or null.</returns>
         /// <param name="self">The item ot get the parent for.</param>
@@ -472,7 +550,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Extracts an integer value from a data element
+        /// Extracts an integer value from a data element.
         /// </summary>
         /// <returns>The integer value.</returns>
         /// <param name="expression">The expression to extract the value from.</param>
@@ -491,7 +569,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Returns the start, end and increment integer values for a statically sized for loop
+        /// Returns the start, end and increment integer values for a statically sized for loop.
         /// </summary>
         /// <returns>The static for loop start, end and increment values.</returns>
         /// <param name="self">The statement to extract the values for.</param>
@@ -574,4 +652,3 @@ namespace SME.AST
         }
     }
 }
-

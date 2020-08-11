@@ -1,36 +1,38 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace SME.AST
 {
+    /// <summary>
+    /// The different states a visitor can have.
+    /// </summary>
     public enum VisitorState
     {
         /// <summary>
-        /// Enter the element
+        /// Enter the element.
         /// </summary>
         Enter,
         /// <summary>
-        /// Visit the element
+        /// Visit the element.
         /// </summary>
         Visit,
         /// <summary>
-        /// Visited the element
+        /// Visited the element.
         /// </summary>
         Visited,
         /// <summary>
-        /// Leave the element
+        /// Leave the element.
         /// </summary>
         Leave
     }
 
     /// <summary>
-    /// Methods that enumerate all elements in various parts of the network
+    /// Methods that enumerate all elements in various parts of the network.
     /// </summary>
     public static class EnumerationExtensions
     {
         /// <summary>
-        /// Visits all elements in depth-first-search, using post-order vistits
+        /// Visits all elements in depth-first-search, using post-order vistits.
         /// </summary>
         /// <returns>The sequence of elements in depth-first post-order.</returns>
         /// <param name="self">The item to enumerate.</param>
@@ -56,7 +58,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Returns all the leaves in the sequence originating in the given item
+        /// Returns all the leaves in the sequence originating in the given item.
         /// </summary>
         /// <returns>The leaves.</returns>
         /// <param name="self">The items to enumerate.</param>
@@ -90,7 +92,7 @@ namespace SME.AST
 
 
         /// <summary>
-        /// Enumerates all elements in the item, and optionally applies the visitor function
+        /// Enumerates all elements in the item, and optionally applies the visitor function.
         /// </summary>
         /// <param name="self">The item to traverse.</param>
         /// <param name="visitor">The visitor method. Return <c>false</c> to prevent entering this node.</param>
@@ -113,7 +115,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Enumerates all elements in the network, and optionally applies the visitor function
+        /// Enumerates all elements in the network, and optionally applies the visitor function.
         /// </summary>
         /// <param name="network">The network to traverse.</param>
         /// <param name="visitor">The visitor method. Return <c>false</c> to prevent entering this node.</param>
@@ -140,7 +142,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Enumerates all elements in the process, and optionally applies the visitor function
+        /// Enumerates all elements in the process, and optionally applies the visitor function.
         /// </summary>
         /// <param name="proc">The process to traverse.</param>
         /// <param name="visitor">The visitor method. Return <c>false</c> to prevent entering this node.</param>
@@ -215,7 +217,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Enumerates all elements in the bus, and optionally applies the visitor function
+        /// Enumerates all elements in the bus, and optionally applies the visitor function.
         /// </summary>
         /// <param name="bus">The bus to traverse.</param>
         /// <param name="visitor">The visitor method. Return <c>false</c> to prevent entering this node.</param>
@@ -246,7 +248,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Enumerates all elements in the method, and optionally applies the visitor function
+        /// Enumerates all elements in the method, and optionally applies the visitor function.
         /// </summary>
         /// <param name="method">The method to traverse.</param>
         /// <param name="visitor">The visitor method. Return <c>false</c> to prevent entering this node.</param>
@@ -303,7 +305,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Enumerates all elements in the statement, and optionally applies the visitor function
+        /// Enumerates all elements in the statement, and optionally applies the visitor function.
         /// </summary>
         /// <param name="statement">The statement to traverse.</param>
         /// <param name="visitor">The visitor method. Return <c>false</c> to prevent entering this node.</param>
@@ -421,7 +423,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Enumerates all elements in the expression, and optionally applies the visitor function
+        /// Enumerates all elements in the expression, and optionally applies the visitor function.
         /// </summary>
         /// <param name="expression">The expression to traverse.</param>
         /// <param name="visitor">The visitor method. Return <c>false</c> to prevent entering this node.</param>
@@ -567,7 +569,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Replaces one statement with another
+        /// Replaces one statement with another.
         /// </summary>
         /// <param name="self">The statement to replace.</param>
         /// <param name="replacement">The replacement statement.</param>
@@ -656,7 +658,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Performs a replacement, by inserting the replacement expression instead of the current expression
+        /// Performs a replacement, by inserting the replacement expression instead of the current expression.
         /// </summary>
         /// <param name="self">The expression to replace.</param>
         /// <param name="replacement">The expression to replace it with.</param>
@@ -929,8 +931,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Helper method that updates all child expressions or statements
-        /// by setting their parent to the immediate parent
+        /// Helper method that updates all child expressions or statements by setting their parent to the immediate parent.
         /// </summary>
         /// <param name="self">The items to update.</param>
         public static void UpdateParents(this IEnumerable<Statement> self)
@@ -942,8 +943,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Helper method that updates all child expressions or statements
-        /// by setting their parent to the immediate parent
+        /// Helper method that updates all child expressions or statements by setting their parent to the immediate parent.
         /// </summary>
         /// <param name="self">The item to update.</param>
         public static void UpdateParents(this Statement self)
@@ -972,7 +972,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Inserts a statement before the source expression
+        /// Inserts a statement before the source expression.
         /// </summary>
         /// <param name="source">The source expression.</param>
         /// <param name="target">The statement to insert.</param>
@@ -990,7 +990,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Inserts a statement before the source statement
+        /// Inserts a statement before the source statement.
         /// </summary>
         /// <param name="source">The source statement.</param>
         /// <param name="target">The statement to insert.</param>
@@ -1020,7 +1020,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Inserts a statement after the source expression
+        /// Inserts a statement after the source expression.
         /// </summary>
         /// <param name="source">The source expression.</param>
         /// <param name="target">The statement to insert.</param>
@@ -1038,7 +1038,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Inserts a statement after the source statement
+        /// Inserts a statement after the source statement.
         /// </summary>
         /// <param name="source">The source statement.</param>
         /// <param name="target">The statement to insert.</param>

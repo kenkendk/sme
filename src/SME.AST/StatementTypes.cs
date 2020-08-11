@@ -4,7 +4,7 @@ using System.Linq;
 namespace SME.AST
 {
     /// <summary>
-    /// A statement in the method body
+    /// A statement in the method body.
     /// </summary>
     public abstract class Statement : ASTItem
     {
@@ -12,24 +12,24 @@ namespace SME.AST
     }
 
     /// <summary>
-    /// An expression statement
+    /// An expression statement.
     /// </summary>
     public class ExpressionStatement : Statement
     {
         /// <summary>
-        /// The expression inside the statement
+        /// The expression inside the statement.
         /// </summary>
         public Expression Expression;
 
         /// <summary>
-        /// Default constructor
+        /// Default constructor.
         /// </summary>
         public ExpressionStatement()
         {
         }
 
         /// <summary>
-        /// Creates a new statement for the expression
+        /// Creates a new statement for the expression.
         /// </summary>
         /// <param name="expression">The expression to use.</param>
         public ExpressionStatement(Expression expression)
@@ -40,39 +40,39 @@ namespace SME.AST
     }
 
     /// <summary>
-    /// A simple empty statement
+    /// A simple empty statement.
     /// </summary>
     public class EmptyStatement : Statement
     {
     }
 
     /// <summary>
-    /// An If/Else statement
+    /// An If/Else statement.
     /// </summary>
     public class IfElseStatement : Statement
     {
         /// <summary>
-        /// The expression to evaluate
+        /// The expression to evaluate.
         /// </summary>
         public Expression Condition;
         /// <summary>
-        /// The statements to execute if the condition is true
+        /// The statements to execute if the condition is true.
         /// </summary>
         public Statement TrueStatement;
         /// <summary>
-        /// The statements to execute if the condition is false
+        /// The statements to execute if the condition is false.
         /// </summary>
         public Statement FalseStatement;
 
         /// <summary>
-        /// Default constructor
+        /// Default constructor.
         /// </summary>
         public IfElseStatement()
         {
         }
 
         /// <summary>
-        /// Constructs a new <see cref="IfElseStatement"/>
+        /// Constructs a new <see cref="IfElseStatement"/>.
         /// </summary>
         /// <param name="condition">The condition expression.</param>
         /// <param name="trueStatement">The true statement.</param>
@@ -89,29 +89,29 @@ namespace SME.AST
     }
 
     /// <summary>
-    /// A block statement
+    /// A block statement.
     /// </summary>
     public class BlockStatement : Statement
     {
         /// <summary>
-        /// The statements in the block
+        /// The statements in the block.
         /// </summary>
         public Statement[] Statements;
 
         /// <summary>
-        /// The variables defined in the block scope
+        /// The variables defined in the block scope.
         /// </summary>
         public Variable[] Variables;
 
         /// <summary>
-        /// Default constructor
+        /// Default constructor.
         /// </summary>
         public BlockStatement()
         {
         }
 
         /// <summary>
-        /// Constructs a new block statement
+        /// Constructs a new block statement.
         /// </summary>
         /// <param name="statements">The statements in the block.</param>
         /// <param name="variables">The variables used in the block.</param>
@@ -125,34 +125,34 @@ namespace SME.AST
     }
 
     /// <summary>
-    /// A switch statement
+    /// A switch statement.
     /// </summary>
     public class SwitchStatement : Statement
     {
         /// <summary>
-        /// The expression the switch is performed on
+        /// The expression the switch is performed on.
         /// </summary>
         public Expression SwitchExpression;
 
         /// <summary>
-        /// The cases and labels for the statement
+        /// The cases and labels for the statement.
         /// </summary>
         public Tuple<Expression[], Statement[]>[] Cases;
 
         /// <summary>
-        /// States whether or not the SwitchStatement contains a default: case
+        /// States whether or not the SwitchStatement contains a default: case.
         /// </summary>
         public bool HasDefault;
 
         /// <summary>
-        /// Default constructor
+        /// Default constructor.
         /// </summary>
         public SwitchStatement()
         {
         }
 
         /// <summary>
-        /// Constructs a new switch statement
+        /// Constructs a new switch statement.
         /// </summary>
         /// <param name="switchExpression">The expression to switch on.</param>
         /// <param name="cases">The cases in the statement.</param>
@@ -172,24 +172,24 @@ namespace SME.AST
     }
 
     /// <summary>
-    /// A return statement
+    /// A return statement.
     /// </summary>
     public class ReturnStatement : Statement
     {
         /// <summary>
-        /// The expression that should be evaluated to return this
+        /// The expression that should be evaluated to return this.
         /// </summary>
         public Expression ReturnExpression;
 
         /// <summary>
-        /// Default constructor
+        /// Default constructor.
         /// </summary>
         public ReturnStatement()
         {
         }
 
         /// <summary>
-        /// Creates a new return statement
+        /// Creates a new return statement.
         /// </summary>
         /// <param name="expression">The expression to return.</param>
         public ReturnStatement(Expression expression)
@@ -200,16 +200,16 @@ namespace SME.AST
     }
 
     /// <summary>
-    /// A for statement
+    /// A for statement.
     /// </summary>
     public class ForStatement : Statement
     {
         /// <summary>
-        /// The initial value for the loop index
+        /// The initialization expression for the loop index.
         /// </summary>
         public Expression Initializer;
         /// <summary>
-        /// The final value for the loop index
+        /// The final value for the loop index.
         /// </summary>
         public Expression Condition;
         /// <summary>
@@ -217,29 +217,29 @@ namespace SME.AST
         /// </summary>
         public Expression Increment;
         /// <summary>
-        /// The variable used to hold the loop value
+        /// The variable used to hold the loop value.
         /// </summary>
         public Variable LoopIndex;
 
         /// <summary>
-        /// The loop body content
+        /// The loop body content.
         /// </summary>
         public Statement LoopBody;
 
         /// <summary>
-        /// A variable indicating if the for loop has a statically known size
+        /// A variable indicating if the for loop has a statically known size.
         /// </summary>
         public bool HasStaticSize;
 
         /// <summary>
-        /// Default constructor
+        /// Default constructor.
         /// </summary>
         public ForStatement()
         {
         }
 
         /// <summary>
-        /// Creates a new loop statement
+        /// Creates a new loop statement.
         /// </summary>
         /// <param name="initializer">The initial expression.</param>
         /// <param name="condition">The condition expression value.</param>
@@ -261,31 +261,31 @@ namespace SME.AST
     }
 
     /// <summary>
-    /// A break statement
+    /// A break statement.
     /// </summary>
     public class BreakStatement : Statement
     {
     }
 
     /// <summary>
-    /// A goto statement
+    /// A goto statement.
     /// </summary>
     public class GotoStatement : Statement
     {
         /// <summary>
-        /// The target label
+        /// The target label.
         /// </summary>
         public string Label;
 
         /// <summary>
-        /// Default constructor
+        /// Default constructor.
         /// </summary>
         public GotoStatement()
         {
         }
 
         /// <summary>
-        /// Creates a new goto statement
+        /// Creates a new goto statement.
         /// </summary>
         /// <param name="label">The label target.</param>
         public GotoStatement(string label)
@@ -294,23 +294,23 @@ namespace SME.AST
     }
 
     /// <summary>
-    /// A label statement
+    /// A label statement.
     /// </summary>
     public class LabelStatement : Statement
     {
         /// <summary>
-        /// The label
+        /// The label.
         /// </summary>
         public string Label;
     }
 
     /// <summary>
-    /// A statement used to output a comment
+    /// A statement used to output a comment.
     /// </summary>
     public class CommentStatement : Statement
     {
         /// <summary>
-        /// The comment message
+        /// The comment message.
         /// </summary>
         public string Message;
 
@@ -330,17 +330,17 @@ namespace SME.AST
     }
 
     /// <summary>
-    /// A while statement
+    /// A while statement.
     /// </summary>
     public class WhileStatement : Statement
     {
         /// <summary>
-        /// The while condition expression
+        /// The while condition expression.
         /// </summary>
         public Expression Condition;
 
         /// <summary>
-        /// The while loop body statement
+        /// The while loop body statement.
         /// </summary>
         public Statement Body;
 

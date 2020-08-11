@@ -7,11 +7,11 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace SME.AST
 {
-    // This partial part deals with statements
+    // This partial part deals with statements.
     public partial class ParseProcesses
     {
         /// <summary>
-        /// Processes a single statement from the decompiler and returns an AST entry for it
+        /// Processes a single statement from the decompiler and returns an AST entry for it.
         /// </summary>
         /// <param name="network">The top-level network.</param>
         /// <param name="proc">The process where the method is located.</param>
@@ -37,15 +37,10 @@ namespace SME.AST
                 return Decompile(network, proc, method, statement as BreakStatementSyntax);
             else if (statement is CheckedStatementSyntax)
             {
+                // TODO håndter anderledes?
                 //Console.WriteLine("Warning: \"checked\" is not supported and will be ignored for statement: {0}", statement);
                 return Decompile(network, proc, method, (statement as CheckedStatementSyntax).Block);
             }
-            // TODO handled in CheckedStatementSyntax
-            //else if (statement is ICSharpCode.Decompiler.CSharp.Syntax.UncheckedStatement)
-            //    return Decompile(network, proc, method, (statement as ICSharpCode.Decompiler.CSharp.Syntax.UncheckedStatement).Body);
-            // TODO idk
-            //else if (statement.IsNull)
-            //    return new EmptyStatement() { Parent = method };
             else if (statement is GotoStatementSyntax)
                 return Decompile(network, proc, method, statement as GotoStatementSyntax);
             else if (statement is LabeledStatementSyntax)
@@ -59,7 +54,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Processes a single statement from the decompiler and returns an AST entry for it
+        /// Processes a single expression statement from the decompiler and returns an AST entry for it.
         /// </summary>
         /// <param name="network">The top-level network.</param>
         /// <param name="proc">The process where the method is located.</param>
@@ -80,7 +75,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Processes a single statement from the decompiler and returns an AST entry for it
+        /// Processes a single if statement from the decompiler and returns an AST entry for it.
         /// </summary>
         /// <param name="network">The top-level network.</param>
         /// <param name="proc">The process where the method is located.</param>
@@ -103,7 +98,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Processes a single statement from the decompiler and returns an AST entry for it
+        /// Processes a single block statement from the decompiler and returns an AST entry for it.
         /// </summary>
         /// <param name="network">The top-level network.</param>
         /// <param name="proc">The process where the method is located.</param>
@@ -133,7 +128,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Processes a single variable declaration statement from the decompiler and returns an AST entry for it
+        /// Processes a single local variable declaration statement from the decompiler and returns an AST entry for it.
         /// </summary>
         /// <param name="network">The top-level network.</param>
         /// <param name="proc">The process where the method is located.</param>
@@ -222,7 +217,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Processes a single statement from the decompiler and returns an AST entry for it
+        /// Processes a single switch statement from the decompiler and returns an AST entry for it.
         /// </summary>
         /// <param name="network">The top-level network.</param>
         /// <param name="proc">The process where the method is located.</param>
@@ -261,7 +256,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Processes a single statement from the decompiler and returns an AST entry for it
+        /// Processes a single return statement from the decompiler and returns an AST entry for it.
         /// </summary>
         /// <param name="network">The top-level network.</param>
         /// <param name="proc">The process where the method is located.</param>
@@ -280,7 +275,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Finds the length of an array or a primitive value for use in loop bounds
+        /// Finds the length of an array or a primitive value for use in loop bounds.
         /// </summary>
         /// <returns>The array length or primitive.</returns>
         /// <param name="network">The top-level network.</param>
@@ -432,7 +427,7 @@ namespace SME.AST
             }
         }
         /// <summary>
-        /// Processes a single statement from the decompiler and returns an AST entry for it
+        /// Processes a single break statement from the decompiler and returns an AST entry for it.
         /// </summary>
         /// <param name="network">The top-level network.</param>
         /// <param name="proc">The process where the method is located.</param>
@@ -447,7 +442,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Processes a single statement from the decompiler and returns an AST entry for it
+        /// Processes a single goto statement from the decompiler and returns an AST entry for it.
         /// </summary>
         /// <param name="network">The top-level network.</param>
         /// <param name="proc">The process where the method is located.</param>
@@ -463,7 +458,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Processes a single statement from the decompiler and returns an AST entry for it
+        /// Processes a single labeled statement from the decompiler and returns an AST entry for it.
         /// </summary>
         /// <param name="network">The top-level network.</param>
         /// <param name="proc">The process where the method is located.</param>
@@ -479,7 +474,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Processes a single statement from the decompiler and returns an AST entry for it
+        /// Processes a single while statement from the decompiler and returns an AST entry for it.
         /// </summary>
         /// <param name="network">The top-level network.</param>
         /// <param name="proc">The process where the method is located.</param>
@@ -501,7 +496,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Processes a single statement from the decompiler and returns an AST entry for it
+        /// Processes a single for statement from the decompiler and returns an AST entry for it.
         /// </summary>
         /// <param name="network">The top-level network.</param>
         /// <param name="proc">The process where the method is located.</param>

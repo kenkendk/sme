@@ -7,11 +7,11 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace SME.AST
 {
-    // This partial part deals with the IL side of the parsing
+    // This partial part deals with the IL side of the parsing.
     public partial class ParseProcesses
     {
         /// <summary>
-        /// Processes a single method and extracts all the statements in it
+        /// Processes a single method and extracts all the statements in it.
         /// </summary>
         /// <param name="network">The top-level network.</param>
         /// <param name="proc">The process where the method is located.</param>
@@ -67,7 +67,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Decompile the specified process, using the specified entry method
+        /// Decompile the specified process, using the specified entry method.
         /// </summary>
         /// <param name="network">The top-level network.</param>
         /// <param name="proc">The process where the method is located.</param>
@@ -151,7 +151,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Decompiles the specified method
+        /// Decompiles the specified method.
         /// </summary>
         /// <param name="network">The top-level network.</param>
         /// <param name="proc">The process where the method is located.</param>

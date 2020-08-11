@@ -8,8 +8,15 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace SME.AST.Transform
 {
 
+    /// <summary>
+    /// Exception indicating that there is a while statement, which did not contain an await statement.
+    /// </summary>
     public class WhileWithoutAwaitException : Exception
     {
+        /// <summary>
+        /// Constructs a new instance of the while without await exception, with the given message.
+        /// </summary>
+        /// <param name="message">The given message.</param>
         public WhileWithoutAwaitException(string message) : base(message) { }
     }
 
@@ -18,9 +25,15 @@ namespace SME.AST.Transform
     /// </summary>
     public class BuildStateMachine : IASTTransform
     {
-
+        /// <summary>
+        /// The compilation associated with the network, which the process belongs to.
+        /// </summary>
         private Compilation m_compilation;
 
+        /// <summary>
+        /// Constructs a new instance of the build state machine transformation.
+        /// </summary>
+        /// <param name="m_compilation">The compilation associated with the network.</param>
         public BuildStateMachine(Compilation m_compilation)
         {
             this.m_compilation = m_compilation;
@@ -29,7 +42,7 @@ namespace SME.AST.Transform
         /// <summary>
         /// Checks if all branches contains an <see cref="AwaitExpression"/>. Used by while loops.
         /// <summary>
-        /// <param name="statement">The statement to be checked</param>
+        /// <param name="statement">The statement to be checked.</param>
         private bool AllBranchesHasAwait(Statement statement)
         {
             switch (statement)
@@ -44,17 +57,17 @@ namespace SME.AST.Transform
         }
 
         /// <summary>
-        /// Represents a Goto statement used to build the statemachine
+        /// Represents a Goto statement used to build the statemachine.
         /// </summary>
         private class CaseGotoStatement : GotoStatement
         {
             /// <summary>
-            /// The target label
+            /// The target label.
             /// </summary>
             public int CaseLabel;
 
             /// <summary>
-            /// A flag indicating if the statement is a fall-through request
+            /// A flag indicating if the statement is a fall-through request.
             /// </summary>
             public readonly bool FallThrough;
 
@@ -62,12 +75,16 @@ namespace SME.AST.Transform
             /// Initializes a new instance of the <see cref="T:SME.AST.Transform.BuildStateMachine.CaseGotoStatement"/> class.
             /// </summary>
             /// <param name="label">The target label.</param>
+            /// <param name="fallthrough">Flag indicating if this statement is a fall-through request.</param>
             public CaseGotoStatement(int label, bool fallthrough)
             {
                 CaseLabel = label;
                 FallThrough = fallthrough;
             }
 
+            /// <summary>
+            /// Defualt constructor.
+            /// </summary>
             public CaseGotoStatement()
             {
                 CaseLabel = -1;
@@ -76,7 +93,7 @@ namespace SME.AST.Transform
         }
 
         /// <summary>
-        /// Splits a sequence of statements into a set of cases
+        /// Splits a sequence of statements into a set of cases.
         /// </summary>
         /// <returns>The number of new fragments.</returns>
         /// <param name="statement">The statement(s) to split.</param>
@@ -115,7 +132,7 @@ namespace SME.AST.Transform
         }
 
         /// <summary>
-        /// Examines a statement and determines if all branches end with a control flow statement
+        /// Examines a statement and determines if all branches end with a control flow statement.
         /// </summary>
         /// <returns><c>true</c>, if control flow was handled, <c>false</c> otherwise.</returns>
         /// <param name="statement">The statement to examine.</param>
@@ -133,7 +150,7 @@ namespace SME.AST.Transform
         }
 
         /// <summary>
-        /// Splits a <see cref="SwitchStatement"/> into a set of cases
+        /// Splits a <see cref="SwitchStatement"/> into a set of cases.
         /// </summary>
         /// <returns>The number of new fragments.</returns>
         /// <param name="statement">The statement(s) to split.</param>
@@ -224,7 +241,7 @@ namespace SME.AST.Transform
         }
 
         /// <summary>
-        /// Splits a <see cref="IfElseStatement"/> into a set of cases
+        /// Splits a <see cref="IfElseStatement"/> into a set of cases.
         /// </summary>
         /// <returns>The number of new fragments.</returns>
         /// <param name="statement">The statement(s) to split.</param>
@@ -279,7 +296,7 @@ namespace SME.AST.Transform
         }
 
         /// <summary>
-        /// Splits a <see cref="WhileStatement"/> into a set of cases
+        /// Splits a <see cref="WhileStatement"/> into a set of cases.
         /// </summary>
         /// <returns>The number of new fragments.</returns>
         /// <param name="statement">The statement(s) to split.</param>
@@ -323,7 +340,7 @@ namespace SME.AST.Transform
         }
 
         /// <summary>
-        /// Splits a <see cref="ForStatement"/> into a set of cases
+        /// Splits a <see cref="ForStatement"/> into a set of cases.
         /// </summary>
         /// <returns>The number of new fragments.</returns>
         /// <param name="statement">The statement(s) to split.</param>
@@ -371,12 +388,12 @@ namespace SME.AST.Transform
         }
 
         /// <summary>
-        /// Wraps the currently collected instructions into a list of fragments
+        /// Wraps the currently collected instructions into a list of fragments.
         /// </summary>
         /// <param name="collected">The currently collected statements.</param>
         /// <param name="fragments">The currently collected fragments.</param>
-        /// <param name="gotoTarget">The goto target, or -1 if no target is injected</param>
-        /// <param name="fallThrough"><c>true</c> if the goto is a fallthrough element</param>
+        /// <param name="gotoTarget">The goto target, or -1 if no target is injected.</param>
+        /// <param name="fallThrough"><c>true</c> if the goto is a fallthrough element.</param>
         private void EndFragment(List<Statement> collected, List<List<Statement>> fragments, int gotoTarget, bool fallThrough)
         {
             if (collected.Count > 0)
@@ -393,10 +410,10 @@ namespace SME.AST.Transform
 
 
         /// <summary>
-        /// Splits a sequence of statements into a set of cases
+        /// Splits a sequence of statements into a set of cases.
         /// </summary>
         /// <returns>The number of new fragments.</returns>
-        /// <param name="statements">The statments to split</param>
+        /// <param name="statements">The statments to split.</param>
         /// <param name="collected">The currently collected statements.</param>
         /// <param name="fragments">The currently collected fragments.</param>
         private int SplitStatement(IEnumerable<Statement> statements, List<Statement> collected, List<List<Statement>> fragments)
@@ -419,7 +436,7 @@ namespace SME.AST.Transform
         }
 
         /// <summary>
-        /// Combines zero or more statements into a new statement
+        /// Combines zero or more statements into a new statement.
         /// </summary>
         /// <returns>The block statement.</returns>
         /// <param name="statements">The statements to group.</param>
@@ -453,7 +470,7 @@ namespace SME.AST.Transform
         }
 
         /// <summary>
-        /// Create a list of statements, where each case is guarded by an if statement
+        /// Create a list of statements, where each case is guarded by an if statement.
         /// </summary>
         /// <returns>The fragments with label guards.</returns>
         /// <param name="fragments">The input fragments.</param>
@@ -481,7 +498,7 @@ namespace SME.AST.Transform
         }
 
         /// <summary>
-        /// Wraps the cases in a switch statement
+        /// Wraps the cases in a switch statement.
         /// </summary>
         /// <returns>The fragments with label guards.</returns>
         /// <param name="fragments">The input fragments.</param>
@@ -506,7 +523,7 @@ namespace SME.AST.Transform
         }
 
         /// <summary>
-        /// Removes all <see cref="CaseGotoStatement"/>'s and inserts appropriate variables updates instead
+        /// Removes all <see cref="CaseGotoStatement"/>'s and inserts appropriate variables updates instead.
         /// </summary>
         /// <returns>The statements without goto-statemtns.</returns>
         /// <param name="statement">The statements to update.</param>
@@ -533,6 +550,13 @@ namespace SME.AST.Transform
             return statement;
         }
 
+        /// <summary>
+        /// Recursively inlines states, instead of goto, which fallthrough to a state earlier in the state machine, until either a non-falltrough or later than starting state is encountered.
+        /// </summary>
+        /// <param name="fragments">The fragments collected so far.</param>
+        /// <param name="statement">The current statement to check.</param>
+        /// <param name="start">The starting state number.</param>
+        /// <param name="current">The current state number.</param>
         private Statement ReplaceBackGotoStatements(List<List<Statement>> fragments, Statement statement, int start, int current)
         {
             switch (statement)
@@ -583,7 +607,7 @@ namespace SME.AST.Transform
 
 
         /// <summary>
-        /// Applies the transformation
+        /// Applies the transformation.
         /// </summary>
         /// <returns>The transformed item.</returns>
         /// <param name="item">The item to visit.</param>

@@ -1,10 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace SME.AST
 {
+    /// <summary>
+    /// Static helper class containing methods for converting methods into JSON.
+    /// </summary>
     public static class JsonHelpers
     {
+        /// <summary>
+        /// Static method for converting a method to JSON format.
+        /// <summary>
+        /// <param name="method">The method to convert.</param>
         public static string ToJson(this Method method)
         {
             using (var ms = new System.IO.MemoryStream())
@@ -14,6 +20,11 @@ namespace SME.AST
             }
         }
 
+        /// <summary>
+        /// Static method for converting and writing a method to a given stream.
+        /// </summary>
+        /// <param name="method">The method to convert.</param>
+        /// <param name="target">The stream to write to.</param>
         public static void ToJson(this Method method, System.IO.Stream target)
         {
             using (var sw = new System.IO.StreamWriter(target, System.Text.Encoding.UTF8, 4 * 1024, true))

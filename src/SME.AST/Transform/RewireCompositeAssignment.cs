@@ -1,17 +1,15 @@
 ﻿using System;
 using Microsoft.CodeAnalysis.CSharp;
-using SME.AST;
 
 namespace SME.AST.Transform
 {
     /// <summary>
-    /// This transformation unrolls assignments using a composite assignment,
-    /// such as &quot;a += 4&quot;
+    /// This transformation unrolls assignments using a composite assignment, such as &quot;a += 4&quot;.
     /// </summary>
     public class RewireCompositeAssignment : IASTTransform
     {
         /// <summary>
-        /// Applies the transformation
+        /// Applies the transformation.
         /// </summary>
         /// <returns>The transformed item.</returns>
         /// <param name="el">The item to visit.</param>

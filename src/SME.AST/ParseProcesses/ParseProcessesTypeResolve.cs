@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-//using Mono.Cecil;
-//using Mono.Cecil.Rocks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -13,22 +11,24 @@ namespace SME.AST
     public partial class ParseProcesses
     {
         /// <summary>
-        /// Cache with typenames
+        /// Cache with type names
         /// </summary>
         protected Dictionary<Type, ITypeSymbol> m_typelookup = new Dictionary<Type, ITypeSymbol>();
         /// <summary>
-        /// Cache with assemblies
+        /// Compilation the process belongs to.
         /// </summary>
-        //protected Dictionary<string, AssemblyDefinition> m_assemblies = new Dictionary<string, AssemblyDefinition>();
-        // TODO compilation is used for looking up types...
         public static Compilation m_compilation;
-
-        //protected SemanticModel m_semantic;
+        /// <summary>
+        /// Collection of syntax trees from the current compilation.
+        /// </summary>
         protected IEnumerable<SyntaxTree> m_syntaxtrees;
+        /// <summary>
+        /// Collection of semantic models, which are derived from the syntax trees.
+        /// </summary>
         protected IEnumerable<SemanticModel> m_semantics;
 
         /// <summary>
-        /// Examines the given expression and returns the resulting output type from the expression
+        /// Examines the given expression and returns the resulting output type from the expression.
         /// </summary>
         /// <returns>The expression type.</returns>
         /// <param name="network">The top-level network.</param>
@@ -154,48 +154,35 @@ namespace SME.AST
                 if (m != null)
                     return m_semantics.Select(x => x.GetTypeInfo(m).Type).FirstOrDefault(x => x != null);
 
-                // Catch common translations
-                // TODO jeg håber det bare var en decompile ting :)
-                /*if (mt != null && (expression as InvocationExpressionSyntax).ArgumentList.Arguments.Count == 1)
-                {
-                    if (mt.TryGetInferredMemberName() == "op_Implicit" || mt.TryGetInferredMemberName() == "op_Explicit")
-                    {
-                        var mtm = Decompile(network, proc, method, statement, mt);
-                        return ResolveExpressionType(network, proc, method, statement, new ICSharpCode.Decompiler.CSharp.Syntax.CastExpression(ICSharpCode.Decompiler.CSharp.Syntax.AstType.Create(mtm.SourceResultType.FullName), si.ArgumentList.Arguments.First().Clone()));
-                    }
-                    else if (mt.TryGetInferredMemberName() == "op_Increment")
-                        return ResolveExpressionType(network, proc, method, statement, new ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorExpression(ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorType.Increment, si.Arguments.First().Clone()));
-                    else if (mt.TryGetInferredMemberName() == "op_Decrement")
-                        return ResolveExpressionType(network, proc, method, statement, new ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorExpression(ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorType.Decrement, si.Arguments.First().Clone()));
-                }*/
-
                 return ResolveExpressionType(network, proc, method, statement, (expression as InvocationExpressionSyntax).Expression);
             }
             else if (expression is ParenthesizedExpressionSyntax)
                 return ResolveExpressionType(network, proc, method, statement, (expression as ParenthesizedExpressionSyntax).Expression);
-            // TODO den er nu dækket af literalexpressionsyntax
-            //else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.NullReferenceExpression)
-            //    return null;
             else if (expression is ArrayCreationExpressionSyntax)
                 return ResolveExpressionType(network, proc, method, statement, (expression as ArrayCreationExpressionSyntax).Initializer.DescendantNodes().First() as ExpressionSyntax);
             else if (expression is CheckedExpressionSyntax)
                 return ResolveExpressionType(network, proc, method, statement, (expression as CheckedExpressionSyntax).Expression);
-            // TODO den er nu dækket af CheckedExpressionSyntax
-            //else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.UncheckedExpression)
-            //    return ResolveExpressionType(network, proc, method, statement, (expression as ICSharpCode.Decompiler.CSharp.Syntax.UncheckedExpression).Expression);
-            // TODO idk?
-            //else if (expression == ICSharpCode.Decompiler.CSharp.Syntax.Expression.Null)
-            //    return null;
             else
                 throw new Exception(string.Format("Unsupported expression: {0} ({1})", expression, expression.GetType().FullName));
         }
 
+        /// TODO skal den her ikke rykkes hen i helpers?
+        /// <summary>
+        /// Loads the generic types of the given type.
+        /// </summary>
+        /// <param name="t">The type to find generics in.</param>
         protected virtual IEnumerable<ITypeSymbol> LoadGenericTypes(Type t)
         {
             foreach (var p in t.GenericTypeArguments)
                 yield return LoadType(p);
         }
 
+        /// TODO også hen i helpers?
+        /// <summary>
+        /// Loads the generic type associated with the given generic type parameter.
+        /// </summary>
+        /// <param name="t">The loaded instance of the type.</param>
+        /// <param name="tps">The type parameter to load the type of.</param>
         protected virtual ITypeSymbol LoadGenericType(Type t, ITypeParameterSymbol tps)
         {
             foreach (var p in t.GetGenericArguments())
@@ -205,7 +192,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Loads the specified reflection Type and returns the equivalent CeCil TypeDefinition
+        /// Loads the specified reflection Type and returns the equivalent Microsoft.CodeAnalysis TypeDefinition.
         /// </summary>
         /// <returns>The loaded type.</returns>
         /// <param name="t">The type to load.</param>
@@ -214,15 +201,6 @@ namespace SME.AST
             if (m_typelookup.ContainsKey(t))
                 return m_typelookup[t];
 
-            /*AssemblyDefinition asm;
-            m_assemblies.TryGetValue(t.Assembly.Location, out asm);
-            if (asm == null)
-                asm = m_assemblies[t.Assembly.Location] = AssemblyDefinition.ReadAssembly(t.Assembly.Location);
-
-            if (asm == null)
-                return null;
-
-            var res = LoadTypeByName(t.FullName, asm.Modules);*/
             var res = LoadTypeByName(t.FullName);
 
             if (res == null && t.IsGenericType)
@@ -250,65 +228,17 @@ namespace SME.AST
             return m_typelookup[t] = res;
         }
 
+        /// <summary>
+        /// Loads the type corresponding to the given name.
+        /// </summary>
+        /// <param name="name">The name to lookup</param>
         protected virtual ITypeSymbol LoadTypeByName(string name)
         {
             return m_compilation.GetTypeByMetadataName(name);
         }
 
-        /*
         /// <summary>
-        /// Loads the specified reflection Type and returns the equivalent CeCil TypeDefinition
-        /// </summary>
-        /// <returns>The loaded type.</returns>
-        /// <param name="name">The full name of the type to load.</param>
-        /// <param name="modules">The modules to look in</param>
-        protected virtual TypeReference LoadTypeByName(string name, params ModuleDefinition[] modules)
-        {
-            return LoadTypeByName(name, modules.AsEnumerable());
-        }
-
-        /// <summary>
-        /// Loads the specified reflection Type and returns the equivalent CeCil TypeDefinition
-        /// </summary>
-        /// <returns>The loaded type.</returns>
-        /// <param name="name">The full name of the type to load.</param>
-        /// <param name="modules">The modules to look in</param>
-        protected virtual TypeReference LoadTypeByName(string name, IEnumerable<ModuleDefinition> modules)
-        {
-            var parts = name.Split('.', '+', '/').Reverse().ToArray();
-            foreach (var e in modules.SelectMany(m => m.GetTypes()))
-            {
-                var c = e;
-                var lastns = string.Empty;
-                var failed = false;
-                for (var i = 0; i < parts.Length - 1; i++)
-                {
-                    if (c != null && c.Name == parts[i])
-                    {
-                        lastns = c.Namespace;
-                        c = c.DeclaringType;
-                    }
-                    else
-                    {
-                        if (c == null && lastns == string.Join(".", parts.Skip(i).Reverse()))
-                            return e;
-
-                        failed = true;
-                        break;
-                    }
-                }
-
-                if (!failed && c == null && lastns == parts[parts.Length - 1])
-                    return e;
-
-            }
-
-            return null;
-        }
-        */
-
-        /// <summary>
-        /// Loads the specified AstType and returns the equivalent CeCil TypeDefinition
+        /// Loads the specified AstType and returns the equivalent Microsoft.CodeAnalysis TypeDefinition.
         /// </summary>
         /// <returns>The loaded type.</returns>
         /// <param name="t">The type to load.</param>
@@ -338,81 +268,6 @@ namespace SME.AST
                 throw new Exception($"Failed to load {t.ToString()}");
             else
                 return res;
-
-            /*
-            if (t is ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveType)
-                switch (((ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveType)t).KnownTypeCode)
-                {
-                    case ICSharpCode.Decompiler.TypeSystem.KnownTypeCode.Boolean:
-                        return LoadType(typeof(bool));
-                    case ICSharpCode.Decompiler.TypeSystem.KnownTypeCode.Byte:
-                        return LoadType(typeof(byte));
-                    case ICSharpCode.Decompiler.TypeSystem.KnownTypeCode.SByte:
-                        return LoadType(typeof(sbyte));
-                    case ICSharpCode.Decompiler.TypeSystem.KnownTypeCode.Int16:
-                        return LoadType(typeof(short));
-                    case ICSharpCode.Decompiler.TypeSystem.KnownTypeCode.UInt16:
-                        return LoadType(typeof(ushort));
-                    case ICSharpCode.Decompiler.TypeSystem.KnownTypeCode.Int32:
-                        return LoadType(typeof(int));
-                    case ICSharpCode.Decompiler.TypeSystem.KnownTypeCode.UInt32:
-                        return LoadType(typeof(uint));
-                    case ICSharpCode.Decompiler.TypeSystem.KnownTypeCode.Int64:
-                        return LoadType(typeof(long));
-                    case ICSharpCode.Decompiler.TypeSystem.KnownTypeCode.UInt64:
-                        return LoadType(typeof(ulong));
-                    case ICSharpCode.Decompiler.TypeSystem.KnownTypeCode.Single:
-                        return LoadType(typeof(float));
-                    case ICSharpCode.Decompiler.TypeSystem.KnownTypeCode.Double:
-                        return LoadType(typeof(double));
-                }
-
-            if (t is ICSharpCode.Decompiler.CSharp.Syntax.SimpleType)
-            {
-                var st = t as ICSharpCode.Decompiler.CSharp.Syntax.SimpleType;
-                var typename = st.Identifier;
-
-                var t0 = typeof(int).Assembly.GetType("System." + typename);
-                if (t0 != null)
-                    return LoadType(t0);
-                if (sourcemethod != null)
-                {
-                    var t1 = LoadTypeByName(typename, sourcemethod.SourceMethod.Module);
-                    if (t1 != null)
-                        return t1;
-                    t1 = LoadTypeByName(sourcemethod.SourceMethod.DeclaringType.FullName + "." + typename, sourcemethod.SourceMethod.Module);
-                    if (t1 != null)
-                        return t1;
-                    t1 = LoadTypeByName(sourcemethod.SourceMethod.DeclaringType.Namespace + "." + typename, sourcemethod.SourceMethod.Module);
-                    if (t1 != null)
-                        return t1;
-
-                    if (sourcemethod.Parent as Process != null)
-                    {
-                        // In some cases the namespace is empty
-                        t1 = LoadTypeByName((sourcemethod.Parent as Process).SourceType.Namespace + "." + typename, sourcemethod.SourceMethod.Module);
-                        if (t1 != null)
-                            return t1;
-                    }
-                }
-            }
-
-            if (t is ICSharpCode.Decompiler.CSharp.Syntax.MemberType)
-            {
-                var mt = t as ICSharpCode.Decompiler.CSharp.Syntax.MemberType;
-                var t0 = LoadTypeByName(mt.ToString(), sourcemethod.SourceMethod.Module);
-
-                if (t0 != null)
-                    return t0;
-
-                t0 = LoadTypeByName(sourcemethod.SourceMethod.DeclaringType.Namespace + "." + mt.ToString(), sourcemethod.SourceMethod.Module);
-                if (t0 != null)
-                    return t0;
-            }
-
-            throw new Exception($"Failed to load {t.ToString()}"); */
         }
-
-
     }
 }

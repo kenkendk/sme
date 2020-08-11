@@ -1,23 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using SME.AST;
 
 namespace SME.AST.Transform
 {
     /// <summary>
-    /// Static container for performing multiple AST transformations on a network
+    /// Static container for performing multiple AST transformations on a network.
     /// </summary>
     public static class Apply
     {
         /// <summary>
-        /// Performs all transformations on a the given network
+        /// Performs all transformations on a the given network.
         /// </summary>
         /// <param name="network">The network to transform.</param>
-        /// <param name="directapply">A sequence of visitor classes that are applied without restarting the transformation. This can be used to add metdata or control logic before the actual transformations</param>
-        /// <param name="preapply">Method that returns a sequence of transformations to perform before the main transformations</param>
-        /// <param name="apply">Method that returns a sequence of transformations to perform</param>
-        /// <param name="preapply">Method that returns a sequence of transformations to perform after the main transformations</param>
+        /// <param name="directapply">A sequence of visitor classes that are applied without restarting the transformation. This can be used to add metdata or control logic before the actual transformations.</param>
+        /// <param name="preapply">Method that returns a sequence of transformations to perform before the main transformations.</param>
+        /// <param name="apply">Method that returns a sequence of transformations to perform.</param>
+        /// <param name="preapply">Method that returns a sequence of transformations to perform after the main transformations.</param>
         public static void Transform(
             this AST.Network network,
             IEnumerable<IASTTransform> directapply = null,
@@ -50,6 +49,11 @@ namespace SME.AST.Transform
                 RepeatedApply(postapply(m), () => m.All());
         }
 
+        /// <summary>
+        /// Keeps applying the given transformations, until the transformation does not modify the given AST items.
+        /// </summary>
+        /// <param name="transforms">The given transformations.</param>
+        /// <param name="it">The given AST items.</param>
         private static void RepeatedApply(IASTTransform[] transforms, Func<IEnumerable<ASTItem>> it)
         {
             var repeat = true;

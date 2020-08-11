@@ -1,10 +1,9 @@
 ﻿using System;
-using SME.AST;
 
 namespace SME.AST.Transform
 {
     /// <summary>
-    /// Removes double cast expressions
+    /// Removes double cast expressions.
     /// </summary>
     public class RemoveDoubleCast : IASTTransform
     {

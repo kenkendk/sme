@@ -1,16 +1,16 @@
 ﻿using System;
-using SME.AST;
 using Microsoft.CodeAnalysis.CSharp;
 
 namespace SME.AST.Transform
 {
+    /// TODO Det er vel ikke et tilfælde med compiler?
     /// <summary>
     /// Remove self assignments, such as &quot;x = x&quot;, which can be emitted by the C# compiler.
     /// </summary>
     public class RemoveSelfAssignments : IASTTransform
     {
         /// <summary>
-        /// Applies the transformation
+        /// Applies the transformation.
         /// </summary>
         /// <returns>The transformed item.</returns>
         /// <param name="item">The item to visit.</param>

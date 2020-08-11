@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace SME.AST.Transform
 {
     /// <summary>
-    /// Renames duplicate variables names in a method
+    /// Renames duplicate variables names in a method.
     /// </summary>
     public class RenameDuplicateVariables : IASTTransform
     {
@@ -34,7 +34,6 @@ namespace SME.AST.Transform
 
                 usednames[v.Name] = string.Empty;
             }
-
 
             return mt;
         }

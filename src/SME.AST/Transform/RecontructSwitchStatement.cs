@@ -6,17 +6,17 @@ using Microsoft.CodeAnalysis.CSharp;
 namespace SME.AST.Transform
 {
     /// <summary>
-    /// Rebuilds switch statements that are decomposed into GOTO statements
+    /// Rebuilds switch statements that are decomposed into GOTO statements.
     /// </summary>
     public class RecontructSwitchStatement : IASTTransform
     {
         /// <summary>
-        /// Lookup table of visited statements to speed up the lookup
+        /// Lookup table of visited statements to speed up the lookup.
         /// </summary>
         private HashSet<AST.SwitchStatement> m_visited = new HashSet<SwitchStatement>();
 
         /// <summary>
-        /// Applies the transformation
+        /// Applies the transformation.
         /// </summary>
         /// <returns>The transformed item.</returns>
         /// <param name="item">The item to visit.</param>

@@ -4,12 +4,12 @@ using System.Linq;
 namespace SME.AST.Transform
 {
     /// <summary>
-    /// Transforms a <see cref="ForStatement"/> to a <see cref="WhileStatement"/>
+    /// Transforms a <see cref="ForStatement"/> to a <see cref="WhileStatement"/>.
     /// </summary>
     public class ForLoopToWhile : IASTTransform
     {
         /// <summary>
-        /// Transforms a <see cref="ForStatement"/> to a <see cref="WhileStatement"/>
+        /// Transforms a <see cref="ForStatement"/> to a <see cref="WhileStatement"/>.
         /// </summary>
         /// <returns>The input item or a newly created <see cref="WhileStatement"/>.</returns>
         /// <param name="item">The item to transform.</param>

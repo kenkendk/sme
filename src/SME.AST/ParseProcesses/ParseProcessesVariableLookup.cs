@@ -115,12 +115,14 @@ namespace SME.AST
                     }
                     else if (ec is ThisExpressionSyntax)
                     {
+                        // TODO prøv at skriv et eksempel med den her
                         //parts.Add("this");
                         ec = null;
                         break;
                     }
                     else if (ec is BaseExpressionSyntax)
                     {
+                        // TODO prøv at skriv et eksempel med den her
                         //parts.Add("base");
                         ec = null;
                         break;
@@ -131,22 +133,17 @@ namespace SME.AST
                         ec = null;
                         break;
                     }
-                    else if (ec is TypeSyntax) // ICSharpCode.Decompiler.CSharp.Syntax.TypeReferenceExpression)
+                    else if (ec is TypeSyntax)
                     {
-                        //TypeDefinition dc = null;
                         ISymbol dc = method?.MSCAMethod.LoadSymbol(m_semantics) ?? proc?.MSCAType;
-                        /*if (method != null)
-                            dc = method.MSCAMethod.LoadSymbol(m_semantics);
-                            //dc = m_semantics.Select(x => x.GetDeclaredSymbol(method.MSCAMethod)).Where(x => x != null).First();
-                        else if (proc != null)
-                            dc = proc.MSCAType;*/
-
+                        
                         var ecs = ec.ToString();
 
                         if (dc != null)
                         {
                             if (ecs == dc.ToDisplayString() || ecs == dc.Name)
                             {
+                                // TODO tjek om den her kan rammes.
                                 ec = null;
                                 //parts.Add("this");
                                 break;
@@ -165,7 +162,7 @@ namespace SME.AST
                                 bt = LoadTypeByName(dc.ToDisplayString() + "." + ecs);
                             if (bt == null)
                                 bt = LoadTypeByName(dc.ContainingNamespace.ToDisplayString() + "." + ecs);
-                            // In some cases dc.Namespace is empty ...
+                            // TODO In some cases dc.Namespace is empty ...
                             if (bt == null && proc != null && proc.SourceType != null)
                                 bt = LoadTypeByName(proc.SourceType.Namespace + "." + ecs);
 
@@ -203,9 +200,9 @@ namespace SME.AST
                                     };
                                 }
 
+                                // TODO hvorfor er den her udkommenteret?
                                 //parts.AddRange(bt.FullName.Split('.').Reverse());
                             }
-
 
                             break;
                         }
@@ -249,6 +246,7 @@ namespace SME.AST
 
                     if (current is MethodState || (isIsFirst && current == null))
                     {
+                        // TODO hvorfor er den her udkommenteret?
                         //if (method.LocalRenames.ContainsKey(el))
                         //    el = method.LocalRenames[el];
 
@@ -410,14 +408,14 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Registers a temporary variable for use within the method
+        /// Registers a temporary variable for use within the method.
         /// </summary>
         /// <returns>The temporary variable.</returns>
         /// <param name="network">The top-level network.</param>
         /// <param name="proc">The process where the method is located.</param>
         /// <param name="method">The method to create the variable in.</param>
         /// <param name="vartype">The data type of the variable.</param>
-        /// <param name="source">The source of the variable</param>
+        /// <param name="source">The source of the variable.</param>
         protected virtual Variable RegisterTemporaryVariable(NetworkState network, ProcessState proc, MethodState method, ITypeSymbol vartype, object source)
         {
             var varname = "tmpvar_" + (network.VariableCount++).ToString();
@@ -433,13 +431,13 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Parses a a field reference and returns the associated variable
+        /// Parses a a field reference and returns the associated variable.
         /// </summary>
         /// <returns>The constant element.</returns>
         /// <param name="network">The top-level network.</param>
         /// <param name="proc">The process where the method is located.</param>
         /// <param name="method">The method where the initializer is found</param>
-        /// <param name="vartype">The variable type</param>
+        /// <param name="vartype">The variable type.</param>
         /// <param name="variable">The field to parse.</param>
         protected virtual DataElement RegisterVariable(NetworkState network, ProcessState proc, MethodState method, ITypeSymbol vartype, VariableDeclaratorSyntax variable)
         {
@@ -456,7 +454,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Parses a a field reference and returns the associated bus
+        /// Parses a a field reference and returns the associated bus.
         /// </summary>
         /// <returns>The constant element.</returns>
         /// <param name="network">The top-level network.</param>
@@ -497,7 +495,7 @@ namespace SME.AST
 
 
         /// <summary>
-        /// Parses a a field reference and returns the associated variable
+        /// Parses a a field reference and returns the associated variable.
         /// </summary>
         /// <returns>The constant element.</returns>
         /// <param name="network">The top-level network.</param>
@@ -547,6 +545,7 @@ namespace SME.AST
             else if (field.IsStatic)
             {
                 //Don't care
+                // TODO er vi nu også ligeglade?
                 res = null;
             }
             else if (!field.GetAttributes().Any(x => Type.GetType(x.AttributeClass.ToDisplayString()) == typeof(Signal)))
@@ -582,7 +581,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Parses a a parameter reference and returns a new AST reference
+        /// Parses a a parameter reference and returns a new AST reference.
         /// </summary>
         /// <returns>The constant element.</returns>
         /// <param name="network">The top-level network.</param>
@@ -602,7 +601,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Sets the default value for a field
+        /// Sets the default value for a field.
         /// </summary>
         /// <param name="network">The top-level network.</param>
         /// <param name="proc">The process where the method is located.</param>
@@ -615,7 +614,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Locates a bus by reference
+        /// Locates a bus by reference.
         /// </summary>
         /// <returns>The bus.</returns>
         /// <param name="network">The top-level network.</param>

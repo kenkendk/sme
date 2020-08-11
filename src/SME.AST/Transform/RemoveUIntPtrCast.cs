@@ -1,15 +1,15 @@
 ﻿using System;
-using SME.AST;
 
 namespace SME.AST.Transform
 {
+    /// TODO Den er vel ikke aktuel med compiler?
     /// <summary>
-    /// Removes <seealso cref="UIntPtr"/> casts injected by NRefactory
+    /// Removes <seealso cref="UIntPtr"/> casts injected by NRefactory.
     /// </summary>
     public class RemoveUIntPtrCast : IASTTransform
     {
         /// <summary>
-        /// Applies the transformation
+        /// Applies the transformation.
         /// </summary>
         /// <returns>The transformed item.</returns>
         /// <param name="_item">The item to visit.</param>

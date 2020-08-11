@@ -4,94 +4,90 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.MSBuild;
 
 namespace SME.AST
 {
-    // This partial part of the parser deals with the Reflection side of the parsing
+    // This partial part of the parser deals with the Reflection side of the parsing.
 
     /// <summary>
-    /// The main entry point for building an AST of an SME network
+    /// The main entry point for building an AST of a SME network.
     /// </summary>
     public partial class ParseProcesses
     {
         /// <summary>
-        /// A class that contains intermediate information collected while traversing the network
+        /// A class that contains intermediate information collected while traversing the network.
         /// </summary>
         protected class NetworkState : Network
         {
             /// <summary>
-            /// The table of all the constants in a convenient lookup table
+            /// The table of all the constants in a convenient lookup table.
             /// </summary>
             public readonly Dictionary<IFieldSymbol, Constant> ConstantLookup = new Dictionary<IFieldSymbol, Constant>();
             /// <summary>
-            /// A variable counter, used to make unique variable names
+            /// A variable counter, used to make unique variable names.
             /// </summary>
             public int VariableCount;
             /// <summary>
-            /// A lookup table of bus instances
+            /// A lookup table of bus instances.
             /// </summary>
             public readonly Dictionary<IBus, Bus> BusInstanceLookup = new Dictionary<IBus, Bus>();
         }
 
         /// <summary>
-        /// A class that contains intermediate information collected while traversion a process
+        /// A class that contains intermediate information collected while traversion a process.
         /// </summary>
         protected class ProcessState : Process
         {
             /// <summary>
-            /// The variables shared in the current process
+            /// The variables shared in the current process.
             /// </summary>
             public readonly Dictionary<string, Bus> BusInstances = new Dictionary<string, Bus>();
-
             /// <summary>
-            /// The variables shared in the current process
+            /// The variables shared in the current process.
             /// </summary>
             public readonly Dictionary<string, Variable> Variables = new Dictionary<string, Variable>();
             /// <summary>
-            /// The signals shared in the current process
+            /// The signals shared in the current process.
             /// </summary>
             public readonly Dictionary<string, Signal> Signals = new Dictionary<string, Signal>();
+            /// <summary>
+            /// The constants in the current process.
+            /// </summary>
             public readonly Dictionary<string, Constant> Constants = new Dictionary<string, Constant>();
             /// <summary>
-            /// The list of methods to process
+            /// The list of methods to process.
             /// </summary>
             public readonly Queue<Tuple<AST.Statement, MethodState, AST.InvocationExpression>> MethodTargets = new Queue<Tuple<AST.Statement, MethodState, AST.InvocationExpression>>();
             /// <summary>
-            /// The decompiler context.
-            /// </summary>
-            //public ICSharpCode.Decompiler.CSharp.CSharpDecompiler DecompilerContext;
-            /// <summary>
-            /// The compilation of the project
+            /// The compilation of the project.
             /// </summary>
             public Compilation compilation;
             /// <summary>
-            /// The import statements
+            /// The import statements.
             /// </summary>
             public readonly List<string> Imports = new List<string>();
             /// <summary>
-            /// A flag indicating if the method should be decompiled
+            /// A flag indicating if the method should be decompiled.
             /// </summary>
             public bool Decompile;
 
             /// <summary>
-            /// The map of generic parameters on this process
+            /// The map of generic parameters on this process.
             /// </summary>
             public readonly Dictionary<string, ITypeParameterSymbol> GenericMap = new Dictionary<string, ITypeParameterSymbol>();
 
             /// <summary>
-            /// The map of generic types on this process
+            /// The map of generic types on this process.
             /// </summary>
             public readonly Dictionary<string, ITypeSymbol> GenericTypes = new Dictionary<string, ITypeSymbol>();
 
             /// <summary>
-            /// Converts a generic type description into a non-generic version
+            /// Converts a generic type description into a non-generic version.
             /// </summary>
             /// <returns>The resolved type.</returns>
             /// <param name="ft">The type to resolve.</param>
-            /// <param name="method">The method context, if any</param>
+            /// <param name="method">The method context, if any.</param>
             public ITypeSymbol ResolveGenericType(ITypeSymbol its, MethodState method = null)
             {
                 if (its.TypeKind is TypeKind.Array)
@@ -99,8 +95,6 @@ namespace SME.AST
                     var elt = (its as IArrayTypeSymbol).ElementType;
                     if ((elt is INamedTypeSymbol && ((INamedTypeSymbol) elt).IsGenericType) || elt is ITypeParameterSymbol)
                     {
-                        // https://stackoverflow.com/questions/43356807/how-to-create-a-roslyn-itypesymbol-for-an-arbitrary-type
-                        // TODO ok jeg ved ikke om compilation tillader det?
                         return m_compilation.CreateArrayTypeSymbol(GenericTypes[elt.Name]);
                     }
                     else
@@ -120,17 +114,17 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// A class that contains intermediate information collected while traversing a method
+        /// A class that contains intermediate information collected while traversing a method.
         /// </summary>
         protected class MethodState : Method
         {
             /// <summary>
-            /// List of all variables found in the method
+            /// List of all variables found in the method.
             /// </summary>
             public readonly List<Variable> CollectedVariables = new List<Variable>();
 
             /// <summary>
-            /// The stack of scopes
+            /// The stack of scopes.
             /// </summary>
             public readonly List<KeyValuePair<ASTItem, Dictionary<string, Variable>>> Scopes = new List<KeyValuePair<ASTItem, Dictionary<string, Variable>>>();
 
@@ -143,9 +137,9 @@ namespace SME.AST
             }
 
             /// <summary>
-            /// Adds a variable to the current scope
+            /// Adds a variable to the current scope.
             /// </summary>
-            /// <param name="variable">Variable.</param>
+            /// <param name="variable">The variable to add.</param>
             public Variable AddVariable(AST.Variable variable)
             {
                 Scopes.Last().Value.Add(variable.Name, variable);
@@ -154,7 +148,7 @@ namespace SME.AST
             }
 
             /// <summary>
-            /// Starts a new local scope
+            /// Starts a new local scope.
             /// </summary>
             /// <param name="scope">The item starting the scope.</param>
             public void StartScope(ASTItem scope)
@@ -166,7 +160,7 @@ namespace SME.AST
             }
 
             /// <summary>
-            /// Closes the current local scope
+            /// Closes the current local scope.
             /// </summary>
             /// <param name="scope">The scope to close.</param>
             public void FinishScope(ASTItem scope)
@@ -184,7 +178,7 @@ namespace SME.AST
             }
 
             /// <summary>
-            /// Attempts to locate a variable with the given name, looking through all active scopes
+            /// Attempts to locate a variable with the given name, looking through all active scopes.
             /// </summary>
             /// <returns><c>true</c>, if the variable was found, <c>false</c> otherwise.</returns>
             /// <param name="name">The name of the variable to locate.</param>
@@ -202,7 +196,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Static method for building an AST
+        /// Static method for building an AST.
         /// </summary>
         /// <returns>The network.</returns>
         /// <param name="simulation">The simulation instance to build the AST for.</param>
@@ -213,7 +207,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Static method for building an AST with a custom subclass
+        /// Static method for building an AST with a custom subclass.
         /// </summary>
         /// <returns>The network.</returns>
         /// <param name="simulation">The simulation instance to build the AST for.</param>
@@ -226,7 +220,7 @@ namespace SME.AST
 
 
         /// <summary>
-        /// Builds an AST by inspecting the processes
+        /// Builds an AST by inspecting the processes.
         /// </summary>
         /// <param name="simulation">The simulation instance to build the AST for.</param>
         /// <param name="decompile">Set to <c>true</c> to enable decompilation of the IL code.</param>
@@ -342,8 +336,9 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Recursively check folders parents until a *.csproj file is found
+        /// Recursively check folders parents until a *.csproj file is found.
         /// </summary>
+        /// <param name="folder_path">The folder to check in.</param>
         private static string GetCSProjInParents(string folder_path)
         {
             var csprojs = Directory.GetFiles(folder_path, "*.csproj");
@@ -354,12 +349,12 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Attempts to remove redundant prefixes to names
+        /// Attempts to remove redundant prefixes to names.
         /// </summary>
         /// <returns>The name without the prefix.</returns>
         /// <param name="network">The top-level network instance.</param>
         /// <param name="fullname">The name to shorten.</param>
-        /// <param name="sourcetype">The type of the source process</param>
+        /// <param name="sourcetype">The type of the source process.</param>
         protected virtual string NameWithoutPrefix(NetworkState network, string fullname, Type sourcetype)
         {
             var extras = string.Empty;
@@ -376,10 +371,11 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Parses a process and builds an AST component for it
+        /// Parses a process and builds an AST component for it.
         /// </summary>
         /// <param name="network">The top-level network.</param>
         /// <param name="process">The process to build the AST for.</param>
+        /// <param name="simulation">The current simulation context.</param>
         protected virtual Process Parse(NetworkState network, ProcessMetadata process, Simulation simulation)
         {
             var st = process.Instance.GetType();
@@ -440,8 +436,6 @@ namespace SME.AST
 
             if (res.Decompile)
             {
-                //var Fields = proctype.Fields.Where(x => x.GetAttributes(typeof(IgnoreAttribute)).FirstOrDefault() == null);
-                // TODO Prøv at slå typen op i semantic istedet?
                 var Fields = proctype.GetMembers()
                         .OfType<IFieldSymbol>()
                         .Where(x => !x.GetAttributes<IgnoreAttribute>()
@@ -484,12 +478,12 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Parses a bus and builds an AST component for it
+        /// Parses a bus and builds an AST component for it.
         /// </summary>
         /// <param name="network">The top-level network.</param>
         /// <param name="proc">The process where the bus is located.</param>
         /// <param name="bus">The bus to build the AST for.</param>
-        /// <param name="simulation">The simulation the AST is built for</param>
+        /// <param name="simulation">The simulation the AST is built for.</param>
         protected virtual Bus Parse(NetworkState network, ProcessState proc, IBus bus, Simulation simulation)
         {
             var st = ((IRuntimeBus)bus).BusType;
@@ -515,7 +509,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Parses the bus property and builds an AST component for it
+        /// Parses the bus property and builds an AST component for it.
         /// </summary>
         /// <param name="network">The top-level network.</param>
         /// <param name="proc">The process where the bus is located.</param>
@@ -546,7 +540,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Parses the specified parameter and builds an AST component for it
+        /// Parses the specified parameter and builds an AST component for it.
         /// </summary>
         /// <param name="network">The top-level network.</param>
         /// <param name="proc">The process where the method is located.</param>
@@ -564,7 +558,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Parse the specified local variable and builds and AST component for it
+        /// Parse the specified local variable and builds and AST component for it.
         /// </summary>
         /// <param name="network">The top-level network.</param>
         /// <param name="proc">The process where the method is located.</param>
@@ -580,6 +574,5 @@ namespace SME.AST
                 Parent = method
             };
         }
-
     }
 }

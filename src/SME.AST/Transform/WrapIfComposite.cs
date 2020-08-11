@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Linq;
-using SME.AST;
 
 namespace SME.AST.Transform
 {
     /// <summary>
-    /// Puts a parenthesized expression around an expression that cannot be non-wrapped
+    /// Puts a parenthesized expression around an expression that cannot be non-wrapped.
     /// </summary>
     public class WrapIfComposite : IASTTransform
     {
         /// <summary>
-        /// The normal types that do not have to be wrapped
+        /// The normal types that do not have to be wrapped.
         /// </summary>
         private static readonly Type[] CORE_TYPES = new [] {
             typeof(IndexerExpression),
@@ -26,7 +25,7 @@ namespace SME.AST.Transform
         };
 
         /// <summary>
-        /// The current set of types that are not mapped
+        /// The current set of types that are not mapped.
         /// </summary>
         protected readonly Type[] SIMPLE_TYPES;
 
@@ -49,7 +48,7 @@ namespace SME.AST.Transform
         }
 
         /// <summary>
-        /// Applies the transformation
+        /// Applies the transformation.
         /// </summary>
         /// <returns>The transformed item.</returns>
         /// <param name="item">The item to visit.</param>
@@ -84,3 +83,4 @@ namespace SME.AST.Transform
         }
     }
 }
+    

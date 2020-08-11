@@ -3,8 +3,16 @@ using System.Linq;
 
 namespace SME.AST
 {
+    /// <summary>
+    /// Helper class for cloning AST items.
+    /// </summary>
     public static class CloneHelper
     {
+        /// <summary>
+        /// Clones the given AST item.
+        /// </summary>
+        /// <typeparam name="T">The type of the AST item.</typeparam>
+        /// <param name="self">The AST item to clone.</param>
         public static T Clone<T>(this T self)
             where T : ASTItem
         {
