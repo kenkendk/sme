@@ -7,12 +7,12 @@ using System.Linq;
 namespace SME
 {
     /// <summary>
-    /// Extension methods
+    /// Extension methods for graph visualization.
     /// </summary>
     public static class GraphVizExtensionMethods
     {
         /// <summary>
-        /// Extension method for adding graph output to a simulation
+        /// Extension method for adding graph output to a simulation.
         /// </summary>
         /// <returns>The runner.</returns>
         /// <param name="self">The runner.</param>
@@ -31,7 +31,7 @@ namespace SME
 namespace SME.GraphViz
 {
     /// <summary>
-    /// Class for generating a GraphViz display of the current network
+    /// Class for generating a GraphViz display of the current network.
     /// </summary>
     public static class Renderer
     {
@@ -73,12 +73,28 @@ namespace SME.GraphViz
             File.WriteAllText(file, sb.ToString());
         }
 
+        /// <summary>
+        /// Class for converting a network mapper to a string based one.
+        /// </summary>
         private class NetworkMapperNames
         {
+            /// <summary>
+            /// A dictionary, where given a name of a bus, returns a list of names that the bus depends on.
+            /// </summary>
             public Dictionary<string, List<string>> BusDependsOn { get; private set; }
+            /// <summary>
+            /// A dictionary, where given a name of a bus, returns a list of names that depends on the bus.
+            /// </summary>
             public Dictionary<string, List<string>> DependsOnBus { get; private set; }
+            /// <summary>
+            /// A dictionary, where given a name of a clocked bus, returns a list of names that depends on the bus.
+            /// </summary>
             public Dictionary<string, List<string>> DependsOnClockedBus { get; private set; }
 
+            /// <summary>
+            /// Constructs a new instance of the network mapper class.
+            /// </summary>
+            /// <param name="mapper">The network mapper to convert.</param>
             public NetworkMapperNames(NetworkMapper mapper)
             {
                 BusDependsOn = ReduceToNames(mapper.Simulation, mapper.BusDependsOn);
@@ -86,6 +102,11 @@ namespace SME.GraphViz
                 DependsOnClockedBus = ReduceToNames(mapper.Simulation, mapper.DependsOnClockedBus);
             }
 
+            /// <summary>
+            /// Reduces the given map of the given simulation to a structure of strings.
+            /// </summary>
+            /// <param name="simulation">The given simulation.</param>
+            /// <param name="input">The given map.</param>
             private static Dictionary<string, List<string>> ReduceToNames(Simulation simulation, Dictionary<IRuntimeBus, List<ProcessMetadata>> input)
             {
                 var res = new Dictionary<string, List<string>>();
@@ -95,13 +116,32 @@ namespace SME.GraphViz
             }
         }
 
+        /// <summary>
+        /// A mapping of the network.
+        /// </summary>
         private class NetworkMapper
         {
+            /// <summary>
+            /// The simulation to construct the mapping from.
+            /// </summary>
             public readonly Simulation Simulation;
+            /// <summary>
+            /// A dictionary, where given a bus, returns a list of processes that the bus depends on.
+            /// </summary>
             public Dictionary<IRuntimeBus, List<ProcessMetadata>> BusDependsOn { get; private set; }
+            /// <summary>
+            /// A dictionary, where given a bus, returns a list of processes that depends on the bus.
+            /// </summary>
             public Dictionary<IRuntimeBus, List<ProcessMetadata>> DependsOnBus { get; private set; }
+            /// <summary>
+            /// A dictionary, where given a clocked bus, returns a list of processes that depends on the bus.
+            /// </summary>
             public Dictionary<IRuntimeBus, List<ProcessMetadata>> DependsOnClockedBus { get; private set; }
 
+            /// <summary>
+            /// Constructs a new instance of the mapper, based on the given simulation.
+            /// </summary>
+            /// <param name="simulation">The given simulation.</param>
             public NetworkMapper(Simulation simulation)
             {
                 Simulation = simulation;
@@ -142,6 +182,9 @@ namespace SME.GraphViz
                         );
             }
 
+            /// <summary>
+            /// Converts the map of buses and processes, into a map of strings.
+            /// </summary>
             public NetworkMapperNames ReduceToNames()
             {
                 return new NetworkMapperNames(this);
