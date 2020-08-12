@@ -191,6 +191,4 @@ namespace SME.GraphViz
             }
         }
     }
-
 }
-
