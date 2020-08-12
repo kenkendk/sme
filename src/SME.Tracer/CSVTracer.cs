@@ -6,11 +6,26 @@ using System.Reflection;
 
 namespace SME.Tracer
 {
+    /// <summary>
+    /// Class for tracing the network into a .csv file.
+    /// </summary>
     public class CSVTracer : Tracer
     {
+        /// <summary>
+        /// The filename the trace will be written to.
+        /// </summary>
         private string m_filename;
+        // TODO Det må kunne skrives bedre :)
+        /// <summary>
+        /// Flag indicating whether this the current entry written is the first.
+        /// </summary>
         private bool m_firstEntry = true;
 
+        /// <summary>
+        /// Constructs a new instance of the CSV tracer class, which will write the trace into the file at the given filename in the given folder.
+        /// </summary>
+        /// <param name="filename">The given filename.</param>
+        /// <param name="targetfolder">The given folder.</param>
         public CSVTracer(string filename = null, string targetfolder = null)
         {
             m_filename = Path.GetFullPath(Path.Combine(targetfolder ?? ".", filename ?? DateTime.Now.ToString("yyyyMMddTHHmmss") + ".csv"));
@@ -24,6 +39,10 @@ namespace SME.Tracer
             using (File.Create(m_filename)) { }
         }
 
+        /// <summary>
+        /// Method used to emit the signal names as part of the very first cycle.
+        /// </summary>
+        /// <param name="signals">The signals to emit the names for.</param>
         protected override void OutputSignalNames(SignalEntry[] signals)
         {
             var firstentry = true;
@@ -51,6 +70,11 @@ namespace SME.Tracer
             }
         }
 
+        /// <summary>
+        /// Method used to output the value for each of the signals.
+        /// </summary>
+        /// <param name="values">The signal and value pairs.</param>
+        /// <param name="last">If set to <c>true</c> the signals are the last set in the current cycle.</param>
         protected override void OutputSignalData(IEnumerable<Tuple<SignalEntry, object>> values, bool last)
         {
             using (var af = File.AppendText(m_filename))
@@ -129,6 +153,11 @@ namespace SME.Tracer
             }
         }
 
+        /// <summary>
+        /// Converts the given object into a string representation, based on the given type.
+        /// <summary>
+        /// <param name="value">The object to convert.</param>
+        /// <param name="itemtype">The type of the object.</param>
         protected virtual string ConvertToString(object value, Type itemtype)
         {
             if (value == null)
@@ -176,13 +205,22 @@ namespace SME.Tracer
                 return (value ?? string.Empty).ToString();
         }
 
+        /// <summary>
+        /// Converts the given string to a valid name.
+        /// </summary>
+        /// <param name="name">The string to convert.</param>
         public virtual string ConvertToValidName(string name)
         {
             return name;
         }
 
+        /// <summary>
+        /// Returns a string representation of the given signal.
+        /// </summary>
+        /// <param name="p">The given signal.</param>
         public virtual string BusSignalToName(SignalEntry p)
         {
             return p.SortKey.Replace(",", "_");
         }
-    }}
+    }
+}

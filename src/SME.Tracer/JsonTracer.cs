@@ -7,36 +7,36 @@ using Newtonsoft.Json;
 namespace SME.Tracer
 {
     /// <summary>
-    /// A tracer that outputs the traced data in JSON format
+    /// A tracer that outputs the traced data in JSON format.
     /// </summary>
     public class JsonTracer : Tracer
     {
         /// <summary>
-        /// The name of the file where data is written
+        /// The name of the file where data is written.
         /// </summary>
         private string m_filename;
         /// <summary>
-        /// The writer instance
+        /// The writer instance.
         /// </summary>
         private JsonWriter m_writer;
         /// <summary>
-        /// The open stream
+        /// The open stream.
         /// </summary>
         private StreamWriter m_stream;
         /// <summary>
-        /// Flag that tracks the output state for the signal arrays
+        /// Flag that tracks the output state for the signal arrays.
         /// </summary>
         private bool m_startedArray = false;
         /// <summary>
-        /// Flag handling the emission of variables
+        /// Flag handling the emission of variables.
         /// </summary>
         private bool m_emitVariables = true;
         /// <summary>
-        /// Flag handling the emission of variable arrays
+        /// Flag handling the emission of variable arrays.
         /// </summary>
         private bool m_emitVariableArrays = false;
         /// <summary>
-        /// The dictionary with all variables from the processes
+        /// The dictionary with all variables from the processes.
         /// </summary>
         private Dictionary<IProcess, Dictionary<System.Reflection.FieldInfo, long>> m_variables = new Dictionary<IProcess, Dictionary<System.Reflection.FieldInfo, long>>();
 
@@ -63,6 +63,11 @@ namespace SME.Tracer
             m_writer.WriteStartObject();
         }
 
+        /// <summary>
+        /// Method used to output the value for each of the signals.
+        /// </summary>
+        /// <param name="values">The signal and value pairs.</param>
+        /// <param name="last">If set to <c>true</c> the signals are the last set in the current cycle.</param>
         protected override void OutputSignalNames(SignalEntry[] signals)
         {
             var simulation = Simulation.Current;
@@ -163,6 +168,11 @@ namespace SME.Tracer
             m_writer.WriteStartArray();
         }
 
+        /// <summary>
+        /// Writes the given collection of signal values to the trace file.
+        /// </summary>
+        /// <param name="values">The given collection of signal values</param>
+        /// <param name="last">Flag indicating whether the given values, was the last so a newline should be written.</param>
         protected override void OutputSignalData(IEnumerable<Tuple<SignalEntry, object>> values, bool last)
         {
             if (!m_startedArray)
@@ -257,7 +267,10 @@ namespace SME.Tracer
             }
         }
 
-
+        /// <summary>
+        /// Dispose the current instance.
+        /// </summary>
+        /// <param name="disposing">If set to <c>true</c> the call originates from the dispose method, otherwise it comes from a finalize method.</param>
         protected override void Dispose(bool disposing)
         {
             if (m_writer != null)
@@ -279,4 +292,5 @@ namespace SME.Tracer
                 m_stream = null;
             }
         }
-    }}
+    }
+}

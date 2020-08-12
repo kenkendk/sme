@@ -1,15 +1,14 @@
 ﻿using System;
-using System.IO;
 
 namespace SME
 {
     /// <summary>
-    /// Extension methods
+    /// Extension methods.
     /// </summary>
     public static class ExtensionMethodsTracer
     {
         /// <summary>
-        /// Extension method for adding CSV output from a simulation
+        /// Extension method for adding CSV output from a simulation.
         /// </summary>
         /// <returns>The runner.</returns>
         /// <param name="self">The runner.</param>
@@ -25,7 +24,7 @@ namespace SME
         }
 
         /// <summary>
-        /// Extension method for adding CSV output from a simulation
+        /// Extension method for adding CSV output from a simulation.
         /// </summary>
         /// <returns>The runner.</returns>
         /// <param name="self">The runner.</param>
