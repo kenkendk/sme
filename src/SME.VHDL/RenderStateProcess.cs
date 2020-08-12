@@ -7,32 +7,32 @@ using Microsoft.CodeAnalysis;
 namespace SME.VHDL
 {
     /// <summary>
-    /// The render state for a process
+    /// The render state for a process.
     /// </summary>
     public class RenderStateProcess
     {
         /// <summary>
-        /// The parent render state
+        /// The parent render state.
         /// </summary>
         public readonly RenderState Parent;
 
         /// <summary>
-        /// The process used in this render state
+        /// The process used in this render state.
         /// </summary>
         public readonly AST.Process Process;
 
         /// <summary>
-        /// The render helper to use
+        /// The render helper to use.
         /// </summary>
         public readonly RenderHelper Helper;
 
         /// <summary>
-        /// A lookup associating an AST node with a VHDL type
+        /// A lookup associating an AST node with a VHDL type.
         /// </summary>
         public readonly Dictionary<ASTItem, VHDLType> TypeLookup;
 
         /// <summary>
-        /// The type scope used to resolve VHDL types
+        /// The type scope used to resolve VHDL types.
         /// </summary>
         public readonly VHDLTypeScope TypeScope;
 
@@ -51,7 +51,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Returns the VHDL type for a data element
+        /// Returns the VHDL type for a data element.
         /// </summary>
         /// <returns>The VHDL type.</returns>
         /// <param name="element">The element to get the type for.</param>
@@ -61,7 +61,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Returns the VHDL type for an expression
+        /// Returns the VHDL type for an expression.
         /// </summary>
         /// <returns>The VHDL type.</returns>
         /// <param name="element">The expression to get the type for.</param>
@@ -71,7 +71,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Gets the default value for an item, expressed as a VHDL expression
+        /// Gets the default value for an item, expressed as a VHDL expression.
         /// </summary>
         /// <returns>The default value.</returns>
         /// <param name="element">The element to get the default value for.</param>
@@ -81,7 +81,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Gets the finite state method, if any for this process
+        /// Gets the finite state method, if any for this process.
         /// </summary>
         /// <value>The finite state method.</value>
         public Method FiniteStateMethod
@@ -93,7 +93,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Returns all signals written to a bus from within this process
+        /// Returns all signals written to a bus from within this process.
         /// </summary>
         /// <returns>The written signals.</returns>
         /// <param name="bus">The bus to get the signals for.</param>
@@ -103,7 +103,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Gets the custom renderer for this instance, or null
+        /// Gets the custom renderer for this instance, or null.
         /// </summary>
         /// <returns>The custom renderer.</returns>
         private ICustomRenderer GetCustomRenderer()
@@ -112,12 +112,12 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Gets a value indicating if the process has a custom renderer
+        /// Gets a value indicating if the process has a custom renderer.
         /// </summary>
         public bool HasCustomRenderer => GetCustomRenderer() != null;
 
         /// <summary>
-        /// Gets the include region for a custom renderer
+        /// Gets the include region for a custom renderer.
         /// </summary>
         public string CustomRendererInclude
         {
@@ -132,7 +132,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Gets the custom renderer body
+        /// Gets the custom renderer body.
         /// </summary>
         public string CustomRendererBody
         {
@@ -149,7 +149,7 @@ namespace SME.VHDL
 
 
         /// <summary>
-        /// Returns a sequence of all the reset statements emitted when the RST signal goes high
+        /// Returns a sequence of all the reset statements emitted when the RST signal goes high.
         /// </summary>
         public IEnumerable<string> ProcessResetStaments
         {
@@ -196,7 +196,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Returns a sequence of statements to perform when the clock signal rises
+        /// Returns a sequence of statements to perform when the clock signal rises.
         /// </summary>
         public IEnumerable<string> ClockResetStaments
         {
@@ -210,7 +210,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Gets a sequence of the shared variables found in the process
+        /// Gets a sequence of the shared variables found in the process.
         /// </summary>
         /// <value>The shared variables.</value>
         public IEnumerable<Variable> SharedVariables
@@ -224,7 +224,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Gets a sequence of the variables found in the main method
+        /// Gets a sequence of the variables found in the main method.
         /// </summary>
         /// <value>The variables.</value>
         public IEnumerable<Variable> Variables

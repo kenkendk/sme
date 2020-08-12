@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.CSharp;
 namespace SME.VHDL.Transformations
 {
     /// <summary>
-    /// Rewrites statements like &quot;a = b = c = 0;&quot; into a sequence of single assignment expressions
+    /// Rewrites statements like &quot;a = b = c = 0;&quot; into a sequence of single assignment expressions.
     /// </summary>
     public class RewriteChainedAssignments : IASTTransform
     {
@@ -17,12 +17,12 @@ namespace SME.VHDL.Transformations
         /// </summary>
         private readonly RenderState State;
         /// <summary>
-        /// The method being transformed
+        /// The method being transformed.
         /// </summary>
         private readonly Method Method;
 
         /// <summary>
-        /// Flag to debug assignments, and disable optimizations where the assignments are done with a literal
+        /// Flag to debug assignments, and disable optimizations where the assignments are done with a literal.
         /// </summary>
         public bool OptimizeChainedInitializations = true;
 
@@ -38,7 +38,7 @@ namespace SME.VHDL.Transformations
         }
 
         /// <summary>
-        /// Applies the transformation
+        /// Applies the transformation.
         /// </summary>
         /// <returns>The transformed item.</returns>
         /// <param name="item">The item to visit.</param>

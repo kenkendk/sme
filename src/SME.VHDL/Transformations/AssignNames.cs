@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using SME.AST;
 using SME.AST.Transform;
 using Microsoft.CodeAnalysis;
@@ -7,17 +6,17 @@ using Microsoft.CodeAnalysis;
 namespace SME.VHDL.Transformations
 {
     /// <summary>
-    /// This transformation assign names to each named element
+    /// This transformation assign names to each named element.
     /// </summary>
     public class AssignNames : IASTTransform
     {
         /// <summary>
-        /// The name of the top-level item
+        /// The name of the top-level item.
         /// </summary>
         private string TopLevelName = null;
 
         /// <summary>
-        /// Applies the transformation
+        /// Applies the transformation.
         /// </summary>
         /// <returns>The transformed item.</returns>
         /// <param name="el">The item to visit.</param>

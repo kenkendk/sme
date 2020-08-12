@@ -6,9 +6,12 @@ use IEEE.STD_LOGIC_TEXTIO.all;
 use std.textio.all;
 use IEEE.NUMERIC_STD.ALL;
 
+-- Package for reading csv files
 package csv_util is
 
+    -- Max length of a line in the csv file
     constant CSV_LINE_LENGTH_MAX: integer := 256;
+    -- Type of a csv line
     subtype CSV_LINE_T is string(1 to CSV_LINE_LENGTH_MAX);
 
     -- Read until EOL or comma
@@ -57,6 +60,7 @@ end csv_util;
 
 package body csv_util is
 
+    -- prints the given text
     procedure print(text: string) is
         variable msg: line;
     begin
@@ -64,6 +68,7 @@ package body csv_util is
         writeline(output, msg);
     end print;
 
+    -- reads a line of the csv file
     procedure read_csv_field(ln: inout LINE; ret: out string) is
         variable return_string: CSV_LINE_T;
         variable read_char: character;
@@ -85,6 +90,7 @@ package body csv_util is
         ret := return_string;
     end;
 
+    -- returns the index of the given character
     function index_of_chr(ln: string; c: character) return integer is
     begin
        for i in 1 to ln'length loop
@@ -94,24 +100,27 @@ package body csv_util is
        end loop;
 
        return ln'length + 1;
-
     end;
 
+    -- returns the index of a null character
     function index_of_null(ln: string) return integer is
     begin
        return index_of_chr(ln, NUL);
     end;
 
+    -- returns a substring of the given string between start and finish
     function substr(ln: string; start: integer; finish: integer) return string is
     begin
         return ln(start to finish);
     end;
 
+    -- truncates the given string
     function truncate(ln: string) return string is
     begin
         return substr(ln, 1, index_of_null(ln) - 1);
     end;
 
+    -- converts the given line to a VHDL safe string
     function to_safe_name(ln: string) return string is
         variable res : string(1 to ln'length) := ln;
     begin
@@ -124,6 +133,7 @@ package body csv_util is
        return res;
     end;
 
+    -- returns true if the given strings are equal
     function are_strings_equal(ln1: string; ln2: string) return boolean is
         variable lhs : string(1 to ln1'length) := ln1;
         variable rhs : string(1 to ln2'length) := ln2;

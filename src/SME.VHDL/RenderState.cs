@@ -11,7 +11,7 @@ using Microsoft.CodeAnalysis.CSharp;
 namespace SME.VHDL
 {
     /// <summary>
-    /// Class to encapsulate the state associated with rendering an AST network as VHDL files
+    /// Class to encapsulate the state associated with rendering an AST network as VHDL files.
     /// </summary>
     public class RenderState
     {
@@ -40,75 +40,75 @@ namespace SME.VHDL
         }*/
 
         /// <summary>
-        /// The network being rendered
+        /// The network being rendered.
         /// </summary>
         public readonly Network Network;
 
         /// <summary>
-        /// The render configuration
+        /// The render configuration.
         /// </summary>
         public readonly RenderConfig Config;
 
         /// <summary>
-        /// The simulation forming the basis of the network
+        /// The simulation forming the basis of the network.
         /// </summary>
         public readonly Simulation Simulation;
 
         /// <summary>
-        /// The folder where data is place
+        /// The folder where data is place.
         /// </summary>
         public readonly string TargetFolder;
         /// <summary>
-        /// The folder where backups are stored
+        /// The folder where backups are stored.
         /// </summary>
         public readonly string BackupFolder;
         /// <summary>
-        /// The name of the file where a CSV trace is stored
+        /// The name of the file where a CSV trace is stored.
         /// </summary>
         public readonly string CSVTracename;
 
         /// <summary>
-        /// Sequence of custom VHDL files to include in the compilation
+        /// Sequence of custom VHDL files to include in the compilation.
         /// </summary>
         public readonly IEnumerable<string> CustomFiles;
 
         /// <summary>
-        /// The unique types found in the network
+        /// The unique types found in the network.
         /// </summary>
         public readonly ITypeSymbol[] Types;
 
         /// <summary>
-        /// A lookup associating an AST node with a VHDL type
+        /// A lookup associating an AST node with a VHDL type.
         /// </summary>
         public readonly Dictionary<ASTItem, VHDLType> TypeLookup = new Dictionary<ASTItem, VHDLType>();
 
         /// <summary>
-        /// The list of registered temporary variables
+        /// The list of registered temporary variables.
         /// </summary>
         public readonly Dictionary<Method, Dictionary<string, Variable>> TemporaryVariables = new Dictionary<Method, Dictionary<string, Variable>>();
 
         /// <summary>
-        /// The table with all custom defined enums
+        /// The table with all custom defined enums.
         /// </summary>
         public readonly Dictionary<VHDLType, Dictionary<string, object>> CustomEnumValues = new Dictionary<VHDL.VHDLType, Dictionary<string, object>>();
 
         /// <summary>
-        /// The fully custom renderers to use
+        /// The fully custom renderers to use.
         /// </summary>
         public readonly Dictionary<Type, IFullCustomRenderer> FullCustomRenderers = new Dictionary<Type, IFullCustomRenderer>();
 
         /// <summary>
-        /// The custom renderers to use
+        /// The custom renderers to use.
         /// </summary>
         public readonly Dictionary<Type, ICustomRenderer> CustomRenderers = new Dictionary<Type, ICustomRenderer>();
 
         /// <summary>
-        /// The type scope used to resolve VHDL types
+        /// The type scope used to resolve VHDL types.
         /// </summary>
         public readonly VHDLTypeScope TypeScope;
 
         /// <summary>
-        /// Gets the length of a clock pulse period
+        /// Gets the length of a clock pulse period.
         /// </summary>
         public int ClockPulseLength { get { return ClockLength / 2; } }
         /// <summary>
@@ -124,7 +124,7 @@ namespace SME.VHDL
         /// <param name="targetfolder">The folder where the output is stored.</param>
         /// <param name="backupfolder">The folder where backups are stored.</param>
         /// <param name="csvtracename">The name of the CSV trace file.</param>
-        /// <param name="customfiles">A list of VHDL files to include in the Makefile, without the VHDL extension</param>
+        /// <param name="customfiles">A list of VHDL files to include in the Makefile, without the VHDL extension.</param>
         public RenderState(Simulation simulation, string targetfolder, string backupfolder = null, string csvtracename = null, IEnumerable<string> customfiles = null, RenderConfig config = null)
         {
             Simulation = simulation;
@@ -195,9 +195,9 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Resets the custom renderers to fit the desired rendering strategy
+        /// Resets the custom renderers to fit the desired rendering strategy.
         /// </summary>
-        /// <param name="strategy">Strategy.</param>
+        /// <param name="strategy">The rendering strategy.</param>
         public void SetupCustomRenderers(ComponentRendererStrategy strategy)
         {
             CustomRenderers.Clear();
@@ -227,7 +227,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Performs some checks to see if the network uses features that are not supported by the VHDL render
+        /// Performs some checks to see if the network uses features that are not supported by the VHDL render.
         /// </summary>
         /// <param name="network">The network to validate.</param>
         private static void ValidateNetwork(AST.Network network)
@@ -238,7 +238,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Renders this instance to files
+        /// Renders this instance to files.
         /// </summary>
         public void Render()
         {
@@ -313,11 +313,11 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Makes a backup of all target files
+        /// Makes a backup of all target files.
         /// </summary>
         /// <param name="targetfolder">The folder where output is stored.</param>
         /// <param name="backupfolder">The folder where backups are stored.</param>
-        /// <param name="filenames">A list of extra files that may be overwritten/regenerated</param>
+        /// <param name="filenames">A list of extra files that may be overwritten/regenerated.</param>
         private void BackupExistingTarget(IEnumerable<string> filenames, string targetfolder, string backupfolder)
         {
             backupfolder = backupfolder ?? targetfolder;
@@ -347,7 +347,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Merges a newly rendered file with user supplied data from an existing file
+        /// Merges a newly rendered file with user supplied data from an existing file.
         /// </summary>
         /// <returns>The user data.</returns>
         /// <param name="text">The newly rendered content.</param>
@@ -402,7 +402,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Returns the VHDL type for a data element
+        /// Returns the VHDL type for a data element.
         /// </summary>
         /// <returns>The VHDL type.</returns>
         /// <param name="element">The element to get the type for.</param>
@@ -426,7 +426,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Returns the VHDL type for a data element
+        /// Returns the VHDL type for a data element.
         /// </summary>
         /// <returns>The VHDL type.</returns>
         /// <param name="element">The element to get the type for.</param>
@@ -436,7 +436,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Wraps the VHDL typename if the type is an array type
+        /// Wraps the VHDL typename if the type is an array type.
         /// </summary>
         /// <returns>The wrapped type name.</returns>
         /// <param name="element">The element to wrap.</param>
@@ -461,6 +461,10 @@ namespace SME.VHDL
             return vt.ToSafeVHDLName();
         }
 
+        /// <summary>
+        /// Gets the type name for the given element in the top level export file.
+        /// </summary>
+        /// <param name="element">The element to convert.</param>
         public string VHDLExportTypeName(AST.DataElement element)
         {
             var vt = VHDLType(element);
@@ -490,7 +494,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Wraps the VHDL typename if the type is an array type
+        /// Wraps the VHDL typename if the type is an array type.
         /// </summary>
         /// <returns>The wrapped type name.</returns>
         /// <param name="fd">The Field to wrap.</param>
@@ -509,7 +513,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Returns the VHDL type for an expression
+        /// Returns the VHDL type for an expression.
         /// </summary>
         /// <returns>The VHDL type.</returns>
         /// <param name="element">The expression to get the type for.</param>
@@ -564,7 +568,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Gets the default value for an item, expressed as a VHDL expression
+        /// Gets the default value for an item, expressed as a VHDL expression.
         /// </summary>
         /// <returns>The default value.</returns>
         /// <param name="element">The element to get the default value for.</param>
@@ -641,7 +645,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Gets a list of custom types to implement
+        /// Gets a list of custom types to implement.
         /// </summary>
         /// <value>The custom types.</value>
         public IEnumerable<VHDLType> CustomTypes
@@ -673,7 +677,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Gets all arrays used in bus signals
+        /// Gets all arrays used in bus signals.
         /// </summary>
         /// <value>The bus arrays.</value>
         public IEnumerable<BusSignal> BusArrays
@@ -691,7 +695,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Gets the length of an array attached to a bus
+        /// Gets the length of an array attached to a bus.
         /// </summary>
         /// <returns>The array length.</returns>
         /// <param name="signal">The signal to get the length for.</param>
@@ -708,7 +712,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Returns a map of key/value pairs from an enum type
+        /// Returns a map of key/value pairs from an enum type.
         /// </summary>
         /// <returns>The enum values.</returns>
         /// <param name="t">T.</param>
@@ -737,7 +741,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Lists all members for a given value type
+        /// Lists all members for a given value type.
         /// </summary>
         /// <returns>The member VHDL strings.</returns>
         /// <param name="type">The VHDL type.</param>
@@ -773,7 +777,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Gets all enum types in the network
+        /// Gets all enum types in the network.
         /// </summary>
         public IEnumerable<VHDLType> EnumTypes
         {
@@ -787,7 +791,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Gets all constant definition strings
+        /// Gets all constant definition strings.
         /// </summary>
         public IEnumerable<string> Constants
         {
@@ -928,7 +932,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Returns all signals in the network
+        /// Returns all signals in the network.
         /// </summary>
         public IEnumerable<BusSignal> AllSignals
         {
@@ -966,7 +970,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Returns the name written in the trace file for a given signal
+        /// Returns the name written in the trace file for a given signal.
         /// </summary>
         /// <returns>The signal name as written by the tracer.</returns>
         /// <param name="s">The signal to find the name for.</param>
@@ -985,7 +989,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Returns all signals from top-level input busses
+        /// Returns all signals from top-level input busses.
         /// </summary>
         public IEnumerable<BusSignal> DriverSignals
         {
@@ -1000,7 +1004,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Returns all signals from non-top-level input busses
+        /// Returns all signals from non-top-level input busses.
         /// </summary>
         public IEnumerable<BusSignal> VerifySignals
         {
@@ -1015,7 +1019,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Creates a new variable in the process space
+        /// Creates a new variable in the process space.
         /// </summary>
         /// <returns>The temporary variable to create.</returns>
         /// <param name="variabletype">The type of the variable to use.</param>
@@ -1040,7 +1044,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Gets all bus instances that require a feedback loop
+        /// Gets all bus instances that require a feedback loop.
         /// </summary>
         /// <value>The feedback busses.</value>
         public IEnumerable<AST.Bus> FeedbackBusses
@@ -1052,10 +1056,10 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Returns all signals written to a bus from within the process
+        /// Returns all signals written to a bus from within the process.
         /// </summary>
         /// <returns>The written signals.</returns>
-        /// <param name="proc">The process to see if the signals are written</param>
+        /// <param name="proc">The process to see if the signals are written.</param>
         /// <param name="bus">The bus to get the signals for.</param>
         public IEnumerable<BusSignal> WrittenSignals(AST.Process proc, AST.Bus bus)
         {
@@ -1094,10 +1098,10 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Creates a reset statement for the specified data element
+        /// Creates a reset statement for the specified data element.
         /// </summary>
         /// <returns>The statement expressing reset of the date element.</returns>
-        /// <param name="element">The target element</param>
+        /// <param name="element">The target element.</param>
         public AST.Statement GetResetStatement(DataElement element)
         {
             var exp = new AST.AssignmentExpression()
@@ -1252,7 +1256,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Gets the left-hand-side value for a reset expression
+        /// Gets the left-hand-side value for a reset expression.
         /// </summary>
         /// <returns>The reset expression.</returns>
         /// <param name="element">The element to get the value for.</param>
@@ -1286,7 +1290,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Returns all type definitions
+        /// Returns all type definitions.
         /// </summary>
         /// <value>The type definitions.</value>
         public IEnumerable<string> TypeDefinitions
@@ -1308,7 +1312,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Performs a reverse lookup into the dependency graph to find the processes that this process depends on
+        /// Performs a reverse lookup into the dependency graph to find the processes that this process depends on.
         /// </summary>
         /// <returns>The processes that the given instance depends on.</returns>
         /// <param name="p">The process to find the dependencies for.</param>
@@ -1324,7 +1328,12 @@ namespace SME.VHDL
                 }
         }
 
-
+        /// <summary>
+        /// Registers the given custom enum type.
+        /// </summary>
+        /// <param name="sourcetype">The type of the source.</param>
+        /// <param name="enumtype">The VHDL type of the enum.</param>
+        /// <param name="value">The value to register.</param>
         public string RegisterCustomEnum(ITypeSymbol sourcetype, VHDLType enumtype, object value)
         {
             Dictionary<string, object> v;
@@ -1336,6 +1345,11 @@ namespace SME.VHDL
             return name;
         }
 
+        /// <summary>
+        /// Gets the local name of the given bus in the given process.
+        /// </summary>
+        /// <param name="bus">The given bus.</param>
+        /// <param name="process">The given process.</param>
         public string GetLocalBusName(AST.Bus bus, AST.Process process)
         {
             if (process != null && process.LocalBusNames.ContainsKey(bus))
@@ -1344,7 +1358,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Gets the custom renderer for this instance, or null
+        /// Gets the custom renderer for this instance, or null.
         /// </summary>
         /// <returns>The custom renderer.</returns>
         internal ICustomRenderer GetCustomRenderer(AST.Process process)
@@ -1358,12 +1372,12 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Gets a value indicating if the process has a custom renderer
+        /// Gets a value indicating if the process has a custom renderer.
         /// </summary>
+        /// <param name="process">The process to check.</param>
         public bool HasCustomRenderer(AST.Process process)
         {
             return GetCustomRenderer(process) != null;
         }
-
     }
 }

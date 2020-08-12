@@ -10,7 +10,7 @@ namespace SME.VHDL.Transformations
     /// <summary>
     /// Handles cases where the loop increment is not one,
     /// by adding a temporary variable that holds the multiplied result,
-    /// and updating the sub-tree to use that variable instead
+    /// and updating the sub-tree to use that variable instead.
     /// </summary>
     public class FixForLoopIncrements : IASTTransform
     {
@@ -19,11 +19,11 @@ namespace SME.VHDL.Transformations
         /// </summary>
         private readonly RenderState State;
         /// <summary>
-        /// The method being transformed
+        /// The method being transformed.
         /// </summary>
         private readonly Method Method;
         /// <summary>
-        /// Cache of already processed statements
+        /// Cache of already processed statements.
         /// </summary>
         private readonly HashSet<AST.ForStatement> m_processed = new HashSet<ForStatement>();
 
@@ -39,7 +39,7 @@ namespace SME.VHDL.Transformations
         }
 
         /// <summary>
-        /// Applies the transformation
+        /// Applies the transformation.
         /// </summary>
         /// <returns>The transformed item.</returns>
         /// <param name="item">The item to visit.</param>

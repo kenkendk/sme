@@ -2,6 +2,7 @@
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
+-- package containing system types of SME
 package SYSTEM_TYPES is
     subtype T_SYSTEM_BOOL is std_logic;
 

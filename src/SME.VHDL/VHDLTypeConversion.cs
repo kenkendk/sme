@@ -7,8 +7,20 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace SME.VHDL
 {
+    /// <summary>
+    /// Helper class containing static methods for VHDL type conversions.
+    /// </summary>
     public static class VHDLTypeConversion
     {
+        /// <summary>
+        /// Converts the given expression according to the VHDL type conversion rules.
+        /// <summary>
+        /// <param name="render">The current render state.</param>
+        /// <param name="method">The method the expression belongs to.</param>
+        /// <param name="s">The expression to convert.</param>
+        /// <param name="target">The target VHDL type.</param>
+        /// <param name="targetsource">The MSCA type of the target.</param>
+        /// <param name="fromCast">Flag indicating if the expression comes from a cast expression.</param>
         public static Expression ConvertExpression(RenderState render, Method method, Expression s, VHDLType target, ITypeSymbol targetsource, bool fromCast)
         {
             var svhdl = render.VHDLType(s);
@@ -442,6 +454,11 @@ namespace SME.VHDL
                 throw new Exception(string.Format("Unexpected target type: {0} for source: {1}", target, svhdl));
         }
 
+        /// <summary>
+        /// Wraps the given expression in a set of parenthesis.
+        /// <summary>
+        /// <param name="render">The current render state.</param>
+        /// <param name="expression">The expression to wrap.</param>
         public static AST.ParenthesizedExpression WrapInParenthesis(RenderState render, Expression expression)
         {
             var self = new AST.ParenthesizedExpression()
@@ -460,6 +477,13 @@ namespace SME.VHDL
             return self;
         }
 
+        /// <summary>
+        /// Wraps the given expression in a set of parenthesis according to the given template, with the given VHDL type as type.
+        /// <summary>
+        /// <param name="render">The current render state.</param>
+        /// <param name="expression">The expression to wrap.</param>
+        /// <param name="template">The given template.</param>
+        /// <param name="vhdltarget">The resulting target of the wrapped expression.</param>
         public static Expression WrapExpression(RenderState render, Expression expression, string template, VHDLType vhdltarget)
         {
             var self = expression.ReplaceWith(new CustomNodes.ConversionExpression()
@@ -477,24 +501,24 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Evaluates if the given expression is an integer literal that is too large to be represented as a VHDL integer literal
+        /// Evaluates if the given expression is an integer literal that is too large to be represented as a VHDL integer literal.
         /// </summary>
         /// <returns><c>true</c>, if the expression is an integer that is too larget, <c>false</c> otherwise.</returns>
         /// <param name="e">The expression to evaluate.</param>
         /// <param name="tvhdl">The target VHDL type.</param>
-        /// <param name="render">The render state to use</param>
+        /// <param name="render">The render state to use.</param>
         public static bool IsTooLargeIntegerLiteral(Expression e, VHDLType tvhdl, RenderState render)
         {
             return (GetPrimitiveLiteral(e as PrimitiveExpression, tvhdl, render) ?? string.Empty).StartsWith("STD_LOGIC_VECTOR'(\"", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
-        /// Gets the VHDL primitive literal representation for the given expression
+        /// Gets the VHDL primitive literal representation for the given expression.
         /// </summary>
         /// <returns>The integer literal expression.</returns>
         /// <param name="e">The expression to evaluate.</param>
         /// <param name="tvhdl">The target VHDL type.</param>
-        /// <param name="render">The render state to use</param>
+        /// <param name="render">The render state to use.</param>
         public static string GetPrimitiveLiteral(object e, VHDLType tvhdl, RenderState render)
         {
             if (e is PrimitiveExpression)

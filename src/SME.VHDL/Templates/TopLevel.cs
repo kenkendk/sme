@@ -1,26 +1,36 @@
-﻿using System.Linq;
-using SME;
-using SME.VHDL;
-using System.Text;
-using System.Collections.Generic;
+﻿using System;
+using System.Linq;
 using SME.AST;
-using System;
 
 namespace SME.VHDL.Templates
 {
-
+    /// <summary>
+    /// Template for generating the top level VHDL file.
+    /// </summary>
     public class TopLevel : BaseTemplate
     {
-
+        /// <summary>
+        /// The network to render.
+        /// </summary>
         public readonly Network Network;
+        /// <summary>
+        /// The current render state.
+        /// </summary>
         public readonly RenderState RS;
 
+        /// <summary>
+        /// Constructs a new instance of the top level template.
+        /// </summary>
+        /// <param name="renderer">The render state to render in.</param>
         public TopLevel(RenderState renderer)
         {
             RS = renderer;
             Network = renderer.Network;
         }
 
+        /// <summary>
+        /// Writes the template to the VHDL file.
+        /// </summary>
         public override string TransformText()
         {
             GenerationEnvironment = null;
@@ -411,7 +421,5 @@ end RTL;");
 
             return GenerationEnvironment.ToString();
         }
-
     }
-
 }

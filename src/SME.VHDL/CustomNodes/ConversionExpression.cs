@@ -4,17 +4,17 @@ using SME.AST;
 namespace SME.VHDL.CustomNodes
 {
     /// <summary>
-    /// An expression that converts the inner expression
+    /// An expression that converts the inner expression.
     /// </summary>
     public class ConversionExpression : CustomExpression
     {
         /// <summary>
-        /// The expression being wrapped
+        /// The expression being wrapped.
         /// </summary>
         public Expression Expression;
 
         /// <summary>
-        /// The template used to wrap the expression
+        /// The template used to wrap the expression.
         /// </summary>
         public string WrappingTemplate;
 
@@ -36,7 +36,7 @@ namespace SME.VHDL.CustomNodes
         }
 
         /// <summary>
-        /// Gets the target of the conversion operation, or null
+        /// Gets the target of the conversion operation, or null.
         /// </summary>
         public override DataElement GetTarget()
         {
@@ -44,7 +44,7 @@ namespace SME.VHDL.CustomNodes
         }
 
         /// <summary>
-        /// Returns a string representation of the Expression
+        /// Returns a string representation of the Expression.
         /// </summary>
         public override string ToString()
         {

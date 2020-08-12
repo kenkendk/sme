@@ -1,11 +1,17 @@
 ﻿using System;
-using SME.AST;
 using Microsoft.CodeAnalysis.CSharp;
 
 namespace SME.VHDL
 {
+    /// <summary>
+    /// Helper class for converting C# operators to VHDL operators.
+    /// </summary>
     public static class OperatorHelpers
     {
+        /// <summary>
+        /// Converts the given C# operator to the corresponding VHDL operator as a string.
+        /// </summary>
+        /// <param name="op">The given C# operator.</param>
         public static string ToVHDL(this SyntaxKind op)
         {
             switch (op)

@@ -5,12 +5,12 @@ using SME.AST.Transform;
 namespace SME.VHDL.Transformations
 {
     /// <summary>
-    /// Checks that all items are working as expected
+    /// Checks that all items are working as expected.
     /// </summary>
     public class CheckCommonIssues : IASTTransform
     {
         /// <summary>
-        /// Applies the transformation
+        /// Applies the transformation.
         /// </summary>
         /// <returns>The transformed item.</returns>
         /// <param name="el">The item to visit.</param>

@@ -1,23 +1,36 @@
-using System.Linq;
-using SME;
-using System.Text;
-using System.Collections.Generic;
-using SME.VHDL;
-using SME.AST;
 using System;
+using System.Linq;
+using SME.AST;
 
 namespace SME.VHDL.Templates
 {
-
+    /// <summary>
+    /// Template for entities, e.g. processes.
+    /// </summary>
     public class Entity : BaseTemplate
     {
-
+        /// <summary>
+        /// The current render state.
+        /// </summary>
         public readonly RenderState RS;
+        /// <summary>
+        /// The current render state of the process to render.
+        /// </summary>
         public readonly RenderStateProcess RSP;
-
+        /// <summary>
+        /// The network the process belongs to.
+        /// </summary>
         public readonly Network Network;
+        /// <summary>
+        /// The process to render.
+        /// </summary>
         public readonly AST.Process Process;
 
+        /// <summary>
+        /// Constructs a new instance of the entity template.
+        /// </summary>
+        /// <param name="renderer">The render state to render in.</param>
+        /// <param name="renderproc">The process to render.</param>
         public Entity(RenderState renderer, RenderStateProcess renderproc)
         {
             RS = renderer;
@@ -26,6 +39,9 @@ namespace SME.VHDL.Templates
             Process = renderproc.Process;
         }
 
+        /// <summary>
+        /// Writes the template to the VHDL file.
+        /// </summary>
         public override string TransformText()
         {
             GenerationEnvironment = null;
@@ -415,5 +431,4 @@ end RTL;
             return GenerationEnvironment.ToString();
         }
     }
-
 }

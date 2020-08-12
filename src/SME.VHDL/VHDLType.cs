@@ -7,32 +7,32 @@ using Microsoft.CodeAnalysis;
 namespace SME.VHDL
 {
     /// <summary>
-    /// Representation of a VHDL type
+    /// Representation of a VHDL type.
     /// </summary>
     public class VHDLType
     {
         /// <summary>
-        /// Gets or sets a type alias name
+        /// Gets or sets a type alias name.
         /// </summary>
         public string Alias { get; set; }
         /// <summary>
-        /// Gets or sets a value indicating if the type is an array
+        /// Gets or sets a value indicating if the type is an array.
         /// </summary>
         public bool IsArray { get; set; }
         /// <summary>
-        /// Gets or sets a value indicating if the type is an enum
+        /// Gets or sets a value indicating if the type is an enum.
         /// </summary>
         public bool IsEnum { get; set; }
         /// <summary>
-        /// Gets or sets a value indicating if the type is an irregular enum
+        /// Gets or sets a value indicating if the type is an irregular enum.
         /// </summary>
         public bool IsIrregularEnum { get; set; }
         /// <summary>
-        /// Gets or sets the primary VHDL name
+        /// Gets or sets the primary VHDL name.
         /// </summary>
         public string Name { get; set; }
         /// <summary>
-        /// Gets or sets the name of the elements in the array or enum
+        /// Gets or sets the name of the elements in the array or enum.
         /// </summary>
         public string ElementName { get; set; }
         /// <summary>
@@ -44,13 +44,12 @@ namespace SME.VHDL
         /// </summary>
         public int UpperBound { get; set; }
         /// <summary>
-        /// Gets or sets the source CeCil type
+        /// Gets or sets the source MSCA type
         /// </summary>
-        //public TypeReference SourceType { get; set; }
         public ITypeSymbol SourceType { get; set; }
 
         /// <summary>
-        /// Gets or sets the length of the array
+        /// Gets or sets the length of the array.
         /// </summary>
         public int Length
         {
@@ -242,7 +241,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Returns a valid VHDL name for this type
+        /// Returns a valid VHDL name for this type.
         /// </summary>
         /// <returns>The safe VHDLN ame.</returns>
         public string ToSafeVHDLName()
@@ -256,7 +255,7 @@ namespace SME.VHDL
     }
 
     /// <summary>
-    /// A new VHDL type scope
+    /// A new VHDL type scope.
     /// </summary>
     public class VHDLTypeScope
     {
@@ -275,20 +274,20 @@ namespace SME.VHDL
         private static Type[] NUMERIC_TYPES = new Type[] { typeof(byte), typeof(sbyte), typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong) };
 
         /// <summary>
-        /// The numeric types in Mono.Cecil.
+        /// The numeric types in MSCA.
         /// </summary>
         private readonly ITypeSymbol[] m_numericTypes;
         /// <summary>
-        /// The signed numeric types in Mono.Cecil.
+        /// The signed numeric types in MSCA.
         /// </summary>
         private readonly ITypeSymbol[] m_signedNumericTypes;
         /// <summary>
-        /// The unsigned numeric types in Mono.Cecil.
+        /// The unsigned numeric types in MSCA.
         /// </summary>
         private readonly ITypeSymbol[] m_unsignedNumericTypes;
 
         /// <summary>
-        /// The resolved numeric types in Mono.Cecil.
+        /// The resolved numeric types in MSCA.
         /// </summary>
         //private readonly TypeDefinition[] m_resolvedNumericTypes;
 
@@ -303,19 +302,18 @@ namespace SME.VHDL
         private readonly Dictionary<string, VHDLType> m_builtins = new Dictionary<string, VHDLType>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// The array types lookup
+        /// The array types lookup.
         /// </summary>
         private readonly Dictionary<string, VHDLType> m_arrays = new Dictionary<string, VHDLType>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// The vector types lookup
+        /// The vector types lookup.
         /// </summary>
         private readonly Dictionary<int, VHDLType> m_vectorTypes = new Dictionary<int, VHDLType>();
 
         /// <summary>
-        /// The Mono.Cecil module definition
+        /// The MSCA module definition.
         /// </summary>
-        //private readonly ModuleDefinition m_resolveModule;
         private readonly IAssemblySymbol m_resolveAssembly;
 
         /// <summary>
@@ -350,7 +348,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Gets all the builtin names
+        /// Gets all the builtin names.
         /// </summary>
         public IEnumerable<string> BuiltinNames
         {
@@ -359,12 +357,12 @@ namespace SME.VHDL
 
 
         /// <summary>
-        /// Gets a VHDL type from values
+        /// Gets a VHDL type from values.
         /// </summary>
         /// <returns>The VHDL type.</returns>
         /// <param name="typename">The name of the type to get.</param>
         /// <param name="alias">The type alias to use.</param>
-        /// <param name="type">The type in Mono.Cecil.</param>
+        /// <param name="type">The type in MSCA.</param>
         public VHDLType GetVHDLType(string typename, string alias, ITypeSymbol type)
         {
             if (!string.IsNullOrWhiteSpace(alias) && m_stringTypes.ContainsKey(alias))
@@ -428,7 +426,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Examines an enum and determines if it can be expressed as a seqeunce of consecutive integers starting with zero
+        /// Examines an enum and determines if it can be expressed as a seqeunce of consecutive integers starting with zero.
         /// </summary>
         /// <returns><c>true</c>, if the enum is irregular, <c>false</c> otherwise.</returns>
         /// <param name="type">The type to evaluate.</param>
@@ -458,7 +456,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Gets a numeric equivalent type for a VHDL type
+        /// Gets a numeric equivalent type for a VHDL type.
         /// </summary>
         /// <returns>The equivalent VHDL type.</returns>
         /// <param name="type">The type to find a numeric equivalent for.</param>
@@ -567,7 +565,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Gets a system equivalent type for the given VHDL type
+        /// Gets a system equivalent type for the given VHDL type.
         /// </summary>
         /// <returns>The system type equivalent.</returns>
         /// <param name="type">The VHDL type to get a system equivalent.</param>
@@ -597,7 +595,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Gets a STD_LOGIC_VECTOR of a size matching the given type
+        /// Gets a STD_LOGIC_VECTOR of a size matching the given type.
         /// </summary>
         /// <returns>The std_logic_vector equivalent.</returns>
         /// <param name="type">The type to get an equivalent for.</param>
@@ -681,7 +679,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Gets the VHDL type from a type attribute
+        /// Gets the VHDL type from a type attribute.
         /// </summary>
         /// <returns>The VHDL type.</returns>
         /// <param name="attr">The attribute.</param>
@@ -693,7 +691,7 @@ namespace SME.VHDL
 
 
         /// <summary>
-        /// Gets the vhdl type from a member definition
+        /// Gets the vhdl type from a member definition.
         /// </summary>
         /// <returns>The VHDL type.</returns>
         /// <param name="type">The member definition.</param>
@@ -768,7 +766,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Gets a VHDL type from its name
+        /// Gets a VHDL type from its name.
         /// </summary>
         /// <returns>The VHDL type.</returns>
         /// <param name="name">The name to find the type for.</param>
@@ -782,7 +780,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Tries to get a VHDL type from its name
+        /// Tries to get a VHDL type from its name.
         /// </summary>
         /// <returns>The VHDL type.</returns>
         /// <param name="name">The name to find the type for.</param>
@@ -802,7 +800,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Gets the VHDL type from a type reference
+        /// Gets the VHDL type from a type reference.
         /// </summary>
         /// <returns>The VHDL type.</returns>
         /// <param name="type">The ty[e reference to get the VHDL type for.</param>
@@ -893,7 +891,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Gets a std_logic_vector of the given length
+        /// Gets a std_logic_vector of the given length.
         /// </summary>
         /// <returns>The std_logic_vector type.</returns>
         /// <param name="length">The length of the vector.</param>
@@ -914,12 +912,12 @@ namespace SME.VHDL
     }
 
     /// <summary>
-    /// Basic VHDL types
+    /// Basic VHDL types.
     /// </summary>
     public static class VHDLTypes
     {
         /// <summary>
-        /// The INTEGER type
+        /// The INTEGER type.
         /// </summary>
         public static readonly VHDLType INTEGER = new VHDLType()
         {
@@ -928,7 +926,7 @@ namespace SME.VHDL
         };
 
         /// <summary>
-        /// The UINT 8 UNSIGNED type
+        /// The UINT 8 UNSIGNED type.
         /// </summary>
         public static readonly VHDLType NUMERIC_UINT8 = new VHDLType()
         {
@@ -940,7 +938,7 @@ namespace SME.VHDL
         };
 
         /// <summary>
-        /// The UINT 16 UNSIGNED type
+        /// The UINT 16 UNSIGNED type.
         /// </summary>
         public static readonly VHDLType NUMERIC_UINT16 = new VHDLType()
         {
@@ -952,7 +950,7 @@ namespace SME.VHDL
         };
 
         /// <summary>
-        /// The UINT 32 UNSIGNED type
+        /// The UINT 32 UNSIGNED type.
         /// </summary>
         public static readonly VHDLType NUMERIC_UINT32 = new VHDLType()
         {
@@ -964,7 +962,7 @@ namespace SME.VHDL
         };
 
         /// <summary>
-        /// The UINT 64 UNSIGNED type
+        /// The UINT 64 UNSIGNED type.
         /// </summary>
         public static readonly VHDLType NUMERIC_UINT64 = new VHDLType()
         {
@@ -976,7 +974,7 @@ namespace SME.VHDL
         };
 
         /// <summary>
-        /// The INT 8 SIGNED type
+        /// The INT 8 SIGNED type.
         /// </summary>
         public static readonly VHDLType NUMERIC_INT8 = new VHDLType()
         {
@@ -988,7 +986,7 @@ namespace SME.VHDL
         };
 
         /// <summary>
-        /// The INT 16 SIGNED type
+        /// The INT 16 SIGNED type.
         /// </summary>
         public static readonly VHDLType NUMERIC_INT16 = new VHDLType()
         {
@@ -1000,7 +998,7 @@ namespace SME.VHDL
         };
 
         /// <summary>
-        /// The INT 32 SIGNED type
+        /// The INT 32 SIGNED type.
         /// </summary>
         public static readonly VHDLType NUMERIC_INT32 = new VHDLType()
         {
@@ -1012,7 +1010,7 @@ namespace SME.VHDL
         };
 
         /// <summary>
-        /// The INT 64 SIGNED type
+        /// The INT 64 SIGNED type.
         /// </summary>
         public static readonly VHDLType NUMERIC_INT64 = new VHDLType()
         {
@@ -1024,7 +1022,7 @@ namespace SME.VHDL
         };
 
         /// <summary>
-        /// The BOOLEAN type
+        /// The BOOLEAN type.
         /// </summary>
         public static readonly VHDLType BOOL = new VHDLType()
         {
@@ -1033,7 +1031,7 @@ namespace SME.VHDL
         };
 
         /// <summary>
-        /// The T_SYSTEM_BOOL type
+        /// The T_SYSTEM_BOOL type.
         /// </summary>
         public static readonly VHDLType SYSTEM_BOOL = new VHDLType()
         {
@@ -1044,7 +1042,7 @@ namespace SME.VHDL
         };
 
         /// <summary>
-        /// The T_SYSTEM_UINT8 type
+        /// The T_SYSTEM_UINT8 type.
         /// </summary>
         public static readonly VHDLType SYSTEM_UINT8 = new VHDLType()
         {
@@ -1058,7 +1056,7 @@ namespace SME.VHDL
         };
 
         /// <summary>
-        /// The T_SYSTEM_INT8 type
+        /// The T_SYSTEM_INT8 type.
         /// </summary>
         public static readonly VHDLType SYSTEM_INT8 = new VHDLType()
         {
@@ -1072,7 +1070,7 @@ namespace SME.VHDL
         };
 
         /// <summary>
-        /// The T_SYSTEM_UINT16 type
+        /// The T_SYSTEM_UINT16 type.
         /// </summary>
         public static readonly VHDLType SYSTEM_UINT16 = new VHDLType()
         {
@@ -1086,7 +1084,7 @@ namespace SME.VHDL
         };
 
         /// <summary>
-        /// The T_SYSTEM_INT16 type
+        /// The T_SYSTEM_INT16 type.
         /// </summary>
         public static readonly VHDLType SYSTEM_INT16 = new VHDLType()
         {
@@ -1100,7 +1098,7 @@ namespace SME.VHDL
         };
 
         /// <summary>
-        /// The T_SYSTEM_UINT32 type
+        /// The T_SYSTEM_UINT32 type.
         /// </summary>
         public static readonly VHDLType SYSTEM_UINT32 = new VHDLType()
         {
@@ -1114,7 +1112,7 @@ namespace SME.VHDL
         };
 
         /// <summary>
-        /// The T_SYSTEM_INT32 type
+        /// The T_SYSTEM_INT32 type.
         /// </summary>
         public static readonly VHDLType SYSTEM_INT32 = new VHDLType()
         {
@@ -1128,7 +1126,7 @@ namespace SME.VHDL
         };
 
         /// <summary>
-        /// The T_SYSTEM_UINT64 type
+        /// The T_SYSTEM_UINT64 type.
         /// </summary>
         public static readonly VHDLType SYSTEM_UINT64 = new VHDLType()
         {
@@ -1142,7 +1140,7 @@ namespace SME.VHDL
         };
 
         /// <summary>
-        /// The T_SYSTEM_INT64 type
+        /// The T_SYSTEM_INT64 type.
         /// </summary>
         public static readonly VHDLType SYSTEM_INT64 = new VHDLType()
         {
@@ -1156,4 +1154,3 @@ namespace SME.VHDL
         };
     }
 }
-

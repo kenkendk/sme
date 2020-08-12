@@ -6,12 +6,12 @@ using SME.AST.Transform;
 namespace SME.VHDL.Transformations
 {
     /// <summary>
-    /// Removes some switch statements that are the result of a typecasting
+    /// Removes some switch statements that are the result of a typecasting.
     /// </summary>
     public class RemoveNonstaticSwitchLabels : IASTTransform
     {
         /// <summary>
-        /// The render state
+        /// The render state.
         /// </summary>
         private readonly RenderState State;
 
@@ -25,7 +25,7 @@ namespace SME.VHDL.Transformations
         }
 
         /// <summary>
-        /// Applies the transformation
+        /// Applies the transformation.
         /// </summary>
         /// <returns>The transformed item.</returns>
         /// <param name="el">The item to visit.</param>

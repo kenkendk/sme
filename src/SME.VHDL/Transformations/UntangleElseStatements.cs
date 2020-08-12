@@ -6,6 +6,10 @@ using SME.AST.Transform;
 
 namespace SME.VHDL.Transformations
 {
+    /// TODO what
+    /// <summary>
+    /// Untangles else statements.
+    /// </summary>
     public class UntangleElseStatements : IASTTransform
     {
         /// <summary>
@@ -13,12 +17,12 @@ namespace SME.VHDL.Transformations
         /// </summary>
         private readonly RenderState State;
         /// <summary>
-        /// The method being transformed
+        /// The method being transformed.
         /// </summary>
         private readonly Method Method;
 
         /// <summary>
-        /// Cache of handled methods
+        /// Cache of handled methods.
         /// </summary>
         private HashSet<ASTItem> m_handled = new HashSet<ASTItem>();
 
@@ -34,7 +38,7 @@ namespace SME.VHDL.Transformations
         }
 
         /// <summary>
-        /// Applies the transformation
+        /// Applies the transformation.
         /// </summary>
         /// <returns>The transformed item.</returns>
         /// <param name="item">The item to visit.</param>

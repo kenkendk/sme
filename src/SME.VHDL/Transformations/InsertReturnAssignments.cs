@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using SME.AST;
 using SME.AST.Transform;
 using Microsoft.CodeAnalysis.CSharp;
@@ -7,16 +6,16 @@ using Microsoft.CodeAnalysis.CSharp;
 namespace SME.VHDL.Transformations
 {
     /// <summary>
-    /// Injects assignment statements before return statements
+    /// Injects assignment statements before return statements.
     /// </summary>
     public class InsertReturnAssignments : IASTTransform
     {
         /// <summary>
-        /// The render state
+        /// The render state.
         /// </summary>
         private readonly RenderState State;
         /// <summary>
-        /// The method being compiled
+        /// The method being compiled.
         /// </summary>
         private readonly Method Method;
 
@@ -32,7 +31,7 @@ namespace SME.VHDL.Transformations
         }
 
         /// <summary>
-        /// Applies the transformation
+        /// Applies the transformation.
         /// </summary>
         /// <returns>The transformed item.</returns>
         /// <param name="item">The item to visit.</param>

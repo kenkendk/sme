@@ -1,26 +1,37 @@
-﻿using System.Linq;
-using SME;
-using SME.VHDL;
-using System.Text;
+﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using SME.AST;
-using System;
 
 namespace SME.VHDL.Templates
 {
-
+    /// <summary>
+    /// Template for generating the top level export file.
+    /// </summary>
     public class ExportTopLevel : BaseTemplate
     {
-
+        /// <summary>
+        /// The network to export.
+        /// </summary>
         public readonly Network Network;
+        /// <summary>
+        /// The current render state.
+        /// </summary>
         public readonly RenderState RS;
 
+        /// <summary>
+        /// Constructs a new instance of the export top level template.
+        /// </summary>
+        /// <param name="renderer">The render state to render in.</param>
         public ExportTopLevel(RenderState renderer)
         {
             RS = renderer;
             Network = renderer.Network;
         }
 
+        /// <summary>
+        /// Writes the template to the VHDL file.
+        /// </summary>
         public override string TransformText()
         {
             GenerationEnvironment = null;

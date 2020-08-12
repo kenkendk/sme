@@ -3,7 +3,7 @@
 namespace SME.VHDL
 {
     /// <summary>
-    /// Attribute for supplying the type used in VHDL output
+    /// Attribute for supplying the type used in VHDL output.
     /// </summary>
     public class VHDLTypeAttribute : Attribute
     {
@@ -18,7 +18,7 @@ namespace SME.VHDL
     }
 
     /// <summary>
-    /// Attribute for marking process as a named component
+    /// Attribute for marking process as a named component.
     /// </summary>
     public class VHDLComponentAttribute : Attribute
     {
@@ -30,4 +30,3 @@ namespace SME.VHDL
         }
     }
 }
-

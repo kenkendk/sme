@@ -5,12 +5,12 @@ using SME.AST.Transform;
 namespace SME.VHDL.Transformations
 {
     /// <summary>
-    /// This transformation ensures that all expressions and data elements have a default VHDL type associated
+    /// This transformation ensures that all expressions and data elements have a default VHDL type associated.
     /// </summary>
     public class AssignVhdlType : IASTTransform
     {
         /// <summary>
-        /// The render state
+        /// The render state.
         /// </summary>
         private readonly RenderState State;
 
@@ -24,7 +24,7 @@ namespace SME.VHDL.Transformations
         }
 
         /// <summary>
-        /// Applies the transformation
+        /// Applies the transformation.
         /// </summary>
         /// <returns>The transformed item.</returns>
         /// <param name="el">The item to visit.</param>

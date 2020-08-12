@@ -1,31 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using SME.AST;
 using SME.AST.Transform;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace SME.VHDL.Transformations
 {
     /// <summary>
     /// Injects VHDL type conversions to ensure the output
-    /// is valid VHDL
+    /// is valid VHDL.
     /// </summary>
     public class InjectTypeConversions : IASTTransform
     {
         /// <summary>
-        /// The render state
-        /// </summary>
+        /// The render state.
+        /// </summary>.
         private readonly RenderState State;
         /// <summary>
-        /// The method being compiled
+        /// The method being compiled.
         /// </summary>
         private readonly Method Method;
 
         /// <summary>
-        /// Lookup table with expressions already processed
+        /// Lookup table with expressions already processed.
         /// </summary>
         private readonly Dictionary<ASTItem, string> m_done = new Dictionary<ASTItem, string>();
 
@@ -41,7 +39,7 @@ namespace SME.VHDL.Transformations
         }
 
         /// <summary>
-        /// Applies the transformation
+        /// Applies the transformation.
         /// </summary>
         /// <returns>The transformed item.</returns>
         /// <param name="el">The item to visit.</param>

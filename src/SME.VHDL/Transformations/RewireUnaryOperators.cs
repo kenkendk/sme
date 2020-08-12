@@ -6,10 +6,13 @@ using Microsoft.CodeAnalysis.CSharp;
 
 namespace SME.VHDL.Transformations
 {
+    /// <summary>
+    /// Converts unary operators into full statements.
+    /// </summary>
     public class RewireUnaryOperators : IASTTransform
     {
         /// <summary>
-        /// The render state
+        /// The render state.
         /// </summary>
         private readonly RenderState State;
 
@@ -23,7 +26,7 @@ namespace SME.VHDL.Transformations
         }
 
         /// <summary>
-        /// Applies the transformation
+        /// Applies the transformation.
         /// </summary>
         /// <returns>The transformed item.</returns>
         /// <param name="el">The item to visit.</param>

@@ -1,20 +1,31 @@
-﻿using System.Linq;
-using System.Text;
+﻿using System;
 using System.Collections.Generic;
-using System;
+using System.Linq;
 
 namespace SME.VHDL.Templates
 {
-
+    /// <summary>
+    /// Template for generating a Makefile for GHDL.
+    /// </summary>
     public class GHDL_Makefile : BaseTemplate
     {
-
+        /// <summary>
+        /// The current render state.
+        /// </summary>
         public readonly RenderState RS;
+
+        /// <summary>
+        /// Constructs a new instance of the GHDL Makefile template.
+        /// </summary>
+        /// <param name="renderer">The render state to render in</param>
         public GHDL_Makefile(RenderState renderer)
         {
             RS = renderer;
         }
 
+        /// <summary>
+        /// Gets the collection of the custom files, which have been rendered.
+        /// </summary>
         public IEnumerable<string> CustomFiles
         {
             get
@@ -23,6 +34,9 @@ namespace SME.VHDL.Templates
             }
         }
 
+        /// <summary>
+        /// Gets the collection of filenames of the currently rendered VHDL files.
+        /// </summary>
         public IEnumerable<string> Filenames
         {
             get
@@ -35,6 +49,9 @@ namespace SME.VHDL.Templates
             }
         }
 
+        /// <summary>
+        /// Gets the collection of names of the VHDL files, without extension.
+        /// </summary>
         public IEnumerable<string> RawVHDL
         {
             get
@@ -50,6 +67,9 @@ namespace SME.VHDL.Templates
             }
         }
 
+        /// <summary>
+        /// Writes the template to the VHDL file.
+        /// </summary>
         public override string TransformText()
         {
             GenerationEnvironment = null;

@@ -1,13 +1,18 @@
 using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace SME.VHDL.Templates
 {
+    /// <summary>
+    /// Base template for VHDL files.
+    /// </summary>
     public abstract class BaseTemplate
     {
+        /// <summary>
+        /// Writes the template to the VHDL file.
+        /// </summary>
         public virtual string TransformText()
         {
             GenerationEnvironment = null;
@@ -15,17 +20,41 @@ namespace SME.VHDL.Templates
             return GenerationEnvironment.ToString();
         }
 
+        /// <summary>
+        /// Initializes the template.
+        /// </summary>
         public virtual void Initialize()
         {
         }
 
+        /// <summary>
+        /// The string builder used for writing the files.
+        /// </summary>
         private StringBuilder builder;
+        /// <summary>
+        /// The current session.
+        /// </summary>
         private IDictionary<string, object> session;
+        /// <summary>
+        /// The collection of errors.
+        /// </summary>
         private CompilerErrorCollection errors;
+        /// <summary>
+        /// The current indentation.
+        /// </summary>
         private string currentIndent = string.Empty;
+        /// <summary>
+        /// Stack of indentations.
+        /// </summary>
         private Stack<int> indents;
+        /// <summary>
+        /// Helper class with static methods.
+        /// </summary>
         private ToStringInstanceHelper _toStringHelper = new ToStringInstanceHelper();
 
+        /// <summary>
+        /// Gets or sets the current session.
+        /// </summary>
         public virtual IDictionary<string, object> Session
         {
             get
@@ -38,6 +67,9 @@ namespace SME.VHDL.Templates
             }
         }
 
+        /// <summary>
+        /// Gets or sets the current builder.
+        /// </summary>
         public StringBuilder GenerationEnvironment
         {
             get
@@ -54,6 +86,9 @@ namespace SME.VHDL.Templates
             }
         }
 
+        /// <summary>
+        /// Gets or sets the current collection of errors.
+        /// </summary>
         protected CompilerErrorCollection Errors
         {
             get
@@ -66,6 +101,9 @@ namespace SME.VHDL.Templates
             }
         }
 
+        /// <summary>
+        /// Gets the current indentation.
+        /// </summary>
         public string CurrentIndent
         {
             get
@@ -74,6 +112,9 @@ namespace SME.VHDL.Templates
             }
         }
 
+        /// <summary>
+        /// Gets the current stack of indentations.
+        /// </summary>
         private Stack<int> Indents
         {
             get
@@ -86,6 +127,9 @@ namespace SME.VHDL.Templates
             }
         }
 
+        /// <summary>
+        /// Gets the string helper class.
+        /// </summary>
         public ToStringInstanceHelper ToStringHelper
         {
             get
@@ -94,11 +138,19 @@ namespace SME.VHDL.Templates
             }
         }
 
+        /// <summary>
+        /// Adds the given error to the collection of errors.
+        /// </summary>
+        /// <param name="message">The given error.</param>
         public void Error(string message)
         {
             Errors.Add(new CompilerError(null, -1, -1, null, message));
         }
 
+        /// <summary>
+        /// Adds the given warning to the collection of warnings.
+        /// </summary>
+        /// <param name="message">The given warning.</param>
         public void Warning(string message)
         {
             CompilerError val = new CompilerError(null, -1, -1, null, message);
@@ -106,6 +158,9 @@ namespace SME.VHDL.Templates
             Errors.Add(val);
         }
 
+        /// <summary>
+        /// Pops an indentation from the stack of indentations.
+        /// </summary>
         public string PopIndent()
         {
             if ((Indents.Count == 0))
@@ -118,34 +173,59 @@ namespace SME.VHDL.Templates
             return last;
         }
 
+        /// <summary>
+        /// Pushes the given indentation to the stack of indentations.
+        /// </summary>
+        /// <param name="indent">The given indentation.</param>
         public void PushIndent(string indent)
         {
             Indents.Push(indent.Length);
             currentIndent = (currentIndent + indent);
         }
 
+        /// <summary>
+        /// Clears the current indentation.
+        /// </summary>
         public void ClearIndent()
         {
             currentIndent = string.Empty;
             Indents.Clear();
         }
 
+        /// <summary>
+        /// Writes the given text to the builder.
+        /// </summary>
+        /// <param name="textToAppend">The text to write.</param>
         public void Write(string textToAppend)
         {
             GenerationEnvironment.Append(textToAppend);
         }
 
+        /// <summary>
+        /// Applies the given objects to the format string and writes it to the builder.
+        /// </summary>
+        /// <param name="format">The given format string.</param>
+        /// <param name="args">The given objects to apply to the format string.</param>
         public void Write(string format, params object[] args)
         {
             GenerationEnvironment.AppendFormat(format, args);
         }
 
+        /// <summary>
+        /// Writes the given text to the builder along with a newline.
+        /// </summary>
+        /// <param name="textToAppend">The text to write.</param>
         public void WriteLine(string textToAppend)
         {
             GenerationEnvironment.Append(currentIndent);
             GenerationEnvironment.AppendLine(textToAppend);
         }
 
+        /// <summary>
+        /// Applies the given objects to the format string and writes it to the builder along with a newline.
+        /// </summary>
+        /// <param name="format">The given format string.</param>
+        /// <param name="args">The given objects to apply to the format string.</param>
         public void WriteLine(string format, params object[] args)
         {
             GenerationEnvironment.Append(currentIndent);
@@ -153,10 +233,19 @@ namespace SME.VHDL.Templates
             GenerationEnvironment.AppendLine();
         }
 
+        /// <summary>
+        /// Helper class containing static methods for manipulating strings.
+        /// </summary>
         public class ToStringInstanceHelper
         {
+            /// <summary>
+            /// The format provider for formatting strings.
+            /// </summary>
             private System.IFormatProvider formatProvider = System.Globalization.CultureInfo.InvariantCulture;
 
+            /// <summary>
+            /// Gets or sets the format provider.
+            /// </summary>
             public System.IFormatProvider FormatProvider
             {
                 get
@@ -172,6 +261,10 @@ namespace SME.VHDL.Templates
                 }
             }
 
+            /// <summary>
+            /// Converts the given object to a string, along with culture given by the format provider.
+            /// </summary>
+            /// <param name="objectToConvert">The object to convert.</param>
             public string ToStringWithCulture(object objectToConvert)
             {
                 if ((objectToConvert == null))

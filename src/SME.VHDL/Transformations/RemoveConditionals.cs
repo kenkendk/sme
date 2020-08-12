@@ -13,16 +13,16 @@ namespace SME.VHDL.Transformations
     public class RemoveConditionals : IASTTransform
     {
         /// <summary>
-        /// The render state
+        /// The render state.
         /// </summary>
         private readonly RenderState State;
         /// <summary>
-        /// The method being compiled
+        /// The method being compiled.
         /// </summary>
         private readonly Method Method;
 
         /// <summary>
-        /// Rewrites conditions based on booleans without adding a temporary variable
+        /// Rewrites conditions based on booleans without adding a temporary variable.
         /// </summary>
         public bool CompressLogicalAssignments = true;
 
@@ -38,7 +38,7 @@ namespace SME.VHDL.Transformations
         }
 
         /// <summary>
-        /// Applies the transformation
+        /// Applies the transformation.
         /// </summary>
         /// <returns>The transformed item.</returns>
         /// <param name="el">The item to visit.</param>

@@ -2,17 +2,16 @@ using System;
 using System.Linq;
 using SME.AST;
 using SME.AST.Transform;
-using Microsoft.CodeAnalysis.CSharp;
 
 namespace SME.VHDL.Transformations
 {
     /// <summary>
-    /// Fixes types in a switch statement, where the switch expression does not have the same types as the cases
+    /// Fixes types in a switch statement, where the switch expression does not have the same types as the cases.
     /// </summary>
     public class FixSwitchStatementTypes : IASTTransform
     {
         /// <summary>
-        /// The render state
+        /// The render state.
         /// </summary>
         private readonly RenderState State;
 
@@ -26,7 +25,7 @@ namespace SME.VHDL.Transformations
         }
 
         /// <summary>
-        /// Applies the transformation
+        /// Applies the transformation.
         /// </summary>
         /// <returns>The transformed item.</returns>
         /// <param name="el">The item to visit.</param>
