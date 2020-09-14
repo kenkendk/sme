@@ -2,18 +2,18 @@
 namespace SME.Components
 {
     /// <summary>
-    /// Implementation of a true dual-port memory resource in read-first mode
+    /// Implementation of a true dual-port memory resource in read-first mode.
     /// </summary>
     [ClockedProcess]
     public class TrueDualPortMemory<T> : SimpleProcess
     {
         /// <summary>
-        /// The controller bus for port A
+        /// The controller bus for port A.
         /// </summary>
         public interface IControlA : IBus
         {
             /// <summary>
-            /// Sets a value indicating whether the address is used for writing or not
+            /// Sets a value indicating whether the address is used for writing or not.
             /// </summary>
             /// <value><c>true</c> if is writing; otherwise, <c>false</c>.</value>
             [InitialValue]
@@ -39,12 +39,12 @@ namespace SME.Components
         }
 
         /// <summary>
-        /// The controller bus for port A
+        /// The controller bus for port A.
         /// </summary>
         public interface IControlB : IBus
         {
             /// <summary>
-            /// Sets a value indicating whether the address is used for writing or not
+            /// Sets a value indicating whether the address is used for writing or not.
             /// </summary>
             /// <value><c>true</c> if is writing; otherwise, <c>false</c>.</value>
             [InitialValue]
@@ -70,12 +70,12 @@ namespace SME.Components
         }
 
         /// <summary>
-        /// The read result from port A
+        /// The read result from port A.
         /// </summary>
         public interface IReadResultA : IBus
         {
             /// <summary>
-            /// Gets the last data read from port A
+            /// Gets the last data read from port A.
             /// </summary>
             /// <value>The data.</value>
             [InitialValue]
@@ -83,12 +83,12 @@ namespace SME.Components
         }
 
         /// <summary>
-        /// The read result from port B
+        /// The read result from port B.
         /// </summary>
         public interface IReadResultB : IBus
         {
             /// <summary>
-            /// Gets the last data read from port B
+            /// Gets the last data read from port B.
             /// </summary>
             /// <value>The data.</value>
             [InitialValue]
@@ -96,32 +96,38 @@ namespace SME.Components
         }
 
         /// <summary>
-        /// The control bus for port A
+        /// The control bus for port A.
         /// </summary>
         [InputBus]
         public readonly IControlA ControlA = Scope.CreateBus<IControlA>();
         /// <summary>
-        /// The control bus for port B
+        /// The control bus for port B.
         /// </summary>
         [InputBus]
         public readonly IControlB ControlB = Scope.CreateBus<IControlB>();
 
         /// <summary>
-        /// The result of reading from port A
+        /// The result of reading from port A.
         /// </summary>
         [OutputBus]
         public readonly IReadResultA ReadResultA = Scope.CreateBus<IReadResultA>();
         /// <summary>
-        /// The result of reading from port B
+        /// The result of reading from port B.
         /// </summary>
         [OutputBus]
         public readonly IReadResultB ReadResultB = Scope.CreateBus<IReadResultB>();
 
         /// <summary>
-        /// The stored memory
+        /// The stored memory.
         /// </summary>
         [Signal]
         private readonly T[] m_memory;
+
+        /// <summary>
+        /// Flag indicating whether a warning message regarding clashing read/write addresses have been issued.
+        /// </summary>
+        [Ignore]
+        private bool warned = false;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="T:SME.Components.TrueDualPortMemory`1"/> class.
@@ -132,11 +138,11 @@ namespace SME.Components
         {
             m_memory = new T[size];
             if (initial != null)
-                Array.Copy(initial, 0, m_memory, 0, Math.Min(initial.Length, size));                        
+                Array.Copy(initial, 0, m_memory, 0, Math.Min(initial.Length, size));
         }
 
         /// <summary>
-        /// Performs the operations when the signals are ready
+        /// Performs the operations when the signals are ready.
         /// </summary>
         protected override void OnTick()
         {
@@ -146,6 +152,12 @@ namespace SME.Components
                 {
                     if (ControlA.IsWriting && ControlB.IsWriting)
                         throw new Exception("Both ports are writing the same memory address");
+
+                    if (!warned && (ControlA.IsWriting || ControlB.IsWriting))
+                    {
+                        warned = true;
+                        Console.WriteLine("Warning: reading and writing to the same address in a dual-port setup. Actual RAM will be in read first mode.");
+                    }
                 }
             });
 
@@ -157,7 +169,7 @@ namespace SME.Components
 
             if (ControlA.Enabled && ControlA.IsWriting)
                 m_memory[ControlA.Address] = ControlA.Data;
-                
+
             if (ControlB.Enabled && ControlB.IsWriting)
                 m_memory[ControlB.Address] = ControlB.Data;
         }

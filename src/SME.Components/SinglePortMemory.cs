@@ -2,26 +2,24 @@
 namespace SME.Components
 {
     /// <summary>
-    /// Implementation of a single-port memory resource
+    /// Implementation of a single-port memory resource.
     /// </summary>
     [ClockedProcess]
     public class SinglePortMemory<T> : SimpleProcess
     {
         /// <summary>
-        /// The control interface
+        /// The control interface.
         /// </summary>
         public interface IControl : IBus
         {
             /// <summary>
-            /// Gets or sets a value indicating whether this <see cref="T:SME.Components.SinglePortMemory`1.IControl"/>
-            /// is enabled.
+            /// Gets or sets a value indicating whether this <see cref="T:SME.Components.SinglePortMemory`1.IControl"/> is enabled.
             /// </summary>
             /// <value><c>true</c> if enabled; otherwise, <c>false</c>.</value>
             [InitialValue]
             bool Enabled { get; set; }
             /// <summary>
-            /// Gets or sets a value indicating whether this <see cref="T:SME.Components.SinglePortMemory`1.IControl"/>
-            /// is writing.
+            /// Gets or sets a value indicating whether this <see cref="T:SME.Components.SinglePortMemory`1.IControl"/> is writing.
             /// </summary>
             /// <value><c>true</c> if is writing; otherwise, <c>false</c>.</value>
             [InitialValue]
@@ -39,7 +37,7 @@ namespace SME.Components
         }
 
         /// <summary>
-        /// The result of a read operation
+        /// The result of a read operation.
         /// </summary>
         public interface IReadResult : IBus
         {
@@ -51,18 +49,18 @@ namespace SME.Components
         }
 
         /// <summary>
-        /// The control bus
+        /// The control bus.
         /// </summary>
         [InputBus]
         public readonly IControl Control = Scope.CreateBus<IControl>();
         /// <summary>
-        /// The result bus
+        /// The result bus.
         /// </summary>
         [OutputBus]
         public readonly IReadResult ReadResult = Scope.CreateBus<IReadResult>();
 
         /// <summary>
-        /// The memory instance
+        /// The memory instance.
         /// </summary>
         [Signal]
         private readonly T[] m_memory;
@@ -80,7 +78,7 @@ namespace SME.Components
         }
 
         /// <summary>
-        /// Runs the process
+        /// Runs the process.
         /// </summary>
         protected override void OnTick()
         {
