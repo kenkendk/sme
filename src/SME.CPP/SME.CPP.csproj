@@ -1,25 +1,54 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <ItemGroup>
-    <ProjectReference Include="..\SME\SME.csproj" />
-    <ProjectReference Include="..\SME.AST\SME.AST.csproj" />
-  </ItemGroup>
+    <!-- Project dependencies -->
+    <ItemGroup>
+        <ProjectReference Include="..\SME\SME.csproj" />
+        <ProjectReference Include="..\SME.AST\SME.AST.csproj" />
+    
+        <PackageReference Include="ICSharpCode.Decompiler" Version="3.0.2.3465" />
+        <PackageReference Include="Mono.Cecil" Version="0.10.0" />
+        <PackageReference Include="System.CodeDom" Version="4.7.0" />
 
-  <ItemGroup>
-    <PackageReference Include="ICSharpCode.Decompiler" Version="3.0.2.3465" />
-    <PackageReference Include="Mono.Cecil" Version="0.10.0-beta7" />
-    <PackageReference Include="System.CodeDom" Version="*" />
-  </ItemGroup>
+        <EmbeddedResource Include="Templates/*.hpp" />
+        <EmbeddedResource Include="Templates/*.cpp" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="Templates/*.hpp" />
-    <EmbeddedResource Include="Templates/*.cpp" />
-  </ItemGroup>
+    <!-- Project output name and format -->
+    <PropertyGroup>
+        <OutputType>library</OutputType>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <RootNamespace>SME.CPP</RootNamespace>
+    </PropertyGroup>
 
-  <PropertyGroup>
-    <OutputType>library</OutputType>
-    <TargetFramework>netstandard2.1</TargetFramework>
-    <RootNamespace>SME.CPP</RootNamespace>
-  </PropertyGroup>
+    <!-- Nuget package metadata -->
+    <PropertyGroup>
+        <PackageId>SME.CPP</PackageId>
+        <Title>Synchronous Message Exchange (SME)</Title>
+        <PackageVersion>0.4.2</PackageVersion>
+        <Authors>Kenneth Skovhede, Carl-Johannes Johnsen</Authors>
+        <Description>C++ transpiler for SME networks</Description>
+        <Copyright>Copyright ©2020 - The SME team</Copyright>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <DevelopmentDependency>false</DevelopmentDependency>
+        <PackageTags>SME;hardware simulation</PackageTags>
+        <RepositoryUrl>https://github.com/kenkendk/sme</RepositoryUrl>
+        <RepositoryBranch>master</RepositoryBranch>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    </PropertyGroup>
+
+    <!-- Adding the license file to the Nuget package -->
+    <ItemGroup>
+        <None Include="..\..\LICENSE" Pack="true" PackagePath="" />
+    </ItemGroup>
+
+    <!-- Adding release notes text file to the Nuget package -->
+    <Target Name="PrepareReleaseNotesFromFile" BeforeTargets="GenerateNuspec" >
+        <ReadLinesFromFile File="..\..\RELEASE_NOTES.txt" >
+            <Output TaskParameter="Lines" ItemName="ReleaseNoteLines" />
+        </ReadLinesFromFile>
+        <PropertyGroup>
+            <PackageReleaseNotes>@(ReleaseNoteLines, '%0a')</PackageReleaseNotes>
+        </PropertyGroup>
+    </Target>
 
 </Project>

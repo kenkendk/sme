@@ -1,0 +1,43 @@
+New in version 0.4.2 since 0.4.1-beta
+
+***********
+* Changes *
+***********
+- Updated to .NET Core 3.1.102. Newer versions won't work with VHDL code
+  generation.
+- Processes are now run concurrently. There is still some false dependency
+  between them, due to buses, which results in processes not always running in
+  parallel.
+- Changed when an SME simulation stops. The new default is to stop when all of
+  the simulation processes have finished. Stopping a simulation can also be
+  triggered by invoking `Simulation.Current.RequestStop()`.
+- Processes can now inherit from an abstract class.
+- Updated RAM components to give a warning, instead of throwing an exception,
+  when doing both a read and a write on the same address.
+
+*********
+* Fixes *
+*********
+- Fixed error with arrays containing default values being expanded into huge
+  initializations instead of using `others => `.
+- Updated unit tests to correctly do testing.
+- Updated examples to reflect proper SME.
+- All examples are now also run as unit tests, as in they now verify their
+  output is correct.
+- Removed GHDL warning about redundant `others` case.
+- Updated Travis for continoues integration of the updated SME on the Debug
+  build.
+- Fixed VHDL simulation, where a `RDY` flag wasn't properly set.
+- Fixed overflow error when generating bit strings
+- Flipped how arrays are initialized in the RAM templates.
+- Added intermediate signals for buses in VHDL, which are both input for
+  processes and top-level output.
+- Fixed handling of non-continoues enums.
+- Removed unused flag in state machines.
+- Reworked state machine transformations so they are more stable.
+- Fixed premature bus loading performed by the .NET debugger.
+- Fixed triggering of processes in VHDL.
+- Fixed error with generating too many type definitions in VHDL.
+- Fixed redundant variable definition for loop invariants.
+- Fixed error with inner exceptions silently being "handled".
+- Fixed export of arrays in VHDL.

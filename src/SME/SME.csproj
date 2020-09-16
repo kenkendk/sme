@@ -1,13 +1,46 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <ItemGroup>
-    <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
-  </ItemGroup>
+    <!-- Project dependencies -->
+    <ItemGroup>
+        <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
+    </ItemGroup>
 
-  <PropertyGroup>
-    <OutputType>library</OutputType>
-    <TargetFramework>netstandard2.1</TargetFramework>
-    <RootNamespace>SME</RootNamespace>
-  </PropertyGroup>
+    <!-- Project output name and format -->
+    <PropertyGroup>
+        <OutputType>library</OutputType>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <RootNamespace>SME</RootNamespace>
+    </PropertyGroup>
+
+    <!-- Nuget package metadata -->
+    <PropertyGroup>
+        <PackageId>SME</PackageId>
+        <Title>Synchronous Message Exchange (SME)</Title>
+        <PackageVersion>0.4.2</PackageVersion>
+        <Authors>Kenneth Skovhede, Carl-Johannes Johnsen</Authors>
+        <Description>Synchronous Message Exchange simulation and component library</Description>
+        <Copyright>Copyright ©2020 - The SME team</Copyright>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <DevelopmentDependency>false</DevelopmentDependency>
+        <PackageTags>SME;hardware simulation</PackageTags>
+        <RepositoryUrl>https://github.com/kenkendk/sme</RepositoryUrl>
+        <RepositoryBranch>master</RepositoryBranch>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    </PropertyGroup>
+
+    <!-- Adding the license file to the Nuget package -->
+    <ItemGroup>
+        <None Include="..\..\LICENSE" Pack="true" PackagePath="" />
+    </ItemGroup>
+
+    <!-- Adding release notes text file to the Nuget package -->
+    <Target Name="PrepareReleaseNotesFromFile" BeforeTargets="GenerateNuspec" >
+        <ReadLinesFromFile File="..\..\RELEASE_NOTES.txt" >
+            <Output TaskParameter="Lines" ItemName="ReleaseNoteLines" />
+        </ReadLinesFromFile>
+        <PropertyGroup>
+            <PackageReleaseNotes>@(ReleaseNoteLines, '%0a')</PackageReleaseNotes>
+        </PropertyGroup>
+    </Target>
 
 </Project>

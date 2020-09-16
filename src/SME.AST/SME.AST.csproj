@@ -1,19 +1,50 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <ItemGroup>
-    <ProjectReference Include="..\SME\SME.csproj" />
-  </ItemGroup>
+    <!-- Project dependencies -->
+    <ItemGroup>
+        <ProjectReference Include="..\SME\SME.csproj" />
+        
+        <PackageReference Include="NewtonSoft.Json" Version="12.0.1" />
+        <PackageReference Include="ICSharpCode.Decompiler" Version="3.0.2.3465" />
+        <PackageReference Include="Mono.Cecil" Version="0.10.0" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="NewtonSoft.Json" Version="12.0.1" />
-    <PackageReference Include="ICSharpCode.Decompiler" Version="3.0.2.3465" />
-    <PackageReference Include="Mono.Cecil" Version="0.10.0-beta7" />
-  </ItemGroup>
+    <!-- Project output name and format -->
+    <PropertyGroup>
+        <OutputType>library</OutputType>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <RootNamespace>SME.AST</RootNamespace>
+    </PropertyGroup>
 
-  <PropertyGroup>
-    <OutputType>library</OutputType>
-    <TargetFramework>netstandard2.1</TargetFramework>
-    <RootNamespace>SME.AST</RootNamespace>
-  </PropertyGroup>
+    <!-- Nuget package metadata -->
+    <PropertyGroup>
+        <PackageId>SME.AST</PackageId>
+        <Title>Synchronous Message Exchange (SME)</Title>
+        <PackageVersion>0.4.2</PackageVersion>
+        <Authors>Kenneth Skovhede, Carl-Johannes Johnsen</Authors>
+        <Description>Abstract syntax tree builder for SME networks</Description>
+        <Copyright>Copyright ©2020 - The SME team</Copyright>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <DevelopmentDependency>false</DevelopmentDependency>
+        <PackageTags>SME;hardware simulation</PackageTags>
+        <RepositoryUrl>https://github.com/kenkendk/sme</RepositoryUrl>
+        <RepositoryBranch>master</RepositoryBranch>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    </PropertyGroup>
+
+    <!-- Adding the license file to the Nuget package -->
+    <ItemGroup>
+        <None Include="..\..\LICENSE" Pack="true" PackagePath="" />
+    </ItemGroup>
+
+    <!-- Adding release notes text file to the Nuget package -->
+    <Target Name="PrepareReleaseNotesFromFile" BeforeTargets="GenerateNuspec" >
+        <ReadLinesFromFile File="..\..\RELEASE_NOTES.txt" >
+            <Output TaskParameter="Lines" ItemName="ReleaseNoteLines" />
+        </ReadLinesFromFile>
+        <PropertyGroup>
+            <PackageReleaseNotes>@(ReleaseNoteLines, '%0a')</PackageReleaseNotes>
+        </PropertyGroup>
+    </Target>
 
 </Project>
