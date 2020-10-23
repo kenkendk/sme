@@ -50,6 +50,20 @@
             }
         },
         {
+            "label": "build example FloatingPoint",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/src/Examples/FloatingPoint/FloatingPoint.csproj"
+            ],
+            "problemMatcher": "$msCompile",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
             "label": "build example NoiseFilter",
             "command": "dotnet",
             "type": "process",

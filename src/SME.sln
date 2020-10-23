@@ -47,6 +47,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stopwatch", "Examples\Stopw
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StateMachineTester", "Examples\StateMachineTester\StateMachineTester.csproj", "{8234EDB4-F82F-4A11-902F-8ED48D3068C9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FloatingPoint", "Examples\FloatingPoint\FloatingPoint.csproj", "{46D41CC0-D32F-4417-A9FB-1672775D8B5F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -137,6 +139,10 @@ Global
 		{8234EDB4-F82F-4A11-902F-8ED48D3068C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8234EDB4-F82F-4A11-902F-8ED48D3068C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8234EDB4-F82F-4A11-902F-8ED48D3068C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{46D41CC0-D32F-4417-A9FB-1672775D8B5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{46D41CC0-D32F-4417-A9FB-1672775D8B5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{46D41CC0-D32F-4417-A9FB-1672775D8B5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{46D41CC0-D32F-4417-A9FB-1672775D8B5F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -155,6 +161,7 @@ Global
 		{6DAC7D6D-E2FF-4E65-AEBD-A7614757EFC3} = {0F94E837-9D61-47FE-98A0-EDFA671A44FA}
 		{82CF8963-104B-44EC-8D7A-F7770CBB29D0} = {0F94E837-9D61-47FE-98A0-EDFA671A44FA}
 		{8234EDB4-F82F-4A11-902F-8ED48D3068C9} = {0F94E837-9D61-47FE-98A0-EDFA671A44FA}
+		{46D41CC0-D32F-4417-A9FB-1672775D8B5F} = {0F94E837-9D61-47FE-98A0-EDFA671A44FA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {919EE0E7-607B-4DB0-9FD2-27B597206F06}
