@@ -51,7 +51,8 @@ namespace SME.Components
         [DllImport (floating_point_library)]
         private static extern void xip_fpo_clear(xip_fpo_ptr value);
 
-        private static float from_uint(uint input) 
+        // TODO sørg for at den er simulationonly!
+        public static float from_uint(uint input) 
         {
             byte[] tmp = new byte[8];
             for (int i = 0; i < tmp.Length; i++)
@@ -61,7 +62,7 @@ namespace SME.Components
             return BitConverter.ToSingle(tmp);
         }
 
-        private static uint from_float(float input) 
+        public static uint from_float(float input) 
         {
             byte[] tmp = BitConverter.GetBytes(input);
             uint result = 0;
@@ -137,7 +138,7 @@ namespace SME.Components
         private uint tmptdataa;
         private uint tmptdatab;
 
-        public readonly Dictionary<Operations, (int,int)> latency_dict = new Dictionary<Operations, (int,int)>() {
+        public static readonly Dictionary<Operations, (int,int)> latency_dict = new Dictionary<Operations, (int,int)>() {
             { Operations.Add, (3, 4) },
         };
 
