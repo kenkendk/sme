@@ -178,7 +178,7 @@ namespace SME.Components
             }
 
             // Handle the outputs
-            if (was_valid && m_axis_result.tready)
+            if (was_valid && m_axis_result.tready || (!was_valid))
             {
                 var (valid, a, b) = in_flight[in_flight.Length-1];
                 m_axis_result.tvalid = was_valid = valid;
@@ -187,7 +187,7 @@ namespace SME.Components
             }
 
             // TODO tjek om den staller hele pipelinen, eller kun enkelte stages
-            for (int i = in_flight.Length-1; i > 0; i++)
+            for (int i = in_flight.Length-1; i > 0; i--)
             {
                 var (valid, _, _) = in_flight[i];
                 if (!valid)

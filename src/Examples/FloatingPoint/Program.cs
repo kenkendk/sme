@@ -25,7 +25,7 @@ namespace FloatingPoint
             var op = SME.Components.FloatingPoint.Operations.Add;
             var lat = SME.Components.FloatingPoint.latency_dict[op].Item1;
             var component = new SME.Components.FloatingPoint(op, lat);
-            var tester = new TesterFloat(op, impl, lat, 1000);
+            var tester = new TesterFloat(op, impl, 1000);
 
             tester.component_input_a = component.s_axis_a;
             tester.component_input_b = component.s_axis_b;

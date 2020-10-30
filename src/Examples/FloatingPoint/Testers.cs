@@ -6,7 +6,7 @@ namespace FloatingPoint
 {
     public class TesterFloat : Tester<float>
     {
-        public TesterFloat(SME.Components.FloatingPoint.Operations operation, Func<float,float,float> operation_impl, int latency, int count) : base(operation, operation_impl, latency, count)
+        public TesterFloat(SME.Components.FloatingPoint.Operations operation, Func<float,float,float> operation_impl, int count) : base(operation, operation_impl, count)
         { 
             base.threshold = .00001f;
             base.compare = (a,b) => (a - b) < threshold;
@@ -35,7 +35,6 @@ namespace FloatingPoint
 
         SME.Components.FloatingPoint.Operations operation;
         Func<T, T, T> operation_impl;
-        int latency;
         int i = 0, j = 0, k = 0;
         bool was_valid_i = false, was_valid_j = false, was_ready_k = false;
         protected T threshold;
@@ -44,11 +43,10 @@ namespace FloatingPoint
 
         T[] input_a, input_b, result, expected_result;
 
-        public Tester(SME.Components.FloatingPoint.Operations operation, Func<T,T,T> operation_impl, int latency, int count)
+        public Tester(SME.Components.FloatingPoint.Operations operation, Func<T,T,T> operation_impl, int count)
         {
             this.operation = operation;
             this.operation_impl = operation_impl;
-            this.latency = latency;
             
             input_a = new T[count];
             input_b = new T[count];
@@ -78,11 +76,11 @@ namespace FloatingPoint
                     component_input_a.tdata = SME.Components.FloatingPoint.from_float((float)(object)input_a[i]);
                 component_input_a.tvalid = was_valid_i = i < input_a.Length;
 
-                if (was_valid_j && component_input_a.tready)
+                if (was_valid_j && component_input_b.tready)
                     j++;
                 if (j < input_b.Length)
-                    component_input_a.tdata = SME.Components.FloatingPoint.from_float((float)(object)input_b[j]);
-                component_input_a.tvalid = was_valid_j = j < input_b.Length;
+                    component_input_b.tdata = SME.Components.FloatingPoint.from_float((float)(object)input_b[j]);
+                component_input_b.tvalid = was_valid_j = j < input_b.Length;
 
                 component_result.tready = true;
                 if (component_result.tvalid)
@@ -98,6 +96,7 @@ namespace FloatingPoint
             for (int i = 0; i < result.Length; i++)
                 matched &= compare(expected_result[i], result[i]);
             System.Diagnostics.Debug.Assert(matched);
+            Console.WriteLine($"Results matched: {matched}");
         }
 
     } 
