@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using SME;
 using SME.Components;
 
@@ -11,6 +12,12 @@ namespace FloatingPoint
             base.threshold = .00001f;
             base.compare = (a,b) => (a - b) < threshold;
             base.get_random = () => (float)rng.NextDouble();
+            base.mae = (a, b) => {
+                var aabs = a.Select(x => Math.Abs(x));
+                var babs = b.Select(x => Math.Abs(x));
+                var diffs = a.Zip(b).Select( (x, _) => x.First - x.Second);
+                return diffs.Sum();
+            };
             base.init();
         }
     }
@@ -24,6 +31,7 @@ namespace FloatingPoint
         //public abstract T get_random();
         protected Func<T,T,bool> compare;
         protected Func<T> get_random;
+        protected Func<T[], T[], T> mae;
 
         [InputBus]
         public SME.Components.FloatingPoint.AXIS component_result;
@@ -97,6 +105,7 @@ namespace FloatingPoint
                 matched &= compare(expected_result[i], result[i]);
             System.Diagnostics.Debug.Assert(matched);
             Console.WriteLine($"Results matched: {matched}");
+            Console.WriteLine($"Error: {mae(expected_result, result)}");
         }
 
     } 
