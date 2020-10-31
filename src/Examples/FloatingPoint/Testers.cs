@@ -15,30 +15,33 @@ namespace FloatingPoint
             base.mae = (a, b) => {
                 var aabs = a.Select(x => Math.Abs(x));
                 var babs = b.Select(x => Math.Abs(x));
-                var diffs = a.Zip(b).Select( (x, _) => x.First - x.Second);
-                return diffs.Sum();
+                var diffs = a.Zip(b)
+                    .Select((x, _) => x.First - x.Second)
+                    .Select(x => Math.Abs(x))
+                    .Sum();
+                return (float)diffs / a.Count();
             };
             base.init();
         }
     }
+
+    // TODO det giver også mening at have en transaction trace, så man ikke længere behøver at være clock cycle accurate. Det gør det dog sværere at argumentere for performance, men oh well. 
 
     /// <summary>
     /// Class for testing floating point operations, which take 2 inputs of type T.
     /// </summary>
     public class Tester<T> : SimulationProcess
     {
-        //public abstract bool compare(T a, T b);
-        //public abstract T get_random();
         protected Func<T,T,bool> compare;
         protected Func<T> get_random;
         protected Func<T[], T[], T> mae;
 
-        [InputBus]
+        //[InputBus]
         public SME.Components.FloatingPoint.AXIS component_result;
 
-        [OutputBus]
+        //[OutputBus]
         public SME.Components.FloatingPoint.AXIS component_input_a;
-        [OutputBus]
+        //[OutputBus]
         public SME.Components.FloatingPoint.AXIS component_input_b;
 
         SME.Components.FloatingPoint.Operations operation;
@@ -90,7 +93,7 @@ namespace FloatingPoint
                     component_input_b.tdata = SME.Components.FloatingPoint.from_float((float)(object)input_b[j]);
                 component_input_b.tvalid = was_valid_j = j < input_b.Length;
 
-                component_result.tready = true;
+                component_result.tready = was_ready_k = true;
                 if (component_result.tvalid)
                 {
                     result[k] = (T)(object)SME.Components.FloatingPoint.from_uint(component_result.tdata);
