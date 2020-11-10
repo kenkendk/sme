@@ -16,6 +16,7 @@
     <ProjectReference Include="..\Examples\StatedAdder\StatedAdder.csproj" />
     <ProjectReference Include="..\Examples\StateMachineTester\StateMachineTester.csproj" />
     <ProjectReference Include="..\Examples\Stopwatch\Stopwatch.csproj" />
+    <ProjectReference Include="..\Examples\UnitTester\UnitTester.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -202,6 +202,20 @@
             "internalConsoleOptions": "openOnSessionStart"
         },
         {
+            "name": ".NET Core Debug UnitTester (console)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build example UnitTester",
+            // If you have changed target frameworks, make sure to update the program path.
+            "program": "${workspaceFolder}/src/Examples/UnitTester/bin/Debug/netcoreapp3.1/UnitTester.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/Examples/UnitTester",
+            // For more information about the 'console' field, see https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md#console-terminal-window
+            "console": "internalConsole",
+            "stopAtEntry": false,
+            "internalConsoleOptions": "openOnSessionStart"
+        },
+        {
             "name": ".NET Core Debug Unittest",
             "type": "coreclr",
             "request": "launch",

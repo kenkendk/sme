@@ -179,5 +179,11 @@ namespace UnitTest
             RunTest(typeof(Stopwatch.MainClass), true, false);
         }
 
+        [TestMethod]
+        public void RunUnitTester()
+        {
+            RunTest(typeof(UnitTester.Program), true, false);
+        }
+
     }
 }
