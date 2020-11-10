@@ -236,7 +236,7 @@ namespace SME.AST
             }
 
             // Build the project
-            // TODO den er ikke glad hvis den laver den her flere gange, hvilket er derfor try-catch
+            // TODO runtime will throw an exception, if MSBuild assemblies are loaded multiple times during runtime. 
             try
             {
                 var instance = Microsoft.Build.Locator.MSBuildLocator.RegisterDefaults();
