@@ -310,7 +310,7 @@ namespace SME.AST
             this.Expression.Parent = this;
         }
 
-        /// TODO få fixet alle de her tostrings! Kenneth nævnte noget med at man kunne få den til at vise kun i debuggeren rigtigt.
+        /// TODO Fix the ToString() methods. There should be a better method for correctly displaying values in the debugger.
         /// <summary>
         /// Returns a string representation of the Expression.
         /// </summary>

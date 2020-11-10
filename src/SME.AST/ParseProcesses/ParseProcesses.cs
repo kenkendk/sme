@@ -236,7 +236,7 @@ namespace SME.AST
             }
 
             // Build the project
-            // TODO runtime will throw an exception, if MSBuild assemblies are loaded multiple times during runtime. 
+            // runtime will throw an exception, if MSBuild assemblies are loaded multiple times during runtime.
             try
             {
                 var instance = Microsoft.Build.Locator.MSBuildLocator.RegisterDefaults();

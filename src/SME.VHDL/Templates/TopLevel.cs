@@ -295,7 +295,6 @@ begin
                 }
                 else
                 {
-                    // TODO underlig fejl med guards der ikke virker
                     var rdy = ToStringHelper.ToStringWithCulture( Naming.ToValidName($"RDY_{p.InstanceName}") );
                     var fin = ToStringHelper.ToStringWithCulture( Naming.ToValidName($"FIN_{parents.First()}") );
                     var zipped = parents.Skip(1)
@@ -319,7 +318,6 @@ begin
                 Write($"    FIN <= {first_fin};\n");
             else
             {
-                // TODO underlig fejl med guards der ikke virker
                 var zipped = processes.Skip(1)
                         .Zip(
                             processes.SkipLast(1),

@@ -166,7 +166,6 @@ namespace SME.AST
                 throw new Exception(string.Format("Unsupported expression: {0} ({1})", expression, expression.GetType().FullName));
         }
 
-        /// TODO skal den her ikke rykkes hen i helpers?
         /// <summary>
         /// Loads the generic types of the given type.
         /// </summary>
@@ -177,7 +176,6 @@ namespace SME.AST
                 yield return LoadType(p);
         }
 
-        /// TODO også hen i helpers?
         /// <summary>
         /// Loads the generic type associated with the given generic type parameter.
         /// </summary>
@@ -247,23 +245,21 @@ namespace SME.AST
             if (t is PredefinedTypeSyntax)
                 switch (((PredefinedTypeSyntax)t).Keyword.Kind())
                 {
-                    case SyntaxKind.BoolKeyword: return LoadType(typeof(bool));
-                    case SyntaxKind.ByteKeyword: return LoadType(typeof(byte));
-                    case SyntaxKind.SByteKeyword: return LoadType(typeof(sbyte));
-                    case SyntaxKind.ShortKeyword: return LoadType(typeof(short));
+                    case SyntaxKind.BoolKeyword:   return LoadType(typeof(bool));
+                    case SyntaxKind.ByteKeyword:   return LoadType(typeof(byte));
+                    case SyntaxKind.SByteKeyword:  return LoadType(typeof(sbyte));
+                    case SyntaxKind.ShortKeyword:  return LoadType(typeof(short));
                     case SyntaxKind.UShortKeyword: return LoadType(typeof(ushort));
-                    case SyntaxKind.IntKeyword: return LoadType(typeof(int));
-                    case SyntaxKind.UIntKeyword: return LoadType(typeof(uint));
-                    case SyntaxKind.LongKeyword: return LoadType(typeof(long));
-                    case SyntaxKind.ULongKeyword: return LoadType(typeof(ulong));
-                    case SyntaxKind.FloatKeyword: return LoadType(typeof(float));
+                    case SyntaxKind.IntKeyword:    return LoadType(typeof(int));
+                    case SyntaxKind.UIntKeyword:   return LoadType(typeof(uint));
+                    case SyntaxKind.LongKeyword:   return LoadType(typeof(long));
+                    case SyntaxKind.ULongKeyword:  return LoadType(typeof(ulong));
+                    case SyntaxKind.FloatKeyword:  return LoadType(typeof(float));
                     case SyntaxKind.DoubleKeyword: return LoadType(typeof(double));
-                    // TODO Det er fordi det er void fra en anden assembly... ffs
-                    case SyntaxKind.VoidKeyword: return LoadType(typeof(void));
+                    case SyntaxKind.VoidKeyword:   return LoadType(typeof(void));
                 }
             var res = t.LoadType(m_semantics) ?? m_compilation.GetSymbolsWithName(t.ToString()).FirstOrDefault() as ITypeSymbol;
-            //if (res == null)
-            //    res = m_compilation.GetSymbolsWithName(t.ToString()).FirstOrDefault() as ITypeSymbol;
+
             if (res == null)
                 throw new Exception($"Failed to load {t.ToString()}");
             else

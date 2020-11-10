@@ -70,7 +70,9 @@ namespace SME
 
                     var target = Array.CreateInstance(t.GenericTypeArguments[0], attr.Length);
 
-                    // TODO: Implement the copy here if we support initialized arrays at some point
+                    // TODO: Implement the copy here if we support initialized
+                    // arrays at some point. This is only if a process has
+                    // IFixedArray as a field.
                     //Array.Copy(arraysource, target, arraysource.Length);
                     Initialization[fi.Name] = target;
                 }

@@ -360,11 +360,7 @@ namespace SME.AST
         {
             var res = new InvocationExpression()
             {
-                // TODO skal det her håndteres?
-                //SourceResultType = ResolveExpressionType(network, proc, method, statement, expression),
                 SourceExpression = expression,
-                //Target = LocateDataElement(network, proc, method, statement, expression),
-                //TargetExpression = Decompile(network, proc, method, statement, expression.Target),
                 ArgumentExpressions = expression.ArgumentList.Arguments.Select(x => Decompile(network, proc, method, statement, x.Expression)).ToArray(),
                 Parent = statement
             };

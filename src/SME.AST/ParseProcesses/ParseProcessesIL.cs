@@ -90,8 +90,8 @@ namespace SME.AST
             }
 
             var msy = methsyns
-                .FirstOrDefault(x => 
-                    x.Name.Equals(method.Name) && 
+                .FirstOrDefault(x =>
+                    x.Name.Equals(method.Name) &&
                     x.Parameters.Length == method.GetParameters().Length
                 );
             if (msy == null)
@@ -159,7 +159,6 @@ namespace SME.AST
         /// <param name="method">The method to decompile.</param>
         protected virtual MethodState Decompile(NetworkState network, ProcessState proc, IMethodSymbol method)
         {
-            // aoeu
             var synmeth = method.GetSyntax() as MethodDeclarationSyntax;
             var res = new MethodState()
             {

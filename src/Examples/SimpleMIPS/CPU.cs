@@ -226,7 +226,7 @@ namespace SimpleMIPS
                     memin.ena = false;
                     memin.wrena = false;
                     break;
-                case Opcodes.terminate: // TODO Not quite MIPS standard, is it? :)
+                case Opcodes.terminate: // Not quite MIPS standard :)
                     terminate.flg = true;
                     return;
                 default:

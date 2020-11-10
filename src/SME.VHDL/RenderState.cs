@@ -16,30 +16,6 @@ namespace SME.VHDL
     public class RenderState
     {
         /// <summary>
-        /// A type reference comparer, used to compare type references loaded from different contexts
-        /// </summary>
-        // TODO jeg tror ikke man har brug for den her, når man har itypesymbol?
-        /*private class TypeRefComp : IEqualityComparer<ITypeSymbol>
-        {
-            /// <summary>
-            /// Returns a value indicating if x is equal to y.
-            /// </summary>
-            /// <returns><c>True</c> if x is equal to y, <c>false</c> otherwise.</returns>
-            /// <param name="x">The x value.</param>
-            /// <param name="y">The y value.</param>
-            public bool Equals(ITypeSymbol x, ITypeSymbol y)
-            { return x.FullName == y.FullName; }
-
-            /// <summary>
-            /// Gets the hash code of an object.
-            /// </summary>
-            /// <returns>The hash code.</returns>
-            /// <param name="obj">The item to get the hash code for.</param>
-            public int GetHashCode(TypeReference obj)
-            { return obj.FullName.GetHashCode(); }
-        }*/
-
-        /// <summary>
         /// The network being rendered.
         /// </summary>
         public readonly Network Network;
@@ -168,11 +144,9 @@ namespace SME.VHDL
                     new Transformations.RewriteChainedAssignments(this, m),
                 },
                 m => new SME.AST.Transform.IASTTransform[] {
-                    new SME.AST.Transform.RemoveUIntPtrCast(),
                     new SME.AST.Transform.RemoveDoubleCast(),
                     new Transformations.WrapIfComposite(),
                     new Transformations.AssignNames(),
-                    new SME.AST.Transform.RemoveSelfAssignments(),
                     new SME.AST.Transform.RecontructSwitchStatement(),
                     new SME.AST.Transform.RemoveTrailingBreakStatement(),
                     new Transformations.AssignVhdlType(this),
@@ -606,9 +580,6 @@ namespace SME.VHDL
                 if (init != null && init.ConstructorArguments.Count() > 0)
                 {
                     pval = init.ConstructorArguments.First().Value;
-                    // TODO idk
-                    //if (pval is CustomAttributeArgument)
-                    //    pval = ((CustomAttributeArgument)pval).Value;
                 }
 
                 if (pd.Type.IsType<bool>())
@@ -661,7 +632,7 @@ namespace SME.VHDL
                     .Where(x =>
                     {
                         var rd = x.MSCAType;
-                        // TODO håndter custom attributes
+                        // TODO handle custom attributes
                         //var custom = rd.CustomAttributes.Any(y => y.AttributeType.IsSameTypeReference(typeof(VHDLTypeAttribute)));
 
                         return
@@ -722,14 +693,15 @@ namespace SME.VHDL
             if (!td.IsEnum())
                 throw new InvalidOperationException("Cannot list enum values from a non-enum type");
 
-            var fields = td.GetMembers().OfType<IFieldSymbol>()
-                    // TODO tror ikke special name er i compile
-                    //.Where(x => !(x.IsSpecialName || x.IsRuntimeSpecialName))
-                    .Select(m =>
-                            new KeyValuePair<string, object>(
-                              Naming.ToValidName(td.ToDisplayString() + "_" + m.Name),
-                              m.ConstantValue
-                    ));
+            var fields = td
+                .GetMembers()
+                .OfType<IFieldSymbol>()
+                .Select(m =>
+                    new KeyValuePair<string, object>(
+                        Naming.ToValidName(td.ToDisplayString() + "_" + m.Name),
+                        m.ConstantValue
+                    )
+                );
 
             Dictionary<string, object> customs;
             CustomEnumValues.TryGetValue(t, out customs);
@@ -755,10 +727,12 @@ namespace SME.VHDL
                 CustomEnumValues.TryGetValue(type, out customs);
                 customs = customs ?? new Dictionary<string, object>();
 
-                var members = td.GetMembers().OfType<IFieldSymbol>()
-                    // TODO tror ikke special er i compile
-                    //.Where(x => !(x.IsSpecialName || x.IsRuntimeSpecialName))
-                    .Select(m => Naming.ToValidName(td.ToDisplayString() + "_" + m.Name))
+                var members = td
+                    .GetMembers()
+                    .OfType<IFieldSymbol>()
+                    .Select(m =>
+                        Naming.ToValidName($"{td.ToDisplayString()}_{m.Name}")
+                    )
                     .Concat(customs.Keys);
                 foreach (var member in members)
                     yield return member;
@@ -1063,11 +1037,6 @@ namespace SME.VHDL
         /// <param name="bus">The bus to get the signals for.</param>
         public IEnumerable<BusSignal> WrittenSignals(AST.Process proc, AST.Bus bus)
         {
-            // TODO: Apply this logic?
-            // Components are assumed to write their outputs
-            //if (proc.SourceInstance.Instance is IVHDLComponent)
-                //return bus.Signals;
-
             return proc
                 .All()
                 .Select(x =>
@@ -1178,7 +1147,6 @@ namespace SME.VHDL
             }
             else if (element.DefaultValue is SyntaxNode)
             {
-                // TODO tjek om det kun er når det er en ValueType?
                 var eltype = Type.GetType(element.MSCAType.GetFullMetadataName());
                 var defaultvalue = eltype != null && element.MSCAType.IsValueType ? Activator.CreateInstance(eltype) : null;
 
@@ -1227,7 +1195,6 @@ namespace SME.VHDL
             {
                 exp.Right = new AST.PrimitiveExpression()
                 {
-                    // TODO den her burde blive lavet der hvor variablen rigtigt bliver lavet...
                     Value = element.DefaultValue == null ? 0 : element.DefaultValue,
                     Parent = exp,
                     SourceResultType = element.MSCAType
@@ -1276,12 +1243,12 @@ namespace SME.VHDL
                 var rs = ae.Right.SourceResultType;
                 if (pe.Value == null)
                 {
-                    var c = rs.GetMembers().OfType<IFieldSymbol>()
-                              // TODO jeg tror ikke man behøver special name
-                              //.Where(x => !x.IsSpecialName && !x.IsRuntimeSpecialName)
-                              .OrderBy(x => x.ConstantValue)
-                              .First()
-                              .ConstantValue;
+                    var c = rs
+                        .GetMembers()
+                        .OfType<IFieldSymbol>()
+                        .OrderBy(x => x.ConstantValue)
+                        .First()
+                        .ConstantValue;
                     return new RenderHelper(this, null).RenderExpression(new PrimitiveExpression(c, rs));
                 }
             }

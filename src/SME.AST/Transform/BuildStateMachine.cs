@@ -40,8 +40,10 @@ namespace SME.AST.Transform
         }
 
         /// <summary>
-        /// Checks if all branches contains an <see cref="AwaitExpression"/>. Used by while loops.
-        /// <summary>
+        /// Checks if all branches contains an <see cref="AwaitExpression"/>.
+        /// Used by loops. Loops should always return false, as checking them
+        /// would require deeper analysis, which is inherently infeasible.
+        /// </summary>
         /// <param name="statement">The statement to be checked.</param>
         private bool AllBranchesHasAwait(Statement statement)
         {
@@ -49,7 +51,6 @@ namespace SME.AST.Transform
             {
                 case BlockStatement s:      return s.Statements.Where(x => AllBranchesHasAwait(x)).Any();
                 case ExpressionStatement s: return s.Expression is AwaitExpression;
-                //case ForStatement s:        return AllBranchesHasAwait(s.LoopBody); // TODO check if empty range?
                 case IfElseStatement s:     return AllBranchesHasAwait(s.TrueStatement) && AllBranchesHasAwait(s.FalseStatement);
                 case SwitchStatement s:     return s.HasDefault && s.Cases.Select(x => x.Item2).All(x => x.Select(y => AllBranchesHasAwait(y)).Contains(true));
                 default:                    return false;
@@ -237,7 +238,7 @@ namespace SME.AST.Transform
                         .Select(y => y.CaseLabel = fragments.Count)
                     ).ToList();
 
-            return 0; // TODO parenting?
+            return 0;
         }
 
         /// <summary>
@@ -613,7 +614,6 @@ namespace SME.AST.Transform
         /// <param name="item">The item to visit.</param>
         public ASTItem Transform(ASTItem item)
         {
-            // TODO den her skal lige skrives meget mindre rodet.
             if (!(item is AST.Method) || !((Method)item).IsStateMachine)
                 return item;
 
@@ -627,37 +627,19 @@ namespace SME.AST.Transform
             var enumsyntax = SyntaxFactory.EnumDeclaration(enumname);
             enumsyntax = enumsyntax.AddModifiers(
                 SyntaxFactory.Token(SyntaxKind.PublicKeyword)
-                //SyntaxFactory.Token(SyntaxKind.SealedKeyword)
             );
             enumsyntax = enumsyntax.AddBaseListTypes(SyntaxFactory.SimpleBaseType(SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.IntKeyword))));
 
-            //var enumtype = new Mono.Cecil.TypeDefinition("", enumname, Mono.Cecil.TypeAttributes.Public | Mono.Cecil.TypeAttributes.AutoClass | Mono.Cecil.TypeAttributes.AnsiClass | Mono.Cecil.TypeAttributes.Sealed, method.SourceMethod.Module.ImportReference(typeof(System.Enum)))
-            //{
-            //    IsSealed = true,
-            //};
-
-            //enumtype.DeclaringType = method.SourceMethod.DeclaringType;
-            //enumtype.Fields.Add(new Mono.Cecil.FieldDefinition($"value__", Mono.Cecil.FieldAttributes.Public | Mono.Cecil.FieldAttributes.SpecialName | Mono.Cecil.FieldAttributes.RTSpecialName, method.SourceMethod.Module.ImportReference(typeof(int))));
-            //enumsyntax = enumsyntax.AddMembers(SyntaxFactory.FieldDeclaration(SyntaxFactory.VariableDeclaration(SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.IntKeyword)))));
-            //enumsyntax = enumsyntax.AddMembers(SyntaxFactory.EnumMemberDeclaration(SyntaxFactory.AttributeList(null), SyntaxFactory.Identifier("value__"), SyntaxFactory.EqualsValueClause(SyntaxFactory.Token(SyntaxKind.EqualsToken), SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(0)))));
-            //enumsyntax = enumsyntax.AddMembers(SyntaxFactory.EnumMemberDeclaration("value__"));
-
-            //var statenametemplate = $"{enumtype.type.DeclaringType.FullName}_{enumname}_State";
             var statenametemplate = $"{enumname}_";
 
             var fragments = SplitIntoFragments(method.Statements);
 
             var statecount = fragments.Count;
-            //var enumfields = new Mono.Cecil.FieldDefinition[statecount];
             var enumfields = new EnumMemberDeclarationSyntax[statecount];
 
             // Add each of the states to the type
             for (var i = 0; i < statecount; i++)
                 enumfields[i] = SyntaxFactory.EnumMemberDeclaration($"State{i}");
-                //enumtype.Fields.Add(enumfields[i] = new Mono.Cecil.FieldDefinition($"State{i}", Mono.Cecil.FieldAttributes.Public | Mono.Cecil.FieldAttributes.Static | Mono.Cecil.FieldAttributes.Literal, enumtype)
-                //{
-                //    Constant = i
-                //});
             enumsyntax = enumsyntax.AddMembers(enumfields).NormalizeWhitespace();
 
             var ns = (method.Parent as Process).MSCAType.ContainingNamespace.Name;
@@ -669,14 +651,8 @@ namespace SME.AST.Transform
                         enumsyntax
                     )
                 );
-            // TODO beautiful:
-            var aoeusyntax = cu.SyntaxTree.GetRoot().DescendantNodes().OfType<EnumMemberDeclarationSyntax>().First();
+
             m_compilation = m_compilation.AddSyntaxTrees(cu.SyntaxTree);
-            //var aoeu = m_compilation.GetTypeByMetadataName(enumsyntax.ToFullString())
-            var cu_diag = m_compilation.GetDiagnostics();
-            var semantic = m_compilation.GetSemanticModel(cu.SyntaxTree);
-            var sm_diag = semantic.GetDiagnostics();
-            //var enumtype = aoeusyntax.LoadType(new SemanticModel[] { semantic });
             var enumtype = m_compilation.GetTypeByMetadataName($"{ns}.{enumname}");
 
             // The variable being updated internally in the method
@@ -684,7 +660,7 @@ namespace SME.AST.Transform
             {
                 MSCAType = enumtype,
                 DefaultValue = 0,
-                Source = null // new Mono.Cecil.ParameterDefinition("FSM_RunState", Mono.Cecil.ParameterAttributes.None, enumtype)
+                Source = null
             };
 
             // The current state used in the state machine process
@@ -692,7 +668,7 @@ namespace SME.AST.Transform
             {
                 MSCAType = enumtype,
                 DefaultValue = 0,
-                Source = null // new Mono.Cecil.ParameterDefinition("FSM_CurrentState", Mono.Cecil.ParameterAttributes.None, enumtype)
+                Source = null
             };
 
             // The next state that is propagated to
@@ -700,7 +676,7 @@ namespace SME.AST.Transform
             {
                 MSCAType = enumtype,
                 DefaultValue = 0,
-                Source = null // new Mono.Cecil.ParameterDefinition("FSM_NextState", Mono.Cecil.ParameterAttributes.None, enumtype)
+                Source = null
             };
 
             // Construct a state-machine method, that will be rendered as a process

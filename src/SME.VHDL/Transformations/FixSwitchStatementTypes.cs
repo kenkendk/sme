@@ -52,46 +52,9 @@ namespace SME.VHDL.Transformations
             {
                 var mp = ss.GetNearestParent<Method>();
                 if (mp != null)
-                { // TODO kun hvis den er member reference?
+                {
                     ss.SwitchExpression = VHDL.VHDLTypeConversion.ConvertExpression(State, mp, ss.SwitchExpression, targets.First(), ss.SwitchExpression.SourceResultType, false);
                     return el;
-                    /*var targettype = ss
-                        .Cases
-                        .SelectMany(x => x.Item1)
-                        .First(x => x != null && !(x is EmptyExpression))
-                        .SourceResultType;
-
-                    // Create a variable the same type as the cases
-                    // and set it to the switch expression
-                    var nvar = State.RegisterTemporaryVariable(mp, targettype);
-                    State.TypeLookup[nvar] = targets.First();
-
-                    var nvexp = new IdentifierExpression()
-                    {
-                        Name = nvar.Name,
-                        SourceExpression = ss.SwitchExpression.SourceExpression,
-                        SourceResultType = nvar.MSCAType,
-                        Target = nvar
-                    };
-
-                    var asss = new AST.ExpressionStatement()
-                    {
-                        Expression = new AST.AssignmentExpression()
-                        {
-                            Left = nvexp,
-                            Operator = SyntaxKind.EqualsToken,
-                            Right = ss.SwitchExpression,
-                            SourceExpression = ss.SwitchExpression.SourceExpression,
-                            SourceResultType = nvar.MSCAType
-                        }
-                    };
-
-                    ss.SwitchExpression = nvexp.Clone();
-                    ss.SwitchExpression.Parent = ss;
-
-                    asss.UpdateParents();
-                    ss.PrependStatement(asss);
-                    return null;*/
                 }
             }
 

@@ -15,7 +15,6 @@ namespace SME.Tracer
         /// The filename the trace will be written to.
         /// </summary>
         private string m_filename;
-        // TODO Det må kunne skrives bedre :)
         /// <summary>
         /// Flag indicating whether this the current entry written is the first.
         /// </summary>

@@ -6,7 +6,6 @@ using SME.AST.Transform;
 
 namespace SME.VHDL.Transformations
 {
-    /// TODO what
     /// <summary>
     /// Untangles else statements.
     /// </summary>

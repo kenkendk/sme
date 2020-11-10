@@ -115,14 +115,14 @@ namespace SME.AST
                     }
                     else if (ec is ThisExpressionSyntax)
                     {
-                        // TODO prøv at skriv et eksempel med den her
+                        // TODO Make a test for this
                         //parts.Add("this");
                         ec = null;
                         break;
                     }
                     else if (ec is BaseExpressionSyntax)
                     {
-                        // TODO prøv at skriv et eksempel med den her
+                        // TODO Make a test for this
                         //parts.Add("base");
                         ec = null;
                         break;
@@ -136,14 +136,14 @@ namespace SME.AST
                     else if (ec is TypeSyntax)
                     {
                         ISymbol dc = method?.MSCAMethod.LoadSymbol(m_semantics) ?? proc?.MSCAType;
-                        
+
                         var ecs = ec.ToString();
 
                         if (dc != null)
                         {
                             if (ecs == dc.ToDisplayString() || ecs == dc.Name)
                             {
-                                // TODO tjek om den her kan rammes.
+                                // TODO Make a test for this
                                 ec = null;
                                 //parts.Add("this");
                                 break;
@@ -162,7 +162,6 @@ namespace SME.AST
                                 bt = LoadTypeByName(dc.ToDisplayString() + "." + ecs);
                             if (bt == null)
                                 bt = LoadTypeByName(dc.ContainingNamespace.ToDisplayString() + "." + ecs);
-                            // TODO In some cases dc.Namespace is empty ...
                             if (bt == null && proc != null && proc.SourceType != null)
                                 bt = LoadTypeByName(proc.SourceType.Namespace + "." + ecs);
 
@@ -199,9 +198,6 @@ namespace SME.AST
                                         Parent = network
                                     };
                                 }
-
-                                // TODO hvorfor er den her udkommenteret?
-                                //parts.AddRange(bt.FullName.Split('.').Reverse());
                             }
 
                             break;
@@ -246,10 +242,6 @@ namespace SME.AST
 
                     if (current is MethodState || (isIsFirst && current == null))
                     {
-                        // TODO hvorfor er den her udkommenteret?
-                        //if (method.LocalRenames.ContainsKey(el))
-                        //    el = method.LocalRenames[el];
-
                         var mt = current as MethodState ?? method;
                         if (mt != null)
                         {
@@ -526,7 +518,7 @@ namespace SME.AST
                 else
                     proc.Constants.Add(field.Name, c);
             }
-            // TODO jeg er ikke sikker på om .IsInitOnly er det samme som .IsReadOnly
+
             else if (field.IsStatic && field.IsReadOnly)
             {
                 var c = new Constant()
@@ -544,8 +536,6 @@ namespace SME.AST
             }
             else if (field.IsStatic)
             {
-                //Don't care
-                // TODO er vi nu også ligeglade?
                 res = null;
             }
             else if (!field.GetAttributes().Any(x => Type.GetType(x.AttributeClass.ToDisplayString()) == typeof(Signal)))

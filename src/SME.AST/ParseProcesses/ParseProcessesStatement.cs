@@ -37,8 +37,7 @@ namespace SME.AST
                 return Decompile(network, proc, method, statement as BreakStatementSyntax);
             else if (statement is CheckedStatementSyntax)
             {
-                // TODO håndter anderledes?
-                //Console.WriteLine("Warning: \"checked\" is not supported and will be ignored for statement: {0}", statement);
+                // Checking for overflow is not translated.
                 return Decompile(network, proc, method, (statement as CheckedStatementSyntax).Block);
             }
             else if (statement is GotoStatementSyntax)
@@ -504,18 +503,8 @@ namespace SME.AST
         /// <param name="statement">The decompiler statement to process.</param>
         protected virtual ForStatement Decompile(NetworkState network, ProcessState proc, MethodState method, ForStatementSyntax statement)
         {
-            // TODO dobbelt tjek lige om det altid er Declaration.Variables, og ikke initializers?
-            /*var initializers = statement.Initializers.Union(statement.Declaration.Variables.Select(x => x.Initializer.Value));
-            if (initializers.Count() != 1)
-                throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));*/
-
             if (statement.Incrementors.Count != 1)
                 throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
-
-
-            /*var init = initializers.First() as InitializerExpressionSyntax;
-            if (init == null)
-                throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));*/
 
             if (statement.Declaration.Variables.Count != 1)
                 throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
@@ -531,8 +520,7 @@ namespace SME.AST
             {
                 MSCAType = LoadType(typeof(int)),
                 Name = name,
-                // TODO clone...?
-                Source = statement,//.Clone(),
+                Source = statement,
                 isLoopIndex = true
             };
 

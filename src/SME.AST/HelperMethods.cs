@@ -12,7 +12,7 @@ namespace SME.AST
     /// </summary>
     public static class HelperMethods
     {
-        
+
         /// <summary>
         /// Returns true, if the given type is an array type.
         /// </summary>
@@ -422,7 +422,6 @@ namespace SME.AST
         /// <param name="t">The type to load.</param>
         public static ITypeSymbol LoadType(this ITypeSymbol source, Type t)
         {
-            // TODO man skal slå op i compile, ikke i assembly!
             return ParseProcesses.m_compilation.GetTypeByMetadataName(t.FullName);
         }
 
@@ -433,11 +432,8 @@ namespace SME.AST
         /// <param name="n">The argument to examine.</param>
         public static ArgumentInOut GetArgumentInOut(this IParameterSymbol n, DataFlowAnalysis MSCAFlow)
         {
-            // TODO husk at tjek for MSCAFlow.Succeeded
-            var inarg = MSCAFlow.DataFlowsIn.Contains(n) || n.HasAttribute<System.Runtime.InteropServices.InAttribute>();
-            var outarg = MSCAFlow.DataFlowsOut.Contains(n) || n.HasAttribute<System.Runtime.InteropServices.OutAttribute>();
-            //var inarg = n.RefKind == RefKind.In;
-            //var outarg = n.RefKind == RefKind.Out;
+            var inarg = n.HasAttribute<System.Runtime.InteropServices.InAttribute>() || (MSCAFlow.Succeeded && MSCAFlow.DataFlowsIn.Contains(n));
+            var outarg = n.HasAttribute<System.Runtime.InteropServices.OutAttribute>() || (MSCAFlow.Succeeded && MSCAFlow.DataFlowsOut.Contains(n));
             var inoutarg = inarg && outarg;
             var inoutoverride = inarg || outarg;
             var isarray = n.Type.IsArrayType();
