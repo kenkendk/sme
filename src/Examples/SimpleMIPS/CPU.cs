@@ -119,7 +119,7 @@ namespace SimpleMIPS
             memin.wrena = false;
             memin.wrdata = 0;
             await ClockAsync();
-            memin.ena = false; // TODO added because of empty state optimizations
+            memin.ena = false;
             await ClockAsync();
             iptr++;
 

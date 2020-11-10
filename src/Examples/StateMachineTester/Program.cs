@@ -29,7 +29,6 @@ namespace StateMachineTester
             var assembly = Assembly.GetExecutingAssembly();
             using (var sim = new Simulation())
             {
-                //new Tester(new SingleSwitchStatement());
                 assembly.GetTypes()
                     .Where(x =>
                         x.IsSubclassOf(typeof(StateMachineTest)))

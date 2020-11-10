@@ -4,6 +4,27 @@ using System.Threading.Tasks;
 
 namespace StateMachineTester
 {
+
+    public class EmptyStates : StateMachineTest
+    {
+        public EmptyStates()
+        {
+            go1s = new bool[] { };
+            go2s = new bool[] { };
+            values = new int[] { };
+            states = new int[] { 1, 1, 1, 2 };
+        }
+
+        protected async override Task OnTickAsync()
+        {
+            result.State = 1;
+            await ClockAsync();
+            await ClockAsync();
+            await ClockAsync();
+            result.State = 2;
+        }
+    }
+
     public class NestedForLoop : StateMachineTest
     {
         public NestedForLoop()
@@ -16,7 +37,8 @@ namespace StateMachineTester
                 1, 1, 1, 1, 1, 2, 3, 3, 3, 3, 3,
                 1, 1, 1, 1, 1, 2, 3, 3, 3, 3, 3,
                 1, 1, 1, 1, 1, 2, 3, 3, 3, 3, 3,
-                1, 1, 1, 1, 1, 2, 3, 3, 3, 3, 3, 4,
+                1, 1, 1, 1, 1, 2, 3, 3, 3, 3, 3,
+                4,
             };
         }
 
@@ -46,10 +68,19 @@ namespace StateMachineTester
     {
         public NestedForWithinWhile()
         {
-            go1s = new bool[] { false, true };
+            go1s = new bool[] {
+                false,
+                true, true, true, true, true, true, true, true, true, true, true,
+                true, false
+            };
             go2s = new bool[] { };
             values = new int[] { };
-            states = new int[] {   7,     2, 2, 2, 2, 2, 3, 4, 4, 4, 4, 4, 2 };
+            states = new int[] {
+                7,
+                2, 2, 2, 2, 2, 3, 4, 4, 4, 4, 4,
+                2, 2, 2, 2, 2, 3, 4, 4, 4, 4, 4,
+                7, 7
+            };
         }
 
         protected async override Task OnTickAsync()
