@@ -78,21 +78,23 @@ namespace SME.AST
             if (proc.MSCAType == null)
                 proc.MSCAType = LoadType(proc.SourceType);
 
-            // TODO jeg tror ikke der er brug for både syns og symbol. Tror jeg dog også godt kan fikses mange andre steder
             var proctype = proc.MSCAType;
-            var methsyns = proctype
-                .GetMembers()
-                .OfType<IMethodSymbol>();
-            var methdecls = proctype
-                .GetMembers()
-                .Select(x => x.DeclaringSyntaxReferences.FirstOrDefault())
-                .Where(x => x != null)
-                .Select(x => x.GetSyntax())
-                .OfType<MethodDeclarationSyntax>();
+            IEnumerable<IMethodSymbol> methsyns = new List<IMethodSymbol>();
+            while (proctype.ContainingNamespace.ToString().Equals(method.DeclaringType.Namespace))
+            {
+                methsyns = methsyns.Concat(proctype
+                    .GetMembers()
+                    .OfType<IMethodSymbol>()
+                );
+                proctype = proctype.BaseType;
+            }
 
-            var msy = methsyns.FirstOrDefault(x => x.Name.Equals(method.Name) && x.Parameters.Length == method.GetParameters().Length);
-            var m = methdecls.FirstOrDefault(x => x.Identifier.Text.Equals(method.Name) && x.ParameterList.Parameters.Count == method.GetParameters().Length);
-            if (m == null)
+            var msy = methsyns
+                .FirstOrDefault(x => 
+                    x.Name.Equals(method.Name) && 
+                    x.Parameters.Length == method.GetParameters().Length
+                );
+            if (msy == null)
                 throw new Exception($"Unable to find a method with the name {method.Name} in type {proc.MSCAType.ToDisplayString()}");
 
             proc.MainMethod = Decompile(network, proc, msy);
@@ -124,9 +126,8 @@ namespace SME.AST
                 var dm = methods.FirstOrDefault(x => x.Name.Equals(r));
                 if (dm == null)
                 {
-                    var mr = methdecls.FirstOrDefault(x => x.Identifier.Text.Equals(r));
                     var mrsy = methsyns.FirstOrDefault(x => x.Name.Equals(r));
-                    if (mr == null)
+                    if (mrsy == null)
                         throw new Exception($"Unable to resolve method call to {r}");
                     dm = Decompile(network, proc, mrsy);
                     methods.Add(dm);
