@@ -81,7 +81,7 @@ namespace SME.Components
         /// The current simulated memory.
         /// </summary>
         [Signal]
-        private readonly T[] m_memory;
+        private T[] m_memory;
 
         /// <summary>
         /// Flag indicating whether a warning message regarding clashing read/write addresses have been issued.
@@ -106,7 +106,7 @@ namespace SME.Components
         /// </summary>
         protected override void OnTick()
         {
-            SimulationOnly(() => 
+            SimulationOnly(() =>
             {
                 if (!warned && WriteControl.Address == ReadControl.Address && ReadControl.Enabled)
                 {

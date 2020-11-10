@@ -38,7 +38,7 @@ namespace NoiseFilter
         [InternalBus]
         public IInternal Internal = Scope.CreateInternalBus<IInternal>();
 
-        private readonly byte[] m_buffer = new byte[COLOR_WIDTH * STENCIL_HEIGHT * MAX_IMAGE_WIDTH];
+        private byte[] m_buffer = new byte[COLOR_WIDTH * STENCIL_HEIGHT * MAX_IMAGE_WIDTH];
 
         protected override void OnTick()
         {

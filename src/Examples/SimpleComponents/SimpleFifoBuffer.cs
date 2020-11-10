@@ -65,7 +65,7 @@ namespace SimpleComponents
         /// <summary>
         /// The buffer storing the intermediate values
         /// </summary>
-        private readonly T[] m_buffer;
+        private T[] m_buffer;
         /// <summary>
         /// The number of elements in the buffer
         /// </summary>

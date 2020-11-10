@@ -29,7 +29,7 @@ namespace NoiseFilter
         private const byte SUM_B = 9;
 
         private readonly int[] FILTER_SUMS = { 9, 9, 9 };
-        private readonly int[] m_buffer = new int[COLOR_WIDTH];
+        private int[] m_buffer = new int[COLOR_WIDTH];
 
         [InternalBus]
         private readonly IInternal Internal = Scope.CreateInternalBus<IInternal>();

@@ -8,7 +8,7 @@ namespace SimpleMemoryBus
         [InputBus, OutputBus]
         public IMemoryInterface Interface = Scope.CreateBus<IMemoryInterface>();
 
-        private readonly ulong[] m_data = new ulong[1024];
+        private ulong[] m_data = new ulong[1024];
         private int m_cycle = 0;
 
         protected override void OnTick()

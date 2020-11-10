@@ -38,14 +38,14 @@ namespace AES256CBC
         [OutputBus]
         public IOutput Output = Scope.CreateBus<IOutput>();
 
-        private readonly byte[] m_key = new byte[32];
-        private readonly byte[] m_iv = new byte[16];
+        private byte[] m_key = new byte[32];
+        private byte[] m_iv = new byte[16];
 
-        private readonly uint[] m_expandedKey = new uint[EXPANDED_KEY_SIZE];
+        private uint[] m_expandedKey = new uint[EXPANDED_KEY_SIZE];
 
         // Wrappers for packing values
-        private readonly byte[] m_input = new byte[16];
-        private readonly byte[] m_output = new byte[16];
+        private byte[] m_input = new byte[16];
+        private byte[] m_output = new byte[16];
 
 
         private const int KEY_SIZE_BITS = 256;

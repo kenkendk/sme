@@ -41,9 +41,9 @@ namespace SimpleTrader
         private readonly byte[] WeightsLong = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1 };
 
         // Storage for short sample list
-        private readonly uint[] SamplesShort = new uint[4];
+        private uint[] SamplesShort = new uint[4];
         // Storage for long sample list
-        private readonly uint[] SamplesLong = new uint[8];
+        private uint[] SamplesLong = new uint[8];
 
         /// <summary>
         /// The number of values to read before setting outputs

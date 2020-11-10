@@ -121,7 +121,7 @@ namespace SME.Components
         /// The stored memory.
         /// </summary>
         [Signal]
-        private readonly T[] m_memory;
+        private T[] m_memory;
 
         /// <summary>
         /// Flag indicating whether a warning message regarding clashing read/write addresses have been issued.
