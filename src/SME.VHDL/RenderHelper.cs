@@ -729,7 +729,10 @@ namespace SME.VHDL
                                         new DataElement[] { x.ReturnVariable }.Where(y => y != null)
                                        )
                                    )
-
+                    )
+                    .Concat(
+                        Process.SharedConstants
+                        .OfType<DataElement>()
                     )
                     .Distinct();
 

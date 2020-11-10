@@ -72,7 +72,7 @@ use work.CUSTOM_TYPES.ALL;
             var procname = ToStringHelper.ToStringWithCulture( Naming.ProcessNameToValidName(Process.SourceInstance.Instance) );
             Write($"entity {procname} is\n");
 
-            var shared = Process.SharedVariables.Cast<object>().Concat(Process.SharedSignals);
+            var shared = Process.SharedVariables.Cast<object>().Concat(Process.SharedSignals).Concat(Process.SharedConstants);
             var lastel = shared.LastOrDefault();
             if (lastel != null)
             {
@@ -82,6 +82,14 @@ use work.CUSTOM_TYPES.ALL;
                     var name = ToStringHelper.ToStringWithCulture( Naming.ToValidName($"reset_{variable.Name}") );
                     var type = ToStringHelper.ToStringWithCulture( RS.VHDLWrappedTypeName(variable) );
                     var end = variable == lastel ? "" : ";";
+                    Write($"        {name}: in {type}{end}\n");
+                }
+
+                foreach (var constant in Process.SharedConstants)
+                {
+                    var name = ToStringHelper.ToStringWithCulture( Naming.ToValidName($"reset_{constant.Name}") );
+                    var type = ToStringHelper.ToStringWithCulture( RS.VHDLWrappedTypeName(constant) );
+                    var end = constant == lastel ? "" : ";";
                     Write($"        {name}: in {type}{end}\n");
                 }
 
@@ -225,10 +233,10 @@ end ");
                     {
                         var constname = ToStringHelper.ToStringWithCulture( c.Name );
                         var consttype = ToStringHelper.ToStringWithCulture( RS.VHDLWrappedTypeName(c) );
-                        var defaultvalue = c.DefaultValue;
-                        var convm = RS.VHDLType(c).ToString().Substring("T_".Length);
-                        var reset = ToStringHelper.ToStringWithCulture( $"constant {constname} : {consttype} := {convm}({defaultvalue})" );
-                        Write($"    {reset};\n");
+                        var defaultvalue = $"reset_{constname}";
+
+                        var constant = ToStringHelper.ToStringWithCulture( $"constant {constname} : {consttype} := {defaultvalue}" );
+                        Write($"    {constant};\n");
                     }
                     Write("\n");
                 }

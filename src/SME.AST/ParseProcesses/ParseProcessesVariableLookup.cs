@@ -115,19 +115,31 @@ namespace SME.AST
                     }
                     else if (ec is ThisExpressionSyntax)
                     {
-                        //parts.Add("this");
                         ec = null;
                         break;
                     }
                     else if (ec is BaseExpressionSyntax)
                     {
-                        //parts.Add("base");
                         ec = null;
                         break;
                     }
                     else if (ec is IdentifierNameSyntax)
                     {
-                        parts.Add(((IdentifierNameSyntax)ec).Identifier.Text);
+                        var ins = ec as IdentifierNameSyntax;
+                        var ecs = ins.Identifier.Text;
+                        var targetproc = network.Processes
+                            .FirstOrDefault(x =>
+                                x.MSCAType.Name.Equals(ecs) ||
+                                x.MSCAType.ToDisplayString().Equals(ecs)
+                            );
+                        if (targetproc != null)
+                        {
+                            // This is a static reference
+                            current = targetproc;
+                            break;
+                        }
+
+                        parts.Add(ecs);
                         ec = null;
                         break;
                     }
@@ -139,22 +151,6 @@ namespace SME.AST
 
                         if (dc != null)
                         {
-                            if (ecs == dc.ToDisplayString() || ecs == dc.Name)
-                            {
-                                // TODO Make a test for this
-                                ec = null;
-                                //parts.Add("this");
-                                break;
-                            }
-
-                            var targetproc = network.Processes.FirstOrDefault(x => x.MSCAType.Name == ecs || x.MSCAType.ToDisplayString() == ecs);
-                            if (targetproc != null)
-                            {
-                                // This is a static reference
-                                current = null; //targetproc;
-                                break;
-                            }
-
                             var bt = LoadTypeByName(ecs);
                             if (bt == null)
                                 bt = LoadTypeByName(dc.ToDisplayString() + "." + ecs);
@@ -277,6 +273,12 @@ namespace SME.AST
                                 continue;
                             }
 
+                            if (pr.Constants.ContainsKey(el))
+                            {
+                                current = pr.Constants[el];
+                                continue;
+                            }
+
                             if (pr.Signals.ContainsKey(el))
                             {
                                 current = pr.Signals[el];
@@ -357,7 +359,7 @@ namespace SME.AST
                     if (sy != null && sy.IsEnum())
                         return new Constant()
                         {
-                            MSCAType = sy,
+                            MSCAType = px.Type,
                             DefaultValue = px,
                             Source = expression
                         };
@@ -500,8 +502,7 @@ namespace SME.AST
             proc.SourceInstance.Initialization.TryGetValue(field.Name, out defaultvalue);
             defaultvalue = field.ConstantValue ?? defaultvalue;
 
-
-            if (field.HasConstantValue)
+            if (field.HasConstantValue || field.IsReadOnly)
             {
                 var c = new Constant() {
                     MSCAType = mscatype,
@@ -515,22 +516,6 @@ namespace SME.AST
                     network.ConstantLookup.Add(field, c);
                 else
                     proc.Constants.Add(field.Name, c);
-            }
-
-            else if (field.IsStatic && field.IsReadOnly)
-            {
-                var c = new Constant()
-                {
-                    MSCAType = mscatype,
-                    DefaultValue = defaultvalue,
-                    Name = field.Name,
-                    Source = field,
-                    Parent = proc
-                };
-                res = c;
-                // TODO constants are added twice?? Investigate!
-                if (!network.ConstantLookup.ContainsKey(field))
-                    network.ConstantLookup.Add(field, c);
             }
             else if (field.IsStatic)
             {

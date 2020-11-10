@@ -193,6 +193,7 @@ begin
                 var lastel = p.SharedVariables
                     .Cast<object>()
                     .Concat(p.SharedSignals)
+                    .Concat(p.SharedConstants)
                     .LastOrDefault();
                 if (lastel != null)
                 {
@@ -202,6 +203,14 @@ begin
                         var name = ToStringHelper.ToStringWithCulture( Naming.ToValidName($"reset_{variable.Name}") );
                         var resetvar = ToStringHelper.ToStringWithCulture( RS.GetResetExpression(variable) );
                         var end = ToStringHelper.ToStringWithCulture( variable == lastel ? "" : "," );
+                        Write($"        {name} => {resetvar}{end}\n");
+                    }
+
+                    foreach (var constant in p.SharedConstants)
+                    {
+                        var name = ToStringHelper.ToStringWithCulture( Naming.ToValidName($"reset_{constant.Name}") );
+                        var resetvar = ToStringHelper.ToStringWithCulture( RS.GetResetExpression(constant) );
+                        var end = ToStringHelper.ToStringWithCulture( constant == lastel ? "" : "," );
                         Write($"        {name} => {resetvar}{end}\n");
                     }
 
