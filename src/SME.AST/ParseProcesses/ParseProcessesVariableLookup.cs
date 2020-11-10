@@ -121,7 +121,6 @@ namespace SME.AST
                     }
                     else if (ec is BaseExpressionSyntax)
                     {
-                        // TODO Make a test for this
                         //parts.Add("base");
                         ec = null;
                         break;
