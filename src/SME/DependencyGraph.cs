@@ -305,8 +305,10 @@ namespace SME
 
                 for (var i = unfinishedProcesses.Count - 1; i >= 0; i--)
                 {
-                    var ready = true;
                     var p = unfinishedProcesses[i];
+
+                    // An unclocked process with no parents will never be triggered.
+                    var ready = p.Parents.Any();
 
                     // Check if this process has all dependencies met
                     foreach (var b in p.Parents)
@@ -352,7 +354,7 @@ namespace SME
                     }
                 }
 
-                throw new Exception(string.Format("Attempted to build dependency list, but the following processes depend on a bus that is never written: {0}", string.Join(Environment.NewLine, unfinishedProcesses.Select(x => x.Item.GetType().FullName))));
+                throw new NoWritingParentsException(string.Format("Attempted to build dependency list, but the following processes depend on a bus that is never written: {0}", string.Join(Environment.NewLine, unfinishedProcesses.Select(x => x.Item.GetType().FullName))));
             }
 
             m_executionPlan = finished.ToArray();
@@ -365,6 +367,15 @@ namespace SME
         {
             public UnclockedCycleException() { }
             public UnclockedCycleException(string message) : base(message) { }
+        }
+
+        /// <summary>
+        /// Exception indicating that there exists an unclocked process, which depend on a bus, which is never written.
+        /// </summary>
+        public class NoWritingParentsException : Exception
+        {
+            public NoWritingParentsException() { }
+            public NoWritingParentsException(string message) : base(message) { }
         }
 
         /// <summary>
