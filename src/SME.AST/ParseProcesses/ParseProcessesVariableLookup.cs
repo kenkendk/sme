@@ -115,7 +115,6 @@ namespace SME.AST
                     }
                     else if (ec is ThisExpressionSyntax)
                     {
-                        // TODO Make a test for this
                         //parts.Add("this");
                         ec = null;
                         break;
