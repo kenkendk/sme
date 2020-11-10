@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -203,6 +203,30 @@ namespace SME
         public INode[] ExecutionPlan { get { return m_executionPlan.Cast<INode>().ToArray(); } }
 
         /// <summary>
+        /// Returns a collection of Node, indicating a dependency cycle. 
+        /// Assumes non of the Nodes in the given graph are clocked, as they 
+        /// should have been removed prior to calling this function.
+        /// </summary>
+        /// <param name="start">The start Node of the cycle</param>
+        /// <param name="current">The currently visited child</param>
+        /// <returns>A collection of Node, indicating a dependency cycle.</returns>
+        private IEnumerable<Node> ContainsCycle(Node start, Node current)
+        {
+            if (start == current)
+                yield return current;
+            else 
+            {
+                var cycle = current.Children.SelectMany(x => ContainsCycle(start, x));
+                if (cycle.Any())
+                {
+                    yield return current;
+                    foreach (var cycle_entry in cycle)
+                        yield return cycle_entry;
+                }
+            }
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SME.DependencyGraph"/> class.
         /// </summary>
         /// <param name="components">The components in the graph.</param>
@@ -315,13 +339,16 @@ namespace SME
             {
                 for (var i = unfinishedProcesses.Count - 1; i >= 0; i--)
                 {
-                    var p = unfinishedProcesses[i];
-
-                    // TODO: Should do real cyclic dependencies, otherwise we can only see one link
-                    var mutuals = unfinishedProcesses.Where(x => x == p || (x.Parents.Contains(p) && p.Parents.Contains(x))).ToList();
-                    if (mutuals.Count > 1)
+                    var proc = unfinishedProcesses[i];
+                    var cycle = proc.Children.SelectMany(child => ContainsCycle(proc, child));
+                    if (cycle.Any())
                     {
-                        throw new Exception(string.Format("Found a mutual depency in the processes: {0}", string.Join(Environment.NewLine, mutuals.Select(x => x.Item.GetType().FullName))));
+                        var nl = Environment.NewLine;
+                        var cycle_start = proc.Item.GetType().FullName;
+                        var names = cycle.Select(node => node.Item.GetType().FullName);
+                        var inner_cycle = string.Join($" ->{nl}", names);
+                        var full_cycle = $"{cycle_start} ->{nl}{inner_cycle} ->{nl}{cycle_start}";
+                        throw new UnclockedCycleException($"Found a dependency cycle in the graph:{nl}{full_cycle}");
                     }
                 }
 
@@ -329,6 +356,15 @@ namespace SME
             }
 
             m_executionPlan = finished.ToArray();
+        }
+
+        /// <summary>
+        /// Exception indicating that there exist a collection of unclocked processes that depend on each other.
+        /// </summary>
+        public class UnclockedCycleException : Exception
+        {
+            public UnclockedCycleException() { }
+            public UnclockedCycleException(string message) : base(message) { }
         }
 
         /// <summary>
