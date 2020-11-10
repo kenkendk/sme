@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -165,7 +165,6 @@ namespace SME
             #endregion
         }
 
-        /// TODO lave kombinatoriske processer? så man har clockede, ikke clockede og kombinatoriske
         /// <summary>
         /// The order in which the processes are told to continue.
         /// </summary>
@@ -241,21 +240,26 @@ namespace SME
 
             // Build a map, indicating which processes write to a given bus
             var neededForOutput = nodeLookup
-                .SelectMany(
-                    x => x.Key.OutputBusses.Where(y => y != null).Select(
-                        y => new { Bus = y, Node = x.Value }))
+                .SelectMany(x => x.Key.OutputBusses
+                    .Where(y => y != null)
+                    .Select(y => new 
+                        { 
+                            Bus = y, 
+                            Node = x.Value 
+                        }
+                    )
+                )
                 .GroupBy(x => x.Bus)
                 .ToDictionary(
                     x => x.Key,
                     y => y.Select(n => n.Node).ToList());
 
             AllBusses = components
-                .SelectMany(x =>
-                            x.InputBusses
-                            .Concat(x.OutputBusses)
-                            .Concat(x.InternalBusses)
-                            .Concat(x.ClockedInputBusses)
-                           )
+                .SelectMany(x => x.InputBusses
+                    .Concat(x.OutputBusses)
+                    .Concat(x.InternalBusses)
+                    .Concat(x.ClockedInputBusses)
+                )
                 .Where(x => x != null)
                 .Distinct()
                 .Cast<IRuntimeBus>()
@@ -431,7 +435,6 @@ namespace SME
                     first = false;
                 }
 
-                // TODO husk at tjek om alt er blevet skrevet!
                 foreach (var node in next)
                 {
                     // Propegate the buses
