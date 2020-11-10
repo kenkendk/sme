@@ -25,9 +25,18 @@ namespace DependencyCycle
 
     public class Dummy : SimulationProcess
     {
+        public Dummy(int cycles)
+        {
+            this.cycles = cycles;
+        }
+
+        int cycles;
+
         public override async System.Threading.Tasks.Task Run()
         {
-            await ClockAsync();
+            // Wait a few cycles to make a trace for vhdl
+            for (int i = 0; i < 10; i++)
+                await ClockAsync();
         }
     }
 

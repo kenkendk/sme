@@ -7,27 +7,31 @@ namespace DependencyCycle
     {
         static void Main(string[] args)
         {
+            // The sizes to test
+            int num_procs = 10;
+            int num_cycles = 100;
+
             // Test an unclocked dependency cycle
-            try 
+            try
             {
                 using (var sim = new Simulation())
                 {
-                    var dummy = new Dummy();
+                    var dummy = new Dummy(num_cycles);
                     var first = new UnclockedId();
-                    new Cycle(first, 10);
+                    new Cycle(first, num_procs);
 
                     sim.Run();
                 }
                 throw new Exception("The simulation should have thrown an exception.");
-            } 
+            }
             catch (SME.DependencyGraph.UnclockedCycleException) { }
 
             // Test an unclocked process with no parents
-            try 
+            try
             {
                 using (var sim = new Simulation())
                 {
-                    var dummy = new Dummy();
+                    var dummy = new Dummy(num_cycles);
                     var proc = new UnclockedId();
 
                     sim.Run();
@@ -39,10 +43,10 @@ namespace DependencyCycle
             // Test a cycle with a clocked process
             using (var sim = new Simulation())
             {
-                var dummy = new Dummy();
+                var dummy = new Dummy(num_cycles);
 
                 var first = new ClockedId();
-                new Cycle(first, 10);
+                new Cycle(first, num_procs);
 
                 sim
                     .BuildCSVFile()
