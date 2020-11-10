@@ -108,6 +108,12 @@ namespace UnitTest
         }
 
         [TestMethod]
+        public void RunDependencyCycle()
+        {
+            RunTest(typeof(DependencyCycle.Dummy), true, false);
+        }
+
+        [TestMethod]
         public void RunExternalComponent()
         {
             RunTest(typeof(ExternalComponent.SimpleDualPortBlockRamTester<>), true, false);

@@ -36,6 +36,20 @@
             }
         },
         {
+            "label": "build example DependencyCycle",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/src/Examples/DependencyCycle/DependencyCycle.csproj"
+            ],
+            "problemMatcher": "$msCompile",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
             "label": "build example ExternalComponent",
             "command": "dotnet",
             "type": "process",

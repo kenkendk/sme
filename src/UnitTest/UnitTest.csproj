@@ -4,6 +4,7 @@
     <ProjectReference Include="..\SME\SME.csproj" />
     <ProjectReference Include="..\Examples\AES256CBC\AES256CBC.csproj" />
     <ProjectReference Include="..\Examples\ColorBin\ColorBin.csproj" />
+    <ProjectReference Include="..\Examples\DependencyCycle\DependencyCycle.csproj" />
     <ProjectReference Include="..\Examples\ExternalComponent\ExternalComponent.csproj" />
     <ProjectReference Include="..\Examples\NoiseFilter\NoiseFilter.csproj" />
     <ProjectReference Include="..\Examples\SimpleComponents\SimpleComponents.csproj" />
