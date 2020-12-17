@@ -58,7 +58,10 @@ namespace SME
                 if (t.IsArray)
                 {
                     var arraysource = (Array)source;
-                    var target = Array.CreateInstance(t.GetElementType(), arraysource.Length);
+                    int[] lengths = new int[arraysource.Rank];
+                    for (int i = 0; i < arraysource.Rank; i++)
+                        lengths[i] = arraysource.GetLength(i);
+                    var target = Array.CreateInstance(t.GetElementType(), lengths);
                     Array.Copy(arraysource, target, arraysource.Length);
                     Initialization[fi.Name] = target;
                 }
