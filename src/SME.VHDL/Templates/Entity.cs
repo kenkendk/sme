@@ -276,7 +276,8 @@ begin
                     }
                     Write("\n");
                 }
-                Write("        variable reentry_guard: std_logic;\n");
+                if (!RSP.Process.IsClocked)
+                    Write("        variable reentry_guard: std_logic;\n");
                 Write(@"
         -- #### USER-DATA-NONCLOCKEDVARIABLES-START
         -- #### USER-DATA-NONCLOCKEDVARIABLES-END
@@ -320,7 +321,8 @@ begin
                     }
                 }
 
-                Write("            reentry_guard := \'0\';\n");
+                if (!RSP.Process.IsClocked)
+                    Write("            reentry_guard := \'0\';\n");
 
                 if (RSP.FiniteStateMethod == null) {
                     Write("            FIN <= \'0\';\n");
@@ -371,7 +373,10 @@ begin
                 }
 
                 if (RSP.FiniteStateMethod == null)
-                    Write("            FIN <= reentry_guard;\n");
+                    if (RSP.Process.IsClocked)
+                        Write("            FIN <= not RDY;\n");
+                    else
+                        Write("            FIN <= reentry_guard;\n");
                 else if (RSP.Process.IsClocked)
                     Write("            FSM_Trigger <= not FSM_Trigger;\n");
                 else
