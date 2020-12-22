@@ -143,13 +143,13 @@ package body csv_util is
            end loop;
 
            if lhs'length > maxlen then
-                if lhs(maxlen + 1) /= NUL then
+                if not (lhs(maxlen + 1) = NUL or lhs(maxlen + 1) = CR) then
                     return false;
                 end if;
            end if;
 
            if rhs'length > maxlen then
-                if rhs(maxlen + 1) /= NUL then
+                if not (rhs(maxlen + 1) = NUL or rhs(maxlen + 1) = CR) then
                     return false;
                 end if;
            end if;
