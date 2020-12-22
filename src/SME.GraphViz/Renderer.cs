@@ -17,11 +17,11 @@ namespace SME
 		/// <returns>The runner.</returns>
 		/// <param name="self">The runner.</param>
 		/// <param name="filename">The output filename.</param>
-		public static Simulation BuildGraph(this Simulation self, string filename = "network.dot")
+		public static Simulation BuildGraph(this Simulation self, string filename = "network.dot", bool render_buses = true)
 		{
 			self.AddPostloader(sim =>
 			{
-                SME.GraphViz.Renderer.Render(sim, Path.Combine(sim.TargetFolder, filename));
+                SME.GraphViz.Renderer.Render(sim, Path.Combine(sim.TargetFolder, filename), render_buses);
 			});
 			return self;
 		}
@@ -40,33 +40,55 @@ namespace SME.GraphViz
 		/// </summary>
 		/// <param name="simulation">The simulation setup to render.</param>
 		/// <param name="file">The filename to write into.</param>
-        public static void Render(Simulation simulation, string file)
+        public static void Render(Simulation simulation, string file, bool render_buses = true)
 		{
 			var sb = new StringBuilder();
 
             sb.AppendFormat("digraph {0} {{", simulation.Processes.First().Instance.GetType().Assembly.GetName().Name);
 			sb.AppendLine();
 
-            var r = new NetworkMapper(simulation).ReduceToNames();
+            var map = new NetworkMapper(simulation);
 
-            foreach (var b in r.BusDependsOn.Keys.Concat(r.DependsOnBus.Keys).Concat(r.DependsOnClockedBus.Keys).Distinct())
-				sb.AppendFormat("\"{0}\" [shape=oval];{1}", b, Environment.NewLine);
+			if (render_buses)
+			{
+				var r = map.ReduceToNames();
+				foreach (var b in r.BusDependsOn.Keys.Concat(r.DependsOnBus.Keys).Concat(r.DependsOnClockedBus.Keys).Distinct())
+					sb.AppendFormat("\"{0}\" [shape=oval];{1}", b, Environment.NewLine);
 
-            foreach (var p in r.BusDependsOn.Values.Concat(r.DependsOnBus.Values).Concat(r.DependsOnClockedBus.Values).SelectMany(x => x).Select(n => n).Distinct())
-				sb.AppendFormat("\"{0}\" [shape=box];{1}", p, Environment.NewLine);
+				foreach (var p in r.BusDependsOn.Values.Concat(r.DependsOnBus.Values).Concat(r.DependsOnClockedBus.Values).SelectMany(x => x).Select(n => n).Distinct())
+					sb.AppendFormat("\"{0}\" [shape=box];{1}", p, Environment.NewLine);
 
-			foreach (var b in r.BusDependsOn)
-				foreach (var p in b.Value)
-					sb.AppendFormat("\"{0}\" -> \"{1}\";{2}", b.Key, p, Environment.NewLine);
+				foreach (var b in r.BusDependsOn)
+					foreach (var p in b.Value)
+						sb.AppendFormat("\"{0}\" -> \"{1}\";{2}", b.Key, p, Environment.NewLine);
 
-			foreach (var b in r.DependsOnBus)
-				foreach (var p in b.Value)
-					sb.AppendFormat("\"{1}\" -> \"{0}\";{2}", b.Key, p, Environment.NewLine);
+				foreach (var b in r.DependsOnBus)
+					foreach (var p in b.Value)
+						sb.AppendFormat("\"{1}\" -> \"{0}\";{2}", b.Key, p, Environment.NewLine);
 
-			foreach (var b in r.DependsOnClockedBus)
-				foreach (var p in b.Value)
-					sb.AppendFormat("\"{0}\" -> \"{1}\" [style=dotted];{2}", b.Key, p, Environment.NewLine);
-			
+				foreach (var b in r.DependsOnClockedBus)
+					foreach (var p in b.Value)
+						sb.AppendFormat("\"{0}\" -> \"{1}\" [style=dotted];{2}", b.Key, p, Environment.NewLine);
+
+			}
+			else
+			{
+				foreach(var p in map.ClockedProcesses)
+					sb.AppendFormat("\"{0}\" [shape=box];{1}",
+						p.InstanceName, Environment.NewLine);
+
+				foreach(var p in map.UnclockedProcesses)
+					sb.AppendFormat("\"{0}\" [shape=box, style=dashed];{1}",
+						p.InstanceName, Environment.NewLine);
+
+				foreach(var p in map.ClockedProcesses.Union(map.UnclockedProcesses))
+					foreach (var b in p.Instance.OutputBusses)
+						foreach (var s in map.BusDependsOn[b])
+							sb.AppendFormat(
+								"\"{0}\" -> \"{1}\";{2}",
+								p.InstanceName, s.InstanceName, Environment.NewLine
+							);
+			}
 
 			sb.AppendLine("}");
 
@@ -98,6 +120,9 @@ namespace SME.GraphViz
 		private class NetworkMapper
 		{
             public readonly Simulation Simulation;
+			public IEnumerable<ProcessMetadata> ClockedProcesses;
+			public IEnumerable<ProcessMetadata> UnclockedProcesses;
+			public IEnumerable<ProcessMetadata> SimulationProcesses;
             public Dictionary<IRuntimeBus, List<ProcessMetadata>> BusDependsOn { get; private set; }
             public Dictionary<IRuntimeBus, List<ProcessMetadata>> DependsOnBus { get; private set; }
             public Dictionary<IRuntimeBus, List<ProcessMetadata>> DependsOnClockedBus { get; private set; }
@@ -108,36 +133,49 @@ namespace SME.GraphViz
 
                 var components = simulation.Processes;
 
-				DependsOnBus = 
+				ClockedProcesses = components
+					.Where(x =>
+						!(x.Instance is SimulationProcess) &&
+						x.Instance.IsClockedProcess);
+
+				UnclockedProcesses = components
+					.Where(x =>
+						!(x.Instance is SimulationProcess) &&
+						!x.Instance.IsClockedProcess);
+
+				SimulationProcesses = components
+					.Where(x => x.Instance is SimulationProcess);
+
+				DependsOnBus =
 					(from g in
 					from c in components
 					from b in c.Instance.OutputBusses
 					select new {Bus = b, Component = c}
 					group g by g.Bus)
 						.ToDictionary(
-							k => k.Key, 
+							k => k.Key,
 							y => y.Select(n => n.Component).ToList()
 						);
 
-				BusDependsOn = 
+				BusDependsOn =
 					(from g in
 						from c in components
-						from b in c.Instance.InputBusses
+						from b in c.Instance.InputBusses.Union(c.Instance.ClockedInputBusses).Distinct()
 						select new {Bus = b, Component = c}
 						group g by g.Bus)
 						.ToDictionary(
-							k => k.Key, 
+							k => k.Key,
 							y => y.Select(n => n.Component).ToList()
 						);
 
-				DependsOnClockedBus = 
+				DependsOnClockedBus =
 					(from g in
 						from c in components
 						from b in c.Instance.ClockedInputBusses
 						select new {Bus = b, Component = c}
 						group g by g.Bus)
 						.ToDictionary(
-							k => k.Key, 
+							k => k.Key,
 							y => y.Select(n => n.Component).ToList()
 						);
 			}
