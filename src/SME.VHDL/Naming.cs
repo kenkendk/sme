@@ -9,7 +9,7 @@ namespace SME.VHDL
 	{
         public static string AssemblyNameToFileName(Simulation simulation)
         {
-            return simulation.Processes.First().Instance.GetType().Assembly.GetName().Name + ".vhdl";
+			return simulation.Processes.Select(x => x.Instance).First(x => x is SimulationProcess).GetType().Assembly.GetName().Name + ".vhdl";
         }
 
 		public static string AssemblyNameToFileName(IEnumerable<IProcess> processes)
@@ -89,6 +89,6 @@ namespace SME.VHDL
                 r = r.Replace("__", "_");
 
             return r.TrimEnd('_');
-		}	
+		}
 	}
 }
