@@ -54,7 +54,7 @@ signal ADDRB_internal{index_suffix}: std_logic_vector({(overrideAddrWidth <= 0 ?
         {
             var cases = Enumerable
                 .Range(0, blocks)
-                .Select(i => $@"    when ""{VHDLHelper.GetDataBitString(i, fullAddressWidth - blockAddrWidth).Substring(32 - (fullAddressWidth - blockAddrWidth))}"" => 
+                .Select(i => $@"    when ""{VHDLHelper.GetDataBitString(i, fullAddressWidth - blockAddrWidth).Substring(32 - (fullAddressWidth - blockAddrWidth))}"" =>
         DO{port}_internal <= DO{port}_internal_{i};");
 
             return $@"
@@ -127,7 +127,7 @@ generic map (
 
     INIT_A => X""{ initialvalue}"", --Initial values on A output port
     INIT_B => X""{ initialvalue}""  --Initial values on B output port
-)   
+)
 port map (
     DOA => DOA_internal{index_suffix},         -- Output port-A, width defined by READ_WIDTH_A parameter
     DOB => DOB_internal{index_suffix},         -- Output port-B, width defined by READ_WIDTH_B parameter
@@ -156,7 +156,7 @@ port map (
             var size = initialdata.Length;
             var datawidth = VHDLHelper.GetBitWidthFromType(initialdata.GetType().GetElementType());
 
-            var resetinitial = renderer.Process.LocalBusNames.Keys.Where(x => x.SourceType.Name == nameof(SME.Components.TrueDualPortMemory<int>.IReadResultA)).SelectMany(x => x.Signals).First(x => x.Name == nameof(SME.Components.TrueDualPortMemory<int>.IReadResultA.Data)).DefaultValue;
+            var resetinitial = renderer.Process.LocalBusNames.Keys.Where(x => x.SourceType.Name == nameof(SME.Components.TrueDualPortMemory<int>.IReadResult)).SelectMany(x => x.Signals).First(x => x.Name == nameof(SME.Components.TrueDualPortMemory<int>.IReadResult.Data)).DefaultValue;
             var initialvalue = VHDLHelper.GetDataBitString(initialdata.GetType().GetElementType(), resetinitial, datawidth);
 
             var itemsPr18k = ((18 * 1024) + (datawidth - 1)) / datawidth;
@@ -273,7 +273,7 @@ begin
 {self.InstanceName}_Helper: process(RST,CLK, RDY)
 begin
 if RST = '1' then
-    FIN <= '0';                        
+    FIN <= '0';
 elsif rising_edge(CLK) then
     FIN <= not RDY;
     {clocktemplate}
@@ -282,17 +282,17 @@ end process;
 
 {gluetemplate}
 
-ENA_internal <= ENB and {Naming.ToValidName(renderer.Parent.GetLocalBusName(inabus, self) + "_" + nameof(SME.Components.TrueDualPortMemory<int>.IControlA.Enabled)) };
-WEA_internal <= (others => ENA_internal and {Naming.ToValidName(renderer.Parent.GetLocalBusName(inabus, self) + "_" + nameof(SME.Components.TrueDualPortMemory<int>.IControlA.IsWriting)) });
-DIA_internal <= std_logic_vector({ Naming.ToValidName(renderer.Parent.GetLocalBusName(inabus, self) + "_" + nameof(SME.Components.TrueDualPortMemory<int>.IControlA.Data)) });
-ADDRA_internal <= std_logic_vector(resize(unsigned({ Naming.ToValidName(renderer.Parent.GetLocalBusName(inabus, self) + "_" + nameof(SME.Components.TrueDualPortMemory<int>.IControlA.Address)) }), {targetwidth}));
-{ Naming.ToValidName(renderer.Parent.GetLocalBusName(outabus, self) + "_" + nameof(SME.Components.TrueDualPortMemory<int>.IReadResultA.Data)) } <= {renderer.Parent.VHDLWrappedTypeName(outabus.Signals.First())}(DOA_internal);
+ENA_internal <= ENB and {Naming.ToValidName(renderer.Parent.GetLocalBusName(inabus, self) + "_" + nameof(SME.Components.TrueDualPortMemory<int>.IControl.Enabled)) };
+WEA_internal <= (others => ENA_internal and {Naming.ToValidName(renderer.Parent.GetLocalBusName(inabus, self) + "_" + nameof(SME.Components.TrueDualPortMemory<int>.IControl.IsWriting)) });
+DIA_internal <= std_logic_vector({ Naming.ToValidName(renderer.Parent.GetLocalBusName(inabus, self) + "_" + nameof(SME.Components.TrueDualPortMemory<int>.IControl.Data)) });
+ADDRA_internal <= std_logic_vector(resize(unsigned({ Naming.ToValidName(renderer.Parent.GetLocalBusName(inabus, self) + "_" + nameof(SME.Components.TrueDualPortMemory<int>.IControl.Address)) }), {targetwidth}));
+{ Naming.ToValidName(renderer.Parent.GetLocalBusName(outabus, self) + "_" + nameof(SME.Components.TrueDualPortMemory<int>.IReadResult.Data)) } <= {renderer.Parent.VHDLWrappedTypeName(outabus.Signals.First())}(DOA_internal);
 
-ENB_internal <= ENB and {Naming.ToValidName(renderer.Parent.GetLocalBusName(inbbus, self) + "_" + nameof(SME.Components.TrueDualPortMemory<int>.IControlB.Enabled)) };
-WEB_internal <= (others => ENB_internal and {Naming.ToValidName(renderer.Parent.GetLocalBusName(inbbus, self) + "_" + nameof(SME.Components.TrueDualPortMemory<int>.IControlB.IsWriting)) });
-DIB_internal <= std_logic_vector({ Naming.ToValidName(renderer.Parent.GetLocalBusName(inbbus, self) + "_" + nameof(SME.Components.TrueDualPortMemory<int>.IControlB.Data)) });
-ADDRB_internal <= std_logic_vector(resize(unsigned({ Naming.ToValidName(renderer.Parent.GetLocalBusName(inbbus, self) + "_" + nameof(SME.Components.TrueDualPortMemory<int>.IControlB.Address)) }), {targetwidth}));
-{ Naming.ToValidName(renderer.Parent.GetLocalBusName(outbbus, self) + "_" + nameof(SME.Components.TrueDualPortMemory<int>.IReadResultB.Data)) } <= {renderer.Parent.VHDLWrappedTypeName(outbbus.Signals.First())}(DOB_internal);
+ENB_internal <= ENB and {Naming.ToValidName(renderer.Parent.GetLocalBusName(inbbus, self) + "_" + nameof(SME.Components.TrueDualPortMemory<int>.IControl.Enabled)) };
+WEB_internal <= (others => ENB_internal and {Naming.ToValidName(renderer.Parent.GetLocalBusName(inbbus, self) + "_" + nameof(SME.Components.TrueDualPortMemory<int>.IControl.IsWriting)) });
+DIB_internal <= std_logic_vector({ Naming.ToValidName(renderer.Parent.GetLocalBusName(inbbus, self) + "_" + nameof(SME.Components.TrueDualPortMemory<int>.IControl.Data)) });
+ADDRB_internal <= std_logic_vector(resize(unsigned({ Naming.ToValidName(renderer.Parent.GetLocalBusName(inbbus, self) + "_" + nameof(SME.Components.TrueDualPortMemory<int>.IControl.Address)) }), {targetwidth}));
+{ Naming.ToValidName(renderer.Parent.GetLocalBusName(outbbus, self) + "_" + nameof(SME.Components.TrueDualPortMemory<int>.IReadResult.Data)) } <= {renderer.Parent.VHDLWrappedTypeName(outbbus.Signals.First())}(DOB_internal);
 
 ";
 

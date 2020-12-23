@@ -17,21 +17,21 @@ namespace SME.VHDL.CustomRenders.Inferred
             var datawidth = VHDLHelper.GetBitWidthFromType(initialdata.GetType().GetElementType());
             var addrwidth = (int)Math.Ceiling(Math.Log(initialdata.Length, 2));
 
-            var datavhdltype = renderer.Parent.TypeLookup[renderer.Process.InputBusses.SelectMany(x => x.Signals).First(x => x.Name == nameof(SME.Components.TrueDualPortMemory<int>.IControlA.Data))];
-            var addrvhdltype = renderer.Parent.TypeLookup[renderer.Process.InputBusses.SelectMany(x => x.Signals).First(x => x.Name == nameof(SME.Components.TrueDualPortMemory<int>.IControlA.Address))];
+            var datavhdltype = renderer.Parent.TypeLookup[renderer.Process.InputBusses.SelectMany(x => x.Signals).First(x => x.Name == nameof(SME.Components.TrueDualPortMemory<int>.IControl.Data))];
+            var addrvhdltype = renderer.Parent.TypeLookup[renderer.Process.InputBusses.SelectMany(x => x.Signals).First(x => x.Name == nameof(SME.Components.TrueDualPortMemory<int>.IControl.Address))];
 
-            var controla_bus_data_name = $"{ nameof(SME.Components.TrueDualPortMemory<int>.ControlA) }_{ nameof(SME.Components.TrueDualPortMemory<int>.IControlA.Data) }";
-            var controla_bus_addr_name = $"{ nameof(SME.Components.TrueDualPortMemory<int>.ControlA) }_{ nameof(SME.Components.TrueDualPortMemory<int>.IControlA.Address) }";
-            var controla_bus_enabled_name = $"{ nameof(SME.Components.TrueDualPortMemory<int>.ControlA) }_{ nameof(SME.Components.TrueDualPortMemory<int>.IControlA.Enabled) }";
-            var controla_bus_iswriting_name = $"{ nameof(SME.Components.TrueDualPortMemory<int>.ControlA) }_{ nameof(SME.Components.TrueDualPortMemory<int>.IControlA.IsWriting) }";
+            var controla_bus_data_name = $"{ nameof(SME.Components.TrueDualPortMemory<int>.ControlA) }_{ nameof(SME.Components.TrueDualPortMemory<int>.IControl.Data) }";
+            var controla_bus_addr_name = $"{ nameof(SME.Components.TrueDualPortMemory<int>.ControlA) }_{ nameof(SME.Components.TrueDualPortMemory<int>.IControl.Address) }";
+            var controla_bus_enabled_name = $"{ nameof(SME.Components.TrueDualPortMemory<int>.ControlA) }_{ nameof(SME.Components.TrueDualPortMemory<int>.IControl.Enabled) }";
+            var controla_bus_iswriting_name = $"{ nameof(SME.Components.TrueDualPortMemory<int>.ControlA) }_{ nameof(SME.Components.TrueDualPortMemory<int>.IControl.IsWriting) }";
 
-            var controlb_bus_data_name = $"{ nameof(SME.Components.TrueDualPortMemory<int>.ControlB) }_{ nameof(SME.Components.TrueDualPortMemory<int>.IControlB.Data) }";
-            var controlb_bus_addr_name = $"{ nameof(SME.Components.TrueDualPortMemory<int>.ControlB) }_{ nameof(SME.Components.TrueDualPortMemory<int>.IControlB.Address) }";
-            var controlb_bus_enabled_name = $"{ nameof(SME.Components.TrueDualPortMemory<int>.ControlB) }_{ nameof(SME.Components.TrueDualPortMemory<int>.IControlB.Enabled) }";
-            var controlb_bus_iswriting_name = $"{ nameof(SME.Components.TrueDualPortMemory<int>.ControlB) }_{ nameof(SME.Components.TrueDualPortMemory<int>.IControlB.IsWriting) }";
+            var controlb_bus_data_name = $"{ nameof(SME.Components.TrueDualPortMemory<int>.ControlB) }_{ nameof(SME.Components.TrueDualPortMemory<int>.IControl.Data) }";
+            var controlb_bus_addr_name = $"{ nameof(SME.Components.TrueDualPortMemory<int>.ControlB) }_{ nameof(SME.Components.TrueDualPortMemory<int>.IControl.Address) }";
+            var controlb_bus_enabled_name = $"{ nameof(SME.Components.TrueDualPortMemory<int>.ControlB) }_{ nameof(SME.Components.TrueDualPortMemory<int>.IControl.Enabled) }";
+            var controlb_bus_iswriting_name = $"{ nameof(SME.Components.TrueDualPortMemory<int>.ControlB) }_{ nameof(SME.Components.TrueDualPortMemory<int>.IControl.IsWriting) }";
 
-            var readresulta_bus_data_name = $"{nameof(SME.Components.TrueDualPortMemory<int>.ReadResultA)}_{ nameof(SME.Components.TrueDualPortMemory<int>.IReadResultA.Data) }";
-            var readresultb_bus_data_name = $"{nameof(SME.Components.TrueDualPortMemory<int>.ReadResultB)}_{ nameof(SME.Components.TrueDualPortMemory<int>.IReadResultB.Data) }";
+            var readresulta_bus_data_name = $"{nameof(SME.Components.TrueDualPortMemory<int>.ReadResultA)}_{ nameof(SME.Components.TrueDualPortMemory<int>.IReadResult.Data) }";
+            var readresultb_bus_data_name = $"{nameof(SME.Components.TrueDualPortMemory<int>.ReadResultB)}_{ nameof(SME.Components.TrueDualPortMemory<int>.IReadResult.Data) }";
 
             var asm_write_a = new AST.AssignmentExpression(
                 new AST.IdentifierExpression(
@@ -121,7 +121,7 @@ namespace SME.VHDL.CustomRenders.Inferred
 
             var template = $@"
     type ram_type is array (0 to {size - 1}) of std_logic_vector ({datawidth - 1} downto 0);
-    shared variable RAM : ram_type := { VHDLHelper.GetArrayAsAssignmentList(initialdata) };
+    signal RAM : ram_type := { VHDLHelper.GetArrayAsAssignmentList(initialdata) };
     signal { controla_bus_data_name }_Vector: std_logic_vector ({datawidth - 1} downto 0);
     signal { controlb_bus_data_name }_Vector: std_logic_vector ({datawidth - 1} downto 0);
     signal { readresulta_bus_data_name }_Vector: std_logic_vector ({datawidth - 1} downto 0);
@@ -130,42 +130,44 @@ namespace SME.VHDL.CustomRenders.Inferred
     signal { controlb_bus_addr_name }_Vector: std_logic_vector ({addrwidth - 1} downto 0);
     signal FIN_A : std_logic;
     signal FIN_B : std_logic;
-begin 
+begin
 
     process (CLK, RST)
     begin
         if RST = '1' then
             { readresulta_bus_data_name }_Vector <= (others => '0');
-            FIN_A <= '0';
         elsif rising_edge(CLK) then
             if ({ controla_bus_enabled_name } = '1') then
                 { readresulta_bus_data_name }_Vector <= RAM(to_integer(unsigned({ controla_bus_addr_name }_Vector)));
-
-                if ({ controla_bus_iswriting_name } = '1') then
-                    RAM(to_integer(unsigned({ controla_bus_addr_name }_Vector))) := { controla_bus_data_name }_Vector;
-                end if;
             end if;
-            FIN_A <= not RDY;
         end if;
-    end process;
 
-    process (CLK, RST)
-    begin
         if RST = '1' then
             { readresultb_bus_data_name }_Vector <= (others => '0');
-            FIN_B <= '0';
         elsif rising_edge(CLK) then
             if ({ controlb_bus_enabled_name } = '1') then
                 { readresultb_bus_data_name }_Vector <= RAM(to_integer(unsigned({ controlb_bus_addr_name }_Vector)));
+            end if;
+        end if;
 
-                if ({ controlb_bus_iswriting_name } = '1') then
-                    RAM(to_integer(unsigned({ controlb_bus_addr_name }_Vector))) := { controlb_bus_data_name }_Vector;
-                end if;
+        if RST = '1' then
+            FIN_A <= '0';
+        elsif rising_edge(CLK) then
+            if ({ controla_bus_enabled_name } = '1') and ({ controla_bus_iswriting_name } = '1') then
+                RAM(to_integer(unsigned({ controla_bus_addr_name }_Vector))) <= { controla_bus_data_name }_Vector;
+            end if;
+            FIN_A <= not RDY;
+        end if;
+
+        if RST = '1' then
+            FIN_B <= '0';
+        elsif rising_edge(CLK) then
+            if ({ controlb_bus_enabled_name } = '1') and ({ controlb_bus_iswriting_name } = '1') then
+                RAM(to_integer(unsigned({ controlb_bus_addr_name }_Vector))) <= { controlb_bus_data_name }_Vector;
             end if;
             FIN_B <= not RDY;
         end if;
     end process;
-
 
     {Naming.ProcessNameToValidName(renderer.Process.SourceInstance.Instance)}_Helper: process(RST, FIN_A, FIN_B)
     begin

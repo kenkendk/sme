@@ -8,9 +8,9 @@ namespace SME.Components
     public class TrueDualPortMemory<T> : SimpleProcess
     {
         /// <summary>
-        /// The controller bus for port A.
+        /// The controller bus for a port.
         /// </summary>
-        public interface IControlA : IBus
+        public interface IControl : IBus
         {
             /// <summary>
             /// Sets a value indicating whether the address is used for writing or not.
@@ -39,56 +39,12 @@ namespace SME.Components
         }
 
         /// <summary>
-        /// The controller bus for port A.
+        /// The read result from a port.
         /// </summary>
-        public interface IControlB : IBus
+        public interface IReadResult : IBus
         {
             /// <summary>
-            /// Sets a value indicating whether the address is used for writing or not.
-            /// </summary>
-            /// <value><c>true</c> if is writing; otherwise, <c>false</c>.</value>
-            [InitialValue]
-            bool IsWriting { get; set; }
-            /// <summary>
-            /// Sets a value indicating whether this bus is enabled.
-            /// </summary>
-            /// <value><c>true</c> if enabled; otherwise, <c>false</c>.</value>
-            [InitialValue]
-            bool Enabled { get; set; }
-            /// <summary>
-            /// Sets the address used to read or write.
-            /// </summary>
-            /// <value>The address.</value>
-            [InitialValue]
-            int Address { get; set; }
-            /// <summary>
-            /// Sets the data to write.
-            /// </summary>
-            /// <value>The data.</value>
-            [InitialValue]
-            T Data { get; set; }
-        }
-
-        /// <summary>
-        /// The read result from port A.
-        /// </summary>
-        public interface IReadResultA : IBus
-        {
-            /// <summary>
-            /// Gets the last data read from port A.
-            /// </summary>
-            /// <value>The data.</value>
-            [InitialValue]
-            T Data { get; set; }
-        }
-
-        /// <summary>
-        /// The read result from port B.
-        /// </summary>
-        public interface IReadResultB : IBus
-        {
-            /// <summary>
-            /// Gets the last data read from port B.
+            /// Gets the last data read from a port.
             /// </summary>
             /// <value>The data.</value>
             [InitialValue]
@@ -99,23 +55,23 @@ namespace SME.Components
         /// The control bus for port A.
         /// </summary>
         [InputBus]
-        public readonly IControlA ControlA = Scope.CreateBus<IControlA>();
+        public readonly IControl ControlA = Scope.CreateBus<IControl>();
         /// <summary>
         /// The control bus for port B.
         /// </summary>
         [InputBus]
-        public readonly IControlB ControlB = Scope.CreateBus<IControlB>();
+        public readonly IControl ControlB = Scope.CreateBus<IControl>();
 
         /// <summary>
         /// The result of reading from port A.
         /// </summary>
         [OutputBus]
-        public readonly IReadResultA ReadResultA = Scope.CreateBus<IReadResultA>();
+        public readonly IReadResult ReadResultA = Scope.CreateBus<IReadResult>();
         /// <summary>
         /// The result of reading from port B.
         /// </summary>
         [OutputBus]
-        public readonly IReadResultB ReadResultB = Scope.CreateBus<IReadResultB>();
+        public readonly IReadResult ReadResultB = Scope.CreateBus<IReadResult>();
 
         /// <summary>
         /// The stored memory.
