@@ -1,43 +1,24 @@
-New in version 0.4.2 since 0.4.1-beta
+New in version 0.4.3 since 0.4.2
 
 ***********
 * Changes *
 ***********
-- Updated to .NET Core 3.1.102. Newer versions won't work with VHDL code
-  generation.
-- Processes are now run concurrently. There is still some false dependency
-  between them, due to buses, which results in processes not always running in
-  parallel.
-- Changed when an SME simulation stops. The new default is to stop when all of
-  the simulation processes have finished. Stopping a simulation can also be
-  triggered by invoking `Simulation.Current.RequestStop()`.
-- Processes can now inherit from an abstract class.
-- Updated RAM components to give a warning, instead of throwing an exception,
-  when doing both a read and a write on the same address.
+- Added the option to not render the buses, when generating the dot graph. This
+  allows for a much cleaner graph.
+- Inferred true dual port memory are now more portable. The old definition
+  produced inconsistent behaviour, depending on which VHDL simulator was being
+  used.
+- Moved function definitions in VHDL into the process definition. This allows
+  the functions to access variables and buses, which are local to the process.
 
 *********
 * Fixes *
 *********
-- Fixed error with arrays containing default values being expanded into huge
-  initializations instead of using `others => `.
-- Updated unit tests to correctly do testing.
-- Updated examples to reflect proper SME.
-- All examples are now also run as unit tests, as in they now verify their
-  output is correct.
-- Removed GHDL warning about redundant `others` case.
-- Updated Travis for continoues integration of the updated SME on the Debug
-  build.
-- Fixed VHDL simulation, where a `RDY` flag wasn't properly set.
-- Fixed overflow error when generating bit strings
-- Flipped how arrays are initialized in the RAM templates.
-- Added intermediate signals for buses in VHDL, which are both input for
-  processes and top-level output.
-- Fixed handling of non-continoues enums.
-- Removed unused flag in state machines.
-- Reworked state machine transformations so they are more stable.
-- Fixed premature bus loading performed by the .NET debugger.
-- Fixed triggering of processes in VHDL.
-- Fixed error with generating too many type definitions in VHDL.
-- Fixed redundant variable definition for loop invariants.
-- Fixed error with inner exceptions silently being "handled".
-- Fixed export of arrays in VHDL.
+- Fixed error when initializing multidimensional arrays.
+- Fixed triggering of unclocked processes. Before, clocked processes wouldn't
+  properly set the signal triggering unclocked processes.
+- Fixed Windows line endings not being stripped in csv_util.vhdl.
+- Fixed wrong name generation, when the first instance of a process came from
+  a different namespace. E.g. when the first process was a
+  SME.Components.TrueDualPortRAM, all names would start with SME_Components
+  instead of the proper namespace of the process.

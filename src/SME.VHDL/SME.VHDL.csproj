@@ -6,11 +6,11 @@
         <ProjectReference Include="..\SME.AST\SME.AST.csproj" />
         <ProjectReference Include="..\SME.Tracer\SME.Tracer.csproj" />
         <ProjectReference Include="..\SME.Components\SME.Components.csproj" />
-        
+
         <PackageReference Include="ICSharpCode.Decompiler" Version="3.0.2.3465" />
         <PackageReference Include="Mono.Cecil" Version="0.10.0" />
         <PackageReference Include="System.CodeDom" Version="4.7.0" />
-        
+
         <EmbeddedResource Include="Templates/*.vhdl" />
     </ItemGroup>
 
@@ -25,10 +25,10 @@
     <PropertyGroup>
         <PackageId>SME.VHDL</PackageId>
         <Title>Synchronous Message Exchange (SME)</Title>
-        <PackageVersion>0.4.2</PackageVersion>
+        <PackageVersion>0.4.3</PackageVersion>
         <Authors>Kenneth Skovhede, Carl-Johannes Johnsen</Authors>
         <Description>VHDL transpiler for SME networks</Description>
-        <Copyright>Copyright ©2020 - The SME team</Copyright>
+        <Copyright>Copyright ©2021 - The SME team</Copyright>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
         <DevelopmentDependency>false</DevelopmentDependency>
         <PackageTags>SME;hardware simulation</PackageTags>
