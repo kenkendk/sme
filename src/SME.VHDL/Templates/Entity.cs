@@ -241,15 +241,6 @@ end ");
                     Write("\n");
                 }
 
-                if (Process.Methods != null && Process.Methods.Any(x => !(x.Ignore || x.IsStateMachine)))
-                {
-                    Write("    -- Internal methods\n");
-                    foreach (var s in Process.Methods.Where(x => !(x.Ignore || x.IsStateMachine)))
-                        foreach(var line in RSP.Helper.RenderMethod(s))
-                            Write($"    {ToStringHelper.ToStringWithCulture( line )}\n");
-                    Write("\n");
-                }
-
                 if (Process.IsClocked && RSP.FiniteStateMethod != null)
                 {
                     Write("    -- Clock-edge capture signals\n");
@@ -315,6 +306,15 @@ begin
                     Write("\n");
                 }
                 Write("        variable reentry_guard: std_logic;\n\n");
+
+                if (Process.Methods != null && Process.Methods.Any(x => !(x.Ignore || x.IsStateMachine)))
+                {
+                    Write("        -- Internal methods\n");
+                    foreach (var s in Process.Methods.Where(x => !(x.Ignore || x.IsStateMachine)))
+                        foreach(var line in RSP.Helper.RenderMethod(s))
+                            Write($"        {ToStringHelper.ToStringWithCulture( line )}\n");
+                    Write("\n");
+                }
 
                 Write(@"        -- #### USER-DATA-NONCLOCKEDVARIABLES-START
         -- #### USER-DATA-NONCLOCKEDVARIABLES-END
