@@ -14,7 +14,7 @@ namespace SME.AST
         public ICSharpCode.Decompiler.CSharp.Syntax.Expression SourceExpression;
 
         /// <summary>
-        /// The source result type 
+        /// The source result type
         /// </summary>
         public Mono.Cecil.TypeReference SourceResultType;
 
@@ -158,7 +158,7 @@ namespace SME.AST
             this.SizeExpression = SizeExpression;
             this.SizeExpression.Parent = this;
         }
-        
+
         /// <summary>
         /// Returns a string representation of the Expression
         /// </summary>
@@ -433,7 +433,7 @@ namespace SME.AST
             this.Target = target;
             this.SourceResultType = target.CecilType;
             this.Name = target.Name;
-        }    
+        }
 
         /// <summary>
         /// Returns a string representation of the Expression
@@ -746,6 +746,53 @@ namespace SME.AST
     }
 
     /// <summary>
+    /// An expression decorated with a direction specifier.
+    /// </summary>
+    public class DirectionExpression : Expression
+    {
+        /// <summary>
+        /// Enum type for the different directions a field can have.
+        /// </summary>
+        public enum FieldDirection
+        {
+            _in, _out, _ref
+        }
+
+        /// <summary>
+        /// The internal expression
+        /// </summary>
+        public Expression Expression;
+
+        /// <summary>
+        /// The direction of the expression.
+        /// </summary>
+        public FieldDirection direction;
+
+        /// <summary>
+        /// Default constructor.
+        /// </summary>
+        public DirectionExpression() { }
+
+        /// <summary>
+        /// Specialized helper constructor.
+        /// </summary>
+        public DirectionExpression(Expression target)
+        {
+            this.Expression = target;
+            this.SourceResultType = this.Expression.SourceResultType;
+            this.Expression.Parent = this;
+        }
+
+        /// <summary>
+        /// Returns a string representation of the expression.
+        /// </summary>
+        public override string ToString()
+        {
+            return $"{direction} {Expression.ToString()}";
+        }
+    }
+
+    /// <summary>
     /// An unchecked expression.
     /// </summary>
     public class UncheckedExpression : WrappingExpression
@@ -810,9 +857,9 @@ namespace SME.AST
         /// Initializes a new instance of the <see cref="T:SME.AST.AwaitExpression"/> class.
         /// </summary>
         /// <param name="expression">The expression to await.</param>
-        public AwaitExpression(Expression expression) 
+        public AwaitExpression(Expression expression)
         {
-            Expression = expression;    
+            Expression = expression;
         }
 
         /// <summary>

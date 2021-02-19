@@ -28,6 +28,10 @@ namespace SME.CPP
 		/// Gets or sets the length of the array
 		/// </summary>
 		public int Length { get; set; }
+		/// <summary>
+		/// Gets or sets whether this type is a reference.
+		/// </summary>
+		public bool IsByReference { get; set; }
 	}
 
 
@@ -43,6 +47,7 @@ namespace SME.CPP
 		{
 			Name = "system_uint8",
 			IsArray = false,
+			IsByReference = false
 		};
 
 		/// <summary>
@@ -51,7 +56,8 @@ namespace SME.CPP
 		public static readonly CppType UINT16 = new CppType()
 		{
 			Name = "system_uint16",
-			IsArray = false
+			IsArray = false,
+			IsByReference = false
 		};
 
 		/// <summary>
@@ -60,7 +66,8 @@ namespace SME.CPP
 		public static readonly CppType UINT32 = new CppType()
 		{
 			Name = "system_uint32",
-			IsArray = false
+			IsArray = false,
+			IsByReference = false
 		};
 
 		/// <summary>
@@ -69,7 +76,8 @@ namespace SME.CPP
 		public static readonly CppType UINT64 = new CppType()
 		{
 			Name = "system_uint64",
-			IsArray = false
+			IsArray = false,
+			IsByReference = false
 		};
 
 		/// <summary>
@@ -78,7 +86,8 @@ namespace SME.CPP
 		public static readonly CppType INT8 = new CppType()
 		{
 			Name = "system_int8",
-			IsArray = false
+			IsArray = false,
+			IsByReference = false
 		};
 
 		/// <summary>
@@ -87,7 +96,8 @@ namespace SME.CPP
 		public static readonly CppType INT16 = new CppType()
 		{
 			Name = "system_int16",
-			IsArray = false
+			IsArray = false,
+			IsByReference = false
 		};
 
 		/// <summary>
@@ -96,7 +106,8 @@ namespace SME.CPP
 		public static readonly CppType INT32 = new CppType()
 		{
 			Name = "system_int32",
-			IsArray = false
+			IsArray = false,
+			IsByReference = false
 		};
 
 		/// <summary>
@@ -105,7 +116,8 @@ namespace SME.CPP
 		public static readonly CppType INT64 = new CppType()
 		{
 			Name = "system_int64",
-			IsArray = false
+			IsArray = false,
+			IsByReference = false
 		};
 
 		/// <summary>
@@ -114,7 +126,8 @@ namespace SME.CPP
 		public static readonly CppType BOOL = new CppType()
 		{
 			Name = "system_bool",
-			IsArray = false
+			IsArray = false,
+			IsByReference = false
 		};
 
 	}

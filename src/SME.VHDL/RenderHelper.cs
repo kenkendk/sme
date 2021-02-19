@@ -339,6 +339,8 @@ namespace SME.VHDL
                 return RenderExpression(expression as CheckedExpression);
             else if (expression is AST.ConditionalExpression)
                 return RenderExpression(expression as ConditionalExpression);
+            else if (expression is AST.DirectionExpression)
+                return RenderExpression(expression as DirectionExpression);
             else if (expression is AST.EmptyExpression)
                 return RenderExpression(expression as EmptyExpression);
             else if (expression is AST.IdentifierExpression)
@@ -631,6 +633,18 @@ namespace SME.VHDL
         private string RenderExpression(AST.ParenthesizedExpression e)
         {
             return string.Format("({0})", RenderExpression(e.Expression));
+        }
+
+        /// <summary>
+        /// Renders a single DirectionExpression to VHDL.
+        /// </summary>
+        /// <returns>The VHDL equivalent of the expression.</returns>
+        /// <param name="e">The expression to render.</param>
+        private string RenderExpression(AST.DirectionExpression e)
+        {
+            // Currently just discard the direction, as it should be handled
+            // by the function signature in VHDL.
+            return RenderExpression(e.Expression);
         }
 
         /// <summary>

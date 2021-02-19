@@ -72,9 +72,23 @@ namespace SME.CPP
                 {
                     Name = eltype.Name + "*",
                     IsArray = true,
+					IsByReference = false,
                     ElementName = eltype.Name
                 };
             }
+
+			if (sourcetype.IsByReference)
+			{
+
+				var eltype = GetType(sourcetype.GetElementType());
+				return new CppType()
+				{
+					Name = eltype.Name + "&",
+					IsArray = false,
+					IsByReference = true,
+					ElementName = eltype.Name
+				};
+			}
 
 			if (sourcetype.IsSameTypeReference<bool>())
 				return CppTypes.BOOL;
@@ -94,7 +108,7 @@ namespace SME.CPP
 				return CppTypes.INT64;
 			if (sourcetype.IsSameTypeReference<ulong>())
 				return CppTypes.UINT64;
-            
+
             if (sourcetype.IsSameTypeReference(typeof(IntPtr)))
             {
 				if (IntPtr.Size == 4)

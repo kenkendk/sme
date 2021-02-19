@@ -81,6 +81,8 @@ namespace SME.AST
                 return Decompile(network, proc, method, statement, expression as ICSharpCode.Decompiler.CSharp.Syntax.CheckedExpression);
             else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.UncheckedExpression)
                 return Decompile(network, proc, method, statement, expression as ICSharpCode.Decompiler.CSharp.Syntax.UncheckedExpression);
+			else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.DirectionExpression)
+				return Decompile(network, proc, method, statement, expression as ICSharpCode.Decompiler.CSharp.Syntax.DirectionExpression);
             else if (expression == ICSharpCode.Decompiler.CSharp.Syntax.Expression.Null)
 				return new EmptyExpression() { SourceExpression = expression };
 			else
@@ -178,7 +180,7 @@ namespace SME.AST
 		/// <param name="statement">The statement where the expression is found.</param>
 		/// <param name="expression">The expression to decompile</param>
 		protected PrimitiveExpression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression expression)
-        {            
+        {
 			return new PrimitiveExpression()
 			{
 				SourceResultType = ResolveExpressionType(network, proc, method, statement, expression),
@@ -378,7 +380,7 @@ namespace SME.AST
 			{
 				SourceResultType = ResolveExpressionType(network, proc, method, statement, expression),
 				SourceExpression = expression,
-				Expression = Decompile(network, proc, method, statement, expression.Expression)				
+				Expression = Decompile(network, proc, method, statement, expression.Expression)
 			};
 
 			res.Expression.Parent = res;
@@ -445,6 +447,39 @@ namespace SME.AST
 				Expression = Decompile(network, proc, method, statement, expression.Expression),
 				Parent = statement
 			};
+
+			res.Expression.Parent = res;
+
+			return res;
+		}
+
+		/// <summary>
+		/// Decompile the specified expression, given the network, process, method, and statement
+		/// </summary>
+		/// <param name="network">The top-level network.</param>
+		/// <param name="proc">The process where the method is located.</param>
+		/// <param name="method">The method where the statement is found.</param>
+		/// <param name="statement">The statement where the expression is found.</param>
+		/// <param name="expression">The expression to decompile</param>
+		protected DirectionExpression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ICSharpCode.Decompiler.CSharp.Syntax.DirectionExpression expression)
+		{
+			var res = new DirectionExpression()
+			{
+				SourceResultType = ResolveExpressionType(network, proc, method, statement, expression),
+				SourceExpression = expression,
+				Expression = Decompile(network, proc, method, statement, expression.Expression),
+				Parent = statement
+			};
+
+			DirectionExpression.FieldDirection dir;
+			switch (expression.FieldDirection)
+			{
+				default:
+				case ICSharpCode.Decompiler.CSharp.Syntax.FieldDirection.None: dir = DirectionExpression.FieldDirection._in; break;
+				case ICSharpCode.Decompiler.CSharp.Syntax.FieldDirection.Out: dir = DirectionExpression.FieldDirection._out; break;
+				case ICSharpCode.Decompiler.CSharp.Syntax.FieldDirection.Ref: dir = DirectionExpression.FieldDirection._ref; break;
+			}
+			res.direction = dir;
 
 			res.Expression.Parent = res;
 

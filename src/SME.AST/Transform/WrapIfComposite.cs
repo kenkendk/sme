@@ -22,7 +22,8 @@ namespace SME.AST.Transform
 			typeof(InvocationExpression),
 			typeof(ParenthesizedExpression),
 			typeof(CastExpression),
-			typeof(EmptyExpression)
+			typeof(EmptyExpression),
+			typeof(DirectionExpression)
 		};
 
         /// <summary>
@@ -58,7 +59,7 @@ namespace SME.AST.Transform
 			var exp = item as Expression;
 			if (exp == null)
 				return item;
-			
+
 			// If this is top-level, we do not want a wrapping
 			if (exp.Parent is Statement || exp.Parent is ParenthesizedExpression)
 				return item;

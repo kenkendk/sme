@@ -288,6 +288,8 @@ namespace SME.CPP
                 return RenderExpression(expression as UnaryOperatorExpression);
             else if (expression is AST.UncheckedExpression)
                 return RenderExpression(expression as UncheckedExpression);
+            else if (expression is AST.DirectionExpression)
+                return RenderExpression(expression as DirectionExpression);
             else
                 throw new Exception($"Unsupported expression type {expression.GetType().FullName}");
         }
@@ -449,7 +451,7 @@ namespace SME.CPP
         {
             if (e.Target.Parent is AST.Bus)
                 return $"bus_{Naming.BusNameToValidName(e.Target.Parent as AST.Bus, Process)}->{e.Target.Name}()";
-            
+
 			else if (e.Target is AST.Constant)
             {
                 var ce = e.Target as AST.Constant;
@@ -494,6 +496,17 @@ namespace SME.CPP
         private string RenderExpression(AST.ParenthesizedExpression e)
         {
             return string.Format("({0})", RenderExpression(e.Expression));
+        }
+
+        /// <summary>
+        /// Renders a single DirectionExpression to C++
+        /// </summary>
+        /// <returns>The C++ equivalent of the expression.</returns>
+        /// <param name="e">The expression to render</param>
+        private string RenderExpression(AST.DirectionExpression e)
+        {
+            // TODO References aren't currently handled correctly in the C++ back-end
+            return RenderExpression(e.Expression);
         }
 
         /// <summary>

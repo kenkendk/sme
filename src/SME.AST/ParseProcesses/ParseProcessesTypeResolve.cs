@@ -153,6 +153,8 @@ namespace SME.AST
 			}
 			else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.ParenthesizedExpression)
 				return ResolveExpressionType(network, proc, method, statement, (expression as ICSharpCode.Decompiler.CSharp.Syntax.ParenthesizedExpression).Expression);
+			else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.DirectionExpression)
+				return ResolveExpressionType(network, proc, method, statement, (expression as ICSharpCode.Decompiler.CSharp.Syntax.DirectionExpression).Expression);
 			else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.NullReferenceExpression)
 				return null;
 			else if (expression is ICSharpCode.Decompiler.CSharp.Syntax.ArrayCreateExpression)
@@ -181,7 +183,7 @@ namespace SME.AST
 			m_assemblies.TryGetValue(t.Assembly.Location, out asm);
 			if (asm == null)
 				asm = m_assemblies[t.Assembly.Location] = AssemblyDefinition.ReadAssembly(t.Assembly.Location);
-			
+
 			if (asm == null)
 				return null;
 
@@ -243,14 +245,14 @@ namespace SME.AST
 				{
                     if (c != null && c.Name == parts[i])
                     {
-                        lastns = c.Namespace; 
+                        lastns = c.Namespace;
                         c = c.DeclaringType;
                     }
                     else
                     {
 						if (c == null && lastns == string.Join(".", parts.Skip(i).Reverse()))
 							return e;
-						
+
                         failed = true;
                         break;
                     }
@@ -270,12 +272,12 @@ namespace SME.AST
 		/// <returns>The loaded type.</returns>
 		/// <param name="t">The type to load.</param>
 		protected virtual TypeReference LoadType(ICSharpCode.Decompiler.CSharp.Syntax.AstType t, Method sourcemethod = null)
-		{ 
+		{
 			if (t is ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveType)
 				switch (((ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveType)t).KnownTypeCode)
 				{
 					case ICSharpCode.Decompiler.TypeSystem.KnownTypeCode.Boolean:
-						return LoadType(typeof(bool));	
+						return LoadType(typeof(bool));
 					case ICSharpCode.Decompiler.TypeSystem.KnownTypeCode.Byte:
 						return LoadType(typeof(byte));
 					case ICSharpCode.Decompiler.TypeSystem.KnownTypeCode.SByte:

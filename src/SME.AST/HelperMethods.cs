@@ -584,13 +584,11 @@ namespace SME.AST
 		/// <param name="n">The argument to examine.</param>
 		public static ArgumentInOut GetArgumentInOut(this ParameterDefinition n)
 		{
-			var inarg = (n.Attributes & ParameterAttributes.Out) != ParameterAttributes.Out;
-			//var outarg = (n.Attributes & ParameterAttributes.Out) == ParameterAttributes.Out && (n.Attributes & ParameterAttributes.In) != ParameterAttributes.In;
-			var inoutarg = (n.Attributes & ParameterAttributes.In) == ParameterAttributes.In && (n.Attributes & ParameterAttributes.Out) == ParameterAttributes.Out;
-			var inoutoverride = (n.Attributes & ParameterAttributes.Out) == ParameterAttributes.Out || (n.Attributes & ParameterAttributes.In) == ParameterAttributes.In;
-			var isarray = n.ParameterType.IsArray;
-			//var argrange = n.GetAttribute<RangeAttribute>();
-			return inoutarg || (isarray && !inoutoverride) ? ArgumentInOut.InOut : (inarg ? ArgumentInOut.In : ArgumentInOut.Out);
+			var inarg = (n.Attributes & ParameterAttributes.In) == ParameterAttributes.In || n.IsIn;
+			var outarg = (n.Attributes & ParameterAttributes.Out) == ParameterAttributes.Out || n.IsOut;
+			var inoutarg = (inarg && outarg) || (!n.IsIn && !n.IsOut && n.ParameterType.IsByReference);
+			var inoutoverride = n.ParameterType.IsArray && !((n.Attributes & ParameterAttributes.Out) == ParameterAttributes.Out || (n.Attributes & ParameterAttributes.In) == ParameterAttributes.In);
+			return inoutarg || inoutoverride ? ArgumentInOut.InOut : (outarg ? ArgumentInOut.Out : ArgumentInOut.In);
 		}
 
 		/// <summary>
@@ -912,7 +910,7 @@ namespace SME.AST
                     throw new Exception($"Can only statically expand loops if the condition is a simple add/subtract operation: {boe.SourceExpression}");
 
                 var lefttarget = boe.Left.GetTarget();
-                if (lefttarget == null)    
+                if (lefttarget == null)
                     throw new Exception($"Can only statically expand loops if the condition is a simple add/subtract operation: {boe.SourceExpression}");
 
                 var left_opr = ResolveIntegerValue(boe.Left);

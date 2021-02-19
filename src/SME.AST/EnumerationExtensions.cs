@@ -72,7 +72,7 @@ namespace SME.AST
 					last = el;
 				if (state == VisitorState.Leave)
 				{
-					if (el == last) 
+					if (el == last)
 						work.Add(el);
 					last = null;
 				}
@@ -164,7 +164,7 @@ namespace SME.AST
 			foreach (var p in proc.InternalBusses)
 				foreach (var x in p.All(visitor))
 					yield return x;
-			
+
 			foreach (var p in proc.OutputBusses)
 				foreach (var x in p.All(visitor))
 					yield return x;
@@ -272,7 +272,7 @@ namespace SME.AST
 						yield break;
 					visitor(p, VisitorState.Leave);
 				}
-			
+
 			foreach (var p in method.AllVariables)
 				if (visitor(p, VisitorState.Enter))
 				{
@@ -537,6 +537,9 @@ namespace SME.AST
 					foreach (var x in ((UnaryOperatorExpression)expression).Operand.All(visitor))
 						yield return x;
 				}
+				else if (expression is DirectionExpression)
+					foreach (var x in ((DirectionExpression)expression).Expression.All(visitor))
+						yield return x;
 				else if (
 					expression.GetType() == typeof(WrappingExpression)
 					|| expression is UncheckedExpression
@@ -771,7 +774,7 @@ namespace SME.AST
 						ap.SizeExpression = replacement;
 						replacement.Parent = parent;
 						return replacement;
-					}					
+					}
 				}
 				else if (parent is AssignmentExpression)
 				{
@@ -919,7 +922,7 @@ namespace SME.AST
 
 								if (((CustomExpression)parent).Children[i] != replacement)
 									throw new Exception($"Cannot update the children of an element of type {parent.GetType().FullName}, make sure it returns a real array reference");
-							
+
  								return replacement;
 							}
 				}
@@ -954,7 +957,7 @@ namespace SME.AST
 			{
 				if (!(item is Statement || item is Expression))
 					return false;
-				
+
 				if (type == VisitorState.Enter)
 				{
 					if (item != self)
