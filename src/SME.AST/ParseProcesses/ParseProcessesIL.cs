@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using ICSharpCode.Decompiler;
@@ -177,7 +177,7 @@ namespace SME.AST
 			else
 			{
 				res.Statements = Decompile(network, proc, res);
-                res.AllVariables = res.CollectedVariables.ToArray();
+                res.AllVariables = res.CollectedVariables.Select(x => {x.Name = $"{res.Name}_{x.Name}"; return x; }).ToArray();
                 res.Variables = res.Scopes.First().Value.Values.ToArray();
 			}
 
