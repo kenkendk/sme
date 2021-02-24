@@ -105,7 +105,10 @@ namespace SME.VHDL
                         ));
 
                 if (method.ReturnVariable == null || method.ReturnVariable.CecilType.IsSameTypeReference(typeof(void)))
-                    yield return $"procedure {method.Name}({margs}) is";
+                    if (margs.Equals(string.Empty))
+                        yield return $"procedure {method.Name} is";
+                    else
+                        yield return $"procedure {method.Name}({margs}) is";
                 else
                     yield return $"pure function {method.Name}({margs}) return {Parent.VHDLWrappedTypeName(method.ReturnVariable)} is";
 
@@ -557,7 +560,12 @@ namespace SME.VHDL
         /// <param name="e">The expression to render</param>
         private string RenderExpression(AST.InvocationExpression e)
         {
-            return RenderExpression(e.TargetExpression) + "(" + string.Join(", ", e.ArgumentExpressions.Select(x => RenderExpression(x))) + ")";
+            var method = RenderExpression(e.TargetExpression);
+            var args = e.ArgumentExpressions.Select(x => RenderExpression(x));
+            if (args.Count() == 0)
+                return method;
+            else
+                return $"{method}({string.Join(", ", args)})";
         }
 
         /// <summary>
