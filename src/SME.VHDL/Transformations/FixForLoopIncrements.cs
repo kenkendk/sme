@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using SME.AST;
@@ -139,7 +139,10 @@ namespace SME.VHDL.Transformations
             stm.Condition = new BinaryOperatorExpression(
                 new IdentifierExpression(stm.LoopIndex),
                 ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.LessThan,
-                new PrimitiveExpression(loopedges.Item2 / loopedges.Item3, tmp.CecilType.Module.ImportReference(typeof(int)))
+                new PrimitiveExpression(
+					// Integer ceiling of Item2 / Item3
+					(loopedges.Item2-1) / loopedges.Item3 + 1,
+					tmp.CecilType.Module.ImportReference(typeof(int)))
             )
             { 
                 Parent = stm,
