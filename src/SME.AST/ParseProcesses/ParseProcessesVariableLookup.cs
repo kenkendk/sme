@@ -122,7 +122,7 @@ namespace SME.AST
 							if (ecs == dc.FullName || ecs == dc.Name)
 							{
 								ec = null;
-								//parts.Add("this");
+								parts.Add("this");
 								break;
 							}
 
@@ -130,7 +130,7 @@ namespace SME.AST
 							if (targetproc != null)
 							{
 								// This is a static reference
-								current = null; //targetproc;
+								current = targetproc;
 								break;
 							}
 
@@ -139,7 +139,7 @@ namespace SME.AST
 								bt = LoadTypeByName(dc.FullName + "." + ecs, method.SourceMethod.Module);
 							if (bt == null)
 								bt = LoadTypeByName(dc.Namespace + "." + ecs, method.SourceMethod.Module);
-                            // In some cases dc.Namespace is empty ... 
+                            // In some cases dc.Namespace is empty ...
                             if (bt == null && proc != null && proc.SourceType != null)
                                 bt = LoadTypeByName(proc.SourceType.Namespace + "." + ecs, method.SourceMethod.Module);
 
@@ -201,7 +201,7 @@ namespace SME.AST
 				{
 					parts.RemoveAt(0);
 					if (proc == null)
-						throw new Exception("Attempting to do a resolve of \this\" but no process context is provided");
+						throw new Exception("Attempting to do a resolve of \"this\" but no process context is provided");
 					current = proc;
 				}
 
@@ -275,9 +275,16 @@ namespace SME.AST
 								continue;
 							}
 
+							var pe = network.ConstantLookup.Keys.FirstOrDefault(x => x.Name.Equals(el) && x.DeclaringType == pr.CecilType);
+							if (pe != null)
+							{
+								current = network.ConstantLookup[pe];
+								continue;
+							}
+
 							if (pr.Methods != null)
 							{
-								var p = pr.Methods.FirstOrDefault(x => x.Name == el);
+								var p = pr.Methods.FirstOrDefault(x => x.Name.Equals(el));
 								if (p != null)
 								{
 									current = p;
@@ -431,7 +438,7 @@ namespace SME.AST
             var fd = proc.SourceType.GetField(field.Name, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.FlattenHierarchy);
             if (fd == null)
                 throw new Exception($"No such field: {field.Name} on {proc.SourceType.FullName}");
-            
+
             var businstance = fd.GetValue(proc.SourceInstance.Instance);
             if (businstance == null)
                 return;
