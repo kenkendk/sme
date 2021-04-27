@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 namespace SME.Components
 {
     /// <summary>
@@ -74,7 +74,7 @@ namespace SME.Components
         /// The stored memory.
         /// </summary>
         [Signal]
-        private readonly T[] m_memory;
+        public readonly T[] m_memory;
 
         /// <summary>
         /// Flag indicating whether a warning message regarding clashing read/write addresses have been issued.

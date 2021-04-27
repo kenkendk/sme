@@ -63,7 +63,7 @@ namespace SME.Components
         /// The memory instance.
         /// </summary>
         [Signal]
-        private readonly T[] m_memory;
+        public readonly T[] m_memory;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="T:SME.Components.SinglePortMemory`1"/> class.
