@@ -1,24 +1,23 @@
-New in version 0.4.3 since 0.4.2
+New in version 0.4.4 since 0.4.3
 
 ***********
 * Changes *
 ***********
-- Added the option to not render the buses, when generating the dot graph. This
-  allows for a much cleaner graph.
-- Inferred true dual port memory are now more portable. The old definition
-  produced inconsistent behaviour, depending on which VHDL simulator was being
-  used.
-- Moved function definitions in VHDL into the process definition. This allows
-  the functions to access variables and buses, which are local to the process.
+- Added support for passing objects by reference to functions.
+- Changed call to Run() when specifying an exit condition.
+- Made the internal memory of RAMs in SME.Components public, as this is useful
+  for verification.
 
 *********
 * Fixes *
 *********
-- Fixed error when initializing multidimensional arrays.
-- Fixed triggering of unclocked processes. Before, clocked processes wouldn't
-  properly set the signal triggering unclocked processes.
-- Fixed Windows line endings not being stripped in csv_util.vhdl.
-- Fixed wrong name generation, when the first instance of a process came from
-  a different namespace. E.g. when the first process was a
-  SME.Components.TrueDualPortRAM, all names would start with SME_Components
-  instead of the proper namespace of the process.
+- Added "block" as an VHDL keyword.
+- Procedures without arguments shouldn't have parenthesis in VHDL.
+- Fixed nameclash in variables local to a method. The decompiler would rename
+  local variables to a lower case version of the variable it is copying. This
+  is a problem in VHDL, as it is case insensitive.
+- Fixed a problem where irregular loops wouldn't run for a correct number of
+  iterations.
+- Handled nameclash for static constants.
+- Fixed problem where RAM in SME.Components would throw an exception, due to
+  them reading undefined values.

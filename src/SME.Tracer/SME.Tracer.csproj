@@ -18,7 +18,7 @@
     <PropertyGroup>
         <PackageId>SME.Tracer</PackageId>
         <Title>Synchronous Message Exchange (SME)</Title>
-        <PackageVersion>0.4.3</PackageVersion>
+        <PackageVersion>0.4.4</PackageVersion>
         <Authors>Kenneth Skovhede, Carl-Johannes Johnsen</Authors>
         <Description>Tracing module for SME networks</Description>
         <Copyright>Copyright ©2021 - The SME team</Copyright>
