@@ -232,9 +232,9 @@ namespace SME
         /// Run the specified processes.
         /// </summary>
         /// <param name="processes">The processes to run</param>
-        /// <param name="exitMethod">The exit method, return true to keep running</param>
+        /// <param name="exitMethod">The exit method, return false to keep running</param>
         /// <returns>The awaitable task.</returns>
-        public void Run(IProcess[] processes, Func<bool> exitMethod = null)
+        public void Run(IProcess[] processes = null, Func<bool> exitMethod = null)
         {
             if (processes != null)
                 foreach (var p in processes)
