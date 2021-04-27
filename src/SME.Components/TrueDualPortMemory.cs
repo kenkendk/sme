@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 namespace SME.Components
 {
     /// <summary>
@@ -28,13 +28,11 @@ namespace SME.Components
             /// Sets the address used to read or write.
             /// </summary>
             /// <value>The address.</value>
-            [InitialValue]
             int Address { get; set; }
             /// <summary>
             /// Sets the data to write.
             /// </summary>
             /// <value>The data.</value>
-            [InitialValue]
             T Data { get; set; }
         }
 
@@ -47,7 +45,6 @@ namespace SME.Components
             /// Gets the last data read from a port.
             /// </summary>
             /// <value>The data.</value>
-            [InitialValue]
             T Data { get; set; }
         }
 

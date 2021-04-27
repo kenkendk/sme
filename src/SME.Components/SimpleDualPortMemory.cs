@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 namespace SME.Components
 {
     /// <summary>
@@ -16,7 +16,6 @@ namespace SME.Components
             /// Sets the address used to read data.
             /// </summary>
             /// <value>The address.</value>
-            [InitialValue]
             int Address { get; set; }
             /// <summary>
             /// Gets or sets a value indicating whether reading is enabled.
@@ -106,9 +105,9 @@ namespace SME.Components
         /// </summary>
         protected override void OnTick()
         {
-            SimulationOnly(() => 
+            SimulationOnly(() =>
             {
-                if (!warned && ReadControl.Enabled && WriteControl.Address == ReadControl.Address)
+                if (!warned && ReadControl.Enabled && WriteControl.Enabled && WriteControl.Address == ReadControl.Address)
                 {
                     warned = true;
                     Console.WriteLine("Warning: reading and writing the same address in a dual-port setup. Actual RAM will be in read first mode.");
