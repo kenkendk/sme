@@ -64,11 +64,8 @@ package CUSTOM_TYPES is
 
             if (RS.BusArrays.Any())
             {
-                var bustypes = RS.BusArrays
-                    .GroupBy(x => ((AST.Bus)x.Parent).SourceType)
-                    .Select(x => x.FirstOrDefault());
                 Write("    -- Bus array definitions\n");
-                foreach (var signal in bustypes)
+                foreach (var signal in RS.BusArrays)
                 {
                     var vhdltype = RS.VHDLType(signal);
                     var elementtype = RS.TypeScope.GetByName(vhdltype.ElementName);
