@@ -79,10 +79,10 @@ namespace SME.VHDL
 
 		private static Regex RX_ALPHANUMERIC = new Regex(@"[^\u0030-\u0039|\u0041-\u005A|\u0061-\u007A]");
 
-		public static string ToValidName(string name)
+		public static string ToValidName(string name, bool is_bus_signal = false)
 		{
 			var r = RX_ALPHANUMERIC.Replace(name, "_");
-			if (new string[] { "register", "record", "variable", "process", "if", "then", "else", "begin", "end", "architecture", "of", "is", "wait", "block" }.Contains(r.ToLowerInvariant()))
+			if (!is_bus_signal && new string[] { "register", "record", "variable", "process", "if", "then", "else", "begin", "end", "architecture", "of", "is", "wait", "block" }.Contains(r.ToLowerInvariant()))
 				r = "vhdl_" + r;
 
             while (r.IndexOf("__", StringComparison.Ordinal) >= 0)

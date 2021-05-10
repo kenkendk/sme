@@ -24,30 +24,27 @@ namespace SME.Tracer
 			using (File.Create(m_filename)) { }
 		}
 
+		private string SignalName(SignalEntry signal)
+		{
+			if (signal.Property.PropertyType.IsGenericType && signal.Property.PropertyType.GetGenericTypeDefinition() == typeof(IFixedArray<>))
+			{
+				var attr = signal.Property.GetCustomAttributes(typeof(FixedArrayLengthAttribute), false).Cast<FixedArrayLengthAttribute>().FirstOrDefault();
+				var propname = BusSignalToName(signal);
+				var expanded = Enumerable
+									.Range(0, attr.Length)
+									.Select(x => $"{propname}({x})");
+				return string.Join(',', expanded);
+			}
+			else
+				return BusSignalToName(signal);
+		}
+
 		protected override void OutputSignalNames(SignalEntry[] signals)
 		{
-			var firstentry = true;
 			using (var af = File.AppendText(m_filename))
 			{
-				foreach (var p in signals)
-				{
-					if (firstentry)
-						firstentry = false;
-					else
-						af.Write(",");
-
-					if (p.Property.PropertyType.IsGenericType && p.Property.PropertyType.GetGenericTypeDefinition() == typeof(IFixedArray<>))
-					{
-						var attr = p.Property.GetCustomAttributes(typeof(FixedArrayLengthAttribute), false).Cast<FixedArrayLengthAttribute>().FirstOrDefault();
-						var propname = BusSignalToName(p);
-						foreach (var n in Enumerable.Range(0, attr.Length))
-							af.Write(string.Format("{0}({1}){2}", propname, n, n == attr.Length - 1 ? "" : ","));
-					}
-					else
-						af.Write(BusSignalToName(p));
-				}
-
-				af.WriteLine();
+				var names = signals.Select(x => SignalName(x));
+				af.WriteLine(string.Join(',', names));
 			}
 		}
 
@@ -147,7 +144,7 @@ namespace SME.Tracer
                 var v = value.ToString();
                 if (!Enum.GetNames(value.GetType()).Any(x => x == v))
                     v = Enum.GetNames(value.GetType()).First();
-                
+
                 return ConvertToValidName(value.GetType().FullName + "." + v).ToLower();
             }
 			else if (itemtype == typeof(byte))

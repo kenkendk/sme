@@ -23,7 +23,7 @@ namespace SME.VHDL.Transformations
 		public ASTItem Transform(ASTItem el)
 		{
 			if (el.Name != null && (el is AST.Bus || el is AST.Process || el is AST.DataElement))
-				el.Name = Naming.ToValidName(el.Name);
+				el.Name = Naming.ToValidName(el.Name, is_bus_signal:el is AST.BusSignal);
 
             if (el is AST.Bus && ((AST.Bus)el).InstanceName != null)
                 ((AST.Bus)el).InstanceName = Naming.ToValidName(((AST.Bus)el).InstanceName);

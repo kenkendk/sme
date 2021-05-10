@@ -129,9 +129,13 @@ begin
             fieldno := 0;
 ");
 
-            foreach (var signal in RS.DriverSignals.Concat(RS.VerifySignals))
+            var signalnames = RS.DriverSignals
+                .Concat(RS.VerifySignals)
+                .Select(x =>
+                    ToStringHelper.ToStringWithCulture( RS.TestBenchSignalName(x) )
+                );
+            foreach (var signalname in signalnames)
             {
-                var signalname = ToStringHelper.ToStringWithCulture( RS.TestBenchSignalName(signal) );
                 Write($"            read_csv_field(L, tmp);\n");
                 Write($"            assert are_strings_equal(tmp, \"{signalname}\") report \"Field #\" & integer\'image(fieldno) & \" is not correctly named: \" & truncate(tmp) & \", expected {signalname}\" severity Failure;\n");
                 Write($"            fieldno := fieldno + 1;\n");
