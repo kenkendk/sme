@@ -1089,6 +1089,21 @@ namespace SME.VHDL
                 .Where(x => x != null)
                 .OfType<AST.BusSignal>()
                 .Where(x => x.Parent == bus)
+                // TODO Temp fix. Signals on busses, which carry a default
+                // value, but are never written to, are wrongfully discarded.
+                // This results in the trace file containing the default value,
+                // while the resulting VHDL produces "U" (undefined) values,
+                // thus making the testbench fail. There are multiple
+                // "correct" fixes:
+                // - There can be only 1 process with the same bus instance as
+                //   output bus. This could be annoying as the user would have
+                //   to explicitly specify bus merging processes.
+                // - The signal is also discarded by the testbench, rather
+                //   than just the process.
+                // - The tracer detects this and outputs "U" instead of the
+                //   default value. The problem is that this check is made in
+                //   SME.VHDL, but SME.Tracer should be render agnostic.
+                .Union(bus.Signals.Where(x => !(x.DefaultValue == null)))
                 .Distinct();
         }
 
