@@ -17,9 +17,15 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 3.1.113
+    - name: Setup GHDL
+    - uses: ghdl/setup-ghdl-ci@nightly
+      with:
+        backend: llvm
+    - name: Install extra libraries
+      run: sudo apt install libc6-dev libgdiplus
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore src/SME.sln
     - name: Build
-      run: dotnet build --no-restore
+      run: dotnet build --no-restore src/UnitTest
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test --no-build --verbosity normal src/UnitTest
