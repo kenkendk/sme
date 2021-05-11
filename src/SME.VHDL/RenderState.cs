@@ -1246,6 +1246,8 @@ namespace SME.VHDL
 
                 if (primitiveVHDL.IsVHDLSigned || primitiveVHDL.IsVHDLUnsigned)
                     TypeLookup[exp.Right] = VHDLTypes.INTEGER;
+                else if (primitiveVHDL.IsFloating)
+                    TypeLookup[exp.Right] = primitiveVHDL;
                 else if (element.DefaultValue != null && !element.DefaultValue.GetType().IsEnum && element.DefaultValue.GetType() != typeof(bool))
                     TypeLookup[exp.Right] = tvhdl; //VHDLTypes.INTEGER;
             }

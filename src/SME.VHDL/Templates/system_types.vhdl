@@ -15,6 +15,9 @@ package SYSTEM_TYPES is
     subtype T_SYSTEM_INT32 is signed(31 downto 0);
     subtype T_SYSTEM_INT64 is signed(63 downto 0);
 
+    subtype T_SYSTEM_FLOAT is std_logic_vector(31 downto 0);
+    subtype T_SYSTEM_DOUBLE is std_logic_vector(63 downto 0);
+
     type T_SYSTEM_BOOL_ARRAY is array(natural range <>) of T_SYSTEM_BOOL;
 
     type T_SYSTEM_UINT8_ARRAY is array(natural range <>) of T_SYSTEM_UINT8;
@@ -26,6 +29,9 @@ package SYSTEM_TYPES is
     type T_SYSTEM_INT16_ARRAY is array(natural range <>) of T_SYSTEM_INT16;
     type T_SYSTEM_INT32_ARRAY is array(natural range <>) of T_SYSTEM_INT32;
     type T_SYSTEM_INT64_ARRAY is array(natural range <>) of T_SYSTEM_INT64;
+
+    type T_SYSTEM_FLOAT_ARRAY is array(natural range <>) of T_SYSTEM_FLOAT;
+    type T_SYSTEM_DOUBLE_ARRAY is array(natural range <>) of T_SYSTEM_DOUBLE;
 
     subtype T_UINT1 is unsigned(0 downto 0);
     subtype T_UINT2 is unsigned(1 downto 0);

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Mono.Cecil;
 using System.Linq;
 using System.Collections.Generic;
@@ -60,6 +60,20 @@ namespace SME.VHDL
 		}
 
 		/// <summary>
+		/// Gets a value indicating whether this <see cref="T:SME.VHDL.VHDLType"/> is a floating point type.
+		/// </summary>
+		public bool IsFloating
+		{
+			get
+			{
+				return new[] {
+					VHDLTypes.SYSTEM_FLOAT,
+					VHDLTypes.SYSTEM_DOUBLE
+				}.Contains(this);
+			}
+		}
+
+		/// <summary>
 		/// Gets a value indicating whether this <see cref="T:SME.VHDL.VHDLType"/> is a numeric type.
 		/// </summary>
 		public bool IsNumeric
@@ -96,6 +110,8 @@ namespace SME.VHDL
 					VHDLTypes.SYSTEM_UINT16,
 					VHDLTypes.SYSTEM_UINT32,
 					VHDLTypes.SYSTEM_UINT64,
+					VHDLTypes.SYSTEM_FLOAT,
+					VHDLTypes.SYSTEM_DOUBLE
 				}.Contains(this);
 			}
 		}
@@ -846,6 +862,10 @@ namespace SME.VHDL
 				return VHDLTypes.SYSTEM_UINT64;
 			else if (type.IsType<bool>())
 				return VHDLTypes.SYSTEM_BOOL;
+			else if (type.IsType<float>())
+				return VHDLTypes.SYSTEM_FLOAT;
+			else if (type.IsType<double>())
+				return VHDLTypes.SYSTEM_DOUBLE;
 			else if (type.Resolve().IsEnum)
 				return GetVHDLType(type.FullName, null, type);
 			else
@@ -880,6 +900,10 @@ namespace SME.VHDL
 				return VHDLTypes.SYSTEM_INT64;
 			else if (type == typeof(bool))
 				return VHDLTypes.SYSTEM_BOOL;
+			else if (type == typeof(float))
+				return VHDLTypes.SYSTEM_FLOAT;
+			else if (type == typeof(double))
+				return VHDLTypes.SYSTEM_DOUBLE;
 			else
 				return GetVHDLType(type.FullName, null, m_resolveModule.ImportReference(type));
 			//throw new Exception(string.Format("Unsupported type: {0}", type.FullName));
@@ -1142,6 +1166,26 @@ namespace SME.VHDL
 			Name = "SIGNED(63 downto 0)",
 			Alias = "T_SYSTEM_INT64",
 			//SourceType = typeof(long),
+			IsArray = true,
+			ElementName = "STD_LOGIC",
+			LowerBound = 0,
+			UpperBound = 63
+		};
+
+		public static readonly VHDLType SYSTEM_FLOAT = new VHDLType()
+		{
+			Name = "STD_LOGIC_VECTOR(31 downto 0)",
+			Alias = "T_SYSTEM_FLOAT",
+			IsArray = true,
+			ElementName = "STD_LOGIC",
+			LowerBound = 0,
+			UpperBound = 31
+		};
+
+		public static readonly VHDLType SYSTEM_DOUBLE = new VHDLType()
+		{
+			Name = "STD_LOGIC_VECTOR(63 downto 0)",
+			Alias = "T_SYSTEM_DOUBLE",
 			IsArray = true,
 			ElementName = "STD_LOGIC",
 			LowerBound = 0,

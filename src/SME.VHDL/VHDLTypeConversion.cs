@@ -432,7 +432,7 @@ namespace SME.VHDL
 
                 if (target != VHDLTypes.INTEGER)
                     wrapped = ConvertExpression(render, method, wrapped, target, targetsource, false);
-                
+
                 return wrapped;
             }
 			else
@@ -539,10 +539,22 @@ namespace SME.VHDL
                     binstr = Convert.ToString((int)(ivalue & 0xffffffff), 2).PadLeft(32, '0');
                 }
             }
+            else if (e is float)
+            {
+                var fvalue = (float)e;
+                var hexstring = string.Concat(BitConverter.GetBytes(fvalue).Select(x => $"{x:x2}"));
+                return $"x\"{hexstring}\"";
+            }
+            else if (e is double)
+            {
+                var dvalue = (double)e;
+                var hexstring = string.Concat(BitConverter.GetBytes(dvalue).Select(x => $"{x:x2}"));
+                return $"x\"{hexstring}\"";
+            }
             // Structs TODO better fix? It captures VHDL.UINT_10
             else if (e.GetType().IsValueType && !e.GetType().IsPrimitive && !(e is SME.Tracer.ITracerSerializable))
             {
-                var fields = tvhdl.SourceType.Resolve().Fields.ToDictionary(x => x.Name);                
+                var fields = tvhdl.SourceType.Resolve().Fields.ToDictionary(x => x.Name);
                 return "(" +
                     string.Join(", ",
                         e.GetType().GetFields()

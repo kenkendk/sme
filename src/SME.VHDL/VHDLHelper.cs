@@ -38,9 +38,9 @@ namespace SME.VHDL
                 return 8;
             else if (typeof(short).IsAssignableFrom(t) || typeof(ushort).IsAssignableFrom(t))
                 return 16;
-            else if (typeof(int).IsAssignableFrom(t) || typeof(uint).IsAssignableFrom(t))
+            else if (typeof(int).IsAssignableFrom(t) || typeof(uint).IsAssignableFrom(t) || typeof(float).IsAssignableFrom(t))
                 return 32;
-            else if (typeof(long).IsAssignableFrom(t) || typeof(ulong).IsAssignableFrom(t))
+            else if (typeof(long).IsAssignableFrom(t) || typeof(ulong).IsAssignableFrom(t) || typeof(double).IsAssignableFrom(t))
                 return 64;
 
             throw new Exception($"The type {t.FullName} cannot be decoded for size, please use either a built-in type with a known bitwidth, e.g. {typeof(UInt3).FullName} or supply the {typeof(VHDLTypeAttribute).FullName} on the type you are using");
@@ -87,7 +87,7 @@ namespace SME.VHDL
         {
             var ind = new string(' ', indentation);
             return
-                ind 
+                ind
                 + string.Join(
                     Environment.NewLine + ind,
 
@@ -198,7 +198,12 @@ namespace SME.VHDL
             var hexwidth = (elsize / 4);
             var width_string = $"0:x{hexwidth}";
             var format_string = $"x\"{{{width_string}}}\"";
-            return string.Format(format_string, data);
+            switch (data)
+            {
+                case double d: return string.Format(format_string, BitConverter.ToInt64(BitConverter.GetBytes(d)));
+                case float f: return string.Format(format_string, BitConverter.ToInt32(BitConverter.GetBytes(f)));
+                default: return string.Format(format_string, data);
+            }
         }
 
         /// <summary>
@@ -283,7 +288,7 @@ namespace SME.VHDL
                     var pb = new StringBuilder();
                     for (var j = 0; j < fullpline.Length; j += 4)
                         pb.Append(Convert.ToByte(fullpline.Substring(j, 4), 2).ToString("X1"));
-                        
+
                     plines.Add(pb.ToString());
                     line.Clear();
                     pcount = 0;
@@ -395,7 +400,7 @@ use unimacro.Vcomponents.all;
                     sb.Append(string.Format(typecasttemplate, last, datawidth));
             }
 
-            return "(" + sb + ")";        
+            return "(" + sb + ")";
         }
     }
 }
