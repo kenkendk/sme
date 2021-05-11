@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -73,7 +73,7 @@ namespace SME.VHDL
 		public static string ToValidName(string name, bool is_bus_signal = false)
 		{
 			var r = RX_ALPHANUMERIC.Replace(name, "_");
-			if (!is_bus_signal && new string[] { "register", "record", "variable", "process", "if", "then", "else", "begin", "end", "architecture", "of", "is", "wait", "block" }.Contains(r.ToLowerInvariant()))
+			if (!is_bus_signal && new string[] { "register", "record", "variable", "process", "if", "then", "else", "begin", "end", "architecture", "of", "is", "wait", "block", "generate" }.Contains(r.ToLowerInvariant()))
 				r = "vhdl_" + r;
 
             while (r.IndexOf("__", StringComparison.Ordinal) >= 0)
