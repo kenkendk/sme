@@ -68,7 +68,7 @@ namespace SME
     public interface ISingletonBus : IBus
     {
     }
-		
+
 	/// <summary>
 	/// The interface of a component, which can be structural or functional
 	/// </summary>
@@ -91,6 +91,7 @@ namespace SME
         void SignalFinished();
         Task SignalInputReady();
 		Task WaitUntilAsync(Func<bool> condition);
+        object CustomRenderer { get; }
 	}
 
 }

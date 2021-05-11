@@ -107,7 +107,7 @@ namespace SME
 		/// Resets the processready task
 		/// </summary>
 		Task IProcess.ResetProcessReady()
-		{	
+		{
 			var task = new TaskCompletionSource<bool>();
 			System.Threading.Interlocked.Exchange(ref m_procready, task);
 			var res = task.Task.ContinueWith(x => { });
@@ -137,7 +137,7 @@ namespace SME
 		{
             if (Simulation.Current == null)
                 throw new InvalidOperationException($"Cannot create a {nameof(Process)} element when there is no active simulation");
-            Simulation.Current.RegisterProcess(this);         
+            Simulation.Current.RegisterProcess(this);
             Loader.AutoloadBusses(this);
 		}
 
@@ -164,7 +164,7 @@ namespace SME
 					  .Cast<IRuntimeBus>()
                       .ToArray();
 
-			m_outputbusses = 
+			m_outputbusses =
                 Loader.GetBusFields(this.GetType())
                       .Where(n => {
                           var attrIn = n.GetCustomAttributes(typeof(InputBusAttribute), true).FirstOrDefault();
@@ -178,7 +178,7 @@ namespace SME
 					  .Cast<IRuntimeBus>()
                       .ToArray();
 
-			var inputList = 
+			var inputList =
                 Loader.GetBusFields(this.GetType())
                       .Where(n => {
                           var attrIn = n.GetCustomAttributes(typeof(InputBusAttribute), true).FirstOrDefault();
@@ -268,7 +268,7 @@ namespace SME
 		/// <param name="condition">The condition to wait for.</param>
 		public async Task WaitUntilAsync(Func<bool> condition)
 		{
-			do 
+			do
 			{
 				await ClockAsync();
 			} while(!condition());
@@ -312,6 +312,12 @@ namespace SME
 		{
             f();
 		}
+
+		/// <summary>
+		/// Field for storing an instance of SME.VHDL.ICustomRenderer
+		/// TODO it is an object, since SME should not depend on SME.VHDL
+		/// </summary>
+		public virtual object CustomRenderer { get { return null; } }
 	}
 }
 

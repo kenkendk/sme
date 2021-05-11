@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -1365,7 +1365,7 @@ namespace SME.VHDL
             if (process.SourceType.IsGenericType && CustomRenderers.TryGetValue(process.SourceType.GetGenericTypeDefinition(), out customRenderer))
                 return customRenderer;
 
-            return null;
+            return process.SourceInstance.Instance.CustomRenderer as ICustomRenderer;
         }
 
         /// <summary>
