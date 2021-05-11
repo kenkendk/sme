@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/kenkendk/sme.svg?branch=master)](https://travis-ci.org/kenkendk/sme) ![SME NuGet Package](https://img.shields.io/nuget/vpre/SME.svg?style=flat) ![SME.VHDL NuGet Package](https://img.shields.io/nuget/vpre/SME.VHDL.svg?style=flat) ![SME.Tracer NuGet Package](https://img.shields.io/nuget/vpre/SME.Tracer.svg?style=flat)
+![Build status](https://github.com/kenkendk/sme/actions/workflows/dotnet.yml/badge.svg) ![SME NuGet Package](https://img.shields.io/nuget/vpre/SME.svg?style=flat) ![SME.VHDL NuGet Package](https://img.shields.io/nuget/vpre/SME.VHDL.svg?style=flat) ![SME.Tracer NuGet Package](https://img.shields.io/nuget/vpre/SME.Tracer.svg?style=flat)
 
 # Synchronous Message Exchange - SME
 
@@ -122,7 +122,7 @@ public class ColorBinCollector : SimpleProcess
 		// The constructor is not translated into hardware,
 		// so it is possible to have dynamic and initialization
 		// When the simulation "run" method is called,
-		// the values of all variables are captured and used for 
+		// the values of all variables are captured and used for
 		// initialization
 		m_input = input ?? throw new ArgumentNullException(nameof(input));
 	}
@@ -273,7 +273,7 @@ public static void Main(string[] args)
 		var calculator = new ColorBinCollector(simulator.Data);
 
 		// Use fluent syntax to configure the simulator.
-		// The order does not matter, but `Run()` must be 
+		// The order does not matter, but `Run()` must be
 		// the last method called.
 
 		// The top-level input and outputs are exposed
