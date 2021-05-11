@@ -1,20 +1,16 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace SME.VHDL
 {
 	public static class Naming
 	{
-        public static string AssemblyNameToFileName(Simulation simulation)
-        {
-			return simulation.Processes.Select(x => x.Instance).First(x => x is SimulationProcess).GetType().Assembly.GetName().Name + ".vhdl";
-        }
-
-		public static string AssemblyNameToFileName(IEnumerable<IProcess> processes)
+		public static string AssemblyNameToFileName()
 		{
-			return processes.First().GetType().Assembly.GetName().Name + ".vhdl";
+			return $"{Assembly.GetEntryAssembly().GetName().Name}.vhdl";
 		}
 
 		public static string ProcessNameToFileName(IProcess process)
@@ -67,14 +63,9 @@ namespace SME.VHDL
 			return ToValidName(busname);
 		}
 
-        public static string AssemblyToValidName(Simulation simulation)
-        {
-            return ToValidName(simulation.Processes.First().Instance.GetType().Assembly.GetName().Name);
-        }
-
-		public static string AssemblyToValidName(IEnumerable<IProcess> processes)
+		public static string AssemblyToValidName()
 		{
-			return ToValidName(processes.First().GetType().Assembly.GetName().Name);
+			return ToValidName(Assembly.GetEntryAssembly().GetName().Name);
 		}
 
 		private static Regex RX_ALPHANUMERIC = new Regex(@"[^\u0030-\u0039|\u0041-\u005A|\u0061-\u007A]");

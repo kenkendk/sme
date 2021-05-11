@@ -155,13 +155,13 @@ namespace SME.AST
             {
 				if (scope == null)
 					throw new ArgumentNullException(nameof(scope));
-                
+
                 if (Scopes.Last().Key != scope)
                     throw new Exception("PopScope had incorrect scope");
 
                 if (scope is BlockStatement)
                     ((BlockStatement)scope).Variables = Scopes.Last().Value.Values.ToArray();
-                
+
                 Scopes.RemoveAt(Scopes.Count - 1);
             }
 
@@ -214,7 +214,7 @@ namespace SME.AST
 		/// <param name="decompile">Set to <c>true</c> to enable decompilation of the IL code.</param>
 		public virtual Network Parse(Simulation simulation, bool decompile = false)
 		{
-            var sourceasm = simulation.Processes.First().Instance.GetType().Assembly;
+			var sourceasm = Assembly.GetEntryAssembly();
 			var network = new NetworkState()
 			{
 				Source = sourceasm,
@@ -223,7 +223,7 @@ namespace SME.AST
 			};
 
             network.Processes = simulation.Processes
-				.Where(n => 
+				.Where(n =>
                        n.Instance.GetType().GetCustomAttributes(typeof(IgnoreAttribute), true).FirstOrDefault() == null
 							&&
                        !(n.Instance is SimulationProcess))
@@ -232,7 +232,7 @@ namespace SME.AST
 
 			if (network.Processes.Length == 0)
 				throw new Exception("No processes were found in the list");
-			
+
             network.Busses = network.Processes.SelectMany(x => x.InternalBusses.Concat(x.InputBusses).Concat(x.OutputBusses)).Distinct().ToArray();
 			network.Constants = network.ConstantLookup.Values.ToArray();
 
@@ -306,7 +306,7 @@ namespace SME.AST
 			if (fullname.StartsWith(network.Name + ".", StringComparison.Ordinal) && fullname.Length > network.Name.Length - 1)
                 fullname = fullname.Substring(network.Name.Length + 1);
 
-            return fullname + extras;			
+            return fullname + extras;
 		}
 
 		/// <summary>
@@ -331,7 +331,7 @@ namespace SME.AST
 				Parent = network,
                 IsSimulation = process.Instance is SimulationProcess,
 				IsClocked = st.GetCustomAttribute<ClockedProcessAttribute>() != null,
-				Decompile = 
+				Decompile =
                     (
                         typeof(SimpleProcess).IsAssignableFrom(st)
                         ||
@@ -371,7 +371,7 @@ namespace SME.AST
                     .GetFields(BindingFlags.Instance | BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.NonPublic)
                     .FirstOrDefault(x => x.GetValue(process.Instance) == b.SourceInstance);
                 if (f != null)
-                    res.LocalBusNames[b] = f.Name;                    
+                    res.LocalBusNames[b] = f.Name;
             }
 
 			if (res.Decompile)
@@ -401,7 +401,7 @@ namespace SME.AST
             {
                 if (f.Value == null)
                     continue;
-                
+
                 Variable v;
                 if (res.Variables.TryGetValue(f.Key, out v))
                     SetDataElementDefaultValue(network, res, v, f.Value, false);

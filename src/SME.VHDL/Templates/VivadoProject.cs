@@ -97,7 +97,7 @@ namespace SME.VHDL.Templates
                 </FileInfo>
             </File>
 ");
-            var simname = ToStringHelper.ToStringWithCulture( Naming.AssemblyNameToFileName(Simulation) );
+            var simname = ToStringHelper.ToStringWithCulture( Naming.AssemblyNameToFileName() );
             Write($"            <File Path=\"$PPRDIR/Types_{simname}\">\n");
             Write(
 @"                <FileInfo>

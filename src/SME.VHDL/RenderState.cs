@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -152,7 +152,7 @@ namespace SME.VHDL
                 .Distinct(new TypeRefComp())
                 .ToArray();
 
-            Network.Name = Naming.AssemblyToValidName(simulation);
+            Network.Name = Naming.AssemblyToValidName();
 
             SME.AST.Transform.Apply.Transform(
                 Network,
@@ -262,12 +262,12 @@ namespace SME.VHDL
 
             var filenames = new
             {
-                toplevel = Naming.AssemblyNameToFileName(Simulation),
-                export = "Export_" + Naming.AssemblyNameToFileName(Simulation),
-                testbench = "TestBench_" + Naming.AssemblyNameToFileName(Simulation),
-                types = "Types_" + Naming.AssemblyNameToFileName(Simulation),
+                toplevel = Naming.AssemblyNameToFileName(),
+                export = "Export_" + Naming.AssemblyNameToFileName(),
+                testbench = "TestBench_" + Naming.AssemblyNameToFileName(),
+                types = "Types_" + Naming.AssemblyNameToFileName(),
                 makefile = "Makefile",
-                projectfile = Config.DEVICE_VENDOR == FPGAVendor.Xilinx ? System.IO.Path.ChangeExtension(Naming.AssemblyNameToFileName(Simulation), "xpr") : null
+                projectfile = Config.DEVICE_VENDOR == FPGAVendor.Xilinx ? System.IO.Path.ChangeExtension(Naming.AssemblyNameToFileName(), "xpr") : null
             };
 
 

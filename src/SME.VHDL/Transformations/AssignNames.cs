@@ -33,7 +33,7 @@ namespace SME.VHDL.Transformations
                     ((AST.Process)el).InstanceName = Naming.ToValidName(((AST.Process)el).InstanceName);
 
                 if (TopLevelName == null)
-                    TopLevelName = Naming.AssemblyToValidName(new[] { ((AST.Process)el).SourceInstance.Instance });
+					TopLevelName = Naming.AssemblyToValidName();
 
                 if (string.Equals(((AST.Process)el).InstanceName, TopLevelName, StringComparison.OrdinalIgnoreCase))
                     ((AST.Process)el).InstanceName = "cls_" + ((AST.Process)el).InstanceName;
