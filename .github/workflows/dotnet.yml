@@ -18,7 +18,7 @@ jobs:
       with:
         dotnet-version: 3.1.113
     - name: Setup GHDL
-    - uses: ghdl/setup-ghdl-ci@nightly
+      uses: ghdl/setup-ghdl-ci@nightly
       with:
         backend: llvm
     - name: Install extra libraries
