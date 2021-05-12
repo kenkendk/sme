@@ -543,13 +543,13 @@ namespace SME.VHDL
             {
                 var fvalue = (float)e;
                 var hexstring = string.Concat(BitConverter.GetBytes(fvalue).Select(x => $"{x:x2}"));
-                return $"x\"{hexstring}\"";
+                return $"std_logic_vector'(x\"{hexstring}\")";
             }
             else if (e is double)
             {
                 var dvalue = (double)e;
                 var hexstring = string.Concat(BitConverter.GetBytes(dvalue).Select(x => $"{x:x2}"));
-                return $"x\"{hexstring}\"";
+                return $"std_logic_vector'(x\"{hexstring}\")";
             }
             // Structs TODO better fix? It captures VHDL.UINT_10
             else if (e.GetType().IsValueType && !e.GetType().IsPrimitive && !(e is SME.Tracer.ITracerSerializable))
