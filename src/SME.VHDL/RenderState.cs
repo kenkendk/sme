@@ -450,7 +450,7 @@ namespace SME.VHDL
                     p = p.Parent;
 
                 if (p is AST.Process)
-                    return p.Name + "_" + element.Name + "_type" + $" (0 to {((Array)element.DefaultValue).Length-1})";
+                    return p.Name + "_" + element.Name + "_type";
 
                 return element.Name + "_type";
             }

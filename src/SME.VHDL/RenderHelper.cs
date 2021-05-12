@@ -45,7 +45,11 @@ namespace SME.VHDL
 
             yield return $"{method.Name}: process (RST, FSM_Trigger)";
             foreach(var n in method.Variables.Union(proc.SharedVariables).Where(x => x != runvariable))
-                yield return $"    variable {n.Name}: {Parent.VHDLWrappedTypeName(n)} := reset_{n.Name};";
+            {
+                var typename = Parent.VHDLWrappedTypeName(n);
+                var arraysize = n.CecilType.IsArray ? $" (0 to {((Array)n.DefaultValue).Length-1})" : "";
+                yield return $"    variable {n.Name}: {typename}{arraysize} := reset_{n.Name};";
+            }
             yield return $"    variable {runvariable.Name}: {Parent.VHDLWrappedTypeName(runvariable)} := {RenderExpression(new PrimitiveExpression("State0", runvariable.CecilType))};";
             yield return $"    variable reentry_guard: std_logic := '0';";
             yield return "begin";

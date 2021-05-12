@@ -262,6 +262,8 @@ begin
                     foreach(var s in variables.Where(x => !x.isLoopIndex)) {
                         var varname = ToStringHelper.ToStringWithCulture( s.Name );
                         var vartype = ToStringHelper.ToStringWithCulture( RS.VHDLWrappedTypeName(s) );
+                        if (s.CecilType.IsArray)
+                            vartype += $" (0 to {((Array)s.DefaultValue).Length-1})";
                         var reset = ToStringHelper.ToStringWithCulture( Process.SharedVariables.Contains(s) ? " := " + Naming.ToValidName("reset_" + s.Name) : "" );
                         Write($"        variable {varname} : {vartype}{reset};\n");
                     }
