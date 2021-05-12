@@ -3,6 +3,8 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
 package SYSTEM_TYPES is
+    pure function clog2 (A : NATURAL) return INTEGER;
+
     subtype T_SYSTEM_BOOL is std_logic;
 
     subtype T_SYSTEM_UINT8 is unsigned(7 downto 0);
@@ -1048,6 +1050,23 @@ package SYSTEM_TYPES is
 end SYSTEM_TYPES;
 
 package body SYSTEM_TYPES is
+    pure function clog2 (A : NATURAL) return INTEGER is
+        variable Y : REAL;
+        variable N : INTEGER := 0;
+    begin
+        if  A = 1 or A = 0 then  -- trivial rejection and acceptance
+            return A;
+        end if;
+        Y := real(A);
+        while Y >= 2.0 loop
+            Y := Y / 2.0;
+            N := N + 1;
+        end loop;
+        if Y > 0.0 then
+            N := N + 1;  -- round up to the nearest log2
+        end if;
+        return N;
+    end function clog2;
 
     -- converts an integer to UINT1
     pure function UINT1(v: integer) return T_UINT1 is
