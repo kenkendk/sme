@@ -190,6 +190,8 @@ begin
                     foreach (var variable in p.SharedVariables)
                     {
                         var name = ToStringHelper.ToStringWithCulture( Naming.ToValidName($"reset_{variable.Name}") );
+                        if (variable.CecilType.IsArray)
+                            name += $" (0 to {((Array)variable.DefaultValue).Length-1})";
                         var resetvar = ToStringHelper.ToStringWithCulture( RS.GetResetExpression(variable) );
                         var end = ToStringHelper.ToStringWithCulture( variable == lastel ? "" : "," );
                         Write($"        {name} => {resetvar}{end}\n");

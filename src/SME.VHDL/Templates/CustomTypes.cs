@@ -84,7 +84,7 @@ package CUSTOM_TYPES is
                     else if (RS.Config.USE_EXPLICIT_LITERAL_ARRAY_LENGTH)
                     {
                         var arrlen = ToStringHelper.ToStringWithCulture(arraylength - 1);
-                        Write($"    type {busname}_{signalname}_type is array (0 to {arrlen}) of {elementname};\n");
+                        Write($"    type {busname}_{signalname}_type is array of {elementname};\n");
                     }
                     else
                     {

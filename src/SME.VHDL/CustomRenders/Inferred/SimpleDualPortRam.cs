@@ -76,21 +76,23 @@ namespace SME.VHDL.CustomRenders.Inferred
             transformer.Transform(asm_write);
             transformer.Transform(asm_read);
 
-            // TODO flip så den er 0 to size istedet for size downto 0
+            // TODO double check that this does not break inferrence
+            // TODO The same transformations should also be applied to the other RAM types
             var template = $@"
-    type ram_type is array (0 to {size - 1}) of std_logic_vector ({datawidth - 1} downto 0);
-    shared variable RAM : ram_type := { VHDLHelper.GetArrayAsAssignmentList(initialdata) };
-    signal { read_result_data_name }_Vector: std_logic_vector ({datawidth - 1} downto 0);
-    signal { write_control_data_name }_Vector: std_logic_vector ({datawidth - 1} downto 0);
-    signal { read_control_addr_name }_Vector: std_logic_vector ({addrwidth - 1} downto 0);
-    signal { write_control_addr_name }_Vector: std_logic_vector ({addrwidth - 1} downto 0);
-begin 
+    constant array_size: integer := reset_m_memory'length;
+    constant addr_width: integer := clog2(array_size);
+    shared variable RAM : {renderer.Process.Name}_m_memory_type (0 to array_size-1) := reset_m_memory;
+    --signal { read_result_data_name }_Vector: std_logic_vector ({datawidth - 1} downto 0);
+    --signal { write_control_data_name }_Vector: std_logic_vector ({datawidth - 1} downto 0);
+    --signal { read_control_addr_name }_Vector: std_logic_vector (addr_width-1 downto 0);
+    --signal { write_control_addr_name }_Vector: std_logic_vector (addr_width-1 downto 0);
+begin
 
     process (CLK)
     begin
         if (CLK'event and CLK = '1') then
             if ({ read_control_enabled_name } = '1') then
-                { read_result_data_name }_Vector <= RAM(to_integer(unsigned({ read_control_addr_name }_Vector)));
+                { read_result_data_name } <= RAM(to_integer(unsigned({ read_control_addr_name })));
             end if;
         end if;
     end process;
@@ -99,7 +101,7 @@ begin
     begin
         if (CLK'event and CLK = '1') then
             if ({ write_control_enabled_name } = '1') then
-               RAM(to_integer(unsigned({ write_control_addr_name }_Vector))) := { write_control_data_name }_Vector;
+               RAM(to_integer(unsigned({ write_control_addr_name }))) := { write_control_data_name };
             end if;
         end if;
     end process;
@@ -107,16 +109,16 @@ begin
     {Naming.ProcessNameToValidName(renderer.Process.SourceInstance.Instance)}_Helper: process(RST, CLK, RDY)
     begin
     if RST = '1' then
-        FIN <= '0';                        
+        FIN <= '0';
     elsif rising_edge(CLK) then
         FIN <= not RDY;
     end if;
     end process;
 
-    { read_control_addr_name }_Vector <= STD_LOGIC_VECTOR(resize(unsigned({ read_control_addr_name }), {addrwidth}));
-    { write_control_addr_name }_Vector <= STD_LOGIC_VECTOR(resize(unsigned({ write_control_addr_name }), {addrwidth}));
-    {renderer.Helper.RenderExpression(asm_write_stm.Expression)};
-    {renderer.Helper.RenderExpression(asm_read_stm.Expression)};
+    --{ read_control_addr_name }_Vector <= STD_LOGIC_VECTOR(resize(unsigned({ read_control_addr_name }), addr_width));
+    --{ write_control_addr_name }_Vector <= STD_LOGIC_VECTOR(resize(unsigned({ write_control_addr_name }), addr_width));
+    --{renderer.Helper.RenderExpression(asm_write_stm.Expression)};
+    --{renderer.Helper.RenderExpression(asm_read_stm.Expression)};
 
 ";
 

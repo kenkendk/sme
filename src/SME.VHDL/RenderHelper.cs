@@ -599,7 +599,7 @@ namespace SME.VHDL
                         p = p.Parent;
 
                     if (p is AST.Process)
-                        return p.Name + "_" + ce.ArrayLengthSource.Name + "_type'LENGTH";
+                        return ce.ArrayLengthSource.Name + "'LENGTH";
 
                     return ce.ArrayLengthSource.Name + "_type'LENGTH";
                 }
@@ -785,9 +785,9 @@ namespace SME.VHDL
                         var telvhdl = Parent.TypeScope.GetByName(tvhdl.ElementName);
 
                         if (tvhdl.IsSystemType || (tvhdl.IsArray && telvhdl.IsSystemType))
-                            yield return $"subtype {Process.Name}_{v.Name}_type is {tvhdl.ToSafeVHDLName()}(0 to {arraylen - 1})";
+                            yield return $"subtype {Process.Name}_{v.Name}_type is {tvhdl.ToSafeVHDLName()}";
                         else
-                            yield return $"type {Process.Name}_{v.Name}_type is array(0 to {arraylen - 1}) of {telvhdl.ToSafeVHDLName()}";
+                            yield return $"type {Process.Name}_{v.Name}_type is array(natural range <>) of {telvhdl.ToSafeVHDLName()}";
                     }
                 }
             }
