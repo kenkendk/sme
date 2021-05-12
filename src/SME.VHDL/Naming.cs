@@ -39,11 +39,11 @@ namespace SME.VHDL
                 extras = "<" + string.Join(", ", type.GenericTypeArguments.Select(x => x.Name)) + ">";
             }
 
-            var asmname = type.Assembly.GetName().Name + '.';
-            if (processname.StartsWith(asmname, StringComparison.Ordinal))
+            var asmname = Assembly.GetEntryAssembly().GetName().Name + '.';
+            if (processname.StartsWith(asmname, StringComparison.Ordinal)) // Remove prefixed namespace
                 processname = processname.Substring(asmname.Length);
 
-            if (string.Equals(type.Assembly.GetName().Name, processname))
+            if (string.Equals(Assembly.GetEntryAssembly().GetName().Name.ToLowerInvariant(), processname.ToLowerInvariant())) // Ensure no nameclash
                 prefix = "cls_";
 
             return ToValidName(prefix + processname + extras);
