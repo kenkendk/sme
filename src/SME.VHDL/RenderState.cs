@@ -689,7 +689,13 @@ namespace SME.VHDL
                     .All()
                     .OfType<BusSignal>()
                     .Where(x => x.CecilType.IsFixedArrayType())
-                    .Distinct();
+                    .Distinct()
+                    // Distinct() doesn't truely capture distinction:
+                    .GroupBy(x => x.Parent.Name)
+                    .SelectMany(x => x
+                        .GroupBy(y => y.CecilType)
+                        .Select(y => y.First())
+                    );
 
                 return res;
             }
