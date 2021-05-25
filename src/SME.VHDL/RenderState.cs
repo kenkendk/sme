@@ -693,7 +693,7 @@ namespace SME.VHDL
                     // Distinct() doesn't truely capture distinction:
                     .GroupBy(x => x.Parent.Name)
                     .SelectMany(x => x
-                        .GroupBy(y => y.CecilType)
+                        .GroupBy(y => y.Name)
                         .Select(y => y.First())
                     );
 
