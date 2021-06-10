@@ -15,7 +15,6 @@ namespace SME.VHDL.CustomRenders.Inferred
             var initialdata = (Array)renderer.Process.SharedVariables.First(x => x.Name == "m_memory").DefaultValue;
             var size = initialdata.Length;
             var datawidth = VHDLHelper.GetBitWidthFromType(initialdata.GetType().GetElementType());
-            var addrwidth = (int)Math.Ceiling(Math.Log(initialdata.Length, 2));
 
             var datavhdltype = renderer.Parent.TypeLookup[renderer.Process.InputBusses.SelectMany(x => x.Signals).First(x => x.Name == nameof(SME.Components.TrueDualPortMemory<int>.IControl.Data))];
             var addrvhdltype = renderer.Parent.TypeLookup[renderer.Process.InputBusses.SelectMany(x => x.Signals).First(x => x.Name == nameof(SME.Components.TrueDualPortMemory<int>.IControl.Address))];
@@ -120,14 +119,20 @@ namespace SME.VHDL.CustomRenders.Inferred
 
 
             var template = $@"
-    type ram_type is array (0 to {size - 1}) of std_logic_vector ({datawidth - 1} downto 0);
-    signal RAM : ram_type := { VHDLHelper.GetArrayAsAssignmentList(initialdata) };
+    type ram_type is array (reset_m_memory'range) of std_logic_vector ({datawidth - 1} downto 0);
+    function load_reset_memory return ram_type is
+        variable tmp_arr : ram_type;
+    begin
+        for i in reset_m_memory'range loop
+            tmp_arr(i) := std_logic_vector(reset_m_memory(i));
+        end loop;
+        return tmp_arr;
+    end load_reset_memory;
+    signal RAM : ram_type := load_reset_memory;
     signal { controla_bus_data_name }_Vector: std_logic_vector ({datawidth - 1} downto 0);
     signal { controlb_bus_data_name }_Vector: std_logic_vector ({datawidth - 1} downto 0);
     signal { readresulta_bus_data_name }_Vector: std_logic_vector ({datawidth - 1} downto 0);
     signal { readresultb_bus_data_name }_Vector: std_logic_vector ({datawidth - 1} downto 0);
-    signal { controla_bus_addr_name }_Vector: std_logic_vector ({addrwidth - 1} downto 0);
-    signal { controlb_bus_addr_name }_Vector: std_logic_vector ({addrwidth - 1} downto 0);
     signal FIN_A : std_logic;
     signal FIN_B : std_logic;
 begin
@@ -138,7 +143,7 @@ begin
             { readresulta_bus_data_name }_Vector <= (others => '0');
         elsif rising_edge(CLK) then
             if ({ controla_bus_enabled_name } = '1') then
-                { readresulta_bus_data_name }_Vector <= RAM(to_integer(unsigned({ controla_bus_addr_name }_Vector)));
+                { readresulta_bus_data_name }_Vector <= RAM(to_integer({ controla_bus_addr_name }));
             end if;
         end if;
 
@@ -146,7 +151,7 @@ begin
             { readresultb_bus_data_name }_Vector <= (others => '0');
         elsif rising_edge(CLK) then
             if ({ controlb_bus_enabled_name } = '1') then
-                { readresultb_bus_data_name }_Vector <= RAM(to_integer(unsigned({ controlb_bus_addr_name }_Vector)));
+                { readresultb_bus_data_name }_Vector <= RAM(to_integer({ controlb_bus_addr_name }));
             end if;
         end if;
 
@@ -154,7 +159,7 @@ begin
             FIN_A <= '0';
         elsif rising_edge(CLK) then
             if ({ controla_bus_enabled_name } = '1') and ({ controla_bus_iswriting_name } = '1') then
-                RAM(to_integer(unsigned({ controla_bus_addr_name }_Vector))) <= { controla_bus_data_name }_Vector;
+                RAM(to_integer({ controla_bus_addr_name })) <= { controla_bus_data_name }_Vector;
             end if;
             FIN_A <= not RDY;
         end if;
@@ -163,7 +168,7 @@ begin
             FIN_B <= '0';
         elsif rising_edge(CLK) then
             if ({ controlb_bus_enabled_name } = '1') and ({ controlb_bus_iswriting_name } = '1') then
-                RAM(to_integer(unsigned({ controlb_bus_addr_name }_Vector))) <= { controlb_bus_data_name }_Vector;
+                RAM(to_integer({ controlb_bus_addr_name })) <= { controlb_bus_data_name }_Vector;
             end if;
             FIN_B <= not RDY;
         end if;
@@ -178,8 +183,6 @@ begin
         end if;
     end process;
 
-    { controla_bus_addr_name }_Vector <= STD_LOGIC_VECTOR(resize(unsigned({ controla_bus_addr_name }), {addrwidth}));
-    { controlb_bus_addr_name }_Vector <= STD_LOGIC_VECTOR(resize(unsigned({ controlb_bus_addr_name }), {addrwidth}));
     { renderer.Helper.RenderExpression(asm_write_a_stm.Expression) };
     { renderer.Helper.RenderExpression(asm_read_a_stm.Expression) };
     { renderer.Helper.RenderExpression(asm_write_b_stm.Expression) };
