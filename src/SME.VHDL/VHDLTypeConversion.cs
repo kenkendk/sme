@@ -459,6 +459,14 @@ namespace SME.VHDL
 
 		public static Expression WrapExpression(RenderState render, Expression expression, string template, VHDLType vhdltarget)
 		{
+            // Handle double conversion
+            var conv_exp = expression as CustomNodes.ConversionExpression;
+            if (conv_exp != null && conv_exp.WrappingTemplate.Equals(template))
+            {
+                render.TypeLookup[expression] = vhdltarget;
+                return expression;
+            }
+
 			var self = expression.ReplaceWith(new CustomNodes.ConversionExpression()
 			{
 				Expression = expression,
