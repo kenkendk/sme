@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using ICSharpCode.Decompiler.CSharp.Syntax;
@@ -219,7 +219,7 @@ namespace SME.VHDL.Transformations
                 for (var i = 0; i < ie.ArgumentExpressions.Length; i++)
 				{
                     var a = ie.ArgumentExpressions[i];
-					if (a is AST.PrimitiveExpression)
+					if (a is AST.PrimitiveExpression || a is AST.IdentifierExpression)
 					{
                         var tvhdl = State.TypeScope.GetVHDLType(method.Parameters[i].CecilType);
 						changed |= VHDLTypeConversion.ConvertExpression(State, Method, a, tvhdl, a.SourceResultType, false) != a;
