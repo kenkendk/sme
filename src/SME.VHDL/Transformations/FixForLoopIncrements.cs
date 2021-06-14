@@ -62,7 +62,7 @@ namespace SME.VHDL.Transformations
                 return item;
             }
 
-            var incr = loopedges.Item3;			
+            var incr = loopedges.Item3;
 			if (incr == 1)
 				return item;
 
@@ -77,7 +77,7 @@ namespace SME.VHDL.Transformations
 			{
 				var target = x.GetTarget();
 				if (target == stm.LoopIndex)
-					x.SetTarget(tmp);	
+					x.SetTarget(tmp);
 			}
 
 			var exp = firstexp.SourceExpression;
@@ -97,19 +97,36 @@ namespace SME.VHDL.Transformations
 					Operator = ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType.Assign,
 					Right = new BinaryOperatorExpression()
 					{
-						Left = new IdentifierExpression()
+						Left = new PrimitiveExpression()
 						{
-							Name = stm.LoopIndex.Name,
-							Target = stm.LoopIndex,
-							SourceExpression = exp,
-							SourceResultType = stm.LoopIndex.CecilType
+							Value = loopedges.Item1,
+							SourceResultType = stm.LoopIndex.CecilType,
+							SourceExpression = exp
 						},
-						Operator = ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.Multiply,
-						Right = new PrimitiveExpression()
+						Operator = ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.Add,
+						Right = new ParenthesizedExpression()
 						{
-							Value = incr,
-							SourceResultType = tmp.CecilType,
+							Expression = new BinaryOperatorExpression()
+							{
+								Left = new IdentifierExpression()
+								{
+									Name = stm.LoopIndex.Name,
+									Target = stm.LoopIndex,
+									SourceExpression = exp,
+									SourceResultType = tmp.CecilType
+								},
+								Operator = ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.Multiply,
+								Right = new PrimitiveExpression()
+								{
+									Value = incr,
+									SourceExpression = exp,
+									SourceResultType = tmp.CecilType,
+								},
+								SourceExpression = exp,
+								SourceResultType = tmp.CecilType
+							},
 							SourceExpression = exp,
+							SourceResultType = tmp.CecilType
 						},
 						SourceExpression = exp,
 						SourceResultType = tmp.CecilType
@@ -140,14 +157,16 @@ namespace SME.VHDL.Transformations
                 new IdentifierExpression(stm.LoopIndex),
                 ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.LessThan,
                 new PrimitiveExpression(
-					// Integer ceiling of Item2 / Item3
-					(loopedges.Item2-1) / loopedges.Item3 + 1,
+					// Integer ceiling of (Item2-1 - Item1) / Item3 + 1
+					(loopedges.Item2-1-loopedges.Item1) / loopedges.Item3 + 1,
 					tmp.CecilType.Module.ImportReference(typeof(int)))
             )
-            { 
+            {
                 Parent = stm,
                 SourceResultType = tmp.CecilType.Module.ImportReference(typeof(bool))
             };
+
+			stm.Initializer = new PrimitiveExpression(0, tmp.CecilType);
 
 			return nstm;
 		}
