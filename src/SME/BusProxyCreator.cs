@@ -6,6 +6,9 @@ using System.Reflection.Emit;
 
 namespace SME
 {
+    /// <summary>
+    /// Class for emitting proxies of <see cref="T:SME.Bus"/> at runtime.
+    /// </summary>
     public class BusProxyCreator
     {
         /// <summary>
@@ -14,12 +17,12 @@ namespace SME
         private static readonly Dictionary<Type, TypeInfo> _interfaceCache = new Dictionary<Type, TypeInfo>();
 
         /// <summary>
-        /// Creates a new runtime defined type and instance for the given interface type
+        /// Creates a new runtime defined type and instance for the given interface type.
         /// </summary>
-        /// <param name="interface">The interface to create to instance for</param>
-		/// <param name="clock">The clock to tick with</param>
-		/// <param name="isClocked">A value indicating if the bus is clocked</param>
-		/// <param name="isInternal">A value indicating if the bus is internal</param>
+        /// <param name="interface">The interface to create to instance for.</param>
+        /// <param name="clock">The clock to tick with.</param>
+        /// <param name="isClocked">A value indicating if the bus is clocked.</param>
+        /// <param name="isInternal">A value indicating if the bus is internal.</param>
         internal static IRuntimeBus CreateBusProxy(Type @interface, Clock clock, bool isClocked, bool isInternal)
         {
             if (@interface == null)
@@ -71,7 +74,7 @@ namespace SME
                 // To avoid name clashes with the user-defined properties, we use an interface mapping,
                 // aka explicit interface implementation in C#
                 //
-                // The proxy does not have IRuntimeBus properties itself, so these properties cannot be 
+                // The proxy does not have IRuntimeBus properties itself, so these properties cannot be
                 // directly accessed on the proxy instance, and cannot be found via reflection.
                 // But when the proxy is cast as a IRuntimeBus, the properties can be accessed
                 // as the getter/setter methods are wired correctly.
@@ -177,10 +180,10 @@ namespace SME
         }
 
         /// <summary>
-        /// Loads all arguments onto the stack
+        /// Loads all arguments onto the stack.
         /// </summary>
         /// <param name="generator">The IL generator to use.</param>
-        /// <param name="parameterTypes">The parameters to load</param>
+        /// <param name="parameterTypes">The parameters to load.</param>
         /// <param name="offset">The argument offset, should be <c>1</c> if the method is not static.</param>
         private static void EmitArgumentLoad(ILGenerator generator, Type[] parameterTypes, int offset)
         {
@@ -192,8 +195,7 @@ namespace SME
         }
 
         /// <summary>
-        /// Helper method to emit a argument load,
-        /// using a short opcode if possible
+        /// Helper method to emit a argument load, using a short opcode if possible.
         /// </summary>
         /// <param name="generator">The IL generator to emit with.</param>
         /// <param name="argno">The argument number to load.</param>

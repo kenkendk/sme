@@ -3,17 +3,19 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Mono.Cecil;
 using SME.AST;
 using SME.VHDL.Templates;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace SME.VHDL
 {
     /// <summary>
-    /// Class to encapsulate the state associated with rendering an AST network as VHDL files
+    /// Class to encapsulate the state associated with rendering an AST network as VHDL files.
     /// </summary>
     public class RenderState
     {
+        /* TODO double check if this is needed
         /// <summary>
         /// A type reference comparer, used to compare type references loaded from different contexts
         /// </summary>
@@ -35,78 +37,78 @@ namespace SME.VHDL
             /// <param name="obj">The item to get the hash code for.</param>
             public int GetHashCode(TypeReference obj)
             { return obj.FullName.GetHashCode(); }
-        }
+        }*/
 
         /// <summary>
-        /// The network being rendered
+        /// The network being rendered.
         /// </summary>
         public readonly Network Network;
 
         /// <summary>
-        /// The render configuration
+        /// The render configuration.
         /// </summary>
         public readonly RenderConfig Config;
 
         /// <summary>
-        /// The simulation forming the basis of the network
+        /// The simulation forming the basis of the network.
         /// </summary>
         public readonly Simulation Simulation;
 
         /// <summary>
-        /// The folder where data is place
+        /// The folder where data is place.
         /// </summary>
         public readonly string TargetFolder;
         /// <summary>
-        /// The folder where backups are stored
+        /// The folder where backups are stored.
         /// </summary>
         public readonly string BackupFolder;
         /// <summary>
-        /// The name of the file where a CSV trace is stored
+        /// The name of the file where a CSV trace is stored.
         /// </summary>
         public readonly string CSVTracename;
 
         /// <summary>
-        /// Sequence of custom VHDL files to include in the compilation
+        /// Sequence of custom VHDL files to include in the compilation.
         /// </summary>
         public readonly IEnumerable<string> CustomFiles;
 
         /// <summary>
-        /// The unique types found in the network
+        /// The unique types found in the network.
         /// </summary>
-        public readonly Mono.Cecil.TypeReference[] Types;
+        public readonly ITypeSymbol[] Types;
 
         /// <summary>
-        /// A lookup associating an AST node with a VHDL type
+        /// A lookup associating an AST node with a VHDL type.
         /// </summary>
         public readonly Dictionary<ASTItem, VHDLType> TypeLookup = new Dictionary<ASTItem, VHDLType>();
 
         /// <summary>
-        /// The list of registered temporary variables
+        /// The list of registered temporary variables.
         /// </summary>
         public readonly Dictionary<Method, Dictionary<string, Variable>> TemporaryVariables = new Dictionary<Method, Dictionary<string, Variable>>();
 
         /// <summary>
-        /// The table with all custom defined enums
+        /// The table with all custom defined enums.
         /// </summary>
         public readonly Dictionary<VHDLType, Dictionary<string, object>> CustomEnumValues = new Dictionary<VHDL.VHDLType, Dictionary<string, object>>();
 
         /// <summary>
-        /// The fully custom renderers to use
+        /// The fully custom renderers to use.
         /// </summary>
         public readonly Dictionary<Type, IFullCustomRenderer> FullCustomRenderers = new Dictionary<Type, IFullCustomRenderer>();
 
         /// <summary>
-        /// The custom renderers to use
+        /// The custom renderers to use.
         /// </summary>
         public readonly Dictionary<Type, ICustomRenderer> CustomRenderers = new Dictionary<Type, ICustomRenderer>();
 
         /// <summary>
-        /// The type scope used to resolve VHDL types
+        /// The type scope used to resolve VHDL types.
         /// </summary>
         public readonly VHDLTypeScope TypeScope;
 
         /// <summary>
-        /// Gets the length of a clock pulse period
+        /// Gets the length of a clock pulse period.
         /// </summary>
         public int ClockPulseLength { get { return ClockLength / 2; } }
         /// <summary>
@@ -122,7 +124,7 @@ namespace SME.VHDL
         /// <param name="targetfolder">The folder where the output is stored.</param>
         /// <param name="backupfolder">The folder where backups are stored.</param>
         /// <param name="csvtracename">The name of the CSV trace file.</param>
-        /// <param name="customfiles">A list of VHDL files to include in the Makefile, without the VHDL extension</param>
+        /// <param name="customfiles">A list of VHDL files to include in the Makefile, without the VHDL extension.</param>
         public RenderState(Simulation simulation, string targetfolder, string backupfolder = null, string csvtracename = null, IEnumerable<string> customfiles = null, RenderConfig config = null)
         {
             Simulation = simulation;
@@ -140,16 +142,17 @@ namespace SME.VHDL
             if (methodsource == null)
             {
                 // This happens if we only have components in the design
-                TypeScope = new VHDLTypeScope(Network.Processes.First().CecilType.Module);
+                TypeScope = new VHDLTypeScope(Network.Processes.First().MSCAType.ContainingAssembly);
             }
             else
-                TypeScope = new VHDLTypeScope(methodsource.MainMethod.SourceMethod.Module);
+                TypeScope = new VHDLTypeScope(methodsource.MSCAType.ContainingAssembly);
 
             Types = Network
                 .All()
                 .OfType<DataElement>()
-                .Select(x => x.CecilType)
-                .Distinct(new TypeRefComp())
+                .Select(x => x.MSCAType)
+                //.Distinct(new TypeRefComp())
+                .Distinct()
                 .ToArray();
 
             Network.Name = Naming.AssemblyToValidName();
@@ -159,17 +162,15 @@ namespace SME.VHDL
                 new SME.AST.Transform.IASTTransform[] {
                     new Transformations.AssignNames(),
                     new SME.AST.Transform.RenameDuplicateVariables(),
-                    new SME.AST.Transform.BuildStateMachine(),
+                    new SME.AST.Transform.BuildStateMachine(Network.compilation),
                 },
                 m => new SME.AST.Transform.IASTTransform[] {
                     new Transformations.RewriteChainedAssignments(this, m),
                 },
                 m => new SME.AST.Transform.IASTTransform[] {
-                    new SME.AST.Transform.RemoveUIntPtrCast(),
                     new SME.AST.Transform.RemoveDoubleCast(),
                     new Transformations.WrapIfComposite(),
                     new Transformations.AssignNames(),
-                    new SME.AST.Transform.RemoveSelfAssignments(),
                     new SME.AST.Transform.RecontructSwitchStatement(),
                     new SME.AST.Transform.RemoveTrailingBreakStatement(),
                     new Transformations.AssignVhdlType(this),
@@ -192,9 +193,9 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Resets the custom renderers to fit the desired rendering strategy
+        /// Resets the custom renderers to fit the desired rendering strategy.
         /// </summary>
-        /// <param name="strategy">Strategy.</param>
+        /// <param name="strategy">The rendering strategy.</param>
         public void SetupCustomRenderers(ComponentRendererStrategy strategy)
         {
             CustomRenderers.Clear();
@@ -224,7 +225,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Performs some checks to see if the network uses features that are not supported by the VHDL render
+        /// Performs some checks to see if the network uses features that are not supported by the VHDL render.
         /// </summary>
         /// <param name="network">The network to validate.</param>
         private static void ValidateNetwork(AST.Network network)
@@ -235,7 +236,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Renders this instance to files
+        /// Renders this instance to files.
         /// </summary>
         public void Render()
         {
@@ -310,11 +311,11 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Makes a backup of all target files
+        /// Makes a backup of all target files.
         /// </summary>
         /// <param name="targetfolder">The folder where output is stored.</param>
         /// <param name="backupfolder">The folder where backups are stored.</param>
-        /// <param name="filenames">A list of extra files that may be overwritten/regenerated</param>
+        /// <param name="filenames">A list of extra files that may be overwritten/regenerated.</param>
         private void BackupExistingTarget(IEnumerable<string> filenames, string targetfolder, string backupfolder)
         {
             backupfolder = backupfolder ?? targetfolder;
@@ -344,7 +345,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Merges a newly rendered file with user supplied data from an existing file
+        /// Merges a newly rendered file with user supplied data from an existing file.
         /// </summary>
         /// <returns>The user data.</returns>
         /// <param name="text">The newly rendered content.</param>
@@ -399,7 +400,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Returns the VHDL type for a data element
+        /// Returns the VHDL type for a data element.
         /// </summary>
         /// <returns>The VHDL type.</returns>
         /// <param name="element">The element to get the type for.</param>
@@ -412,18 +413,18 @@ namespace SME.VHDL
             if (element is AST.Constant && ((Constant)element).ArrayLengthSource != null)
                 return TypeLookup[element] = VHDLTypes.INTEGER;
 
-            if (element.Source is IMemberDefinition)
-                return TypeLookup[element] = TypeScope.GetVHDLType(element.Source as IMemberDefinition, element.CecilType);
-            else if (element.Source is ParameterDefinition)
-                return TypeLookup[element] = TypeScope.GetVHDLType(element.Source as ParameterDefinition);
+            if (element.Source is IFieldSymbol)
+                return TypeLookup[element] = TypeScope.GetVHDLType(element.Source as IFieldSymbol, element.MSCAType);
+            else if (element.Source is IParameterSymbol)
+                return TypeLookup[element] = TypeScope.GetVHDLType(element.Source as IParameterSymbol);
             else if (element.Source is System.Reflection.PropertyInfo)
                 return TypeLookup[element] = TypeScope.GetVHDLType(element.Source as System.Reflection.PropertyInfo);
             else
-                return TypeLookup[element] = TypeScope.GetVHDLType(element.CecilType);
+                return TypeLookup[element] = TypeScope.GetVHDLType(element.MSCAType);
         }
 
         /// <summary>
-        /// Returns the VHDL type for a data element
+        /// Returns the VHDL type for a data element.
         /// </summary>
         /// <returns>The VHDL type.</returns>
         /// <param name="element">The element to get the type for.</param>
@@ -433,14 +434,46 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Wraps the VHDL typename if the type is an array type
+        /// Wraps the VHDL typename if the type is an array type.
         /// </summary>
         /// <returns>The wrapped type name.</returns>
         /// <param name="element">The element to wrap.</param>
         public string VHDLWrappedTypeName(AST.DataElement element)
         {
             var vt = VHDLType(element);
-            if (element.CecilType.IsArrayType())
+            if (element.MSCAType.IsArrayType())
+            {
+                if (element.Parent is AST.Bus)
+                    return element.Parent.Name + "_" + element.Name + "_type";
+
+                var p = element.Parent;
+                while (p != null && !(p is AST.Process))
+                    p = p.Parent;
+
+                if (p is AST.Process)
+                    return p.Name + "_" + element.Name + "_type";
+
+                return element.Name + "_type";
+            }
+
+            return vt.ToSafeVHDLName();
+        }
+
+        /// <summary>
+        /// Gets the type name for the given element in the top level export file.
+        /// </summary>
+        /// <param name="element">The element to convert.</param>
+        public string VHDLExportTypeName(AST.DataElement element)
+        {
+            var vt = VHDLType(element);
+            if (vt == VHDLTypes.BOOL || vt == VHDLTypes.SYSTEM_BOOL)
+                return "STD_LOGIC";
+
+            if (vt.IsSystemType || vt.IsVHDLSigned || vt.IsVHDLUnsigned)
+                return TypeScope.StdLogicVectorEquivalent(vt).ToSafeVHDLName();
+
+            // TODO: Figure out how to best export array types
+            if (element.MSCAType.IsArrayType())
             {
                 if (element.Parent is AST.Bus)
                     return element.Parent.Name + "_" + element.Name + "_type";
@@ -496,18 +529,17 @@ namespace SME.VHDL
             return vt.ToSafeVHDLName();
         }
 
-        /// <summary>
-        /// Wraps the VHDL typename if the type is an array type
+        /// Wraps the VHDL typename if the type is an array type.
         /// </summary>
         /// <returns>The wrapped type name.</returns>
         /// <param name="fd">The Field to wrap.</param>
-        public string VHDLWrappedTypeName(Mono.Cecil.FieldDefinition fd)
+        public string VHDLWrappedTypeName(IFieldSymbol fd)
         {
             var vt = TypeScope.GetVHDLType(fd);
-            if (fd.FieldType.IsArrayType())
+            if (fd.Type.IsArrayType())
             {
-                if (fd.DeclaringType.IsSameTypeReference(typeof(Process)))
-                    return fd.DeclaringType.Name + "_" + fd.Name + "_type";
+                if (fd.ContainingType.IsSameTypeReference(typeof(Process)))
+                    return fd.ContainingType.Name + "_" + fd.Name + "_type";
 
                 return fd.Name + "_type";
             }
@@ -516,7 +548,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Returns the VHDL type for an expression
+        /// Returns the VHDL type for an expression.
         /// </summary>
         /// <returns>The VHDL type.</returns>
         /// <param name="element">The expression to get the type for.</param>
@@ -559,7 +591,7 @@ namespace SME.VHDL
             else if (element is UnaryOperatorExpression)
             {
                 var uoe = element as UnaryOperatorExpression;
-                if (uoe.Operator == ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorType.Not)
+                if (uoe.Operator == SyntaxKind.ExclamationToken)
                     return TypeLookup[element] = VHDLTypes.BOOL;
                 else
                     return TypeLookup[element] = VHDLType(uoe.Operand);
@@ -571,7 +603,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Gets the default value for an item, expressed as a VHDL expression
+        /// Gets the default value for an item, expressed as a VHDL expression.
         /// </summary>
         /// <returns>The default value.</returns>
         /// <param name="element">The element to get the default value for.</param>
@@ -601,26 +633,24 @@ namespace SME.VHDL
                 }
             }
 
-            if (element.Source is Mono.Cecil.PropertyDefinition)
+            if (element.Source is IPropertySymbol)
             {
-                var pd = element.Source as Mono.Cecil.PropertyDefinition;
+                var pd = element.Source as IPropertySymbol;
                 var init = pd.GetAttribute<InitialValueAttribute>();
 
-                if (init != null && init.HasConstructorArguments)
+                if (init != null && init.ConstructorArguments.Count() > 0)
                 {
                     pval = init.ConstructorArguments.First().Value;
-                    if (pval is CustomAttributeArgument)
-                        pval = ((CustomAttributeArgument)pval).Value;
                 }
 
-                if (pd.PropertyType.IsType<bool>())
+                if (pd.Type.IsType<bool>())
                     return ((object)true).Equals(pval) ? "'1'" : "'0'";
-                else if (pd.PropertyType.Resolve().IsEnum)
+                else if (pd.Type.IsEnum())
                 {
                     if (pval == null)
-                        return Naming.ToValidName(pd.PropertyType.FullName + "." + pd.PropertyType.Resolve().Fields.Skip(1).First().Name);
+                        return Naming.ToValidName(pd.Type.ToDisplayString() + "." + pd.Type.GetMembers().OfType<IFieldSymbol>().Skip(1).First().Name);
                     else
-                        return Naming.ToValidName(pd.PropertyType.FullName + "." + pd.PropertyType.Resolve().Fields.Where(x => pval.Equals(x.Constant)).First().Name);
+                        return Naming.ToValidName(pd.Type.ToDisplayString() + "." + pd.Type.GetMembers().OfType<IFieldSymbol>().Where(x => pval.Equals(x.ConstantValue)).First().Name);
                 }
             }
 
@@ -647,7 +677,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Gets a list of custom types to implement
+        /// Gets a list of custom types to implement.
         /// </summary>
         /// <value>The custom types.</value>
         public IEnumerable<VHDLType> CustomTypes
@@ -662,13 +692,14 @@ namespace SME.VHDL
                     .OfType<DataElement>()
                     .Where(x =>
                     {
-                        var rd = x.CecilType.Resolve();
-                        var custom = rd.CustomAttributes.Any(y => y.AttributeType.IsSameTypeReference(typeof(VHDLTypeAttribute)));
+                        var rd = x.MSCAType;
+                        // TODO handle custom attributes
+                        //var custom = rd.CustomAttributes.Any(y => y.AttributeType.IsSameTypeReference(typeof(VHDLTypeAttribute)));
 
                         return
-                            (!custom)
-                               &&
-                               (rd.IsEnum || (rd.IsValueType && !rd.IsPrimitive));
+                            //(!custom)
+                               //&&
+                               (rd.IsEnum() || (rd.IsValueType && rd.SpecialType == SpecialType.None));
                     })
                     .Select(x => VHDLType(x))
                     .Select(x => x.IsArray && !x.IsStdLogicVector ? TypeScope.GetByName(x.ElementName) : x)
@@ -678,7 +709,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Gets all arrays used in bus signals
+        /// Gets all arrays used in bus signals.
         /// </summary>
         /// <value>The bus arrays.</value>
         public IEnumerable<BusSignal> BusArrays
@@ -688,7 +719,7 @@ namespace SME.VHDL
                 var res = Network
                     .All()
                     .OfType<BusSignal>()
-                    .Where(x => x.CecilType.IsFixedArrayType())
+                    .Where(x => x.MSCAType.IsArrayType())
                     .Distinct()
                     // Distinct() doesn't truely capture distinction:
                     .GroupBy(x => x.Parent.Name)
@@ -702,7 +733,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Gets the length of an array attached to a bus
+        /// Gets the length of an array attached to a bus.
         /// </summary>
         /// <returns>The array length.</returns>
         /// <param name="signal">The signal to get the length for.</param>
@@ -719,23 +750,25 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Returns a map of key/value pairs from an enum type
+        /// Returns a map of key/value pairs from an enum type.
         /// </summary>
         /// <returns>The enum values.</returns>
         /// <param name="t">T.</param>
         public IEnumerable<KeyValuePair<string, object>> GetEnumValues(VHDLType t)
         {
-            var td = t.SourceType.Resolve();
-            if (!td.IsEnum)
+            var td = t.SourceType;
+            if (!td.IsEnum())
                 throw new InvalidOperationException("Cannot list enum values from a non-enum type");
 
-            var fields = td.Fields
-                    .Where(x => !(x.IsSpecialName || x.IsRuntimeSpecialName))
-                    .Select(m =>
-                            new KeyValuePair<string, object>(
-                              Naming.ToValidName(td.FullName + "_" + m.Name),
-                              m.Constant
-                    ));
+            var fields = td
+                .GetMembers()
+                .OfType<IFieldSymbol>()
+                .Select(m =>
+                    new KeyValuePair<string, object>(
+                        Naming.ToValidName(td.ToDisplayString() + "_" + m.Name),
+                        m.ConstantValue
+                    )
+                );
 
             Dictionary<string, object> customs;
             CustomEnumValues.TryGetValue(t, out customs);
@@ -747,13 +780,13 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Lists all members for a given value type
+        /// Lists all members for a given value type.
         /// </summary>
         /// <returns>The member VHDL strings.</returns>
         /// <param name="type">The VHDL type.</param>
         public IEnumerable<string> ListMembers(VHDLType type)
         {
-            var td = type.SourceType.Resolve();
+            var td = type.SourceType;
 
             if (type.IsEnum)
             {
@@ -761,42 +794,43 @@ namespace SME.VHDL
                 CustomEnumValues.TryGetValue(type, out customs);
                 customs = customs ?? new Dictionary<string, object>();
 
-                var members = td.Fields
-                    .Where(x => !(x.IsSpecialName || x.IsRuntimeSpecialName))
-                    .Select(m => Naming.ToValidName(td.FullName + "_" + m.Name))
+                var members = td
+                    .GetMembers()
+                    .OfType<IFieldSymbol>()
+                    .Select(m =>
+                        Naming.ToValidName($"{td.ToDisplayString()}_{m.Name}")
+                    )
                     .Concat(customs.Keys);
                 foreach (var member in members)
                     yield return member;
             }
-            else if (td.IsValueType && !td.IsPrimitive)
+            else if (td.IsValueType && td.SpecialType == SpecialType.None)
             {
                 yield return "record";
 
-                foreach (var m in td.Fields)
+                foreach (var m in td.GetMembers().OfType<IFieldSymbol>())
                     if (!m.IsStatic)
                         yield return string.Format("    {0}: {1};", Naming.ToValidName(m.Name), VHDLWrappedTypeName(m));
-
 
                 yield return "end record;";
             }
         }
 
         /// <summary>
-        /// Gets all enum types in the network
+        /// Gets all enum types in the network.
         /// </summary>
         public IEnumerable<VHDLType> EnumTypes
         {
             get
             {
                 return Types
-                    .Where(x => x.Resolve().IsEnum)
+                    .Where(x => x.IsEnum())
                     .Select(x => TypeScope.GetVHDLType(x));
-
             }
         }
 
         /// <summary>
-        /// Gets all constant definition strings
+        /// Gets all constant definition strings.
         /// </summary>
         public IEnumerable<string> Constants
         {
@@ -811,7 +845,7 @@ namespace SME.VHDL
                     {
                         if (nx is ArrayCreateExpression || nx is Array)
                         {
-                            var eltype = n.CecilType.GetElementType();
+                            var eltype = n.MSCAType.GetArrayElementType();
                             convm = TypeScope.GetVHDLType(eltype).ToString().Substring("T_".Length);
                         }
                         else
@@ -833,15 +867,15 @@ namespace SME.VHDL
                     {
                         if (nx != null && convm != null)
                         {
-                            if (nx is ICSharpCode.Decompiler.CSharp.Syntax.ArrayCreateExpression)
+                            if (nx is ArrayCreateExpression)
                             {
-                                var arc = nx as ICSharpCode.Decompiler.CSharp.Syntax.ArrayCreateExpression;
+                                var arc = nx as ArrayCreateExpression;
 
                                 var varname = Naming.ToValidName(n.Name);
-                                var eltype = n.CecilType.GetElementType();
+                                var eltype = n.MSCAType.GetArrayElementType();
                                 var vhdl_eltype = TypeScope.GetVHDLType(eltype);
 
-                                var ellength = arc.Initializer.Elements.Count;
+                                var ellength = arc.ElementExpressions.Count();
                                 var eltrail = " - 1";
                                 if (Config.USE_EXPLICIT_LITERAL_ARRAY_LENGTH)
                                 {
@@ -851,7 +885,7 @@ namespace SME.VHDL
 
                                 yield return string.Format("type {0}_type is array (0 to {1}{3}) of {2}", varname, ellength, vhdl_eltype, eltrail);
 
-                                var values = string.Join(", ", arc.Initializer.Elements.Select(x => string.Format("{0}({1})", convm, VHDLTypeConversion.GetPrimitiveLiteral(x, vhdl_eltype, this))));
+                                var values = string.Join(", ", arc.ElementExpressions.Select(x => string.Format("{0}({1})", convm, VHDLTypeConversion.GetPrimitiveLiteral(x, vhdl_eltype, this))));
                                 yield return string.Format("constant {0}: {0}_type := ({1})", varname, values);
 
                             }
@@ -860,7 +894,7 @@ namespace SME.VHDL
                                 var arc = nx as AST.ArrayCreateExpression;
 
                                 var varname = Naming.ToValidName(n.Name);
-                                var eltype = n.CecilType.GetElementType();
+                                var eltype = n.MSCAType.GetArrayElementType();
                                 var vhdl_eltype = TypeScope.GetVHDLType(eltype);
 
                                 var ellength = arc.ElementExpressions.Length;
@@ -882,7 +916,7 @@ namespace SME.VHDL
                                 var arc = nx as AST.EmptyArrayCreateExpression;
 
                                 var varname = Naming.ToValidName(n.Name);
-                                var eltype = n.CecilType.GetElementType();
+                                var eltype = n.MSCAType.GetArrayElementType();
                                 var vhdl_eltype = TypeScope.GetVHDLType(eltype);
 
                                 var ellength = (int)((AST.PrimitiveExpression)arc.SizeExpression).Value;
@@ -900,7 +934,7 @@ namespace SME.VHDL
                                 var arc = nx as Array;
 
                                 var varname = Naming.ToValidName(n.Name);
-                                var eltype = n.CecilType.GetElementType();
+                                var eltype = n.MSCAType.GetArrayElementType();
                                 var vhdl_eltype = TypeScope.GetVHDLType(eltype);
 
                                 var ellength = arc.Length;
@@ -918,9 +952,13 @@ namespace SME.VHDL
                                 var values = string.Join(", ", elements.Select(x => string.Format("{0}({1})", convm,  VHDLTypeConversion.GetPrimitiveLiteral(x, vhdl_eltype, this))));
                                 yield return string.Format("constant {0}: {0}_type := ({1})", varname, values);
                             }
+                            else if (n.Parent is Network)
+                            {
+                                yield return string.Format("constant {0}: {1} := {2}({3})", Naming.ToValidName($"{n.Name}"), VHDLType(n), convm, nx);
+                            }
                             else
                             {
-                                yield return string.Format("constant {0}: {1} := {2}({3})", Naming.ToValidName(n.Name), VHDLType(n), convm, nx);
+                                yield return string.Format("constant {0}: {1} := {2}({3})", Naming.ToValidName($"{n.Parent.Name}.{n.Name}"), VHDLType(n), convm, nx);
                             }
                         }
                         else
@@ -933,7 +971,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Returns all signals in the network
+        /// Returns all signals in the network.
         /// </summary>
         public IEnumerable<BusSignal> AllSignals
         {
@@ -950,7 +988,7 @@ namespace SME.VHDL
         /// <param name="signal">The signal to split.</param>
         private IEnumerable<BusSignal> SplitArray(BusSignal signal)
         {
-            if (!signal.CecilType.IsArrayType())
+            if (!signal.MSCAType.IsArrayType())
             {
                 yield return signal;
             }
@@ -963,7 +1001,7 @@ namespace SME.VHDL
                 for (var i = 0; i < attr.Length; i++)
                     yield return new BusSignal()
                     {
-                        CecilType = signal.CecilType.GetArrayElementType(),
+                        MSCAType = signal.MSCAType.GetArrayElementType(),
                         Parent = signal.Parent,
                         Name = string.Format("{0}({1})", signal.Name, i)
                     };
@@ -971,7 +1009,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Returns the name written in the trace file for a given signal
+        /// Returns the name written in the trace file for a given signal.
         /// </summary>
         /// <returns>The signal name as written by the tracer.</returns>
         /// <param name="s">The signal to find the name for.</param>
@@ -990,7 +1028,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Returns all signals from top-level input busses
+        /// Returns all signals from top-level input busses.
         /// </summary>
         public IEnumerable<BusSignal> DriverSignals
         {
@@ -1005,7 +1043,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Returns all signals from non-top-level input busses
+        /// Returns all signals from non-top-level input busses.
         /// </summary>
         public IEnumerable<BusSignal> VerifySignals
         {
@@ -1020,32 +1058,32 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Creates a new variable in the process space
+        /// Creates a new variable in the process space.
         /// </summary>
         /// <returns>The temporary variable to create.</returns>
         /// <param name="variabletype">The type of the variable to use.</param>
-        public Variable RegisterTemporaryVariable(Method method, TypeReference variabletype)
+        public Variable RegisterTemporaryVariable(Method method, ITypeSymbol variabletype)
         {
             Dictionary<string, Variable> table;
             if (!TemporaryVariables.TryGetValue(method, out table))
                 TemporaryVariables[method] = table = new Dictionary<string, Variable>();
 
             object def = null;
-            if (variabletype.IsValueType && Type.GetType(variabletype.FullName) != null)
-                def = Activator.CreateInstance(Type.GetType(variabletype.FullName));
+            if (variabletype.IsValueType && Type.GetType(variabletype.ToDisplayString()) != null)
+                def = Activator.CreateInstance(Type.GetType(variabletype.ToDisplayString()));
 
             var name = "local_var_" + table.Count.ToString();
             return table[name] = new Variable()
             {
                 Name = name,
-                CecilType = variabletype,
+                MSCAType = variabletype,
                 Parent = method,
                 DefaultValue = def
             };
         }
 
         /// <summary>
-        /// Gets all bus instances that require a feedback loop
+        /// Gets all bus instances that require a feedback loop.
         /// </summary>
         /// <value>The feedback busses.</value>
         public IEnumerable<AST.Bus> FeedbackBusses
@@ -1057,10 +1095,10 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Returns all signals written to a bus from within the process
+        /// Returns all signals written to a bus from within the process.
         /// </summary>
         /// <returns>The written signals.</returns>
-        /// <param name="proc">The process to see if the signals are written</param>
+        /// <param name="proc">The process to see if the signals are written.</param>
         /// <param name="bus">The bus to get the signals for.</param>
         public IEnumerable<BusSignal> WrittenSignals(AST.Process proc, AST.Bus bus)
         {
@@ -1114,10 +1152,10 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Creates a reset statement for the specified data element
+        /// Creates a reset statement for the specified data element.
         /// </summary>
         /// <returns>The statement expressing reset of the date element.</returns>
-        /// <param name="element">The target element</param>
+        /// <param name="element">The target element.</param>
         public AST.Statement GetResetStatement(DataElement element)
         {
             var exp = new AST.AssignmentExpression()
@@ -1126,7 +1164,7 @@ namespace SME.VHDL
                 {
                     Name = element.Name,
                     Target = element,
-                    SourceResultType = element.CecilType
+                    SourceResultType = element.MSCAType
                 }
             };
 
@@ -1172,14 +1210,14 @@ namespace SME.VHDL
                 var nae = new ArrayCreateExpression()
                 {
                     SourceExpression = null,
-                    SourceResultType = element.CecilType
+                    SourceResultType = element.MSCAType
                 };
 
                 nae.ElementExpressions = Enumerable.Range(0, asexp.Length)
                     .Select(x => new PrimitiveExpression()
                     {
                         SourceExpression = null,
-                        SourceResultType = element.CecilType.GetElementType(),
+                        SourceResultType = element.MSCAType.GetArrayElementType(),
                         Parent = nae,
                         Value = asexp.GetValue(x)
                     }).Cast<Expression>().ToArray();
@@ -1192,16 +1230,16 @@ namespace SME.VHDL
                 exp.Right = nae;
                 TypeLookup[nae] = tvhdl;
             }
-            else if (element.DefaultValue is ICSharpCode.Decompiler.CSharp.Syntax.AstNode)
+            else if (element.DefaultValue is SyntaxNode)
             {
-                var eltype = Type.GetType(element.CecilType.FullName);
-                var defaultvalue = eltype != null && element.CecilType.IsValueType ? Activator.CreateInstance(eltype) : null;
+                var eltype = Type.GetType(element.MSCAType.GetFullMetadataName());
+                var defaultvalue = eltype != null && element.MSCAType.IsValueType ? Activator.CreateInstance(eltype) : null;
 
                 exp.Right = new AST.PrimitiveExpression()
                 {
                     Value = defaultvalue,
                     Parent = exp,
-                    SourceResultType = element.CecilType
+                    SourceResultType = element.MSCAType
                 };
             }
             else if (element.DefaultValue is AST.EmptyArrayCreateExpression)
@@ -1217,24 +1255,24 @@ namespace SME.VHDL
 
                 TypeLookup[exp.Right] = tvhdl;
             }
-            else if (element.CecilType.IsArrayType() && element.DefaultValue == null)
+            else if (element.MSCAType.IsArrayType() && element.DefaultValue == null)
             {
                 exp.Right = new EmptyArrayCreateExpression()
                 {
                     Parent = exp,
                     SourceExpression = null,
-                    SourceResultType = element.CecilType,
+                    SourceResultType = element.MSCAType,
                     SizeExpression = new MemberReferenceExpression()
                     {
                         Name = element.Name,
                         SourceExpression = null,
-                        SourceResultType = element.CecilType,
+                        SourceResultType = element.MSCAType,
                         Target = element
                     }
                 };
 
-                if (element.Source is IMemberDefinition)
-                    TypeLookup[exp.Right] = TypeScope.GetVHDLType((IMemberDefinition)element.Source, element.CecilType);
+                if (element.Source is IFieldSymbol)
+                    TypeLookup[exp.Right] = TypeScope.GetVHDLType((IFieldSymbol)element.Source, element.MSCAType);
                 else if (element.Source is System.Reflection.PropertyInfo)
                     TypeLookup[exp.Right] = TypeScope.GetVHDLType((System.Reflection.PropertyInfo)element.Source);
             }
@@ -1242,9 +1280,9 @@ namespace SME.VHDL
             {
                 exp.Right = new AST.PrimitiveExpression()
                 {
-                    Value = element.DefaultValue,
+                    Value = element.DefaultValue == null ? 0 : element.DefaultValue,
                     Parent = exp,
-                    SourceResultType = element.CecilType
+                    SourceResultType = element.MSCAType
                 };
 
                 var primitiveVHDL = TypeScope.GetVHDLType(exp.Right.SourceResultType);
@@ -1265,14 +1303,14 @@ namespace SME.VHDL
             }
             else
             {
-                VHDLTypeConversion.ConvertExpression(this, null, exp.Right, tvhdl, element.CecilType, false);
+                VHDLTypeConversion.ConvertExpression(this, null, exp.Right, tvhdl, element.MSCAType, false);
             }
 
             return res;
         }
 
         /// <summary>
-        /// Gets the left-hand-side value for a reset expression
+        /// Gets the left-hand-side value for a reset expression.
         /// </summary>
         /// <returns>The reset expression.</returns>
         /// <param name="element">The element to get the value for.</param>
@@ -1286,17 +1324,18 @@ namespace SME.VHDL
             if (ae == null)
                 return string.Empty;
 
-            if (ae.Right is PrimitiveExpression && ae.Right.SourceResultType.Resolve().IsEnum)
+            if (ae.Right is PrimitiveExpression && ae.Right.SourceResultType.IsEnum())
             {
                 var pe = ae.Right as PrimitiveExpression;
-                var rs = ae.Right.SourceResultType.Resolve();
+                var rs = ae.Right.SourceResultType;
                 if (pe.Value == null)
                 {
-                    var c = rs.Fields
-                              .Where(x => !x.IsSpecialName && !x.IsRuntimeSpecialName)
-                              .OrderBy(x => x.Constant)
-                              .First()
-                              .Constant;
+                    var c = rs
+                        .GetMembers()
+                        .OfType<IFieldSymbol>()
+                        .OrderBy(x => x.ConstantValue)
+                        .First()
+                        .ConstantValue;
                     return new RenderHelper(this, null).RenderExpression(new PrimitiveExpression(c, rs));
                 }
             }
@@ -1305,7 +1344,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Returns all type definitions
+        /// Returns all type definitions.
         /// </summary>
         /// <value>The type definitions.</value>
         public IEnumerable<string> TypeDefinitions
@@ -1327,7 +1366,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Performs a reverse lookup into the dependency graph to find the processes that this process depends on
+        /// Performs a reverse lookup into the dependency graph to find the processes that this process depends on.
         /// </summary>
         /// <returns>The processes that the given instance depends on.</returns>
         /// <param name="p">The process to find the dependencies for.</param>
@@ -1343,18 +1382,28 @@ namespace SME.VHDL
                 }
         }
 
-
-        public string RegisterCustomEnum(Mono.Cecil.TypeReference sourcetype, VHDLType enumtype, object value)
+        /// <summary>
+        /// Registers the given custom enum type.
+        /// </summary>
+        /// <param name="sourcetype">The type of the source.</param>
+        /// <param name="enumtype">The VHDL type of the enum.</param>
+        /// <param name="value">The value to register.</param>
+        public string RegisterCustomEnum(ITypeSymbol sourcetype, VHDLType enumtype, object value)
         {
             Dictionary<string, object> v;
             if (!CustomEnumValues.TryGetValue(enumtype, out v))
                 CustomEnumValues[enumtype] = v = new Dictionary<string, object>();
 
-            var name = Naming.ToValidName(string.Format("{0}_sme_extra_{1}", sourcetype.Resolve().FullName, 1));
+            var name = Naming.ToValidName(string.Format("{0}_sme_extra_{1}", sourcetype.ToDisplayString(), 1));
             v[name] = value;
             return name;
         }
 
+        /// <summary>
+        /// Gets the local name of the given bus in the given process.
+        /// </summary>
+        /// <param name="bus">The given bus.</param>
+        /// <param name="process">The given process.</param>
         public string GetLocalBusName(AST.Bus bus, AST.Process process)
         {
             if (process != null && process.LocalBusNames.ContainsKey(bus))
@@ -1363,7 +1412,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Gets the custom renderer for this instance, or null
+        /// Gets the custom renderer for this instance, or null.
         /// </summary>
         /// <returns>The custom renderer.</returns>
         internal ICustomRenderer GetCustomRenderer(AST.Process process)
@@ -1377,12 +1426,12 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Gets a value indicating if the process has a custom renderer
+        /// Gets a value indicating if the process has a custom renderer.
         /// </summary>
+        /// <param name="process">The process to check.</param>
         public bool HasCustomRenderer(AST.Process process)
         {
             return GetCustomRenderer(process) != null;
         }
-
     }
 }

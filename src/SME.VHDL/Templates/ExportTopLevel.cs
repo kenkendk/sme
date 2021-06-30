@@ -1,26 +1,37 @@
-﻿using System.Linq;
-using SME;
-using SME.VHDL;
-using System.Text;
+﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using SME.AST;
-using System;
 
 namespace SME.VHDL.Templates
 {
-
+    /// <summary>
+    /// Template for generating the top level export file.
+    /// </summary>
     public class ExportTopLevel : BaseTemplate
     {
-
+        /// <summary>
+        /// The network to export.
+        /// </summary>
         public readonly Network Network;
-		public readonly RenderState RS;
+        /// <summary>
+        /// The current render state.
+        /// </summary>
+        public readonly RenderState RS;
 
-		public ExportTopLevel(RenderState renderer)
-		{
-			RS = renderer;
-			Network = renderer.Network;
-		}
+        /// <summary>
+        /// Constructs a new instance of the export top level template.
+        /// </summary>
+        /// <param name="renderer">The render state to render in.</param>
+        public ExportTopLevel(RenderState renderer)
+        {
+            RS = renderer;
+            Network = renderer.Network;
+        }
 
+        /// <summary>
+        /// Writes the template to the VHDL file.
+        /// </summary>
         public override string TransformText()
         {
             GenerationEnvironment = null;
@@ -62,7 +73,7 @@ use work.CUSTOM_TYPES.ALL;
                     var signalname = ToStringHelper.ToStringWithCulture( signal.Name );
                     var signaltypename = ToStringHelper.ToStringWithCulture( signaltype );
                     var vhdltype = ToStringHelper.ToStringWithCulture( RS.VHDLExportTypeName(RS.VHDLType(signal)) );
-                    if (signal.CecilType.IsArrayType())
+                    if (signal.MSCAType.IsArrayType())
                     {
                         // https://forums.xilinx.com/t5/Design-Entry/Error-quot-port-is-not-recognized-quot/td-p/956645
                         // "As per UG 1118, - To ensure that the custom IP simulates properly when using VHDL, set the top-level ports to be std_logic or std_logic_vector."
@@ -118,7 +129,7 @@ use work.CUSTOM_TYPES.ALL;
             foreach (var signal in Network.Busses
                 .Where(x => x.IsTopLevelInput || x.IsTopLevelOutput)
                 .SelectMany(x => x.Signals
-                    .Where(y => y.CecilType.IsArrayType())
+                    .Where(y => y.MSCAType.IsArrayType())
                 ))
             {
                 converted_outputs.Add(signal);
@@ -157,7 +168,7 @@ use work.CUSTOM_TYPES.ALL;
                     var bus = (AST.Bus)signal.Parent;
                     var busname = ToStringHelper.ToStringWithCulture( bus.InstanceName );
                     var signalname = ToStringHelper.ToStringWithCulture( signal.Name );
-                    if (signal.CecilType.IsArrayType())
+                    if (signal.MSCAType.IsArrayType())
                     {
                         var arraylength = RS.GetArrayLength(signal);
                         var arrayvhdltype = RS.VHDLType(signal);

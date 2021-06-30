@@ -3,6 +3,7 @@ dist: bionic
 language: csharp
 solution: src/SME.sln
 mono: none
+
 dotnet: 3.1.113
 services: docker
 before_install:
@@ -15,5 +16,3 @@ script:
   - echo "travis_fold:start:unit_test"
   - dotnet test -c Debug src/UnitTest -v n --no-build --logger:"console;verbosity=detailed"
   - echo "travis_fold:end:unit_test"
-
-

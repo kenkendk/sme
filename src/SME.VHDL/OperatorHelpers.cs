@@ -1,86 +1,68 @@
 ﻿using System;
-using ICSharpCode.Decompiler.CSharp.Syntax;
-using Mono.Cecil;
-using SME.AST;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace SME.VHDL
 {
-	public static class OperatorHelpers
-	{
-		public static string ToVHDL(this BinaryOperatorType op)
-		{
-			switch (op)
-			{
-			case BinaryOperatorType.BitwiseAnd:
-				return "and";
-			case BinaryOperatorType.BitwiseOr:
-				return "or";
-			case BinaryOperatorType.ConditionalAnd:
-				return "and";
-			case BinaryOperatorType.ConditionalOr:
-				return "or";
-			case BinaryOperatorType.ExclusiveOr:
-				return "xor";
-			case BinaryOperatorType.GreaterThan:
-				return ">";
-			case BinaryOperatorType.GreaterThanOrEqual:
-				return ">=";
-			case BinaryOperatorType.Equality:
-				return "=";
-			case BinaryOperatorType.InEquality:
-				return "/=";
-			case BinaryOperatorType.LessThan:
-				return "<";
-			case BinaryOperatorType.LessThanOrEqual:
-				return "<=";
-			case BinaryOperatorType.Add:
-				return "+";
-			case BinaryOperatorType.Subtract:
-				return "-";
-			case BinaryOperatorType.Multiply:
-				return "*";
-			case BinaryOperatorType.Divide:
-				return "/";
-			case BinaryOperatorType.Modulus:
-				return "mod";
-			case BinaryOperatorType.ShiftLeft:
-				return "sll";
-			case BinaryOperatorType.ShiftRight:
-				return "srl";
-			case BinaryOperatorType.Any:
-			case BinaryOperatorType.NullCoalescing:
-			default:
-				return string.Format("({0})", op);
-			}
-		}
-
-		public static string ToVHDL(this UnaryOperatorType op)
-		{
-			switch (op)
-			{
-			case UnaryOperatorType.Not:
-				return "not";
-			case UnaryOperatorType.BitNot:
-				return "not";
-			case UnaryOperatorType.Minus:
-				return "-";
-			case UnaryOperatorType.Plus:
-				return "+";
-			case UnaryOperatorType.Increment:
-				return "++";
-			case UnaryOperatorType.Decrement:
-				return "--";
-			case UnaryOperatorType.PostIncrement:
-				return "++";
-			case UnaryOperatorType.PostDecrement:
-				return "--";
-			case UnaryOperatorType.Dereference:
-			case UnaryOperatorType.AddressOf:
-			case UnaryOperatorType.Any:
-			case UnaryOperatorType.Await:
-			default:
-				return string.Format("({0})", op);
-			}
-		}
-	}
+    /// <summary>
+    /// Helper class for converting C# operators to VHDL operators.
+    /// </summary>
+    public static class OperatorHelpers
+    {
+        /// <summary>
+        /// Converts the given C# operator to the corresponding VHDL operator as a string.
+        /// </summary>
+        /// <param name="op">The given C# operator.</param>
+        public static string ToVHDL(this SyntaxKind op)
+        {
+            switch (op)
+            {
+            case SyntaxKind.AmpersandToken:
+                return "and";
+            case SyntaxKind.BarToken:
+                return "or";
+            case SyntaxKind.AmpersandAmpersandToken:
+                return "and";
+            case SyntaxKind.BarBarToken:
+                return "or";
+            case SyntaxKind.CaretToken:
+                return "xor";
+            case SyntaxKind.GreaterThanToken:
+                return ">";
+            case SyntaxKind.GreaterThanEqualsToken:
+                return ">=";
+            case SyntaxKind.EqualsEqualsToken:
+                return "=";
+            case SyntaxKind.ExclamationEqualsToken:
+                return "/=";
+            case SyntaxKind.LessThanToken:
+                return "<";
+            case SyntaxKind.LessThanEqualsToken:
+                return "<=";
+            case SyntaxKind.PlusToken:
+                return "+";
+            case SyntaxKind.MinusToken:
+                return "-";
+            case SyntaxKind.AsteriskToken:
+                return "*";
+            case SyntaxKind.SlashToken:
+                return "/";
+            case SyntaxKind.PercentToken:
+                return "mod";
+            case SyntaxKind.LessThanLessThanToken:
+                return "sll";
+            case SyntaxKind.GreaterThanGreaterThanToken:
+                return "srl";
+            case SyntaxKind.ExclamationToken:
+                return "not";
+            case SyntaxKind.TildeToken:
+                return "not";
+            case SyntaxKind.PlusPlusToken:
+                return "++";
+            case SyntaxKind.MinusMinusToken:
+                return "--";
+            default:
+                return string.Format("({0})", op);
+            }
+        }
+    }
 }

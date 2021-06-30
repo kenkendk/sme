@@ -1,20 +1,55 @@
 ﻿using System;
+
 namespace SME.VHDL.CustomRenders
 {
+    /// <summary>
+    /// A configuration of a Xilinx block RAM.
+    /// <summary>
     public class BlockRamConfig
     {
+        /// <summary>
+        /// Flag indicating whether the 36k block RAM primitive should be used.
+        /// </summary>
         public readonly bool use36k;
+        /// <summary>
+        /// Integer indicating the size of the block RAM primitive.
+        /// </summary>
         public readonly int instancemem;
 
+        /// <summary>
+        /// String indicating the target device.
+        /// </summary>
         public readonly string targetdevice = "7SERIES";
+        /// <summary>
+        /// The size of a line?
+        /// </summary>
         public readonly int linewidth = 256;
 
+        /// <summary>
+        /// The width of the address bus for the block RAM primitive.
+        /// </summary>
         public readonly int realaddrwidth;
+        /// <summary>
+        /// The amount of parity bits.
+        /// </summary>
         public readonly int paritybits;
+        /// <summary>
+        /// The width of the write enable bus for the block RAM primitive.
+        /// </summary>
         public readonly int wewidth;
 
+        /// <summary>
+        /// The width of the data bus for the block RAM primitive.
+        /// </summary>
         public readonly int datawidth;
 
+        /// <summary>
+        /// Constructs a new instance of the block RAM configuration.
+        /// </summary>
+        /// <param name="renderer">The renderer currently rendering VHDL files.</param>
+        /// <param name="datawidth">The width of the data bus.</param>
+        /// <param name="memorysize">The size of the RAM.</param>
+        /// <param name="isTrueDual">Flag indicating whether a true dual port RAM should be generated.</param>
         public BlockRamConfig(RenderStateProcess renderer, int datawidth, int memorysize, bool isTrueDual)
         {
             if (renderer.Parent.Config.DEVICE_VENDOR != FPGAVendor.Xilinx)

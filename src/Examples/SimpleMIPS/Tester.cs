@@ -25,7 +25,7 @@ namespace SimpleMIPS
         {
             while (!term.flg)
                 await ClockAsync();
-            
+
             // Read end of memory, as program uses stack
             int stack_start = actual.Length - expected.Length;
             for (int i = 0; i < expected.Length; i++)

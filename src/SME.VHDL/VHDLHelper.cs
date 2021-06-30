@@ -5,12 +5,18 @@ using System.Text;
 
 namespace SME.VHDL
 {
+    /// <summary>
+    /// Helper class containing static methods for VHDL rendering.
+    /// </summary>
     public static class VHDLHelper
     {
+        /// <summary>
+        /// Regular expression for checking if string is valid VHDL.
+        /// </summary>
         public static readonly System.Text.RegularExpressions.Regex VHDLRE = new System.Text.RegularExpressions.Regex(@"(?<basetype>UNSIGNED|SIGNED|STD_LOGIC_VECTOR)\s*\((?<upper>\d+)\s+(to|downto)\s+(?<lower>\d+)\)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
 
         /// <summary>
-        /// Computes the width of a given type
+        /// Computes the width of a given type.
         /// </summary>
         /// <returns>The bit width of the type.</returns>
         /// <param name="t">The data type to get the width from.</param>
@@ -47,7 +53,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Examines a type and returns the signedness of the type
+        /// Examines a type and returns the signedness of the type.
         /// </summary>
         /// <returns><c>true</c>, if the type is signed, <c>false</c> if it is unsigned and throws an exception if the signedness could not be determined.</returns>
         /// <param name="t">The type to examine.</param>
@@ -78,7 +84,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Splits a string over lines, and adds a number of indentation spaces on each line
+        /// Splits a string over lines, and adds a number of indentation spaces on each line.
         /// </summary>
         /// <returns>The indented template string.</returns>
         /// <param name="str">The template string to indent.</param>
@@ -101,12 +107,12 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Converts the entire input array into a bitstring
+        /// Converts the entire input array into a bitstring.
         /// </summary>
         /// <returns>The data bit string.</returns>
         /// <param name="data">The data to convert.</param>
-        /// <param name="start">The offset into the array</param>
-        /// <param name="length">The number of elements to extract</param>
+        /// <param name="start">The offset into the array.</param>
+        /// <param name="length">The number of elements to extract.</param>
         /// <typeparam name="TData">The data type parameter.</typeparam>
         public static IEnumerable<string> GetDataBitStrings(Array data, int start = 0, int length = -1)
         {
@@ -130,7 +136,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Converts the entire input array into a bitstring
+        /// Converts the entire input array into a bitstring.
         /// </summary>
         /// <returns>The data bit string.</returns>
         /// <param name="data">The data to convert.</param>
@@ -151,12 +157,12 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Converts the entire input array into a bitstring
+        /// Converts the entire input array into a bitstring.
         /// </summary>
         /// <returns>The data bit string.</returns>
-        /// <param name="datatype">The data type</param>
+        /// <param name="datatype">The data type.</param>
         /// <param name="data">The data to convert.</param>
-        /// <param name="paddedsize">The number of bits in the result string</param>
+        /// <param name="paddedsize">The number of bits in the result string.</param>
         /// <typeparam name="TData">The data type parameter.</typeparam>
         public static string GetDataBitString(Type datatype, object data, int paddedsize = 0)
         {
@@ -172,11 +178,11 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Converts the entire input array into a bitstring
+        /// Converts the entire input array into a bitstring.
         /// </summary>
         /// <returns>The data bit string.</returns>
         /// <param name="data">The data to convert.</param>
-        /// <param name="paddedsize">The number of bits in the result string</param>
+        /// <param name="paddedsize">The number of bits in the result string.</param>
         /// <typeparam name="TData">The data type parameter.</typeparam>
         public static string GetDataBitString<TData>(TData data, int paddedsize = 0)
         {
@@ -185,11 +191,11 @@ namespace SME.VHDL
 
         /// <summary>
         /// Converts the given object into either a bit or hex string, depending
-        /// on the bit width of the datatype
+        /// on the bit width of the datatype.
         /// </summary>
         /// <returns>The bit or hex string.</returns>
-        /// <param name="datatype">The data type of the object</param>
-        /// <param name="data">The object to convert</param>
+        /// <param name="datatype">The data type of the object.</param>
+        /// <param name="data">The object to convert.</param>
         public static string GetDataBitOrHexString(Type datatype, object data)
         {
             var elsize = GetBitWidthFromType(datatype);
@@ -207,14 +213,14 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Splits a sequence of data bits into a memory initialization string fitted for Xilinx BRAM initialization macros
+        /// Splits a sequence of data bits into a memory initialization string fitted for Xilinx BRAM initialization macros.
         /// </summary>
         /// <returns>The data bit string to mem init.</returns>
         /// <param name="data">The bit string to use.</param>
         /// <param name="datasize">The size of each element.</param>
         /// <param name="integralsize">The internal block ram storage size.</param>
-        /// <param name="paritybits">The number of parity bits to emit for each value</param>
-        /// <param name="linesize">The size of each output line</param>
+        /// <param name="paritybits">The number of parity bits to emit for each value.</param>
+        /// <param name="linesize">The size of each output line.</param>
         public static Tuple<IEnumerable<string>, IEnumerable<string>> SplitDataBitStringToMemInit(IEnumerable<string> data, int datasize, int paritybits, int integralsize = 8, int linesize = 256)
         {
             var items = new List<string>();
@@ -327,7 +333,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Creates the default include region for a component
+        /// Creates the default include region for a component.
         /// </summary>
         /// <returns>The component include region.</returns>
         /// <param name="config">The render configuration.</param>
@@ -353,12 +359,12 @@ use unimacro.Vcomponents.all;
         }
 
         /// <summary>
-        /// Returns all elements from a non-empty array as a VHDL initialization list
+        /// Returns all elements from a non-empty array as a VHDL initialization list.
         /// </summary>
         /// <returns>The array as assignment list.</returns>
-        /// <param name="data">Data.</param>
-        /// <param name="typecasttemplate">A template to use for casting the string representation to the desired type</param>
-        /// <param name="inverse">A flag used to inverse the element order</param>
+        /// <param name="data">The array with initialization elements.</param>
+        /// <param name="typecasttemplate">A template to use for casting the string representation to the desired type.</param>
+        /// <param name="inverse">A flag used to inverse the element order.</param>
         public static string GetArrayAsAssignmentList(Array data, string typecasttemplate = "std_logic_vector(to_unsigned({0}, {1}))", bool inverse = false)
         {
             if (inverse)

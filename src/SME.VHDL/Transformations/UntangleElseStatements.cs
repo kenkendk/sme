@@ -6,35 +6,38 @@ using SME.AST.Transform;
 
 namespace SME.VHDL.Transformations
 {
+    /// <summary>
+    /// Untangles else statements.
+    /// </summary>
     public class UntangleElseStatements : IASTTransform
     {
-		/// <summary>
-		/// The render state.
-		/// </summary>
-		private readonly RenderState State;
-		/// <summary>
-		/// The method being transformed
-		/// </summary>
-		private readonly Method Method;
+        /// <summary>
+        /// The render state.
+        /// </summary>
+        private readonly RenderState State;
+        /// <summary>
+        /// The method being transformed.
+        /// </summary>
+        private readonly Method Method;
 
         /// <summary>
-        /// Cache of handled methods
+        /// Cache of handled methods.
         /// </summary>
         private HashSet<ASTItem> m_handled = new HashSet<ASTItem>();
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="T:SME.VHDL.Transformations.UntangleElseStatements"/> class.
-		/// </summary>
-		/// <param name="state">The render state.</param>
-		/// <param name="method">The method being rendered.</param>
-		public UntangleElseStatements(RenderState state, Method method)
-		{
-			State = state;
-			Method = method;
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:SME.VHDL.Transformations.UntangleElseStatements"/> class.
+        /// </summary>
+        /// <param name="state">The render state.</param>
+        /// <param name="method">The method being rendered.</param>
+        public UntangleElseStatements(RenderState state, Method method)
+        {
+            State = state;
+            Method = method;
+        }
 
         /// <summary>
-        /// Applies the transformation
+        /// Applies the transformation.
         /// </summary>
         /// <returns>The transformed item.</returns>
         /// <param name="item">The item to visit.</param>
@@ -52,7 +55,7 @@ namespace SME.VHDL.Transformations
                     parentif = parentif.Parent;
 
                 if (parentif == null)
-                {                    
+                {
                     Console.WriteLine("Unable to transform return statement in main method, try building the source program in Debug mode.");
                     return item;
                 }
@@ -128,5 +131,5 @@ namespace SME.VHDL.Transformations
 
             return item;
         }
-	}
+    }
 }

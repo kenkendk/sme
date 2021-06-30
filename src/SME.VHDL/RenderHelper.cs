@@ -1,23 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
-using Mono.Cecil;
 using SME.AST;
 using System.Linq;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace SME.VHDL
 {
     /// <summary>
-    /// Helper method that contains all code to emit actual VHDL
+    /// Helper method that contains all code to emit actual VHDL.
     /// </summary>
     public class RenderHelper
     {
         /// <summary>
-        /// The parent render state instance
+        /// The parent render state instance.
         /// </summary>
         public readonly RenderState Parent;
 
         /// <summary>
-        /// The process to use
+        /// The process to use.
         /// </summary>
         public readonly AST.Process Process;
 
@@ -33,7 +34,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Renders all the statements in a state machine method as VHDL
+        /// Renders all the statements in a state machine method as VHDL.
         /// </summary>
         /// <returns>The statements in the method.</returns>
         /// <param name="method">The method to render.</param>
@@ -47,10 +48,10 @@ namespace SME.VHDL
             foreach(var n in method.Variables.Union(proc.SharedVariables).Where(x => x != runvariable))
             {
                 var typename = Parent.VHDLWrappedTypeName(n);
-                var arraysize = n.CecilType.IsArray ? $" (0 to {((Array)n.DefaultValue).Length-1})" : "";
+                var arraysize = n.MSCAType.IsArrayType() ? $" (0 to {((Array)n.DefaultValue).Length-1})" : "";
                 yield return $"    variable {n.Name}: {typename}{arraysize} := reset_{n.Name};";
             }
-            yield return $"    variable {runvariable.Name}: {Parent.VHDLWrappedTypeName(runvariable)} := {RenderExpression(new PrimitiveExpression("State0", runvariable.CecilType))};";
+            yield return $"    variable {runvariable.Name}: {Parent.VHDLWrappedTypeName(runvariable)} := {RenderExpression(new PrimitiveExpression("State0", runvariable.MSCAType))};";
             yield return $"    variable reentry_guard: std_logic := '0';";
             yield return "begin";
 
@@ -83,7 +84,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Renders all the statements in a method as VHDL
+        /// Renders all the statements in a method as VHDL.
         /// </summary>
         /// <returns>The statements in the method.</returns>
         /// <param name="method">The method to render.</param>
@@ -96,19 +97,19 @@ namespace SME.VHDL
             {
                 var margs = string.Join("; ",
                         from n in method.Parameters
-                        let inoutargstr = ((ParameterDefinition)n.Source).GetArgumentInOut().ToString().ToLowerInvariant()
+                        let inoutargstr = ((IParameterSymbol)n.Source).GetArgumentInOut(method.MSCAFlow).ToString().ToLowerInvariant()
 
                         select string.Format(
                             "{0}{1}: {2} {3}",
                             string.Equals(inoutargstr, "in", StringComparison.OrdinalIgnoreCase) ? "constant " : "",
                             n.Name,
                             inoutargstr,
-                            ((ParameterDefinition)n.Source).GetAttribute<RangeAttribute>() != null
+                            ((IParameterSymbol)n.Source).GetAttribute<RangeAttribute>() != null
                                 ? method.Name + "_" + n.Name + "_type"
                                 : Parent.VHDLType(n).ToSafeVHDLName()
                         ));
 
-                if (method.ReturnVariable == null || method.ReturnVariable.CecilType.IsSameTypeReference(typeof(void)))
+                if (method.ReturnVariable == null || method.ReturnVariable.MSCAType.IsSameTypeReference(typeof(void)))
                     if (margs.Equals(string.Empty))
                         yield return $"procedure {method.Name} is";
                     else
@@ -138,7 +139,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Renders a single statement with the given indentation
+        /// Renders a single statement with the given indentation.
         /// </summary>
         /// <returns>The VHDL lines in the statement.</returns>
         /// <param name="method">The method the statement belongs to.</param>
@@ -167,7 +168,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Renders a single ForStatement with the given indentation
+        /// Renders a single ForStatement with the given indentation.
         /// </summary>
         /// <returns>The VHDL lines in the statement.</returns>
         /// <param name="method">The method the statement belongs to.</param>
@@ -198,7 +199,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Renders a single ReturnStatement with the given indentation
+        /// Renders a single ReturnStatement with the given indentation.
         /// </summary>
         /// <returns>The VHDL lines in the statement.</returns>
         /// <param name="method">The method the statement belongs to.</param>
@@ -210,11 +211,11 @@ namespace SME.VHDL
                 throw new Exception("Expected return expression to be empty");
 
             var indent = new string(' ', indentation);
-            yield return $"{indent}return {method.ReturnVariable.Name};";
+            yield return $"{indent}return {method.ReturnVariable?.Name};";
         }
 
         /// <summary>
-        /// Renders a single BlockStatement with the given indentation
+        /// Renders a single BlockStatement with the given indentation.
         /// </summary>
         /// <returns>The VHDL lines in the statement.</returns>
         /// <param name="method">The method the statement belongs to.</param>
@@ -228,7 +229,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Renders a single SwitchStatement with the given indentation
+        /// Renders a single SwitchStatement with the given indentation.
         /// </summary>
         /// <returns>The VHDL lines in the statement.</returns>
         /// <param name="method">The method the statement belongs to.</param>
@@ -270,7 +271,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Renders a single IfElseStatement with the given indentation
+        /// Renders a single IfElseStatement with the given indentation.
         /// </summary>
         /// <returns>The VHDL lines in the statement.</returns>
         /// <param name="method">The method the statement belongs to.</param>
@@ -297,7 +298,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Renders a single ExpressionStatement with the given indentation
+        /// Renders a single ExpressionStatement with the given indentation.
         /// </summary>
         /// <returns>The VHDL lines in the statement.</returns>
         /// <param name="method">The method the statement belongs to.</param>
@@ -312,7 +313,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Renders a single CommentStatement with the given indentation
+        /// Renders a single CommentStatement with the given indentation.
         /// </summary>
         /// <returns>The VHDL lines in the statement.</returns>
         /// <param name="method">The method the statement belongs to.</param>
@@ -326,7 +327,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Renders a single expression to VHDL
+        /// Renders a single expression to VHDL.
         /// </summary>
         /// <returns>The VHDL equivalent of the expression.</returns>
         /// <param name="expression">The expression to render</param>
@@ -375,7 +376,7 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Helper function that digs out the primitive expression underneath casting and formatting expressions
+        /// Helper function that digs out the primitive expression underneath casting and formatting expressions.
         /// </summary>
         /// <returns>The primitive expression or null.</returns>
         /// <param name="e">The expression to unwrap.</param>
@@ -390,17 +391,17 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Renders a single ArrayCreateExpression to VHDL
+        /// Renders a single ArrayCreateExpression to VHDL.
         /// </summary>
         /// <returns>The VHDL equivalent of the expression.</returns>
-        /// <param name="e">The expression to render</param>
+        /// <param name="e">The expression to render.</param>
         private string RenderExpression(AST.ArrayCreateExpression e)
         {
             var last = UnwrapPrimitive(e.ElementExpressions.LastOrDefault());
             if (last != null && last.Value != null)
             {
                 var trailing_defaults = e.ElementExpressions.Reverse().TakeWhile(x => last.Value.Equals(UnwrapPrimitive(x)?.Value)).Count();
-                if (trailing_defaults != 0)
+                if (trailing_defaults != 1)
                     return "(" + string.Join(", ",
                                              e.ElementExpressions
                                              .Take(e.ElementExpressions.Length - trailing_defaults)
@@ -414,10 +415,10 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Renders a single EmptyArrayCreateExpression to VHDL
+        /// Renders a single EmptyArrayCreateExpression to VHDL.
         /// </summary>
         /// <returns>The VHDL equivalent of the expression.</returns>
-        /// <param name="e">The expression to render</param>
+        /// <param name="e">The expression to render.</param>
         private string RenderExpression(AST.EmptyArrayCreateExpression e)
         {
             var tvhdl = Parent.VHDLType(e);
@@ -442,10 +443,10 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Renders a single AssignmentExpression to VHDL
+        /// Renders a single AssignmentExpression to VHDL.
         /// </summary>
         /// <returns>The VHDL equivalent of the expression.</returns>
-        /// <param name="e">The expression to render</param>
+        /// <param name="e">The expression to render.</param>
         private string RenderExpression(AST.AssignmentExpression e)
         {
             DataElement target;
@@ -477,17 +478,17 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Renders a single ArrayCreateExpression to VHDL
+        /// Renders a single ArrayCreateExpression to VHDL.
         /// </summary>
         /// <returns>The VHDL equivalent of the expression.</returns>
-        /// <param name="e">The expression to render</param>
+        /// <param name="e">The expression to render.</param>
         private string RenderExpression(AST.BinaryOperatorExpression e)
         {
             if (Parent.Config.AVOID_SLL_AND_SRL)
             {
-                if (e.Operator == ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.ShiftLeft)
+                if (e.Operator == SyntaxKind.LessThanLessThanToken)
                     return string.Format("shift_left({0}, {1})", RenderExpression(e.Left), RenderExpression(e.Right));
-                else if (e.Operator == ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.ShiftRight)
+                else if (e.Operator == SyntaxKind.GreaterThanGreaterThanToken)
                     return string.Format("shift_right({0}, {1})", RenderExpression(e.Left), RenderExpression(e.Right));
             }
 
@@ -495,30 +496,30 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Renders a single CastExpression to VHDL
+        /// Renders a single CastExpression to VHDL.
         /// </summary>
         /// <returns>The VHDL equivalent of the expression.</returns>
-        /// <param name="e">The expression to render</param>
+        /// <param name="e">The expression to render.</param>
         private string RenderExpression(AST.CastExpression e)
         {
             throw new Exception("All cast expressions should be removed");
         }
 
         /// <summary>
-        /// Renders a single CheckedExpression to VHDL
+        /// Renders a single CheckedExpression to VHDL.
         /// </summary>
         /// <returns>The VHDL equivalent of the expression.</returns>
-        /// <param name="e">The expression to render</param>
+        /// <param name="e">The expression to render.</param>
         private string RenderExpression(AST.CheckedExpression e)
         {
             return RenderExpression(e.Expression);
         }
 
         /// <summary>
-        /// Renders a single ConditionalExpression to VHDL
+        /// Renders a single ConditionalExpression to VHDL.
         /// </summary>
         /// <returns>The VHDL equivalent of the expression.</returns>
-        /// <param name="e">The expression to render</param>
+        /// <param name="e">The expression to render.</param>
         private string RenderExpression(AST.ConditionalExpression e)
         {
             if (!Parent.Config.SUPPORTS_VHDL_2008)
@@ -528,40 +529,40 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Renders a single EmptyExpression to VHDL
+        /// Renders a single EmptyExpression to VHDL.
         /// </summary>
         /// <returns>The VHDL equivalent of the expression.</returns>
-        /// <param name="e">The expression to render</param>
+        /// <param name="e">The expression to render.</param>
         private string RenderExpression(AST.EmptyExpression e)
         {
             return string.Empty;
         }
 
         /// <summary>
-        /// Renders a single IdentifierExpression to VHDL
+        /// Renders a single IdentifierExpression to VHDL.
         /// </summary>
         /// <returns>The VHDL equivalent of the expression.</returns>
-        /// <param name="e">The expression to render</param>
+        /// <param name="e">The expression to render.</param>
         private string RenderExpression(AST.IdentifierExpression e)
         {
             return e.Target.Name;
         }
 
         /// <summary>
-        /// Renders a single IndexerExpression to VHDL
+        /// Renders a single IndexerExpression to VHDL.
         /// </summary>
         /// <returns>The VHDL equivalent of the expression.</returns>
-        /// <param name="e">The expression to render</param>
+        /// <param name="e">The expression to render.</param>
         private string RenderExpression(AST.IndexerExpression e)
         {
             return string.Format("{0}({1})", RenderExpression(e.TargetExpression), RenderExpression(e.IndexExpression));
         }
 
         /// <summary>
-        /// Renders a single InvocationExpression to VHDL
+        /// Renders a single InvocationExpression to VHDL.
         /// </summary>
         /// <returns>The VHDL equivalent of the expression.</returns>
-        /// <param name="e">The expression to render</param>
+        /// <param name="e">The expression to render.</param>
         private string RenderExpression(AST.InvocationExpression e)
         {
             var method = RenderExpression(e.TargetExpression);
@@ -573,10 +574,10 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Renders a single MemberReferenceExpression to VHDL
+        /// Renders a single MemberReferenceExpression to VHDL.
         /// </summary>
         /// <returns>The VHDL equivalent of the expression.</returns>
-        /// <param name="e">The expression to render</param>
+        /// <param name="e">The expression to render.</param>
         private string RenderExpression(AST.MemberReferenceExpression e)
         {
             if (e.Target.Parent is AST.Bus)
@@ -608,10 +609,10 @@ namespace SME.VHDL
                     return ce.ArrayLengthSource.Name + "_type'LENGTH";
                 }
 
-                if (ce.CecilType != null && ce.CecilType.Resolve().IsEnum)
+                if (ce.MSCAType != null && ((INamedTypeSymbol)ce.MSCAType).EnumUnderlyingType != null)
                 {
-                    if (ce.DefaultValue is FieldDefinition)
-                        return Naming.ToValidName(ce.CecilType.FullName + "_" + ((FieldDefinition)ce.DefaultValue).Name);
+                    if (ce.DefaultValue is IFieldSymbol)
+                        return Naming.ToValidName(ce.MSCAType.ToDisplayString() + "_" + ((IFieldSymbol)ce.DefaultValue).Name);
                 }
             }
 
@@ -625,10 +626,10 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Renders a single MethodReferenceExpression to VHDL
+        /// Renders a single MethodReferenceExpression to VHDL.
         /// </summary>
         /// <returns>The VHDL equivalent of the expression.</returns>
-        /// <param name="e">The expression to render</param>
+        /// <param name="e">The expression to render.</param>
         private string RenderExpression(AST.MethodReferenceExpression e)
         {
             if (string.IsNullOrEmpty(e.Target.Name))
@@ -638,10 +639,10 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Renders a single ParenthesizedExpression to VHDL
+        /// Renders a single ParenthesizedExpression to VHDL.
         /// </summary>
         /// <returns>The VHDL equivalent of the expression.</returns>
-        /// <param name="e">The expression to render</param>
+        /// <param name="e">The expression to render.</param>
         private string RenderExpression(AST.ParenthesizedExpression e)
         {
             return string.Format("({0})", RenderExpression(e.Expression));
@@ -663,7 +664,7 @@ namespace SME.VHDL
         /// Renders a single PrimitiveExpression to VHDL
         /// </summary>
         /// <returns>The VHDL equivalent of the expression.</returns>
-        /// <param name="e">The expression to render</param>
+        /// <param name="e">The expression to render.</param>
         private string RenderExpression(AST.PrimitiveExpression e)
         {
             var tvhdl = Parent.VHDLType(e);
@@ -675,12 +676,12 @@ namespace SME.VHDL
             {
                 return ((bool)e.Value) ? "'1'" : "'0'";
             }
-            else if (e.SourceResultType.Resolve().IsEnum)
+            else if (((INamedTypeSymbol)e.SourceResultType).EnumUnderlyingType != null)
             {
                 if (e.Value is string)
-                    return Naming.ToValidName(e.SourceResultType.FullName + "_" + e.Value.ToString());
+                    return Naming.ToValidName(e.SourceResultType.ToDisplayString() + "_" + e.Value.ToString());
                 else
-                    return Naming.ToValidName(e.SourceResultType.FullName) + "'VAL(" + e.Value.ToString() + ")";
+                    return Naming.ToValidName(e.SourceResultType.ToDisplayString()) + "'VAL(" + e.Value.ToString() + ")";
             }
             else
             {
@@ -689,30 +690,30 @@ namespace SME.VHDL
         }
 
         /// <summary>
-        /// Renders a single UnaryOperatorExpression to VHDL
+        /// Renders a single UnaryOperatorExpression to VHDL.
         /// </summary>
         /// <returns>The VHDL equivalent of the expression.</returns>
-        /// <param name="e">The expression to render</param>
+        /// <param name="e">The expression to render.</param>
         private string RenderExpression(AST.UnaryOperatorExpression e)
         {
             return string.Format("{0} {1}", e.Operator.ToVHDL(), RenderExpression(e.Operand));
         }
 
         /// <summary>
-        /// Renders a single UncheckedExpression to VHDL
+        /// Renders a single UncheckedExpression to VHDL.
         /// </summary>
         /// <returns>The VHDL equivalent of the expression.</returns>
-        /// <param name="e">The expression to render</param>
+        /// <param name="e">The expression to render.</param>
         private string RenderExpression(AST.UncheckedExpression e)
         {
             return RenderExpression(e.Expression);
         }
 
         /// <summary>
-        /// Renders a single ConversionExpression to VHDL
+        /// Renders a single ConversionExpression to VHDL.
         /// </summary>
         /// <returns>The VHDL equivalent of the expression.</returns>
-        /// <param name="e">The expression to render</param>
+        /// <param name="e">The expression to render.</param>
         private string RenderExpression(SME.VHDL.CustomNodes.ConversionExpression e)
         {
             string innerexp;
@@ -754,7 +755,10 @@ namespace SME.VHDL
                                         new DataElement[] { x.ReturnVariable }.Where(y => y != null)
                                        )
                                    )
-
+                    )
+                    .Concat(
+                        Process.SharedConstants
+                        .OfType<DataElement>()
                     )
                     .Distinct();
 
@@ -764,7 +768,7 @@ namespace SME.VHDL
                     if (v is AST.Parameter)
                         continue;
 
-                    if (v.CecilType.IsArrayType())
+                    if (v.MSCAType.IsArrayType())
                     {
                         int arraylen;
                         if (v.DefaultValue is EmptyArrayCreateExpression)

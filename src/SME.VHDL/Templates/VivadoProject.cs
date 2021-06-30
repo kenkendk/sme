@@ -1,21 +1,39 @@
-﻿using System.Linq;
-using System.Text;
-using System.Collections.Generic;
-using System;
+﻿using System;
 using SME.AST;
 
 namespace SME.VHDL.Templates
 {
-
+    /// <summary>
+    /// Template for generating a Xilinx Vivado project file.
+    /// </summary>
     public partial class VivadoProject : BaseTemplate
     {
-
+        /// <summary>
+        /// The network to render.
+        /// </summary>
         public readonly Network Network;
+        /// <summary>
+        /// The current render state.
+        /// </summary>
         public readonly RenderState RS;
+        /// <summary>
+        /// The simulation to render.
+        /// </summary>
         public readonly Simulation Simulation;
+        /// <summary>
+        /// The runtime for the simulator.
+        /// </summary>
         public readonly string Runtime;
+        /// <summary>
+        /// The processes in the network.
+        /// </summary>
         public readonly AST.Process[] Processes;
 
+        /// <summary>
+        /// Constructs a new instance of the Xilinx Vivado project template.
+        /// </summary>
+        /// <param name="renderer">The render state to render in.</param>
+        /// <param name="processes">The processes to include in the project.</param>
         public VivadoProject(RenderState renderer, AST.Process[] processes)
         {
             RS = renderer;
@@ -25,6 +43,9 @@ namespace SME.VHDL.Templates
             Processes = processes;
         }
 
+        /// <summary>
+        /// Writes the template to the output file.
+        /// </summary>
         public override string TransformText()
         {
             GenerationEnvironment = null;

@@ -1,16 +1,28 @@
 ﻿using System;
 using System.Linq;
-using SME.AST;
 
 namespace SME.VHDL.CustomRenders.Inferred
 {
+    /// <summary>
+    /// Custom renderer for simple dual port RAM.
+    /// </summary>
     public class SimpleDualPortRam : ICustomRenderer
     {
+        /// <summary>
+        /// Returns the string, which should be written in the include region of the VHDL file.
+        /// </summary>
+        /// <param name="renderer">The renderer currently rendering VHDL files.</param>
+        /// <param name="indentation">The indentation at the current location in the VHDL file.</param>
         public string IncludeRegion(RenderStateProcess renderer, int indentation)
         {
             return string.Empty;
         }
 
+        /// <summary>
+        /// Returns the string, which should be written in the body region of the VHDL file.
+        /// </summary>
+        /// <param name="renderer">The renderer currently rendering VHDL files.</param>
+        /// <param name="indentation">The indentation at the current location in the VHDL file.</param>
         public string BodyRegion(RenderStateProcess renderer, int indentation)
         {
             var initialdata = (Array)renderer.Process.SharedVariables.First(x => x.Name == "m_memory").DefaultValue;
@@ -124,6 +136,5 @@ begin
 
             return VHDLHelper.ReIndentTemplate(template, indentation);
         }
-
     }
 }

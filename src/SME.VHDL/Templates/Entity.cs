@@ -1,31 +1,47 @@
-using System.Linq;
-using SME;
-using System.Text;
-using System.Collections.Generic;
-using SME.VHDL;
-using SME.AST;
 using System;
+using System.Linq;
+using SME.AST;
 
 namespace SME.VHDL.Templates
 {
-
+    /// <summary>
+    /// Template for entities, e.g. processes.
+    /// </summary>
     public class Entity : BaseTemplate
     {
-
+        /// <summary>
+        /// The current render state.
+        /// </summary>
         public readonly RenderState RS;
-		public readonly RenderStateProcess RSP;
+        /// <summary>
+        /// The current render state of the process to render.
+        /// </summary>
+        public readonly RenderStateProcess RSP;
+        /// <summary>
+        /// The network the process belongs to.
+        /// </summary>
+        public readonly Network Network;
+        /// <summary>
+        /// The process to render.
+        /// </summary>
+        public readonly AST.Process Process;
 
-		public readonly Network Network;
-		public readonly AST.Process Process;
+        /// <summary>
+        /// Constructs a new instance of the entity template.
+        /// </summary>
+        /// <param name="renderer">The render state to render in.</param>
+        /// <param name="renderproc">The process to render.</param>
+        public Entity(RenderState renderer, RenderStateProcess renderproc)
+        {
+            RS = renderer;
+            RSP = renderproc;
+            Network = renderer.Network;
+            Process = renderproc.Process;
+        }
 
-		public Entity(RenderState renderer, RenderStateProcess renderproc)
-		{
-			RS = renderer;
-			RSP = renderproc;
-			Network = renderer.Network;
-			Process = renderproc.Process;
-		}
-
+        /// <summary>
+        /// Writes the template to the VHDL file.
+        /// </summary>
         public override string TransformText()
         {
             GenerationEnvironment = null;
@@ -56,7 +72,7 @@ use work.CUSTOM_TYPES.ALL;
             var procname = ToStringHelper.ToStringWithCulture( Naming.ProcessNameToValidName(Process.SourceInstance.Instance) );
             Write($"entity {procname} is\n");
 
-            var shared = Process.SharedVariables.Cast<object>().Concat(Process.SharedSignals);
+            var shared = Process.SharedVariables.Cast<object>().Concat(Process.SharedSignals).Concat(Process.SharedConstants);
             var lastel = shared.LastOrDefault();
             if (lastel != null)
             {
@@ -66,6 +82,14 @@ use work.CUSTOM_TYPES.ALL;
                     var name = ToStringHelper.ToStringWithCulture( Naming.ToValidName($"reset_{variable.Name}") );
                     var type = ToStringHelper.ToStringWithCulture( RS.VHDLWrappedTypeName(variable) );
                     var end = variable == lastel ? "" : ";";
+                    Write($"        {name}: in {type}{end}\n");
+                }
+
+                foreach (var constant in Process.SharedConstants)
+                {
+                    var name = ToStringHelper.ToStringWithCulture( Naming.ToValidName($"reset_{constant.Name}") );
+                    var type = ToStringHelper.ToStringWithCulture( RS.VHDLWrappedTypeName(constant) );
+                    var end = constant == lastel ? "" : ";";
                     Write($"        {name}: in {type}{end}\n");
                 }
 
@@ -202,6 +226,21 @@ end ");
                     Write("\n");
                 }
 
+                if (Process.SharedConstants.Any())
+                {
+                    Write("    -- Internal constants\n");
+                    foreach (var c in Process.SharedConstants)
+                    {
+                        var constname = ToStringHelper.ToStringWithCulture( c.Name );
+                        var consttype = ToStringHelper.ToStringWithCulture( RS.VHDLWrappedTypeName(c) );
+                        var defaultvalue = $"reset_{constname}";
+
+                        var constant = ToStringHelper.ToStringWithCulture( $"constant {constname} : {consttype} := {defaultvalue}" );
+                        Write($"    {constant};\n");
+                    }
+                    Write("\n");
+                }
+
                 if (Process.IsClocked && RSP.FiniteStateMethod != null)
                 {
                     Write("    -- Clock-edge capture signals\n");
@@ -219,7 +258,6 @@ end ");
                     }
                     Write("\n");
                 }
-
 
                 Write(
 @"    -- User defined signals, procedures and components here
@@ -262,14 +300,14 @@ begin
                     foreach(var s in variables.Where(x => !x.isLoopIndex)) {
                         var varname = ToStringHelper.ToStringWithCulture( s.Name );
                         var vartype = ToStringHelper.ToStringWithCulture( RS.VHDLWrappedTypeName(s) );
-                        if (s.CecilType.IsArray)
+                        if (s.MSCAType.IsArrayType())
                             vartype += $" (0 to {((Array)s.DefaultValue).Length-1})";
                         var reset = ToStringHelper.ToStringWithCulture( Process.SharedVariables.Contains(s) ? " := " + Naming.ToValidName("reset_" + s.Name) : "" );
                         Write($"        variable {varname} : {vartype}{reset};\n");
                     }
                     Write("\n");
                 }
-
+                
                 if (!RSP.Process.IsClocked)
                     Write("        variable reentry_guard: std_logic;\n");
 
@@ -410,5 +448,4 @@ end RTL;
             return GenerationEnvironment.ToString();
         }
     }
-
 }

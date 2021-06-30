@@ -1,118 +1,130 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.MSBuild;
 
 namespace SME.AST
 {
-	// This partial part of the parser deals with the Reflection side of the parsing
+    // This partial part of the parser deals with the Reflection side of the parsing.
 
-	/// <summary>
-	/// The main entry point for building an AST of an SME network
-	/// </summary>
-	public partial class ParseProcesses
-	{
-		/// <summary>
-		/// A class that contains intermediate information collected while traversing the network
-		/// </summary>
-		protected class NetworkState : Network
-		{
-			/// <summary>
-			/// The table of all the constants in a convenient lookup table
-			/// </summary>
-			public readonly Dictionary<Mono.Cecil.FieldDefinition, Constant> ConstantLookup = new Dictionary<Mono.Cecil.FieldDefinition, Constant>();
-			/// <summary>
-			/// A variable counter, used to make unique variable names
-			/// </summary>
-			public int VariableCount;
-			/// <summary>
-			/// A lookup table of bus instances
-			/// </summary>
-			public readonly Dictionary<IBus, Bus> BusInstanceLookup = new Dictionary<IBus, Bus>();
-		}
-
-		/// <summary>
-		/// A class that contains intermediate information collected while traversion a process
-		/// </summary>
-		protected class ProcessState : Process
-		{
-			/// <summary>
-			/// The variables shared in the current process
-			/// </summary>
-			public readonly Dictionary<string, Bus> BusInstances = new Dictionary<string, Bus>();
-
-			/// <summary>
-			/// The variables shared in the current process
-			/// </summary>
-			public readonly Dictionary<string, Variable> Variables = new Dictionary<string, Variable>();
-			/// <summary>
-			/// The signals shared in the current process
-			/// </summary>
-			public readonly Dictionary<string, Signal> Signals = new Dictionary<string, Signal>();
-			/// <summary>
-			/// The list of methods to process
-			/// </summary>
-			public readonly Queue<Tuple<AST.Statement, MethodState, AST.InvocationExpression>> MethodTargets = new Queue<Tuple<AST.Statement, MethodState, AST.InvocationExpression>>();
-			/// <summary>
-			/// The decompiler context.
-			/// </summary>
-			public ICSharpCode.Decompiler.CSharp.CSharpDecompiler DecompilerContext;
-			/// <summary>
-			/// The import statements
-			/// </summary>
-			public readonly List<string> Imports = new List<string>();
-			/// <summary>
-			/// A flag indicating if the method should be decompiled
-			/// </summary>
-			public bool Decompile;
-
+    /// <summary>
+    /// The main entry point for building an AST of a SME network.
+    /// </summary>
+    public partial class ParseProcesses
+    {
+        /// <summary>
+        /// A class that contains intermediate information collected while traversing the network.
+        /// </summary>
+        protected class NetworkState : Network
+        {
             /// <summary>
-            /// The map of generic parameters on this process
+            /// The table of all the constants in a convenient lookup table.
             /// </summary>
-            public readonly Dictionary<string, Mono.Cecil.GenericParameter> GenericMap = new Dictionary<string, Mono.Cecil.GenericParameter>();
-
+            public readonly Dictionary<IFieldSymbol, Constant> ConstantLookup = new Dictionary<IFieldSymbol, Constant>();
             /// <summary>
-            /// The map of generic types on this process
+            /// A variable counter, used to make unique variable names.
             /// </summary>
-            public readonly Dictionary<string, Mono.Cecil.TypeReference> GenericTypes = new Dictionary<string, Mono.Cecil.TypeReference>();
+            public int VariableCount;
+            /// <summary>
+            /// A lookup table of bus instances.
+            /// </summary>
+            public readonly Dictionary<IBus, Bus> BusInstanceLookup = new Dictionary<IBus, Bus>();
+        }
+
+        /// <summary>
+        /// A class that contains intermediate information collected while traversion a process.
+        /// </summary>
+        protected class ProcessState : Process
+        {
+            /// <summary>
+            /// The variables shared in the current process.
+            /// </summary>
+            public readonly Dictionary<string, Bus> BusInstances = new Dictionary<string, Bus>();
+            /// <summary>
+            /// The variables shared in the current process.
+            /// </summary>
+            public readonly Dictionary<string, Variable> Variables = new Dictionary<string, Variable>();
+            /// <summary>
+            /// The signals shared in the current process.
+            /// </summary>
+            public readonly Dictionary<string, Signal> Signals = new Dictionary<string, Signal>();
+            /// <summary>
+            /// The constants in the current process.
+            /// </summary>
+            public readonly Dictionary<string, Constant> Constants = new Dictionary<string, Constant>();
+            /// <summary>
+            /// The list of methods to process.
+            /// </summary>
+            public readonly Queue<Tuple<AST.Statement, MethodState, AST.InvocationExpression>> MethodTargets = new Queue<Tuple<AST.Statement, MethodState, AST.InvocationExpression>>();
+            /// <summary>
+            /// The compilation of the project.
+            /// </summary>
+            public Compilation compilation;
+            /// <summary>
+            /// The import statements.
+            /// </summary>
+            public readonly List<string> Imports = new List<string>();
+            /// <summary>
+            /// A flag indicating if the method should be decompiled.
+            /// </summary>
+            public bool Decompile;
 
             /// <summary>
-            /// Converts a generic type description into a non-generic version
+            /// The map of generic parameters on this process.
+            /// </summary>
+            public readonly Dictionary<string, ITypeParameterSymbol> GenericMap = new Dictionary<string, ITypeParameterSymbol>();
+
+            /// <summary>
+            /// The map of generic types on this process.
+            /// </summary>
+            public readonly Dictionary<string, ITypeSymbol> GenericTypes = new Dictionary<string, ITypeSymbol>();
+
+            /// <summary>
+            /// Converts a generic type description into a non-generic version.
             /// </summary>
             /// <returns>The resolved type.</returns>
             /// <param name="ft">The type to resolve.</param>
-            /// <param name="method">The method context, if any</param>
-            public Mono.Cecil.TypeReference ResolveGenericType(Mono.Cecil.TypeReference ft, MethodState method = null)
+            /// <param name="method">The method context, if any.</param>
+            public ITypeSymbol ResolveGenericType(ITypeSymbol its, MethodState method = null)
             {
-                if (ft != null)
+                if (its.TypeKind is TypeKind.Array)
                 {
-                    if (ft.IsArray)
+                    var elt = (its as IArrayTypeSymbol).ElementType;
+                    if ((elt is INamedTypeSymbol && ((INamedTypeSymbol) elt).IsGenericType) || elt is ITypeParameterSymbol)
                     {
-                        var elt = ft.GetElementType();
-                        if (elt.IsGenericParameter)
-                            return Mono.Cecil.Rocks.TypeReferenceRocks.MakeArrayType(this.GenericTypes[elt.Name]);
+                        return m_compilation.CreateArrayTypeSymbol(GenericTypes[elt.Name]);
                     }
-                    else if (ft.IsGenericParameter)
+                    else
                     {
-                        return this.GenericTypes[ft.Name];
+                        return its;
                     }
+                }
+                if (its.IsBusType())
+                    return its;
+                var ft = its as INamedTypeSymbol;
+                if (ft != null && ft.IsGenericType)
+                {
+                    return this.GenericTypes[ft.Name];
                 }
                 return ft;
             }
-		}
+        }
 
-		/// <summary>
-		/// A class that contains intermediate information collected while traversing a method
-		/// </summary>
-		protected class MethodState : Method
-		{
+        /// <summary>
+        /// A class that contains intermediate information collected while traversing a method.
+        /// </summary>
+        protected class MethodState : Method
+        {
             /// <summary>
-            /// List of all variables found in the method
+            /// List of all variables found in the method.
             /// </summary>
             public readonly List<Variable> CollectedVariables = new List<Variable>();
 
             /// <summary>
-            /// The stack of scopes
+            /// The stack of scopes.
             /// </summary>
             public readonly List<KeyValuePair<ASTItem, Dictionary<string, Variable>>> Scopes = new List<KeyValuePair<ASTItem, Dictionary<string, Variable>>>();
 
@@ -125,9 +137,9 @@ namespace SME.AST
             }
 
             /// <summary>
-            /// Adds a variable to the current scope
+            /// Adds a variable to the current scope.
             /// </summary>
-            /// <param name="variable">Variable.</param>
+            /// <param name="variable">The variable to add.</param>
             public Variable AddVariable(AST.Variable variable)
             {
                 Scopes.Last().Value.Add(variable.Name, variable);
@@ -135,11 +147,11 @@ namespace SME.AST
                 return variable;
             }
 
-			/// <summary>
-			/// Starts a new local scope
-			/// </summary>
-			/// <param name="scope">The item starting the scope.</param>
-			public void StartScope(ASTItem scope)
+            /// <summary>
+            /// Starts a new local scope.
+            /// </summary>
+            /// <param name="scope">The item starting the scope.</param>
+            public void StartScope(ASTItem scope)
             {
                 if (scope == null)
                     throw new ArgumentNullException(nameof(scope));
@@ -148,13 +160,13 @@ namespace SME.AST
             }
 
             /// <summary>
-            /// Closes the current local scope
+            /// Closes the current local scope.
             /// </summary>
             /// <param name="scope">The scope to close.</param>
             public void FinishScope(ASTItem scope)
             {
-				if (scope == null)
-					throw new ArgumentNullException(nameof(scope));
+                if (scope == null)
+                    throw new ArgumentNullException(nameof(scope));
 
                 if (Scopes.Last().Key != scope)
                     throw new Exception("PopScope had incorrect scope");
@@ -166,7 +178,7 @@ namespace SME.AST
             }
 
             /// <summary>
-            /// Attempts to locate a variable with the given name, looking through all active scopes
+            /// Attempts to locate a variable with the given name, looking through all active scopes.
             /// </summary>
             /// <returns><c>true</c>, if the variable was found, <c>false</c> otherwise.</returns>
             /// <param name="name">The name of the variable to locate.</param>
@@ -181,65 +193,100 @@ namespace SME.AST
 
                 return false;
             }
-		}
+        }
 
-		/// <summary>
-		/// Static method for building an AST
-		/// </summary>
-		/// <returns>The network.</returns>
+        /// <summary>
+        /// Static method for building an AST.
+        /// </summary>
+        /// <returns>The network.</returns>
         /// <param name="simulation">The simulation instance to build the AST for.</param>
-		/// <param name="decompile">Set to <c>true</c> to enable decompilation of the IL code.</param>
+        /// <param name="decompile">Set to <c>true</c> to enable decompilation of the IL code.</param>
         public static Network BuildNetwork(Simulation simulation, bool decompile = false)
-		{
+        {
             return new ParseProcesses().Parse(simulation, decompile);
-		}
+        }
 
-		/// <summary>
-		/// Static method for building an AST with a custom subclass
-		/// </summary>
-		/// <returns>The network.</returns>
+        /// <summary>
+        /// Static method for building an AST with a custom subclass.
+        /// </summary>
+        /// <returns>The network.</returns>
         /// <param name="simulation">The simulation instance to build the AST for.</param>
-		/// <param name="decompile">Set to <c>true</c> to enable decompilation of the IL code.</param>
+        /// <param name="decompile">Set to <c>true</c> to enable decompilation of the IL code.</param>
         public static Network BuildNetwork<T>(Simulation simulation, bool decompile = false)
-			where T : ParseProcesses, new()
-		{
+            where T : ParseProcesses, new()
+        {
             return new T().Parse(simulation, decompile);
-		}
+        }
 
 
-		/// <summary>
-		/// Builds an AST by inspecting the processes
-		/// </summary>
+        /// <summary>
+        /// Builds an AST by inspecting the processes.
+        /// </summary>
         /// <param name="simulation">The simulation instance to build the AST for.</param>
-		/// <param name="decompile">Set to <c>true</c> to enable decompilation of the IL code.</param>
-		public virtual Network Parse(Simulation simulation, bool decompile = false)
-		{
-			var sourceasm = Assembly.GetEntryAssembly();
-			var network = new NetworkState()
-			{
-				Source = sourceasm,
-				Name = sourceasm.GetName().Name,
-				Parent = null
-			};
+        /// <param name="decompile">Set to <c>true</c> to enable decompilation of the IL code.</param>
+        public virtual Network Parse(Simulation simulation, bool decompile = false)
+        {
+            // Get the path to the .csproj file
+            var sourceasm = simulation.Processes.First().Instance.GetType().Assembly;
+            var project_path = Simulation.ProjectPath;
+            if (project_path == null)
+            {
+                var folder_path = Directory.GetParent(sourceasm.Location).FullName;
+                project_path = GetCSProjInParents(folder_path);
+            }
+
+            // Build the project
+            // runtime will throw an exception, if MSBuild assemblies are loaded multiple times during runtime.
+            try
+            {
+                var instance = Microsoft.Build.Locator.MSBuildLocator.RegisterDefaults();
+                // workaround from https://github.com/microsoft/MSBuildLocator/issues/86
+                System.Runtime.Loader.AssemblyLoadContext.Default.Resolving += (assemblyLoadContext, assemblyName) =>
+                {
+                    var path = Path.Combine(instance.MSBuildPath, assemblyName.Name + ".dll");
+                    if (File.Exists(path))
+                    {
+                        return assemblyLoadContext.LoadFromAssemblyPath(path);
+                    }
+                    return null;
+                };
+            }
+            catch (Exception) { }
+            var workspace = MSBuildWorkspace.Create();
+            var proj_task = workspace.OpenProjectAsync(project_path);
+            proj_task.Wait();
+            var project = proj_task.Result;
+            var compile_task = project.GetCompilationAsync();
+            compile_task.Wait();
+            m_compilation = compile_task.Result;
+            m_syntaxtrees = m_compilation.SyntaxTrees;
+            m_semantics = m_compilation.SyntaxTrees.Select(x => m_compilation.GetSemanticModel(x));
+
+            var network = new NetworkState()
+            {
+                Name = sourceasm.GetName().Name,
+                Parent = null,
+                compilation = m_compilation
+            };
 
             network.Processes = simulation.Processes
-				.Where(n =>
+                .Where(n =>
                        n.Instance.GetType().GetCustomAttributes(typeof(IgnoreAttribute), true).FirstOrDefault() == null
-							&&
+                            &&
                        !(n.Instance is SimulationProcess))
                 .Select(x => Parse(network, x, simulation))
-				.ToArray();
+                .ToArray();
 
-			if (network.Processes.Length == 0)
-				throw new Exception("No processes were found in the list");
+            if (network.Processes.Length == 0)
+                throw new Exception("No processes were found in the list");
 
             network.Busses = network.Processes.SelectMany(x => x.InternalBusses.Concat(x.InputBusses).Concat(x.OutputBusses)).Distinct().ToArray();
-			network.Constants = network.ConstantLookup.Values.ToArray();
+            network.Constants = network.ConstantLookup.Values.ToArray();
 
-			if (decompile)
-			{
-				foreach (var pr in network.Processes.Cast<ProcessState>().Where(x => x.Decompile))
-				{
+            if (decompile)
+            {
+                foreach (var pr in network.Processes.Cast<ProcessState>().Where(x => x.Decompile))
+                {
                     if (pr.SourceInstance.Instance is SimpleProcess)
                     {
 
@@ -261,19 +308,20 @@ namespace SME.AST
                     }
                     else
                         throw new Exception("Unexpected decompile flag on unsupported process type");
-				}
-			}
-			network.Constants = network.ConstantLookup.Values.ToArray();
+                }
+            }
+            network.Constants = network.ConstantLookup.Values.ToArray();
 
-			// Patch up all types if they are missing
-			foreach (var el in network.All().OfType<DataElement>().Where(x => x.CecilType == null))
-				el.CecilType = LoadType(el.Type);
+            // Patch up all types if they are missing
+            foreach (var el in network.All().OfType<DataElement>().Where(x => x.MSCAType == null))
+                el.MSCAType = LoadType(el.Type);
 
             foreach (var el in network.All().OfType<DataElement>().Where(x => x.DefaultValue == null))
             {
-                if (new[] { typeof(byte), typeof(sbyte), typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong) }.Any(x => el.CecilType.IsSameTypeReference(x)))
+                if (new[] { typeof(byte), typeof(sbyte), typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong) }
+                        .Any(x => Type.GetType(el.MSCAType.ToDisplayString()) == x))
                     el.DefaultValue = 0;
-                else if (el.CecilType.IsSameTypeReference(typeof(bool)))
+                else if (Type.GetType(el.MSCAType.ToDisplayString()) == typeof(bool))
                     el.DefaultValue = false;
             }
 
@@ -284,18 +332,31 @@ namespace SME.AST
                     el.InstanceName = simulation.BusNames[el.SourceInstance];
             }
 
-			return network;
-		}
+            return network;
+        }
 
-		/// <summary>
-		/// Attempts to remove redundant prefixes to names
-		/// </summary>
-		/// <returns>The name without the prefix.</returns>
-		/// <param name="network">The top-level network instance.</param>
-		/// <param name="fullname">The name to shorten.</param>
-        /// <param name="sourcetype">The type of the source process</param>
-		protected virtual string NameWithoutPrefix(NetworkState network, string fullname, Type sourcetype)
-		{
+        /// <summary>
+        /// Recursively check folders parents until a *.csproj file is found.
+        /// </summary>
+        /// <param name="folder_path">The folder to check in.</param>
+        private static string GetCSProjInParents(string folder_path)
+        {
+            var csprojs = Directory.GetFiles(folder_path, "*.csproj");
+            if (csprojs.Any())
+                return csprojs.First();
+            else
+                return GetCSProjInParents(Directory.GetParent(folder_path).FullName);
+        }
+
+        /// <summary>
+        /// Attempts to remove redundant prefixes to names.
+        /// </summary>
+        /// <returns>The name without the prefix.</returns>
+        /// <param name="network">The top-level network instance.</param>
+        /// <param name="fullname">The name to shorten.</param>
+        /// <param name="sourcetype">The type of the source process.</param>
+        protected virtual string NameWithoutPrefix(NetworkState network, string fullname, Type sourcetype)
+        {
             var extras = string.Empty;
             if (sourcetype.IsGenericType)
             {
@@ -303,66 +364,65 @@ namespace SME.AST
                 extras = "<" + string.Join(", ", sourcetype.GenericTypeArguments.Select(x => x.Name)) + ">";
             }
 
-			if (fullname.StartsWith(network.Name + ".", StringComparison.Ordinal) && fullname.Length > network.Name.Length - 1)
+            if (fullname.StartsWith(network.Name + ".", StringComparison.Ordinal) && fullname.Length > network.Name.Length - 1)
                 fullname = fullname.Substring(network.Name.Length + 1);
 
             return fullname + extras;
-		}
+        }
 
-		/// <summary>
-		/// Parses a process and builds an AST component for it
-		/// </summary>
-		/// <param name="network">The top-level network.</param>
-		/// <param name="process">The process to build the AST for.</param>
+        /// <summary>
+        /// Parses a process and builds an AST component for it.
+        /// </summary>
+        /// <param name="network">The top-level network.</param>
+        /// <param name="process">The process to build the AST for.</param>
+        /// <param name="simulation">The current simulation context.</param>
         protected virtual Process Parse(NetworkState network, ProcessMetadata process, Simulation simulation)
-		{
+        {
             var st = process.Instance.GetType();
 
             var inputbusses = process.Instance.InputBusses.Union(process.Instance.ClockedInputBusses).ToArray();
             var outputbusses = process.Instance.OutputBusses.Distinct().ToArray();
 
-			var res = new ProcessState()
-			{
-				Name = NameWithoutPrefix(network, st.FullName, st),
-				SourceType = st,
-				CecilType = LoadType(st),
+            var res = new ProcessState()
+            {
+                Name = NameWithoutPrefix(network, st.FullName, st),
+                SourceType = st,
+                MSCAType = LoadType(st),
                 SourceInstance = process,
                 InstanceName = process.InstanceName,
-				Parent = network,
+                Parent = network,
                 IsSimulation = process.Instance is SimulationProcess,
-				IsClocked = st.GetCustomAttribute<ClockedProcessAttribute>() != null,
-				Decompile =
+                IsClocked = st.GetCustomAttribute<ClockedProcessAttribute>() != null,
+                Decompile =
                     (
                         typeof(SimpleProcess).IsAssignableFrom(st)
                         ||
                         typeof(StateProcess).IsAssignableFrom(st)
                     )
-					&&
-					!st.HasAttribute<SuppressOutputAttribute>()
-					&&
-					!st.HasAttribute<SuppressBodyAttribute>()
-			};
+                    &&
+                    !st.HasAttribute<SuppressOutputAttribute>()
+                    &&
+                    !st.HasAttribute<SuppressBodyAttribute>(),
+                compilation = network.compilation
+            };
 
-            var proctype = res.CecilType.Resolve();
+            var proctype = res.MSCAType as INamedTypeSymbol;
 
-            if (res.CecilType is Mono.Cecil.GenericInstanceType)
+            if (proctype.IsGenericType)
             {
-                var gp = res.CecilType as Mono.Cecil.GenericInstanceType;
-                var names = gp.GenericArguments.ToArray();
-                var ga = proctype.GenericParameters.ToArray();
-
-                foreach (var g in ga)
-                {
-                    res.GenericMap[g.Name] = g;
-                    res.GenericTypes[g.Name] = names[g.Position];
-                }
+                var gennames = proctype.TypeParameters.Select(x => x.Name).ToArray();
+                var gentypes = LoadGenericTypes(st).ToArray();
+                if (gennames.Length != gentypes.Length)
+                    throw new Exception("Error when mapping generic parameters to instance types.");
+                for (int i = 0; i < gennames.Length; i++)
+                    res.GenericTypes[gennames[i]] = gentypes[i];
             }
 
             res.InputBusses = inputbusses.Select(x => Parse(network, res, x, simulation)).ToArray();
             res.OutputBusses = outputbusses.Select(x => Parse(network, res, x, simulation)).ToArray();
             res.InternalBusses = process.Instance.InternalBusses.Select(x => Parse(network, res, x,simulation)).ToArray();
-			foreach (var ib in res.InternalBusses)
-				ib.IsInternal = true;
+            foreach (var ib in res.InternalBusses)
+                ib.IsInternal = true;
 
             // Set up the local names by finding the field that holds the instance reference
             foreach(var b in res.InputBusses.Union(res.OutputBusses).Union(res.InternalBusses))
@@ -374,28 +434,31 @@ namespace SME.AST
                     res.LocalBusNames[b] = f.Name;
             }
 
-			if (res.Decompile)
-			{
-				var Fields = proctype.Fields
-					.Where(x => x.GetAttributes(typeof(IgnoreAttribute)).FirstOrDefault() == null);
-				while (!proctype.BaseType.FullName.StartsWith("SME"))
-				{
-					proctype = proctype.BaseType.Resolve();
-					Fields = Fields.Union(
-						proctype.Fields
-							.Where(x => x.GetAttributes(typeof(IgnoreAttribute)).FirstOrDefault() == null));
-				}
+            if (res.Decompile)
+            {
+                var Fields = proctype.GetMembers()
+                        .OfType<IFieldSymbol>()
+                        .Where(x => !x.GetAttributes<IgnoreAttribute>()
+                        .Any());
+                while (!proctype.BaseType.ToDisplayString().StartsWith("SME"))
+                {
+                    proctype = proctype.BaseType;
+                    Fields = Fields.Union(proctype.GetMembers()
+                        .OfType<IFieldSymbol>()
+                        .Where(x => !x.GetAttributes<IgnoreAttribute>()
+                        .Any()));
+                }
                 // Register all variables
                 foreach (var f in Fields)
                 {
-                    var ft = res.ResolveGenericType(f.FieldType);
+                    var ft = res.ResolveGenericType(f.Type);
 
                     if (ft.IsBusType())
                         RegisterBusReference(network, res, f);
                     else
                         RegisterVariable(network, res, f);
                 }
-			}
+            }
 
             foreach (var f in process.Initialization)
             {
@@ -407,109 +470,109 @@ namespace SME.AST
                     SetDataElementDefaultValue(network, res, v, f.Value, false);
             }
 
-			res.SharedSignals = res.Signals.Values.ToArray();
-			res.SharedVariables = res.Variables.Values.ToArray();
+            res.SharedSignals = res.Signals.Values.ToArray();
+            res.SharedVariables = res.Variables.Values.ToArray();
+            res.SharedConstants = res.Constants.Values.ToArray();
             res.InternalDataElements = new DataElement[0];
-			return res;
-		}
+            return res;
+        }
 
-		/// <summary>
-		/// Parses a bus and builds an AST component for it
-		/// </summary>
-		/// <param name="network">The top-level network.</param>
-		/// <param name="proc">The process where the bus is located.</param>
-		/// <param name="bus">The bus to build the AST for.</param>
-        /// <param name="simulation">The simulation the AST is built for</param>
+        /// <summary>
+        /// Parses a bus and builds an AST component for it.
+        /// </summary>
+        /// <param name="network">The top-level network.</param>
+        /// <param name="proc">The process where the bus is located.</param>
+        /// <param name="bus">The bus to build the AST for.</param>
+        /// <param name="simulation">The simulation the AST is built for.</param>
         protected virtual Bus Parse(NetworkState network, ProcessState proc, IBus bus, Simulation simulation)
-		{
-			var st = ((IRuntimeBus)bus).BusType;
+        {
+            var st = ((IRuntimeBus)bus).BusType;
 
-			if (network.BusInstanceLookup.ContainsKey(bus))
-				return network.BusInstanceLookup[bus];
+            if (network.BusInstanceLookup.ContainsKey(bus))
+                return network.BusInstanceLookup[bus];
 
-			var res = new Bus()
-			{
-				Name = NameWithoutPrefix(network, st.FullName, st),
-				SourceType = st,
+            var res = new Bus()
+            {
+                Name = NameWithoutPrefix(network, st.FullName, st),
+                SourceType = st,
                 SourceInstance = bus,
                 IsTopLevelInput = simulation.TopLevelInputBusses.Contains(bus),
                 IsTopLevelOutput = simulation.TopLevelOutputBusses.Contains(bus),
-				IsClocked = st.HasAttribute<ClockedBusAttribute>(),
-				IsInternal = st.HasAttribute<InternalBusAttribute>(),
-				Parent = network
-			};
+                IsClocked = st.HasAttribute<ClockedBusAttribute>(),
+                IsInternal = st.HasAttribute<InternalBusAttribute>(),
+                Parent = network
+            };
 
-			network.BusInstanceLookup[bus] = res;
-			res.Signals = st.GetPropertiesRecursive().Where(x => x.DeclaringType != typeof(IBus)).Select(x => Parse(network, proc, res, x)).ToArray();
-			return res;
-		}
+            network.BusInstanceLookup[bus] = res;
+            res.Signals = st.GetPropertiesRecursive().Where(x => x.DeclaringType != typeof(IBus)).Select(x => Parse(network, proc, res, x)).ToArray();
+            return res;
+        }
 
-		/// <summary>
-		/// Parses the bus property and builds an AST component for it
-		/// </summary>
-		/// <param name="network">The top-level network.</param>
-		/// <param name="proc">The process where the bus is located.</param>
-		/// <param name="bus">The bus element.</param>
-		/// <param name="pi">The property to build the AST for.</param>
-		protected virtual BusSignal Parse(NetworkState network, ProcessState proc, Bus bus, PropertyInfo pi)
-		{
-			var st = pi.PropertyType;
-			object defaultvalue =
-					pi.PropertyType.IsValueType
-					  ? Activator.CreateInstance(pi.PropertyType)
-					  : null;
+        /// <summary>
+        /// Parses the bus property and builds an AST component for it.
+        /// </summary>
+        /// <param name="network">The top-level network.</param>
+        /// <param name="proc">The process where the bus is located.</param>
+        /// <param name="bus">The bus element.</param>
+        /// <param name="pi">The property to build the AST for.</param>
+        protected virtual BusSignal Parse(NetworkState network, ProcessState proc, Bus bus, PropertyInfo pi)
+        {
+            var st = pi.PropertyType;
+            object defaultvalue =
+                    pi.PropertyType.IsValueType
+                      ? Activator.CreateInstance(pi.PropertyType)
+                      : null;
 
-			var initvalattr = pi.GetCustomAttribute(typeof(InitialValueAttribute), true) as InitialValueAttribute;
+            var initvalattr = pi.GetCustomAttribute(typeof(InitialValueAttribute), true) as InitialValueAttribute;
 
-			if (initvalattr != null && initvalattr.Value != null)
-				defaultvalue = initvalattr.Value;
+            if (initvalattr != null && initvalattr.Value != null)
+                defaultvalue = initvalattr.Value;
 
-			return new BusSignal()
-			{
-				Name = pi.Name,
-				Type = pi.PropertyType,
-				Source = pi,
-				Parent = bus,
-				DefaultValue = defaultvalue,
-				CecilType = LoadType(pi.PropertyType)
-			};
-		}
+            return new BusSignal()
+            {
+                Name = pi.Name,
+                Type = pi.PropertyType,
+                Source = pi,
+                Parent = bus,
+                DefaultValue = defaultvalue,
+                MSCAType = LoadType(pi.PropertyType)
+            };
+        }
 
-		/// <summary>
-		/// Parses the specified parameter and builds an AST component for it
-		/// </summary>
-		/// <param name="network">The top-level network.</param>
-		/// <param name="proc">The process where the method is located.</param>
-		/// <param name="method">The method that the parameter belongs to.</param>
-		/// <param name="p">The parameter to build an AST for.</param>
-		protected virtual Parameter Parse(NetworkState network, ProcessState proc, Method method, ParameterInfo p)
-		{
-			return new Parameter()
-			{
-				Name = p.Name,
-				Source = p,
-				Type = p.ParameterType,
-				Parent = method
-			};
-		}
+        /// <summary>
+        /// Parses the specified parameter and builds an AST component for it.
+        /// </summary>
+        /// <param name="network">The top-level network.</param>
+        /// <param name="proc">The process where the method is located.</param>
+        /// <param name="method">The method that the parameter belongs to.</param>
+        /// <param name="p">The parameter to build an AST for.</param>
+        protected virtual Parameter Parse(NetworkState network, ProcessState proc, Method method, ParameterInfo p)
+        {
+            return new Parameter()
+            {
+                Name = p.Name,
+                Source = p,
+                Type = p.ParameterType,
+                Parent = method
+            };
+        }
 
-		/// <summary>
-		/// Parse the specified local variable and builds and AST component for it
-		/// </summary>
-		/// <param name="network">The top-level network.</param>
-		/// <param name="proc">The process where the method is located.</param>
-		/// <param name="method">The method that the parameter belongs to.</param>
-		/// <param name="lv">The local variable to parse.</param>
-		protected virtual Variable Parse(NetworkState network, ProcessState proc, Method method, LocalVariableInfo lv)
-		{
-			return new Variable()
-			{
-				Name = "local_" + lv.LocalIndex,
-				Source = lv,
-				Type = lv.LocalType,
-				Parent = method
-			};
-		}
-
-	}
+        /// <summary>
+        /// Parse the specified local variable and builds and AST component for it.
+        /// </summary>
+        /// <param name="network">The top-level network.</param>
+        /// <param name="proc">The process where the method is located.</param>
+        /// <param name="method">The method that the parameter belongs to.</param>
+        /// <param name="lv">The local variable to parse.</param>
+        protected virtual Variable Parse(NetworkState network, ProcessState proc, Method method, LocalVariableInfo lv)
+        {
+            return new Variable()
+            {
+                Name = "local_" + lv.LocalIndex,
+                Source = lv,
+                Type = lv.LocalType,
+                Parent = method
+            };
+        }
+    }
 }

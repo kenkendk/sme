@@ -19,16 +19,16 @@ namespace Stopwatch
 
         protected override void OnTick()
         {
-            if (watch.running) 
+            if (watch.running)
             {
                 current++;
-                if (current == skips) 
+                if (current == skips)
                 {
                     num++;
                     current = 0;
                 }
             }
-            else if (watch.reset) 
+            else if (watch.reset)
             {
                 num = 0;
                 current = 0;

@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Mono.Cecil;
 using SME.AST;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace SME.CPP
 {
@@ -122,13 +123,13 @@ namespace SME.CPP
         /// <param name="indentation">The indentation to use.</param>
         private IEnumerable<string> RenderStatement(AST.Method method, AST.ReturnStatement s, int indentation)
         {
-			var indent = new string(' ', indentation);
+            var indent = new string(' ', indentation);
 
-			if (s.ReturnExpression is EmptyExpression && method != ((AST.Process)method.Parent).MainMethod)
+            if (s.ReturnExpression is EmptyExpression && method != ((AST.Process)method.Parent).MainMethod)
                 yield return $"{indent}return {method.ReturnVariable.Name};";
             else
                 yield return $"{indent}return {RenderExpression(s.ReturnExpression)};";
-		}
+        }
 
         /// <summary>
         /// Renders a single BlockStatement with the given indentation
@@ -344,10 +345,10 @@ namespace SME.CPP
                 var tg = lx.Substring(0, lx.Length - 1);
 
                 // If we are writing a bus-array, arguments are provided as method parameters
-                if (target.CecilType.IsFixedArrayType())
+                if (target.MSCAType.IsFixedArrayType())
                     tg += ", ";
 
-                if (e.Operator != ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType.Assign)
+                if (e.Operator != SyntaxKind.EqualsToken)
                     return string.Format("{0}{1}{2}{3})", tg, lx, e.Operator.ToBinaryOperator().ToCpp(), RenderExpression(e.Right));
                 else
                     return string.Format("{0}{1})", tg, RenderExpression(e.Right));
@@ -451,18 +452,17 @@ namespace SME.CPP
         {
             if (e.Target.Parent is AST.Bus)
                 return $"bus_{Naming.BusNameToValidName(e.Target.Parent as AST.Bus, Process)}->{e.Target.Name}()";
-
-			else if (e.Target is AST.Constant)
+            else if (e.Target is AST.Constant)
             {
                 var ce = e.Target as AST.Constant;
 
                 if (ce.ArrayLengthSource != null)
                     return "size_" + ((Constant)e.Target).ArrayLengthSource.Name;
 
-                if (ce.CecilType != null && ce.CecilType.Resolve().IsEnum)
+                if (ce.MSCAType != null && ce.MSCAType.IsEnum())
                 {
-                    if (ce.DefaultValue is FieldDefinition)
-                        return Naming.ToValidName(ce.CecilType.FullName + "." + ((FieldDefinition)ce.DefaultValue).Name);
+                    if (ce.DefaultValue is IFieldSymbol)
+                        return Naming.ToValidName(ce.MSCAType.ToDisplayString() + "." + ((IFieldSymbol)ce.DefaultValue).Name);
                 }
             }
 
@@ -520,9 +520,9 @@ namespace SME.CPP
             {
                 return ((bool)e.Value) ? "true" : "false";
             }
-            else if (e.SourceResultType.Resolve().IsEnum)
+            else if (e.SourceResultType.IsEnum())
             {
-                return Naming.ToValidName(e.SourceResultType.FullName + "." + e.Value.ToString());
+                return Naming.ToValidName(e.SourceResultType.ToDisplayString() + "." + e.Value.ToString());
             }
             else if (e.SourceResultType.IsSameTypeReference(typeof(long)))
             {
@@ -532,15 +532,15 @@ namespace SME.CPP
                 else
                     return lv.ToString();
             }
-			else if (e.SourceResultType.IsSameTypeReference(typeof(ulong)))
-			{
+            else if (e.SourceResultType.IsSameTypeReference(typeof(ulong)))
+            {
                 var lv = (ulong)Convert.ChangeType(e.Value, typeof(ulong));
-				if (lv > int.MaxValue)
-					return lv + "ull";
-				else
+                if (lv > int.MaxValue)
+                    return lv + "ull";
+                else
                     return lv.ToString();
-			}
-			else
+            }
+            else
             {
                 return e.Value.ToString();
             }
@@ -553,9 +553,9 @@ namespace SME.CPP
         /// <param name="e">The expression to render</param>
         private string RenderExpression(AST.UnaryOperatorExpression e)
         {
-            if (e.Operator == ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorType.PostDecrement || e.Operator == ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorType.PostIncrement)
+            if (e.Operator == SyntaxKind.MinusMinusToken || e.Operator == SyntaxKind.PlusPlusToken)
                 return string.Format("{1} {0}", e.Operator.ToCpp(), RenderExpression(e.Operand));
-			else
+            else
                 return string.Format("{0} {1}", e.Operator.ToCpp(), RenderExpression(e.Operand));
         }
 
@@ -569,38 +569,38 @@ namespace SME.CPP
             return RenderExpression(e.Expression);
         }
 
-		/// <summary>
-		/// Gets the initializer statement, if any.
-		/// </summary>
-		/// <returns>The initializer.</returns>
-		/// <param name="element">The variable to get the initializer for.</param>
-		public string GetInitializer(AST.DataElement element)
-		{
-			if (element.DefaultValue == null)
-				return string.Empty;
+        /// <summary>
+        /// Gets the initializer statement, if any.
+        /// </summary>
+        /// <returns>The initializer.</returns>
+        /// <param name="element">The variable to get the initializer for.</param>
+        public string GetInitializer(AST.DataElement element)
+        {
+            if (element.DefaultValue == null)
+                return string.Empty;
 
-			if (element.DefaultValue is AST.ArrayCreateExpression)
-			{
-				var asexp = (AST.ArrayCreateExpression)element.DefaultValue;
+            if (element.DefaultValue is AST.ArrayCreateExpression)
+            {
+                var asexp = (AST.ArrayCreateExpression)element.DefaultValue;
 
-				var nae = new ArrayCreateExpression()
-				{
-					SourceExpression = asexp.SourceExpression,
-					SourceResultType = asexp.SourceResultType,
-				};
+                var nae = new ArrayCreateExpression()
+                {
+                    SourceExpression = asexp.SourceExpression,
+                    SourceResultType = asexp.SourceResultType,
+                };
 
-				nae.ElementExpressions = asexp.ElementExpressions
-					.Select(x => new PrimitiveExpression()
-					{
-						SourceExpression = x.SourceExpression,
-						SourceResultType = x.SourceResultType,
-						Parent = nae,
-						Value = ((PrimitiveExpression)x).Value
-					}).Cast<Expression>().ToArray();
+                nae.ElementExpressions = asexp.ElementExpressions
+                    .Select(x => new PrimitiveExpression()
+                    {
+                        SourceExpression = x.SourceExpression,
+                        SourceResultType = x.SourceResultType,
+                        Parent = nae,
+                        Value = ((PrimitiveExpression)x).Value
+                    }).Cast<Expression>().ToArray();
 
-				return RenderExpression(nae);
+                return RenderExpression(nae);
 
-			}
+            }
             else if (element.DefaultValue is Array)
             {
                 var arr = (Array)element.DefaultValue;
@@ -608,14 +608,14 @@ namespace SME.CPP
                 var nae = new ArrayCreateExpression()
                 {
                     SourceExpression = null,
-                    SourceResultType = element.CecilType.GetArrayElementType(),
+                    SourceResultType = element.MSCAType.GetArrayElementType(),
                 };
 
                 nae.ElementExpressions = Enumerable.Range(0, arr.Length)
                     .Select(x => new PrimitiveExpression()
                     {
                         SourceExpression = null,
-                        SourceResultType = element.CecilType.GetArrayElementType(),
+                        SourceResultType = element.MSCAType.GetArrayElementType(),
                         Parent = nae,
                         Value = arr.GetValue(0)
                     }).Cast<Expression>().ToArray();
@@ -623,51 +623,51 @@ namespace SME.CPP
                 return RenderExpression(nae);
 
             }
-			else if (element.DefaultValue is ICSharpCode.Decompiler.CSharp.Syntax.AstNode)
-			{
-				var eltype = Type.GetType(element.CecilType.FullName);
-				var defaultvalue = eltype != null && element.CecilType.IsValueType ? Activator.CreateInstance(eltype) : null;
+            else if (element.DefaultValue is SyntaxNode)
+            {
+                var eltype = Type.GetType(element.MSCAType.ToDisplayString());
+                var defaultvalue = eltype != null && element.MSCAType.IsValueType ? Activator.CreateInstance(eltype) : null;
 
-				return RenderExpression(new AST.PrimitiveExpression()
-				{
-					Value = defaultvalue,
-					SourceResultType = element.CecilType
-				});
-			}
-			else if (element.DefaultValue is AST.EmptyArrayCreateExpression)
-			{
-				var ese = element.DefaultValue as AST.EmptyArrayCreateExpression;
-				return RenderExpression(new AST.EmptyArrayCreateExpression()
-				{
-					SizeExpression = ese.SizeExpression.Clone(),
-					SourceExpression = ese.SourceExpression,
-					SourceResultType = ese.SourceResultType
-				});
+                return RenderExpression(new AST.PrimitiveExpression()
+                {
+                    Value = defaultvalue,
+                    SourceResultType = element.MSCAType
+                });
+            }
+            else if (element.DefaultValue is AST.EmptyArrayCreateExpression)
+            {
+                var ese = element.DefaultValue as AST.EmptyArrayCreateExpression;
+                return RenderExpression(new AST.EmptyArrayCreateExpression()
+                {
+                    SizeExpression = ese.SizeExpression.Clone(),
+                    SourceExpression = ese.SourceExpression,
+                    SourceResultType = ese.SourceResultType
+                });
 
-			}
-			else if (element.CecilType.IsArrayType() && element.DefaultValue == null)
-			{
-				return RenderExpression(new EmptyArrayCreateExpression()
-				{
-					SourceExpression = null,
-					SourceResultType = element.CecilType,
-					SizeExpression = new MemberReferenceExpression()
-					{
-						Name = element.Name,
-						SourceExpression = null,
-						SourceResultType = element.CecilType,
-						Target = element
-					}
-				});
-			}
-			else
-			{
-				return RenderExpression(new AST.PrimitiveExpression()
-				{
-					Value = element.DefaultValue,
-					SourceResultType = element.CecilType
-				});
-			}
-		}
+            }
+            else if (element.MSCAType.IsArrayType() && element.DefaultValue == null)
+            {
+                return RenderExpression(new EmptyArrayCreateExpression()
+                {
+                    SourceExpression = null,
+                    SourceResultType = element.MSCAType,
+                    SizeExpression = new MemberReferenceExpression()
+                    {
+                        Name = element.Name,
+                        SourceExpression = null,
+                        SourceResultType = element.MSCAType,
+                        Target = element
+                    }
+                });
+            }
+            else
+            {
+                return RenderExpression(new AST.PrimitiveExpression()
+                {
+                    Value = element.DefaultValue,
+                    SourceResultType = element.MSCAType
+                });
+            }
+        }
     }
 }

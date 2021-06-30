@@ -1,25 +1,36 @@
-﻿using System.Linq;
-using System.Text;
-using System.Collections.Generic;
-using SME.VHDL;
+﻿using System;
+using System.Linq;
 using SME.AST;
-using System;
 
 namespace SME.VHDL.Templates
 {
-
+    /// <summary>
+    /// Template for generating the VHDL testbench.
+    /// </summary>
     public class TracefileTester : BaseTemplate
     {
-
+        /// <summary>
+        /// The network to render.
+        /// </summary>
         public readonly Network Network;
+        /// <summary>
+        /// The current render state.
+        /// </summary>
         public readonly RenderState RS;
 
+        /// <summary>
+        /// Constructs a new instance of the tracefile tester template.
+        /// </summary>
+        /// <param name="renderer">The render state to render in.</param>
         public TracefileTester(RenderState renderer)
         {
             RS = renderer;
             Network = renderer.Network;
         }
 
+        /// <summary>
+        /// Writes the template to the VHDL file.
+        /// </summary>
         public override string TransformText() {
             GenerationEnvironment = null;
 
@@ -274,7 +285,5 @@ end architecture TestBench;");
 
             return GenerationEnvironment.ToString();
         }
-
     }
-
 }

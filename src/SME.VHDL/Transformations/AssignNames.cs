@@ -1,17 +1,17 @@
 ﻿using System;
-using System.Linq;
 using SME.AST;
 using SME.AST.Transform;
+using Microsoft.CodeAnalysis;
 
 namespace SME.VHDL.Transformations
 {
-	/// <summary>
-	/// This transformation assign names to each named element
-	/// </summary>
-	public class AssignNames : IASTTransform
-	{
+    /// <summary>
+    /// This transformation assign names to each named element.
+    /// </summary>
+    public class AssignNames : IASTTransform
+    {
         /// <summary>
-        /// The name of the top-level item
+        /// The name of the top-level item.
         /// </summary>
         private string TopLevelName = null;
 
@@ -39,15 +39,17 @@ namespace SME.VHDL.Transformations
                     ((AST.Process)el).InstanceName = "cls_" + ((AST.Process)el).InstanceName;
             }
 
-			if (el is AST.Constant)
-			{
-				if (((Constant)el).Source is Mono.Cecil.FieldDefinition)
-					el.Name = Naming.ToValidName((((Constant)el).Source as Mono.Cecil.FieldDefinition).DeclaringType.FullName + "." + el.Name);
-				else if (el.Parent != null && !string.IsNullOrWhiteSpace(el.Parent.Name))
-					el.Name = Naming.ToValidName(el.Parent.Name + "." + el.Name);
-			}
+            if (el is AST.Constant)
+            {
+                if (((Constant)el).Source is IFieldSymbol && ((Constant)el).Parent is Network)
+                    el.Name = Naming.ToValidName(el.Name);
+                else if (((Constant)el).Source is IFieldSymbol)
+                    el.Name = Naming.ToValidName((((Constant)el).Source as IFieldSymbol).Type.ToDisplayString() + "." + el.Name);
+                else if (el.Parent != null && !string.IsNullOrWhiteSpace(el.Parent.Name))
+                    el.Name = Naming.ToValidName(el.Parent.Name + "." + el.Name);
+            }
 
-			return el;
-		}
-	}
+            return el;
+        }
+    }
 }

@@ -1,36 +1,39 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace SME.AST
 {
     /// <summary>
-    /// An expression found in a statement
+    /// An expression found in a statement.
     /// </summary>
     public abstract class Expression : ASTItem
     {
         /// <summary>
-        /// The source expression used in the statement
+        /// The source expression used in the statement.
         /// </summary>
-        public ICSharpCode.Decompiler.CSharp.Syntax.Expression SourceExpression;
+        public ExpressionSyntax SourceExpression;
 
         /// <summary>
-        /// The source result type
+        /// The source result type.
         /// </summary>
-        public Mono.Cecil.TypeReference SourceResultType;
+        public ITypeSymbol SourceResultType;
 
         /// <summary>
-        /// Returns a string representation of the Expression
+        /// Returns a string representation of the Expression.
         /// </summary>
         public abstract override string ToString();
     }
 
     /// <summary>
-    /// Base class for custom defined expressions that can enter into a the normal tree
+    /// Base class for custom defined expressions that can enter into a the normal tree.
     /// </summary>
     public abstract class CustomExpression : Expression
     {
         /// <summary>
-        /// Visits the element, optionally with a visitor callback
+        /// Visits the element, optionally with a visitor callback.
         /// </summary>
         /// <returns>The elements in this element and its children.</returns>
         /// <param name="visitor">An optional visitor function.</param>
@@ -58,30 +61,33 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// List the children of this element
+        /// List the children of this element.
         /// </summary>
         public abstract Expression[] Children { get; set; }
 
         /// <summary>
-        /// Gets the target for the item or null
+        /// Gets the target for the item or null.
         /// </summary>
         public abstract DataElement GetTarget();
 
         /// <summary>
-        /// Returns a string representation of the Expression
+        /// Returns a string representation of the Expression.
         /// </summary>
         public abstract override string ToString();
     }
 
     /// <summary>
-    /// Base class for an expression that wraps another expression
+    /// Base class for an expression that wraps another expression.
     /// </summary>
     public abstract class WrappingExpression : Expression
     {
+        /// <summary>
+        /// The wrapped expression.
+        /// </summary>
         public Expression Expression;
 
         /// <summary>
-        /// Returns a string representation of the Expression
+        /// Returns a string representation of the Expression.
         /// </summary>
         public override string ToString()
         {
@@ -90,26 +96,26 @@ namespace SME.AST
     }
 
     /// <summary>
-    /// An expression that creates an array
+    /// An expression that creates an array.
     /// </summary>
     public class ArrayCreateExpression : Expression
     {
         /// <summary>
-        /// The elements in the array
+        /// The elements in the array.
         /// </summary>
         public Expression[] ElementExpressions;
 
         /// <summary>
-        /// Default constructor
+        /// Default constructor.
         /// </summary>
         public ArrayCreateExpression()
         {
         }
 
         /// <summary>
-        /// Specialized helper constructor
+        /// Specialized helper constructor.
         /// </summary>
-        /// <param name="ElementExpressions">The elements to assign</param>
+        /// <param name="ElementExpressions">The elements to assign.</param>
         public ArrayCreateExpression(Expression[] ElementExpressions)
         {
             this.ElementExpressions = ElementExpressions;
@@ -118,7 +124,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Returns a string representation of the Expression
+        /// Returns a string representation of the Expression.
         /// </summary>
         public override string ToString()
         {
@@ -133,26 +139,26 @@ namespace SME.AST
     }
 
     /// <summary>
-    /// An expression that indicates that the array is created with default values
+    /// An expression that indicates that the array is created with default values.
     /// </summary>
     public class EmptyArrayCreateExpression : Expression
     {
         /// <summary>
-        /// The expression used to indicate the size of the array
+        /// The expression used to indicate the size of the array.
         /// </summary>
         public Expression SizeExpression;
 
         /// <summary>
-        /// Default constructor
+        /// Default constructor.
         /// </summary>
         public EmptyArrayCreateExpression()
         {
         }
 
         /// <summary>
-        /// Specialized helper constructor
+        /// Specialized helper constructor.
         /// </summary>
-        /// <param name="SizeExpression">The expression that gives the size of the empty array</param>
+        /// <param name="SizeExpression">The expression that gives the size of the empty array.</param>
         public EmptyArrayCreateExpression(Expression SizeExpression)
         {
             this.SizeExpression = SizeExpression;
@@ -160,7 +166,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Returns a string representation of the Expression
+        /// Returns a string representation of the Expression.
         /// </summary>
         public override string ToString()
         {
@@ -175,32 +181,32 @@ namespace SME.AST
     public class AssignmentExpression : Expression
     {
         /// <summary>
-        /// The assignment operator
+        /// The assignment operator.
         /// </summary>
-        public ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType Operator = ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType.Assign;
+        public SyntaxKind Operator = SyntaxKind.EqualsToken;
         /// <summary>
-        /// The left-hand-side of the assignment
+        /// The left-hand-side of the assignment.
         /// </summary>
         public Expression Left;
         /// <summary>
-        /// The right hand side of the assignment
+        /// The right hand side of the assignment.
         /// </summary>
         public Expression Right;
 
         /// <summary>
-        /// Default constructor
+        /// Default constructor.
         /// </summary>
         public AssignmentExpression()
         {
         }
 
         /// <summary>
-        /// Specialized helper constructor
+        /// Specialized helper constructor.
         /// </summary>
-        /// <param name="left">The left-hand-side expression</param>
-        /// <param name="op">The operator to use</param>
-        /// <param name="right">The right-hand-size expression</param>
-        public AssignmentExpression(Expression left, ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType op, Expression right)
+        /// <param name="left">The left-hand-side expression.</param>
+        /// <param name="op">The operator to use.</param>
+        /// <param name="right">The right-hand-size expression.</param>
+        public AssignmentExpression(Expression left, SyntaxKind op, Expression right)
         {
             this.Left = left;
             this.Operator = op;
@@ -213,17 +219,17 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Specialized helper constructor
+        /// Specialized helper constructor.
         /// </summary>
-        /// <param name="left">The left-hand-side expression</param>
-        /// <param name="right">The right-hand-size expression</param>
+        /// <param name="left">The left-hand-side expression.</param>
+        /// <param name="right">The right-hand-size expression.</param>
         public AssignmentExpression(Expression left, Expression right)
-            : this(left, ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType.Assign, right)
+            : this(left, SyntaxKind.EqualsToken, right)
         {
         }
 
         /// <summary>
-        /// Returns a string representation of the Expression
+        /// Returns a string representation of the Expression.
         /// </summary>
         public override string ToString()
         {
@@ -237,32 +243,32 @@ namespace SME.AST
     public class BinaryOperatorExpression : Expression
     {
         /// <summary>
-        /// The operator being used
+        /// The operator being used.
         /// </summary>
-        public ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType Operator;
+        public SyntaxKind Operator;
         /// <summary>
-        /// The left-hand-side of the operation
+        /// The left-hand-side of the operation.
         /// </summary>
         public Expression Left;
         /// <summary>
-        /// The left-hand-side of the operation
+        /// The left-hand-side of the operation.
         /// </summary>
         public Expression Right;
 
         /// <summary>
-        /// Default constructor
+        /// Default constructor.
         /// </summary>
         public BinaryOperatorExpression()
         {
         }
 
         /// <summary>
-        /// Specialized helper constructor
+        /// Specialized helper constructor.
         /// </summary>
-        /// <param name="left">The left-hand-side expression</param>
-        /// <param name="op">The operator to use</param>
-        /// <param name="right">The right-hand-size expression</param>
-        public BinaryOperatorExpression(Expression left, ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType op, Expression right)
+        /// <param name="left">The left-hand-side expression.</param>
+        /// <param name="op">The operator to use.</param>
+        /// <param name="right">The right-hand-size expression.</param>
+        public BinaryOperatorExpression(Expression left, SyntaxKind op, Expression right)
         {
             this.Left = left;
             this.Operator = op;
@@ -273,7 +279,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Returns a string representation of the Expression
+        /// Returns a string representation of the Expression.
         /// </summary>
         public override string ToString()
         {
@@ -282,21 +288,21 @@ namespace SME.AST
     }
 
     /// <summary>
-    /// A type case expression
+    /// A type case expression.
     /// </summary>
     public class CastExpression : WrappingExpression
     {
         /// <summary>
-        /// Default constructor
+        /// Default constructor.
         /// </summary>
         public CastExpression()
         {
         }
 
         /// <summary>
-        /// Specialized helper constructor
+        /// Specialized helper constructor.
         /// </summary>
-        /// <param name="source">The cast source</param>
+        /// <param name="source">The cast source.</param>
         public CastExpression(Expression source)
         {
             this.Expression = source;
@@ -304,8 +310,9 @@ namespace SME.AST
             this.Expression.Parent = this;
         }
 
+        /// TODO Fix the ToString() methods. There should be a better method for correctly displaying values in the debugger.
         /// <summary>
-        /// Returns a string representation of the Expression
+        /// Returns a string representation of the Expression.
         /// </summary>
         public override string ToString()
         {
@@ -314,21 +321,21 @@ namespace SME.AST
     }
 
     /// <summary>
-    /// A checked expression
+    /// A checked expression.
     /// </summary>
     public class CheckedExpression : WrappingExpression
     {
         /// <summary>
-        /// Default constructor
+        /// Default constructor.
         /// </summary>
         public CheckedExpression()
         {
         }
 
         /// <summary>
-        /// Specialized helper constructor
+        /// Specialized helper constructor.
         /// </summary>
-        /// <param name="source">The checked source</param>
+        /// <param name="source">The checked source.</param>
         public CheckedExpression(Expression source)
         {
             this.Expression = source;
@@ -337,7 +344,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Returns a string representation of the Expression
+        /// Returns a string representation of the Expression.
         /// </summary>
         public override string ToString()
         {
@@ -346,36 +353,36 @@ namespace SME.AST
     }
 
     /// <summary>
-    /// A ternary conditional expression
+    /// A ternary conditional expression.
     /// </summary>
     public class ConditionalExpression : Expression
     {
         /// <summary>
-        /// The condition to evaluate
+        /// The condition to evaluate.
         /// </summary>
         public Expression ConditionExpression;
         /// <summary>
-        /// The expression to use if the condition is true
+        /// The expression to use if the condition is true.
         /// </summary>
         public Expression TrueExpression;
         /// <summary>
-        /// The expression to use if the condition is false
+        /// The expression to use if the condition is false.
         /// </summary>
         public Expression FalseExpression;
 
         /// <summary>
-        /// Default constructor
+        /// Default constructor.
         /// </summary>
         public ConditionalExpression()
         {
         }
 
         /// <summary>
-        /// Specialized helper constructor
+        /// Specialized helper constructor.
         /// </summary>
-        /// <param name="condition">The condition expression</param>
-        /// <param name="trueExpression">The truth expression</param>
-        /// <param name="falseExpression">The false expression</param>
+        /// <param name="condition">The condition expression.</param>
+        /// <param name="trueExpression">The truth expression.</param>
+        /// <param name="falseExpression">The false expression.</param>
         public ConditionalExpression(Expression condition, Expression trueExpression, Expression falseExpression)
         {
             this.ConditionExpression = condition;
@@ -385,7 +392,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Returns a string representation of the Expression
+        /// Returns a string representation of the Expression.
         /// </summary>
         public override string ToString()
         {
@@ -399,7 +406,7 @@ namespace SME.AST
     public partial class EmptyExpression : Expression
     {
         /// <summary>
-        /// Returns a string representation of the Expression
+        /// Returns a string representation of the Expression.
         /// </summary>
         public override string ToString()
         {
@@ -408,35 +415,35 @@ namespace SME.AST
     }
 
     /// <summary>
-    /// An expression that uses an identifier
+    /// An expression that uses an identifier.
     /// </summary>
     public partial class IdentifierExpression : Expression
     {
         /// <summary>
-        /// The item the identifier points to
+        /// The item the identifier points to.
         /// </summary>
         public DataElement Target;
 
         /// <summary>
-        /// Default constructor
+        /// Default constructor.
         /// </summary>
         public IdentifierExpression()
         {
         }
 
         /// <summary>
-        /// Specialized helper constructor
+        /// Specialized helper constructor.
         /// </summary>
-        /// <param name="target">The item the identifier resolves to</param>
+        /// <param name="target">The item the identifier resolves to.</param>
         public IdentifierExpression(DataElement target)
         {
             this.Target = target;
-            this.SourceResultType = target.CecilType;
+            this.SourceResultType = target.MSCAType;
             this.Name = target.Name;
         }
 
         /// <summary>
-        /// Returns a string representation of the Expression
+        /// Returns a string representation of the Expression.
         /// </summary>
         public override string ToString()
         {
@@ -445,36 +452,36 @@ namespace SME.AST
     }
 
     /// <summary>
-    /// An index expression
+    /// An index expression.
     /// </summary>
     public class IndexerExpression : Expression
     {
         /// <summary>
-        /// The item being indexed
+        /// The item being indexed.
         /// </summary>
         public DataElement Target;
         /// <summary>
-        /// The expression used to find the target
+        /// The expression used to find the target.
         /// </summary>
         public Expression TargetExpression;
         /// <summary>
-        /// The index expression
+        /// The index expression.
         /// </summary>
         public Expression IndexExpression;
 
         /// <summary>
-        /// Default constructor
+        /// Default constructor.
         /// </summary>
         public IndexerExpression()
         {
         }
 
         /// <summary>
-        /// Specialized helper constructor
+        /// Specialized helper constructor.
         /// </summary>
-        /// <param name="target">The element that is being indexed</param>
-        /// <param name="targetExpression">The expression that is being indexed</param>
-        /// <param name="indexExpression">The expression that computes the index</param>
+        /// <param name="target">The element that is being indexed.</param>
+        /// <param name="targetExpression">The expression that is being indexed.</param>
+        /// <param name="indexExpression">The expression that computes the index.</param>
         public IndexerExpression(DataElement target, Expression targetExpression, Expression indexExpression)
         {
             this.Target = target;
@@ -486,7 +493,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Returns a string representation of the Expression
+        /// Returns a string representation of the Expression.
         /// </summary>
         public override string ToString()
         {
@@ -495,45 +502,45 @@ namespace SME.AST
     }
 
     /// <summary>
-    /// An expression that performs a function invocation
+    /// An expression that performs a function invocation.
     /// </summary>
     public class InvocationExpression : Expression
     {
         /// <summary>
-        /// The method being accessed
+        /// The method being accessed.
         /// </summary>
         public Method Target;
         /// <summary>
-        /// The expression for the method
+        /// The expression for the method.
         /// </summary>
         public Expression TargetExpression;
         /// <summary>
-        /// The expressions for the arguments
+        /// The expressions for the arguments.
         /// </summary>
         public Expression[] ArgumentExpressions;
 
         /// <summary>
-        /// Default constructor
+        /// Default constructor.
         /// </summary>
         public InvocationExpression()
         {
         }
 
         /// <summary>
-        /// Specialized helper constructor
+        /// Specialized helper constructor.
         /// </summary>
-        /// <param name="target">The method being invoked</param>
-        /// <param name="targetExpression">The expression for the target method</param>
-        /// <param name="argumentExpressions">The arguments to the method invocation</param>
+        /// <param name="target">The method being invoked.</param>
+        /// <param name="targetExpression">The expression for the target method.</param>
+        /// <param name="argumentExpressions">The arguments to the method invocation.</param>
         public InvocationExpression(Method target, Expression targetExpression, params Expression[] argumentExpressions)
         {
             this.Target = target;
             this.TargetExpression = targetExpression;
             this.ArgumentExpressions = argumentExpressions;
-            if (target.SourceMethod == null)
-                this.SourceResultType = target.ReturnVariable == null ? target.GetNearestParent<Process>().CecilType.Module.ImportReference(typeof(void)) : target.ReturnVariable.CecilType;
+            if (target.MSCAReturnType == null)
+                this.SourceResultType = target.ReturnVariable == null ? target.GetNearestParent<Process>().MSCAType.LoadType(typeof(void)) : target.ReturnVariable.MSCAType;
             else
-                this.SourceResultType = target.SourceMethod.ReturnType;
+                this.SourceResultType = target.MSCAReturnType;
 
             this.Target.Parent = this;
             foreach (var e in this.ArgumentExpressions ?? new Expression[0])
@@ -541,7 +548,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Returns a string representation of the Expression
+        /// Returns a string representation of the Expression.
         /// </summary>
         public override string ToString()
         {
@@ -556,34 +563,34 @@ namespace SME.AST
     }
 
     /// <summary>
-    /// An expression targeting a member
+    /// An expression targeting a member.
     /// </summary>
     public class MemberReferenceExpression : Expression
     {
         /// <summary>
-        /// The item being targeted
+        /// The item being targeted.
         /// </summary>
         public DataElement Target;
 
         /// <summary>
-        /// Default constructor
+        /// Default constructor.
         /// </summary>
         public MemberReferenceExpression()
         {
         }
 
         /// <summary>
-        /// Specialized helper constructor
+        /// Specialized helper constructor.
         /// </summary>
-        /// <param name="target">The member that is being referenced</param>
+        /// <param name="target">The member that is being referenced.</param>
         public MemberReferenceExpression(DataElement target)
         {
             this.Target = target;
-            this.SourceResultType = target.CecilType;
+            this.SourceResultType = target.MSCAType;
         }
 
         /// <summary>
-        /// Returns a string representation of the Expression
+        /// Returns a string representation of the Expression.
         /// </summary>
         public override string ToString()
         {
@@ -592,37 +599,37 @@ namespace SME.AST
     }
 
     /// <summary>
-    /// An expression targeting a member
+    /// An expression targeting a member.
     /// </summary>
     public partial class MethodReferenceExpression : Expression
     {
         /// <summary>
-        /// The item being targeted
+        /// The item being targeted.
         /// </summary>
         public Method Target;
 
         /// <summary>
-        /// Default constructor
+        /// Default constructor.
         /// </summary>
         public MethodReferenceExpression()
         {
         }
 
         /// <summary>
-        /// Specialized helper constructor
+        /// Specialized helper constructor.
         /// </summary>
-        /// <param name="target">The method that is being referenced</param>
+        /// <param name="target">The method that is being referenced.</param>
         public MethodReferenceExpression(Method target)
         {
             this.Target = target;
-            if (target.SourceMethod == null)
-                this.SourceResultType = target.ReturnVariable == null ? target.GetNearestParent<Process>().CecilType.Module.ImportReference(typeof(void)) : target.ReturnVariable.CecilType;
+            if (target.MSCAReturnType == null)
+                this.SourceResultType = target.ReturnVariable == null ? target.GetNearestParent<Process>().MSCAType.LoadType(typeof(void)) : target.ReturnVariable.MSCAType;
             else
-                this.SourceResultType = target.SourceMethod.ReturnType;
+                this.SourceResultType = target.MSCAReturnType;
         }
 
         /// <summary>
-        /// Returns a string representation of the Expression
+        /// Returns a string representation of the Expression.
         /// </summary>
         public override string ToString()
         {
@@ -631,21 +638,21 @@ namespace SME.AST
     }
 
     /// <summary>
-    /// An expression that wraps another expression in parenthesis
+    /// An expression that wraps another expression in parenthesis.
     /// </summary>
     public class ParenthesizedExpression : WrappingExpression
     {
         /// <summary>
-        /// Default constructor
+        /// Default constructor.
         /// </summary>
         public ParenthesizedExpression()
         {
         }
 
         /// <summary>
-        /// Specialized helper constructor
+        /// Specialized helper constructor.
         /// </summary>
-        /// <param name="target">The expression inside the parenthesis</param>
+        /// <param name="target">The expression inside the parenthesis.</param>
         public ParenthesizedExpression(Expression target)
         {
             this.Expression = target;
@@ -654,7 +661,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Returns a string representation of the Expression
+        /// Returns a string representation of the Expression.
         /// </summary>
         public override string ToString()
         {
@@ -668,23 +675,23 @@ namespace SME.AST
     public class PrimitiveExpression : Expression
     {
         /// <summary>
-        /// The object in the primitive expression
+        /// The object in the primitive expression.
         /// </summary>
         public object Value;
 
         /// <summary>
-        /// Default constructor
+        /// Default constructor.
         /// </summary>
         public PrimitiveExpression()
         {
         }
 
         /// <summary>
-        /// Specialized helper constructor
+        /// Specialized helper constructor.
         /// </summary>
-        /// <param name="value">The item to use as the value</param>
-        /// <param name="sourcetype">The data element type</param>
-        public PrimitiveExpression(object value, Mono.Cecil.TypeReference sourcetype)
+        /// <param name="value">The item to use as the value.</param>
+        /// <param name="sourcetype">The data element type.</param>
+        public PrimitiveExpression(object value, ITypeSymbol sourcetype)
         {
             this.Value = value;
             this.SourceResultType = sourcetype;
@@ -694,7 +701,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Returns a string representation of the Expression
+        /// Returns a string representation of the Expression.
         /// </summary>
         public override string ToString()
         {
@@ -708,27 +715,27 @@ namespace SME.AST
     public class UnaryOperatorExpression : Expression
     {
         /// <summary>
-        /// The operator being applied
+        /// The operator being applied.
         /// </summary>
-        public ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorType Operator;
+        public SyntaxKind Operator;
         /// <summary>
-        /// The expression the operand is applied to
+        /// The expression the operand is applied to.
         /// </summary>
         public Expression Operand;
 
         /// <summary>
-        /// Default constructor
+        /// Default constructor.
         /// </summary>
         public UnaryOperatorExpression()
         {
         }
 
         /// <summary>
-        /// Specialized helper constructor
+        /// Specialized helper constructor.
         /// </summary>
-        /// <param name="op">The operation to apply</param>
-        /// <param name="operand">The operand to apply the operation to</param>
-        public UnaryOperatorExpression(ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorType op, Expression operand)
+        /// <param name="op">The operation to apply.</param>
+        /// <param name="operand">The operand to apply the operation to.</param>
+        public UnaryOperatorExpression(SyntaxKind op, Expression operand)
         {
             this.Operator = op;
             this.Operand = operand;
@@ -737,7 +744,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Returns a string representation of the Expression
+        /// Returns a string representation of the Expression.
         /// </summary>
         public override string ToString()
         {
@@ -798,16 +805,16 @@ namespace SME.AST
     public class UncheckedExpression : WrappingExpression
     {
         /// <summary>
-        /// Default constructor
+        /// Default constructor.
         /// </summary>
         public UncheckedExpression()
         {
         }
 
         /// <summary>
-        /// Specialized helper constructor
+        /// Specialized helper constructor.
         /// </summary>
-        /// <param name="target">The expression being performed unchecked</param>
+        /// <param name="target">The expression being performed unchecked.</param>
         public UncheckedExpression(Expression target)
         {
             this.Expression = target;
@@ -816,7 +823,7 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Returns a string representation of the Expression
+        /// Returns a string representation of the Expression.
         /// </summary>
         public override string ToString()
         {
@@ -830,7 +837,7 @@ namespace SME.AST
     public class NullReferenceExpression : Expression
     {
         /// <summary>
-        /// Returns a string representation of the Expression
+        /// Returns a string representation of the Expression.
         /// </summary>
         public override string ToString()
         {
@@ -839,12 +846,12 @@ namespace SME.AST
     }
 
     /// <summary>
-    /// An await statement for clock or condition
+    /// An await statement for clock or condition.
     /// </summary>
     public class AwaitExpression : Expression
     {
         /// <summary>
-        /// The expression to wait for or null if we are awaiting the clock
+        /// The expression to wait for or null if we are awaiting the clock.
         /// </summary>
         public Expression Expression;
 
@@ -863,12 +870,11 @@ namespace SME.AST
         }
 
         /// <summary>
-        /// Returns a string representation of the Expression
+        /// Returns a string representation of the Expression.
         /// </summary>
         public override string ToString()
         {
             return $"await {Expression.ToString()}";
         }
     }
-
 }

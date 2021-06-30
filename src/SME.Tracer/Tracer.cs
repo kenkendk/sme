@@ -8,29 +8,29 @@ using System.Reflection;
 namespace SME.Tracer
 {
     /// <summary>
-    /// Implementation of a tracer that captures data on the signals in the network
+    /// Implementation of a tracer that captures data on the signals in the network.
     /// </summary>
     public abstract class Tracer : IDisposable
     {
         /// <summary>
-        /// The list of signals to emit
+        /// The list of signals to emit.
         /// </summary>
         protected SignalEntry[] m_props;
         /// <summary>
-        /// Indicator to capture the very first output and emit the names of the variables here
+        /// Indicator to capture the very first output and emit the names of the variables here.
         /// </summary>
         private bool m_first = true;
         /// <summary>
-        /// The number of signals that are considered driver signals
+        /// The number of signals that are considered driver signals.
         /// </summary>
         private int m_driversignalcount;
         /// <summary>
-        /// Variable used to avoid emitting the (un)initialized state
+        /// Variable used to avoid emitting the (un)initialized state.
         /// </summary>
         private bool m_skipInitializationData = false;
 
         /// <summary>
-        /// Finds the used signals and the attached busses
+        /// Finds the used signals and the attached busses.
         /// </summary>
         /// <returns>The list of signals.</returns>
         /// <param name="simulation">The simulaton instance that the signals are read from.</param>
@@ -54,19 +54,19 @@ namespace SME.Tracer
 
 
         /// <summary>
-        /// Method used to emit the signal names as part of the very first cycle
+        /// Method used to emit the signal names as part of the very first cycle.
         /// </summary>
         /// <param name="signals">The signals to emit the names for.</param>
         protected abstract void OutputSignalNames(SignalEntry[] signals);
         /// <summary>
-        /// Method used to output the value for each of the signals
+        /// Method used to output the value for each of the signals.
         /// </summary>
         /// <param name="values">The signal and value pairs.</param>
         /// <param name="last">If set to <c>true</c> the signals are the last set in the current cycle.</param>
         protected abstract void OutputSignalData(IEnumerable<Tuple<SignalEntry, object>> values, bool last);
 
         /// <summary>
-        /// Extracts the values from the bus signals
+        /// Extracts the values from the bus signals.
         /// </summary>
         /// <returns>The The signal and value pairs.</returns>
         protected virtual IEnumerable<Tuple<SignalEntry, object>> GetValues()
@@ -81,7 +81,7 @@ namespace SME.Tracer
                         value = new SME.ReadViolationException("Signal not written");
                     else
                         value = p.Property.GetValue(p.Bus);
-                    
+
                 }
                 catch (Exception ex)
                 {
@@ -98,14 +98,14 @@ namespace SME.Tracer
         }
 
         /// <summary>
-        /// Callback handler invoked before the current cycle has started
+        /// Callback handler invoked before the current cycle has started.
         /// </summary>
         /// <param name="parent">The simulation that controls the cycle.</param>
         public void BeforeRun(Simulation parent)
         {
             if (m_skipInitializationData)
                 return;
-            
+
             // For the very first clock tick we emit the reset state
             // of the model
             if (m_first)
@@ -123,7 +123,7 @@ namespace SME.Tracer
         }
 
         /// <summary>
-        /// Callback handler invoked after the current cycle has finished
+        /// Callback handler invoked after the current cycle has finished.
         /// </summary>
         /// <param name="parent">The simulation that controls the cycle.</param>
         public void AfterRun(Simulation parent)
@@ -136,10 +136,10 @@ namespace SME.Tracer
 
             //OutputSignalData(GetValues().Skip(m_driversignalcount), true);
             OutputSignalData(GetValues(), true);
-		}
+        }
 
         /// <summary>
-        /// Callback handler invoked after the clocked processes are invoked
+        /// Callback handler invoked after the clocked processes are invoked.
         /// </summary>
         /// <param name="parent">The simulation that controls the cycle.</param>
         public void AfterClockRun(Simulation parent)
@@ -149,10 +149,10 @@ namespace SME.Tracer
         /// <summary>
         /// Dispose the current instance.
         /// </summary>
-        /// <param name="disposing">If set to <c>true</c> the call originates from the dispose method.</param>
-		protected virtual void Dispose(bool disposing)
-		{
-		}
+        /// <param name="disposing">If set to <c>true</c> the call originates from the dispose method, otherwise it comes from a finalize method.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+        }
 
         /// <summary>
         /// Releases all resource used by the <see cref="T:SME.Tracer.Tracer"/> object.
@@ -161,10 +161,9 @@ namespace SME.Tracer
         /// <see cref="Dispose"/> method leaves the <see cref="T:SME.Tracer.Tracer"/> in an unusable state. After
         /// calling <see cref="Dispose"/>, you must release all references to the <see cref="T:SME.Tracer.Tracer"/> so
         /// the garbage collector can reclaim the memory that the <see cref="T:SME.Tracer.Tracer"/> was occupying.</remarks>
-		public void Dispose()
-		{
-			Dispose(true);
-		}
-	}
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+    }
 }
-

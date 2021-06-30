@@ -12,16 +12,10 @@ namespace UnitTest
         private void RunTest(Type target, bool runGhdl = true, bool runCpp = false)
         {
             var programname = target.Assembly.GetName().Name;
-            //var targetfolder = Path.Combine(Path.GetTempPath(), programname);
-            var targetfolder = Path.GetDirectoryName(target.Assembly.Location);
-
-            var outputfolder = Path.Combine(targetfolder, "output");
-
-            if (!Directory.Exists(targetfolder))
-                Directory.CreateDirectory(targetfolder);
-
-            if (Directory.Exists(outputfolder))
-                Directory.Delete(outputfolder, true);
+            var testfolder = Assembly.GetExecutingAssembly().Location;
+            var examplesfolder = Path.Combine(testfolder, "../../../../../Examples");
+            var targetfolder = Path.GetFullPath(Path.Combine(examplesfolder, programname));
+            SME.Simulation.ProjectPath = Path.Combine(targetfolder, $"{programname}.csproj");
 
             Environment.CurrentDirectory = targetfolder;
 
@@ -114,6 +108,12 @@ namespace UnitTest
         }
 
         [TestMethod]
+        public void RunDependencyCycle()
+        {
+            RunTest(typeof(DependencyCycle.Dummy), true, false);
+        }
+
+        [TestMethod]
         public void RunExternalComponent()
         {
             RunTest(typeof(ExternalComponent.SimpleDualPortBlockRamTester<>), true, false);
@@ -177,6 +177,12 @@ namespace UnitTest
         public void RunStopwatch()
         {
             RunTest(typeof(Stopwatch.MainClass), true, false);
+        }
+
+        [TestMethod]
+        public void RunUnitTester()
+        {
+            RunTest(typeof(UnitTester.Program), true, false);
         }
 
     }

@@ -28,7 +28,7 @@ namespace Stopwatch
                 output.reset = true;
                 while (buttons.reset)
                     await ClockAsync();
-                
+
                 output.reset = false;
             }
             else

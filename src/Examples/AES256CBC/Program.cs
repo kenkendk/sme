@@ -2,10 +2,10 @@
 
 namespace AES256CBC
 {
-	class MainClass
-	{
-		public static void Main(string[] args)
-		{
+    class MainClass
+    {
+        public static void Main(string[] args)
+        {
             using (var sim = new Simulation())
             {
                 var core = new AESCore();
@@ -20,9 +20,9 @@ namespace AES256CBC
                     .BuildCSVFile()
                     .BuildGraph()
                     .BuildVHDL()
-                    .BuildCPP()
+                    //.BuildCPP()
                     .Run();
             }
-		}
-	}
+        }
+    }
 }

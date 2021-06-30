@@ -4,19 +4,33 @@ using SME.AST;
 
 namespace SME.VHDL.Templates
 {
-
+    /// <summary>
+    /// Template for writing the custom types of the network.
+    /// </summary>
     public class CustomTypes : BaseTemplate
     {
-
+        /// <summary>
+        /// The network containing the custom types.
+        /// </summary>
         public readonly Network Network;
-		public readonly RenderState RS;
+        /// <summary>
+        /// The current render state.
+        /// </summary>
+        public readonly RenderState RS;
 
-		public CustomTypes(RenderState renderer)
-		{
-			RS = renderer;
-			Network = renderer.Network;
-		}
+        /// <summary>
+        /// Constructs a new instance of the custom type template class.
+        /// </summary>
+        /// <param name="renderer">The render state to render in.</param>
+        public CustomTypes(RenderState renderer)
+        {
+            RS = renderer;
+            Network = renderer.Network;
+        }
 
+        /// <summary>
+        /// Writes the template to the VHDL file.
+        /// </summary>
         public override string TransformText()
         {
             GenerationEnvironment = null;

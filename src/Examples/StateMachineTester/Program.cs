@@ -5,8 +5,8 @@ using System.Reflection;
 
 namespace StateMachineTester
 {
-    public abstract class ExceptionTest : StateProcess 
-    { 
+    public abstract class ExceptionTest : StateProcess
+    {
         [InputBus] public IControlBus control = Scope.CreateBus<IControlBus>();
         [OutputBus] public IResultBus result = Scope.CreateBus<IResultBus>();
     }
@@ -29,11 +29,10 @@ namespace StateMachineTester
             var assembly = Assembly.GetExecutingAssembly();
             using (var sim = new Simulation())
             {
-                //new Tester(new SingleSwitchStatement());
                 assembly.GetTypes()
-                    .Where(x => 
+                    .Where(x =>
                         x.IsSubclassOf(typeof(StateMachineTest)))
-                    .Select(x => 
+                    .Select(x =>
                         new Tester(
                             (StateMachineTest)Activator.CreateInstance(x)))
                     .ToArray();
@@ -47,7 +46,7 @@ namespace StateMachineTester
             var ex_tests = assembly.GetTypes().Where(x => x.IsSubclassOf(typeof(ExceptionTest)));
             foreach (var ex_test in ex_tests)
             {
-                try 
+                try
                 {
                     using (var sim = new Simulation())
                     {
@@ -57,8 +56,8 @@ namespace StateMachineTester
                             .BuildVHDL()
                             .Run();
                     }
-                } 
-                catch (SME.AST.Transform.WhileWithoutAwaitException) 
+                }
+                catch (SME.AST.Transform.WhileWithoutAwaitException)
                 {
                     continue;
                 }

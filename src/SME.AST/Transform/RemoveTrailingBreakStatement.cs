@@ -1,28 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using SME;
-using SME.AST;
 
 namespace SME.AST.Transform
 {
     /// <summary>
-    /// Removes break statements that are the last line of a switch case
+    /// Removes break statements that are the last line of a switch case.
     /// </summary>
-	public class RemoveTrailingBreakStatement : IASTTransform
-	{
+    public class RemoveTrailingBreakStatement : IASTTransform
+    {
         /// <summary>
-        /// Lookup table of visited statements to speed up the lookup
+        /// Lookup table of visited statements to speed up the lookup.
         /// </summary>
         private HashSet<AST.SwitchStatement> m_visited = new HashSet<SwitchStatement>();
 
-		/// <summary>
-		/// Applies the transformation
-		/// </summary>
-		/// <returns>The transformed item.</returns>
-		/// <param name="item">The item to visit.</param>
-		public virtual ASTItem Transform(ASTItem item)
-		{
+        /// <summary>
+        /// Applies the transformation.
+        /// </summary>
+        /// <returns>The transformed item.</returns>
+        /// <param name="item">The item to visit.</param>
+        public virtual ASTItem Transform(ASTItem item)
+        {
             var ss = item as AST.SwitchStatement;
             if (ss == null)
                 return item;
@@ -45,6 +43,6 @@ namespace SME.AST.Transform
             }
 
             return changed ? null : ss;
-		}
-	}
+        }
+    }
 }

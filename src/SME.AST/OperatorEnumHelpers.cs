@@ -1,98 +1,119 @@
 ﻿using System;
-using ICSharpCode.Decompiler.CSharp.Syntax;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace SME.AST
 {
-	public static class OperatorEnumHelpers
-	{
-		public static BinaryOperatorType ToBinaryOperator(this AssignmentOperatorType op)
-		{
-			switch(op)
-			{
-				case AssignmentOperatorType.Add:
-					return BinaryOperatorType.Add;
-				case AssignmentOperatorType.Subtract:
-					return BinaryOperatorType.Subtract;
-				case AssignmentOperatorType.Multiply:
-					return BinaryOperatorType.Modulus;
-				case AssignmentOperatorType.Divide:
-					return BinaryOperatorType.Divide;
-				case AssignmentOperatorType.Modulus:
-					return BinaryOperatorType.Modulus;
-				case AssignmentOperatorType.ShiftLeft:
-					return BinaryOperatorType.ShiftLeft;
-				case AssignmentOperatorType.ShiftRight:
-					return BinaryOperatorType.ShiftRight;
-				case AssignmentOperatorType.BitwiseAnd:
-					return BinaryOperatorType.BitwiseAnd;
-				case AssignmentOperatorType.BitwiseOr:
-					return BinaryOperatorType.BitwiseOr;
-				case AssignmentOperatorType.ExclusiveOr:
-					return BinaryOperatorType.ExclusiveOr;
-				case AssignmentOperatorType.Assign:
-				case AssignmentOperatorType.Any:
-				default:
-					throw new Exception(string.Format("Cannot convert assignment operator {0} to BinaryOperator", op));
-			}
-		}
+    /// <summary>
+    /// Static helper class containing methods for converting operators.
+    /// <summary>
+    public static class OperatorEnumHelpers
+    {
+        /// <summary>
+        /// Converts a given composite operator into the corresponding binary operator.
+        /// </summary>
+        /// <param name="op">The composite operator to convert.</param>
+        public static SyntaxKind ToBinaryOperator(this SyntaxKind op)
+        {
+            switch(op)
+            {
+                case SyntaxKind.PlusEqualsToken: // +=
+                    return SyntaxKind.PlusToken;
+                case SyntaxKind.MinusEqualsToken: // -=
+                    return SyntaxKind.MinusToken;
+                case SyntaxKind.AsteriskEqualsToken: // *=
+                    return SyntaxKind.AsteriskToken;
+                case SyntaxKind.SlashEqualsToken: // /=
+                    return SyntaxKind.SlashToken;
+                case SyntaxKind.PercentEqualsToken: // %=
+                    return SyntaxKind.PercentToken;
+                case SyntaxKind.LessThanLessThanEqualsToken: // <<=
+                    return SyntaxKind.LessThanLessThanToken;
+                case SyntaxKind.GreaterThanGreaterThanEqualsToken: // >>=
+                    return SyntaxKind.GreaterThanGreaterThanToken;
+                case SyntaxKind.AmpersandEqualsToken: // &=
+                    return SyntaxKind.AmpersandToken;
+                case SyntaxKind.BarEqualsToken: // |=
+                    return SyntaxKind.BarToken;
+                case SyntaxKind.CaretEqualsToken: // ^=
+                    return SyntaxKind.CaretToken;
+                default:
+                    throw new Exception(string.Format("Cannot convert assignment operator {0} to BinaryOperator", op));
+            }
+        }
 
-		public static bool IsLogicalOperator(this BinaryOperatorType self)
-		{
-			switch (self)
-			{
-				case BinaryOperatorType.ConditionalAnd:
-				case BinaryOperatorType.ConditionalOr:
-					return true;
-			}
+        /// <summary>
+        /// Returns true, if the given operator is a logical operator.
+        /// </summary>
+        /// <param name="self">The given operator.</param>
+        public static bool IsLogicalOperator(this SyntaxKind self)
+        {
+            switch (self)
+            {
+                case SyntaxKind.AmpersandAmpersandToken: // &&
+                case SyntaxKind.BarBarToken: // ||
+                    return true;
+            }
 
-			return false;
-		}
+            return false;
+        }
 
-		public static bool IsCompareOperator(this BinaryOperatorType self)
-		{
-			switch (self)
-			{
-				case BinaryOperatorType.GreaterThan:
-				case BinaryOperatorType.GreaterThanOrEqual:
-				case BinaryOperatorType.Equality:
-				case BinaryOperatorType.InEquality:
-				case BinaryOperatorType.LessThan:
-				case BinaryOperatorType.LessThanOrEqual:
-					return true;
-			}
+        /// <summary>
+        /// Returns true, if the given operator is a comparison operator.
+        /// </summary>
+        /// <param name="self">The given operator.</param>
+        public static bool IsCompareOperator(this SyntaxKind self)
+        {
+            switch (self)
+            {
+                case SyntaxKind.GreaterThanToken: // >
+                case SyntaxKind.GreaterThanEqualsToken: // >=
+                case SyntaxKind.EqualsEqualsToken: // ==
+                case SyntaxKind.ExclamationEqualsToken: // !=
+                case SyntaxKind.LessThanToken: // <
+                case SyntaxKind.LessThanEqualsToken: // <=
+                    return true;
+            }
 
-			return false;
-		}
+            return false;
+        }
 
-		public static bool IsBitwiseOperator(this BinaryOperatorType self)
-		{
-			switch (self)
-			{
-				case BinaryOperatorType.BitwiseAnd:
-				case BinaryOperatorType.BitwiseOr:
-				case BinaryOperatorType.ShiftLeft:
-				case BinaryOperatorType.ShiftRight:
-				case BinaryOperatorType.ExclusiveOr:
-					return true;
-			}
+        /// <summary>
+        /// Returns true, if the given operator is a bitwise operator.
+        /// </summary>
+        /// <param name="self">The given operator.</param>
+        public static bool IsBitwiseOperator(this SyntaxKind self)
+        {
+            switch (self)
+            {
+                case SyntaxKind.AmpersandToken: // &
+                case SyntaxKind.BarToken: // |
+                case SyntaxKind.LessThanLessThanToken: // <<
+                case SyntaxKind.GreaterThanGreaterThanToken: // >>
+                case SyntaxKind.CaretToken: // ^
+                    return true;
+            }
 
-			return false;
-		}
+            return false;
+        }
 
-		public static bool IsArithmeticOperator(this BinaryOperatorType self)
-		{
-			switch(self)
-			{
-				case BinaryOperatorType.Add:
-				case BinaryOperatorType.Subtract:
-				case BinaryOperatorType.Multiply:
-				case BinaryOperatorType.Divide:
-				case BinaryOperatorType.Modulus:
-					return true;
-			}
+        /// <summary>
+        /// Returns true, if the given operator is an arithmetic operator.
+        /// </summary>
+        /// <param name="self">The given operator.</param>
+        public static bool IsArithmeticOperator(this SyntaxKind self)
+        {
+            switch(self)
+            {
+                case SyntaxKind.PlusToken: // +
+                case SyntaxKind.MinusToken: // -
+                case SyntaxKind.AsteriskToken: // *
+                case SyntaxKind.SlashToken: // /
+                case SyntaxKind.PercentToken: // %
+                    return true;
+            }
 
-			return false;
-		}
-	}
+            return false;
+        }
+    }
 }
 

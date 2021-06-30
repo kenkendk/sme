@@ -4,11 +4,10 @@
     <ItemGroup>
         <ProjectReference Include="..\SME\SME.csproj" />
         <ProjectReference Include="..\SME.AST\SME.AST.csproj" />
-
-        <PackageReference Include="ICSharpCode.Decompiler" Version="3.0.2.3465" />
-        <PackageReference Include="Mono.Cecil" Version="0.10.0" />
-        <PackageReference Include="System.CodeDom" Version="4.7.0" />
-
+        
+        <PackageReference Include="System.CodeDom" Version="*" />
+        <PackageReference Include="Microsoft.CodeAnalysis" Version="3.7.0" />
+        
         <EmbeddedResource Include="Templates/*.hpp" />
         <EmbeddedResource Include="Templates/*.cpp" />
     </ItemGroup>
@@ -16,7 +15,7 @@
     <!-- Project output name and format -->
     <PropertyGroup>
         <OutputType>library</OutputType>
-        <TargetFramework>netstandard2.1</TargetFramework>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
         <RootNamespace>SME.CPP</RootNamespace>
     </PropertyGroup>
 

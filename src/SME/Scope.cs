@@ -5,43 +5,46 @@ using System.Threading;
 
 namespace SME
 {
+    /// <summary>
+    /// Scopes for handling nesting of similar typed processes and buses.
+    /// </summary>
     public class Scope : IDisposable
     {
         /// <summary>
-        /// A flag keeping the disposed state for the scope
+        /// A flag keeping the disposed state for the scope.
         /// </summary>
         private bool m_disposed = false;
 
         /// <summary>
-        /// The parent scope
+        /// The parent scope.
         /// </summary>
         private readonly Scope m_parent;
         /// <summary>
-        /// The call context key for this scope
+        /// The call context key for this scope.
         /// </summary>
         private readonly string m_scopeKey;
         /// <summary>
-        /// A flag indicating if this scope is isolated
+        /// A flag indicating if this scope is isolated.
         /// </summary>
         private readonly bool m_isolated;
 
         /// <summary>
-        /// The clock used in this instance
+        /// The clock used in this instance.
         /// </summary>
         private readonly Clock m_clock;
 
         /// <summary>
-        /// The lookup table for busses
+        /// The lookup table for busses.
         /// </summary>
         private readonly Dictionary<string, IRuntimeBus> m_busses = new Dictionary<string, IRuntimeBus>();
 
         /// <summary>
-        /// The lookup table for processes
+        /// The lookup table for processes.
         /// </summary>
         private readonly Dictionary<string, IProcess> m_processes = new Dictionary<string, IProcess>();
 
         /// <summary>
-        /// Gets or sets the clock used in this scope
+        /// Gets or sets the clock used in this scope.
         /// </summary>
         /// <value>The clock.</value>
         public Clock Clock => m_clock;
@@ -50,7 +53,7 @@ namespace SME
         /// Initializes a new instance of the <see cref="T:SME.NamingScope"/> class.
         /// </summary>
         /// <param name="isolated">If set to <c>true</c> this scope is isolated.</param>
-        /// <param name="clock">The clock to use, if not using the inherited clock</param>
+        /// <param name="clock">The clock to use, if not using the inherited clock.</param>
         public Scope(bool isolated = true, Clock clock = null)
             : this(Current, isolated, clock, false)
         {
@@ -62,7 +65,7 @@ namespace SME
         /// <param name="parent">The scope parent.</param>
         /// <param name="isolated">If set to <c>true</c> this scope is isolated.</param>
         /// <param name="isRoot">If set to <c>true</c> this scope is the root scope.</param>
-        /// <param name="clock">The clock to use if not using the inherited clock</param>
+        /// <param name="clock">The clock to use if not using the inherited clock.</param>
         private Scope(Scope parent, bool isolated, Clock clock, bool isRoot)
         {
             if (!isRoot && parent == null)
@@ -109,12 +112,12 @@ namespace SME
         }
 
         /// <summary>
-        /// Registers an existing bus with the given name in this scope
+        /// Registers an existing bus with the given name in this scope.
         /// </summary>
         /// <returns>The registered bus.</returns>
         /// <param name="name">The name of the bus to register.</param>
         /// <param name="bus">The bus to register.</param>
-        /// <typeparam name="T">The bus type</typeparam>
+        /// <typeparam name="T">The bus type.</typeparam>
         public static T RegisterBus<T>(string name, T bus) where T : class, IBus
         {
             if (name == null)
@@ -131,49 +134,49 @@ namespace SME
             return bus;
         }
 
-		/// <summary>
-		/// Creates a new bus with the given name
-		/// </summary>
-		/// <returns>The created bus.</returns>
-		/// <param name="name">The name of the bus to create.</param>
-		/// <typeparam name="T">The bus type</typeparam>
-		/// <param name="internalBus">A flag indicating if this is an internal bus</param>
-		public static T CreateBus<T>(string name = null, bool internalBus = false) where T : class, IBus
-		{
+        /// <summary>
+        /// Creates a new bus with the given name.
+        /// </summary>
+        /// <returns>The created bus.</returns>
+        /// <param name="name">The name of the bus to create.</param>
+        /// <typeparam name="T">The bus type.</typeparam>
+        /// <param name="internalBus">A flag indicating if this is an internal bus.</param>
+        public static T CreateBus<T>(string name = null, bool internalBus = false) where T : class, IBus
+        {
             return (T)CreateBus(typeof(T), name, internalBus);
-		}
+        }
 
-		/// <summary>
-		/// Creates a new bus with the given name
-		/// </summary>
-		/// <returns>The created bus.</returns>
-		/// <param name="name">The name of the bus to create.</param>
-        /// <param name="bustype">The bus type</param>
-        /// <param name="internalBus">A flag indicating if this is an internal bus</param>
-		public static IBus CreateBus(Type bustype, string name = null, bool internalBus = false)
+        /// <summary>
+        /// Creates a new bus with the given name.
+        /// </summary>
+        /// <returns>The created bus.</returns>
+        /// <param name="name">The name of the bus to create.</param>
+        /// <param name="bustype">The bus type.</param>
+        /// <param name="internalBus">A flag indicating if this is an internal bus.</param>
+        public static IBus CreateBus(Type bustype, string name = null, bool internalBus = false)
         {
             return CreateOrLoadBus(bustype, name, internalBus, true);
         }
 
         /// <summary>
-        /// Finds the bus with the given name and type, or creates a new if none is found
+        /// Finds the bus with the given name and type, or creates a new if none is found.
         /// </summary>
         /// <returns>The loaded or created bus.</returns>
         /// <param name="name">The name of the bus to find.</param>
-        /// <typeparam name="T">The bus type</typeparam>
-        /// <param name="internalBus">A flag indicating if this is an internal bus</param>
+        /// <typeparam name="T">The bus type.</typeparam>
+        /// <param name="internalBus">A flag indicating if this is an internal bus.</param>
         public static T LoadBus<T>(string name = null, bool internalBus = false) where T : class, IBus
         {
             return (T)LoadBus(typeof(T), name, internalBus);
         }
 
         /// <summary>
-        /// Finds the bus with the given name and type, or creates a new if none is found
+        /// Finds the bus with the given name and type, or creates a new if none is found.
         /// </summary>
         /// <returns>The loaded or created bus.</returns>
         /// <param name="name">The name of the bus to find.</param>
-        /// <param name="bustype">The bus type</param>
-        /// <param name="internalBus">A flag indicating if this is an internal bus</param>
+        /// <param name="bustype">The bus type.</param>
+        /// <param name="internalBus">A flag indicating if this is an internal bus.</param>
         public static IBus LoadBus(Type bustype, string name = null, bool internalBus = false)
         {
             var scope = GetTargetScope(bustype, ref name, internalBus);
@@ -183,26 +186,26 @@ namespace SME
             return CreateOrLoadBus(bustype, name, internalBus, false);
         }
 
-		/// <summary>
-		/// Finds the bus with the given name and type, or creates a new if none is found
-		/// </summary>
-		/// <returns>The loaded or created bus.</returns>
-		/// <param name="name">The name of the bus to find.</param>
-		/// <typeparam name="T">The bus type</typeparam>
-		/// <param name="internalBus">A flag indicating if this is an internal bus</param>
-        /// <param name="forceCreate">A flag indicating if the bus should be created even if it exists</param>
-		public static T CreateOrLoadBus<T>(string name = null, bool internalBus = false, bool forceCreate = false) where T : class, IBus
+        /// <summary>
+        /// Finds the bus with the given name and type, or creates a new if none is found.
+        /// </summary>
+        /// <returns>The loaded or created bus.</returns>
+        /// <param name="name">The name of the bus to find.</param>
+        /// <typeparam name="T">The bus type.</typeparam>
+        /// <param name="internalBus">A flag indicating if this is an internal bus.</param>
+        /// <param name="forceCreate">A flag indicating if the bus should be created even if it exists.</param>
+        public static T CreateOrLoadBus<T>(string name = null, bool internalBus = false, bool forceCreate = false) where T : class, IBus
         {
             return (T)CreateOrLoadBus(typeof(T), name, internalBus, forceCreate);
         }
 
         /// <summary>
-        /// Gets the target scope for a bus
+        /// Gets the target scope for a bus.
         /// </summary>
         /// <returns>The target scope.</returns>
         /// <param name="name">The name of the bus to find.</param>
-        /// <param name="bustype">The bus type</param>
-        /// <param name="internalBus">A flag indicating if this is an internal bus</param>
+        /// <param name="bustype">The bus type.</param>
+        /// <param name="internalBus">A flag indicating if this is an internal bus.</param>
         private static Scope GetTargetScope(Type bustype, ref string name, bool internalBus)
         {
             Scope targetScope;
@@ -230,15 +233,15 @@ namespace SME
             return targetScope;
         }
 
-		/// <summary>
-		/// Finds the bus with the given name and type, or creates a new if none is found
-		/// </summary>
-		/// <returns>The loaded or created bus.</returns>
-		/// <param name="name">The name of the bus to find.</param>
-		/// <param name="bustype">The bus type</param>
-		/// <param name="internalBus">A flag indicating if this is an internal bus</param>
-		/// <param name="forceCreate">A flag indicating if the bus should be created even if it exists</param>
-		public static IBus CreateOrLoadBus(Type bustype, string name = null, bool internalBus = false, bool forceCreate = false)
+        /// <summary>
+        /// Finds the bus with the given name and type, or creates a new if none is found.
+        /// </summary>
+        /// <returns>The loaded or created bus.</returns>
+        /// <param name="name">The name of the bus to find.</param>
+        /// <param name="bustype">The bus type.</param>
+        /// <param name="internalBus">A flag indicating if this is an internal bus.</param>
+        /// <param name="forceCreate">A flag indicating if the bus should be created even if it exists.</param>
+        public static IBus CreateOrLoadBus(Type bustype, string name = null, bool internalBus = false, bool forceCreate = false)
         {
             var targetScope = GetTargetScope(bustype, ref name, internalBus);
             var isClocked = (bustype.GetCustomAttributes(typeof(ClockedBusAttribute), true).FirstOrDefault() as ClockedBusAttribute) != null;
@@ -263,14 +266,14 @@ namespace SME
         /// Creates an internal bus.
         /// </summary>
         /// <returns>The internal bus.</returns>
-        /// <typeparam name="T">The bus type</typeparam>
+        /// <typeparam name="T">The bus type.</typeparam>
         public static T CreateInternalBus<T>() where T : class, IBus
         {
             return CreateOrLoadBus<T>(null, internalBus: true);
         }
 
         /// <summary>
-        /// Finds a named bus by searching the scope hierarchy
+        /// Finds a named bus by searching the scope hierarchy.
         /// </summary>
         /// <returns>The bus or null.</returns>
         /// <param name="name">The name of the bus to find.</param>
@@ -279,7 +282,7 @@ namespace SME
             return RecursiveLookup(x => x.m_busses, name);
         }
         /// <summary>
-        /// Finds a named process by searching the scope hierarchy
+        /// Finds a named process by searching the scope hierarchy.
         /// </summary>
         /// <returns>The process or null.</returns>
         /// <param name="name">The name of the process to find.</param>
@@ -289,7 +292,7 @@ namespace SME
         }
 
         /// <summary>
-        /// Finds a named item by searching the scope hierarchy
+        /// Finds a named item by searching the scope hierarchy.
         /// </summary>
         /// <returns>The matching item or null.</returns>
         /// <param name="dict_fun">The function used to extract the dictionary.</param>
@@ -313,7 +316,7 @@ namespace SME
 
         #region "Static members giving access to the call context"
         /// <summary>
-        /// The one and only root scope
+        /// The one and only root scope.
         /// </summary>
         private static readonly Scope ROOT_SCOPE;
 
@@ -365,7 +368,7 @@ namespace SME
         private static readonly Dictionary<string, Scope> _scopes;
 
         /// <summary>
-        /// The shared scope key
+        /// The shared scope key.
         /// </summary>
         private static AsyncLocal<string> _scopekey = new AsyncLocal<string>();
 

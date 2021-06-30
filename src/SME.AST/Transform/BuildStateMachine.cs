@@ -1,12 +1,22 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace SME.AST.Transform
 {
 
-    public class WhileWithoutAwaitException : Exception 
-    { 
+    /// <summary>
+    /// Exception indicating that there is a while statement, which did not contain an await statement.
+    /// </summary>
+    public class WhileWithoutAwaitException : Exception
+    {
+        /// <summary>
+        /// Constructs a new instance of the while without await exception, with the given message.
+        /// </summary>
+        /// <param name="message">The given message.</param>
         public WhileWithoutAwaitException(string message) : base(message) { }
     }
 
@@ -16,16 +26,31 @@ namespace SME.AST.Transform
     public class BuildStateMachine : IASTTransform
     {
         /// <summary>
-        /// Checks if all branches contains an <see cref="AwaitExpression"/>. Used by while loops.
+        /// The compilation associated with the network, which the process belongs to.
+        /// </summary>
+        private Compilation m_compilation;
+
         /// <summary>
-        /// <param name="statement">The statement to be checked</param>
+        /// Constructs a new instance of the build state machine transformation.
+        /// </summary>
+        /// <param name="m_compilation">The compilation associated with the network.</param>
+        public BuildStateMachine(Compilation m_compilation)
+        {
+            this.m_compilation = m_compilation;
+        }
+
+        /// <summary>
+        /// Checks if all branches contains an <see cref="AwaitExpression"/>.
+        /// Used by loops. Loops should always return false, as checking them
+        /// would require deeper analysis, which is inherently infeasible.
+        /// </summary>
+        /// <param name="statement">The statement to be checked.</param>
         private bool AllBranchesHasAwait(Statement statement)
         {
             switch (statement)
             {
                 case BlockStatement s:      return s.Statements.Where(x => AllBranchesHasAwait(x)).Any();
                 case ExpressionStatement s: return s.Expression is AwaitExpression;
-                //case ForStatement s:        return AllBranchesHasAwait(s.LoopBody); // TODO check if empty range?
                 case IfElseStatement s:     return AllBranchesHasAwait(s.TrueStatement) && AllBranchesHasAwait(s.FalseStatement);
                 case SwitchStatement s:     return s.HasDefault && s.Cases.Select(x => x.Item2).All(x => x.Select(y => AllBranchesHasAwait(y)).Contains(true));
                 default:                    return false;
@@ -33,17 +58,17 @@ namespace SME.AST.Transform
         }
 
         /// <summary>
-        /// Represents a Goto statement used to build the statemachine
+        /// Represents a Goto statement used to build the statemachine.
         /// </summary>
         private class CaseGotoStatement : GotoStatement
         {
             /// <summary>
-            /// The target label
+            /// The target label.
             /// </summary>
             public int CaseLabel;
 
             /// <summary>
-            /// A flag indicating if the statement is a fall-through request
+            /// A flag indicating if the statement is a fall-through request.
             /// </summary>
             public readonly bool FallThrough;
 
@@ -51,21 +76,25 @@ namespace SME.AST.Transform
             /// Initializes a new instance of the <see cref="T:SME.AST.Transform.BuildStateMachine.CaseGotoStatement"/> class.
             /// </summary>
             /// <param name="label">The target label.</param>
+            /// <param name="fallthrough">Flag indicating if this statement is a fall-through request.</param>
             public CaseGotoStatement(int label, bool fallthrough)
             {
                 CaseLabel = label;
                 FallThrough = fallthrough;
             }
 
+            /// <summary>
+            /// Defualt constructor.
+            /// </summary>
             public CaseGotoStatement()
             {
                 CaseLabel = -1;
                 FallThrough = false;
-        }
+            }
         }
 
         /// <summary>
-        /// Splits a sequence of statements into a set of cases
+        /// Splits a sequence of statements into a set of cases.
         /// </summary>
         /// <returns>The number of new fragments.</returns>
         /// <param name="statement">The statement(s) to split.</param>
@@ -104,7 +133,7 @@ namespace SME.AST.Transform
         }
 
         /// <summary>
-        /// Examines a statement and determines if all branches end with a control flow statement
+        /// Examines a statement and determines if all branches end with a control flow statement.
         /// </summary>
         /// <returns><c>true</c>, if control flow was handled, <c>false</c> otherwise.</returns>
         /// <param name="statement">The statement to examine.</param>
@@ -122,7 +151,7 @@ namespace SME.AST.Transform
         }
 
         /// <summary>
-        /// Splits a <see cref="SwitchStatement"/> into a set of cases
+        /// Splits a <see cref="SwitchStatement"/> into a set of cases.
         /// </summary>
         /// <returns>The number of new fragments.</returns>
         /// <param name="statement">The statement(s) to split.</param>
@@ -154,18 +183,24 @@ namespace SME.AST.Transform
                         else // Trailing cases should not have break statements, and all following statements should be ignored
                             break;
                     }
-                else
+                    else
                     {
                         if (c.Item2[i] is ExpressionStatement && ((ExpressionStatement)(c.Item2[i])).Expression is AwaitExpression)
                         { // Stop adding, and inject a goto statement to rest of the block
                             found = true;
                             initial.Add(new CaseGotoStatement(-1, false));
                             initial.Add(new BreakStatement());
-            }
+                        }
                         else
                         { // Add all statements up until await statement
                             if (c.Item2[i] is BreakStatement)
                                 initial.Add(new CaseGotoStatement(selflabel, true));
+                            else if (c.Item2[i] is ReturnStatement)
+                            {
+                                initial.Add(new CaseGotoStatement(0, false));
+                                initial.Add(new BreakStatement());
+                                break;
+                            }
                             initial.Add(c.Item2[i]);
                             if (c.Item2[i] is BreakStatement)
                                 break;
@@ -188,26 +223,26 @@ namespace SME.AST.Transform
                     c.CaseLabel = fragments.Count;
                     trailings[i].Select(x => SplitStatement(x, collected, fragments)).ToList();
                     EndFragment(collected, fragments, selflabel, true);
-            }
+                }
                 else
-            {
+                {
                     c.CaseLabel = selflabel;
-            }
+                }
             }
 
             for (int i = selflabel; i < fragments.Count; i++)
-                fragments[i].SelectMany(x => 
+                fragments[i].SelectMany(x =>
                     x.All()
                         .OfType<CaseGotoStatement>()
                         .Where(y => y.CaseLabel == selflabel)
                         .Select(y => y.CaseLabel = fragments.Count)
                     ).ToList();
 
-            return 0; // TODO parenting?
+            return 0;
         }
 
         /// <summary>
-        /// Splits a <see cref="IfElseStatement"/> into a set of cases
+        /// Splits a <see cref="IfElseStatement"/> into a set of cases.
         /// </summary>
         /// <returns>The number of new fragments.</returns>
         /// <param name="statement">The statement(s) to split.</param>
@@ -244,7 +279,7 @@ namespace SME.AST.Transform
                 EndFragment(collected, fragments, fragments.Count + 1, true);
                 // Update all the CaseGotoStatements in the true branch, to point to after the false branch
                 for (int i = truelabel; i < falselabel; i++)
-                    fragments[i].SelectMany(x => 
+                    fragments[i].SelectMany(x =>
                             x.All()
                                 .OfType<CaseGotoStatement>()
                                 .Where(y => y.CaseLabel == falselabel)
@@ -257,12 +292,12 @@ namespace SME.AST.Transform
             ifs.TrueStatement = new CaseGotoStatement(truelabel, true);
             ifs.FalseStatement = new CaseGotoStatement(falselabel, true);
             ifs.UpdateParents();
-            
-            return fragments.Count - conditionlabel;                
+
+            return fragments.Count - conditionlabel;
         }
 
         /// <summary>
-        /// Splits a <see cref="WhileStatement"/> into a set of cases
+        /// Splits a <see cref="WhileStatement"/> into a set of cases.
         /// </summary>
         /// <returns>The number of new fragments.</returns>
         /// <param name="statement">The statement(s) to split.</param>
@@ -277,8 +312,8 @@ namespace SME.AST.Transform
             EndFragment(collected, fragments, fragments.Count + 1, true);
             var selflabel = fragments.Count;
 
-            var ifs = new IfElseStatement(statement.Condition, 
-                statement.Body, new EmptyStatement()) 
+            var ifs = new IfElseStatement(statement.Condition,
+                statement.Body, new EmptyStatement())
                 { Parent = statement.Parent };
             ifs.UpdateParents();
 
@@ -286,7 +321,7 @@ namespace SME.AST.Transform
             var trailfragment = fragments.Last();
             var exitlabel = fragments.Count;
 
-            for (int i = selflabel+1; i < fragments.Count; i++) 
+            for (int i = selflabel+1; i < fragments.Count; i++)
             {
                 fragments[i]
                     .SelectMany(x => x.All())
@@ -299,14 +334,14 @@ namespace SME.AST.Transform
 
             // Cannot fallthrough backwards through states. Copy state machine, where this occurs
             for (int i = selflabel; i < fragments.Count; i++)
-                fragments[i] = fragments[i].Select(x => 
+                fragments[i] = fragments[i].Select(x =>
                     ReplaceBackGotoStatements(fragments, x, i, i)).ToList();
 
             return fragments.Count - selflabel;
         }
 
         /// <summary>
-        /// Splits a <see cref="ForStatement"/> into a set of cases
+        /// Splits a <see cref="ForStatement"/> into a set of cases.
         /// </summary>
         /// <returns>The number of new fragments.</returns>
         /// <param name="statement">The statement(s) to split.</param>
@@ -354,12 +389,12 @@ namespace SME.AST.Transform
         }
 
         /// <summary>
-        /// Wraps the currently collected instructions into a list of fragments
+        /// Wraps the currently collected instructions into a list of fragments.
         /// </summary>
         /// <param name="collected">The currently collected statements.</param>
         /// <param name="fragments">The currently collected fragments.</param>
-        /// <param name="gotoTarget">The goto target, or -1 if no target is injected</param>
-        /// <param name="fallThrough"><c>true</c> if the goto is a fallthrough element</param>
+        /// <param name="gotoTarget">The goto target, or -1 if no target is injected.</param>
+        /// <param name="fallThrough"><c>true</c> if the goto is a fallthrough element.</param>
         private void EndFragment(List<Statement> collected, List<List<Statement>> fragments, int gotoTarget, bool fallThrough)
         {
             if (collected.Count > 0)
@@ -369,17 +404,17 @@ namespace SME.AST.Transform
 
                 if (collected.Count > 0)
                     fragments.Add(new List<Statement>(collected));
-                
+
                 collected.Clear();
             }
         }
 
 
         /// <summary>
-        /// Splits a sequence of statements into a set of cases
+        /// Splits a sequence of statements into a set of cases.
         /// </summary>
         /// <returns>The number of new fragments.</returns>
-        /// <param name="statements">The statments to split</param>
+        /// <param name="statements">The statments to split.</param>
         /// <param name="collected">The currently collected statements.</param>
         /// <param name="fragments">The currently collected fragments.</param>
         private int SplitStatement(IEnumerable<Statement> statements, List<Statement> collected, List<List<Statement>> fragments)
@@ -402,7 +437,7 @@ namespace SME.AST.Transform
         }
 
         /// <summary>
-        /// Combines zero or more statements into a new statement
+        /// Combines zero or more statements into a new statement.
         /// </summary>
         /// <returns>The block statement.</returns>
         /// <param name="statements">The statements to group.</param>
@@ -436,7 +471,7 @@ namespace SME.AST.Transform
         }
 
         /// <summary>
-        /// Create a list of statements, where each case is guarded by an if statement
+        /// Create a list of statements, where each case is guarded by an if statement.
         /// </summary>
         /// <returns>The fragments with label guards.</returns>
         /// <param name="fragments">The input fragments.</param>
@@ -451,10 +486,10 @@ namespace SME.AST.Transform
                 res.Add(new IfElseStatement(
                     new BinaryOperatorExpression(
                         new IdentifierExpression(statelabel),
-                        ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorType.Equality,
-                        new PrimitiveExpression(enumfields[i].GetTarget().Name, enumfields[i].CecilType)
+                        SyntaxKind.EqualsEqualsToken,
+                        new PrimitiveExpression(enumfields[i].GetTarget().Name, enumfields[i].MSCAType)
                     )
-                    { SourceResultType = enumfields[0].CecilType.Module.ImportReference(typeof(bool)) },
+                    { SourceResultType = enumfields[0].MSCAType.LoadType(typeof(bool)) },
                     ToBlockStatement(fragments[i]),
                     new EmptyStatement()
                 ));
@@ -464,7 +499,7 @@ namespace SME.AST.Transform
         }
 
         /// <summary>
-        /// Wraps the cases in a switch statement
+        /// Wraps the cases in a switch statement.
         /// </summary>
         /// <returns>The fragments with label guards.</returns>
         /// <param name="fragments">The input fragments.</param>
@@ -477,7 +512,7 @@ namespace SME.AST.Transform
             for (var i = 0; i < fragments.Count; i++)
             {
                 res.Add(new Tuple<Expression[], Statement[]>(
-                    new Expression[] { new PrimitiveExpression(enumfields[i].GetTarget().Name, enumfields[i].CecilType) },
+                    new Expression[] { new PrimitiveExpression(enumfields[i].GetTarget().Name, enumfields[i].MSCAType) },
                     fragments[i].ToArray()
                 ));
             }
@@ -489,7 +524,7 @@ namespace SME.AST.Transform
         }
 
         /// <summary>
-        /// Removes all <see cref="CaseGotoStatement"/>'s and inserts appropriate variables updates instead
+        /// Removes all <see cref="CaseGotoStatement"/>'s and inserts appropriate variables updates instead.
         /// </summary>
         /// <returns>The statements without goto-statemtns.</returns>
         /// <param name="statement">The statements to update.</param>
@@ -502,12 +537,12 @@ namespace SME.AST.Transform
             while ((current = statement.All().OfType<CaseGotoStatement>().FirstOrDefault()) != null)
             {
                 var fallThrough = current.FallThrough && current.CaseLabel < enumfields.Length;
-                
+
                 current.ReplaceWith(
                     new ExpressionStatement(
                         new AssignmentExpression(
                             new IdentifierExpression(fallThrough ? currentstate : nextstate),
-                            new PrimitiveExpression(enumfields[current.CaseLabel % enumfields.Length].GetTarget().Name, enumfields[0].CecilType)
+                            new PrimitiveExpression(enumfields[current.CaseLabel % enumfields.Length].GetTarget().Name, enumfields[0].MSCAType)
                         )
                     )
                 );
@@ -516,18 +551,25 @@ namespace SME.AST.Transform
             return statement;
         }
 
+        /// <summary>
+        /// Recursively inlines states, instead of goto, which fallthrough to a state earlier in the state machine, until either a non-falltrough or later than starting state is encountered.
+        /// </summary>
+        /// <param name="fragments">The fragments collected so far.</param>
+        /// <param name="statement">The current statement to check.</param>
+        /// <param name="start">The starting state number.</param>
+        /// <param name="current">The current state number.</param>
         private Statement ReplaceBackGotoStatements(List<List<Statement>> fragments, Statement statement, int start, int current)
-        { 
+        {
             switch (statement)
             {
                 case BlockStatement s:
-                    s.Statements = s.Statements.Select(x => 
+                    s.Statements = s.Statements.Select(x =>
                         ReplaceBackGotoStatements(fragments, x, start, current))
                         .ToArray();
                     return s;
                 case CaseGotoStatement s:
                     // Do not inject if it tries to go to itself
-                    if (s.FallThrough && (s.CaseLabel == current || s.CaseLabel == start)) 
+                    if (s.FallThrough && (s.CaseLabel == current || s.CaseLabel == start))
                     {
                         return new CommentStatement($"FSM_RunState := State{s.CaseLabel}") { Parent = s.Parent };
                     }
@@ -553,7 +595,7 @@ namespace SME.AST.Transform
                     {
                         var t = new Tuple<Expression[], Statement[]>(
                             tuple.Item1,
-                            tuple.Item2.Select(x => 
+                            tuple.Item2.Select(x =>
                                 ReplaceBackGotoStatements(fragments, x, start, current))
                                 .ToArray());
                         return t;
@@ -566,7 +608,7 @@ namespace SME.AST.Transform
 
 
         /// <summary>
-        /// Applies the transformation
+        /// Applies the transformation.
         /// </summary>
         /// <returns>The transformed item.</returns>
         /// <param name="item">The item to visit.</param>
@@ -579,53 +621,62 @@ namespace SME.AST.Transform
             if (!method.All().OfType<AwaitExpression>().Any())
                 return item;
 
-            var enumname = "FSM_" + method.Name + "_State";
+            var enumname = method.Parent.Name + "_FSM";
 
             // Construct an enum type that matches the desired states
-            var enumtype = new Mono.Cecil.TypeDefinition("", enumname, Mono.Cecil.TypeAttributes.Public | Mono.Cecil.TypeAttributes.AutoClass | Mono.Cecil.TypeAttributes.AnsiClass | Mono.Cecil.TypeAttributes.Sealed, method.SourceMethod.Module.ImportReference(typeof(System.Enum)))
-            {
-                IsSealed = true,
-            };
+            var enumsyntax = SyntaxFactory.EnumDeclaration(enumname);
+            enumsyntax = enumsyntax.AddModifiers(
+                SyntaxFactory.Token(SyntaxKind.PublicKeyword)
+            );
+            enumsyntax = enumsyntax.AddBaseListTypes(SyntaxFactory.SimpleBaseType(SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.IntKeyword))));
 
-            enumtype.DeclaringType = method.SourceMethod.DeclaringType;
-            enumtype.Fields.Add(new Mono.Cecil.FieldDefinition($"value__", Mono.Cecil.FieldAttributes.Public | Mono.Cecil.FieldAttributes.SpecialName | Mono.Cecil.FieldAttributes.RTSpecialName, method.SourceMethod.Module.ImportReference(typeof(int))));
-
-            var statenametemplate = $"{enumtype.DeclaringType.FullName}_{enumname}_State";
+            var statenametemplate = $"{enumname}_";
 
             var fragments = SplitIntoFragments(method.Statements);
 
             var statecount = fragments.Count;
-            var enumfields = new Mono.Cecil.FieldDefinition[statecount];
+            var enumfields = new EnumMemberDeclarationSyntax[statecount];
 
             // Add each of the states to the type
             for (var i = 0; i < statecount; i++)
-                enumtype.Fields.Add(enumfields[i] = new Mono.Cecil.FieldDefinition($"State{i}", Mono.Cecil.FieldAttributes.Public | Mono.Cecil.FieldAttributes.Static | Mono.Cecil.FieldAttributes.Literal, enumtype)
-                {
-                    Constant = i
-                });
+                enumfields[i] = SyntaxFactory.EnumMemberDeclaration($"State{i}");
+            enumsyntax = enumsyntax.AddMembers(enumfields).NormalizeWhitespace();
+
+            var ns = (method.Parent as Process).MSCAType.ContainingNamespace.Name;
+
+            var cu = SyntaxFactory.CompilationUnit()
+                .AddMembers(
+                    SyntaxFactory.NamespaceDeclaration(SyntaxFactory.IdentifierName(ns))
+                    .AddMembers(
+                        enumsyntax
+                    )
+                );
+
+            m_compilation = m_compilation.AddSyntaxTrees(cu.SyntaxTree);
+            var enumtype = m_compilation.GetTypeByMetadataName($"{ns}.{enumname}");
 
             // The variable being updated internally in the method
             var run_state_var = new AST.Variable("FSM_RunState", enumfields[0])
             {
-                CecilType = enumtype,
+                MSCAType = enumtype,
                 DefaultValue = 0,
-                Source = new Mono.Cecil.ParameterDefinition("FSM_RunState", Mono.Cecil.ParameterAttributes.None, enumtype)
+                Source = null
             };
 
             // The current state used in the state machine process
             var current_state_signal = new AST.Signal("FSM_CurrentState", enumfields[0])
             {
-                CecilType = enumtype,
+                MSCAType = enumtype,
                 DefaultValue = 0,
-                Source = new Mono.Cecil.ParameterDefinition("FSM_CurrentState", Mono.Cecil.ParameterAttributes.None, enumtype)
+                Source = null
             };
 
             // The next state that is propagated to
             var next_state_signal = new AST.Signal("FSM_NextState", enumfields[0])
             {
-                CecilType = enumtype,
+                MSCAType = enumtype,
                 DefaultValue = 0,
-                Source = new Mono.Cecil.ParameterDefinition("FSM_NextState", Mono.Cecil.ParameterAttributes.None, enumtype)
+                Source = null
             };
 
             // Construct a state-machine method, that will be rendered as a process
@@ -640,7 +691,7 @@ namespace SME.AST.Transform
                 IsStateMachine = true
             };
 
-            var enumdataitems = enumfields.Select(x => new Constant(x.Name, x) { CecilType = enumtype }).ToArray();
+            var enumdataitems = enumfields.Select(x => new Constant(x.Identifier.Text, x) { MSCAType = enumtype }).ToArray();
 
             var isSimpleStatePossible = fragments.SelectMany(x => x.SelectMany(y => y.All().OfType<CaseGotoStatement>())).All(x => !x.FallThrough);
 
@@ -649,9 +700,9 @@ namespace SME.AST.Transform
             // If we have no fallthrough states, we build a switch
             if (isSimpleStatePossible)
             {
-                cases = new List<Statement>(new[] { 
+                cases = new List<Statement>(new[] {
                     new EmptyStatement(),
-                    CreateSwitchStatement(fragments, current_state_signal, enumdataitems) 
+                    CreateSwitchStatement(fragments, current_state_signal, enumdataitems)
                 });
             }
             // Otherwise, we build an if-based state machine
@@ -690,11 +741,11 @@ namespace SME.AST.Transform
             proc.Methods = proc.Methods.Concat(new[] { stateMachineProcess }).ToArray();
 
             // Move variables into the shared area
-            proc.InternalDataElements = 
+            proc.InternalDataElements =
                 proc.InternalDataElements
-                .Union(new[] { 
-                    current_state_signal, 
-                    next_state_signal 
+                .Union(new[] {
+                    current_state_signal,
+                    next_state_signal
                 })
                 //.Union(method.AllVariables)
                 .ToArray();

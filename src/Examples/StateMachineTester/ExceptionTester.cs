@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace StateMachineTester
 {
-    
+
     public class ExceptionTester : SimulationProcess
     {
         public ExceptionTester(ExceptionTest test)

@@ -4,13 +4,26 @@ using SME.AST;
 
 namespace SME.VHDL.CustomRenders.Inferred
 {
+    /// <summary>
+    /// Custom renderer for single port RAM.
+    /// </summary>
     public class SinglePortRam : ICustomRenderer
     {
+        /// <summary>
+        /// Returns the string, which should be written in the include region of the VHDL file.
+        /// </summary>
+        /// <param name="renderer">The renderer currently rendering VHDL files.</param>
+        /// <param name="indentation">The indentation at the current location in the VHDL file.</param>
         public string IncludeRegion(RenderStateProcess renderer, int indentation)
         {
             return string.Empty;
         }
 
+        /// <summary>
+        /// Returns the string, which should be written in the body region of the VHDL file.
+        /// </summary>
+        /// <param name="renderer">The renderer currently rendering VHDL files.</param>
+        /// <param name="indentation">The indentation at the current location in the VHDL file.</param>
         public string BodyRegion(RenderStateProcess renderer, int indentation)
         {
             var initialdata = (Array)renderer.Process.SharedVariables.First(x => x.Name == "m_memory").DefaultValue;
@@ -57,7 +70,7 @@ namespace SME.VHDL.CustomRenders.Inferred
             // Assign the vhdl types so the type conversion is done correctly
             renderer.Parent.TypeLookup[asm_write.Left]
              = renderer.Parent.TypeLookup[((AST.IdentifierExpression)asm_write.Left).Target]
-             = renderer.Parent.TypeLookup[asm_read.Right] 
+             = renderer.Parent.TypeLookup[asm_read.Right]
              = renderer.Parent.TypeLookup[((AST.IdentifierExpression)asm_read.Right).Target]
                 = renderer.Parent.TypeScope.GetStdLogicVector(datawidth);
 
@@ -84,7 +97,7 @@ namespace SME.VHDL.CustomRenders.Inferred
     signal { control_bus_data_name }_Vector: std_logic_vector ({datawidth - 1} downto 0);
     signal { readresult_bus_data_name }_Vector: std_logic_vector ({datawidth - 1} downto 0);
     signal { control_bus_addr_name }_Vector: std_logic_vector ({addrwidth - 1} downto 0);
-begin 
+begin
 
     process (CLK)
     begin
@@ -102,7 +115,7 @@ begin
     {Naming.ProcessNameToValidName(renderer.Process.SourceInstance.Instance)}_Helper: process(RST, CLK, RDY)
     begin
     if RST = '1' then
-        FIN <= '0';                        
+        FIN <= '0';
     elsif rising_edge(CLK) then
         FIN <= not RDY;
     end if;
@@ -116,6 +129,5 @@ begin
 
             return VHDLHelper.ReIndentTemplate(template, indentation);
         }
-
     }
 }

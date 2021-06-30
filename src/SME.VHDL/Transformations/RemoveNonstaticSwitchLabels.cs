@@ -3,15 +3,15 @@ using System.Linq;
 using SME.AST;
 using SME.AST.Transform;
 
-namespace SME.VHDL.Transformations 
+namespace SME.VHDL.Transformations
 {
     /// <summary>
-    /// Removes some switch statements that are the result of a typecasting
+    /// Removes some switch statements that are the result of a typecasting.
     /// </summary>
     public class RemoveNonstaticSwitchLabels : IASTTransform
     {
         /// <summary>
-        /// The render state
+        /// The render state.
         /// </summary>
         private readonly RenderState State;
 
@@ -25,7 +25,7 @@ namespace SME.VHDL.Transformations
         }
 
         /// <summary>
-        /// Applies the transformation
+        /// Applies the transformation.
         /// </summary>
         /// <returns>The transformed item.</returns>
         /// <param name="el">The item to visit.</param>
@@ -52,14 +52,14 @@ namespace SME.VHDL.Transformations
                         var name = State.RegisterCustomEnum(ss.SwitchExpression.SourceResultType, et, (cx as PrimitiveExpression).Value);
                         var c = new AST.Constant() {
                             Name = name,
-                            CecilType = ss.SwitchExpression.SourceResultType,
+                            MSCAType = ss.SwitchExpression.SourceResultType,
                             DefaultValue = name // (cx as PrimitiveExpression).Value
                         };
 
                         var mr = new AST.MemberReferenceExpression()
                         {
                             Parent = ss,
-                            SourceResultType = c.CecilType,
+                            SourceResultType = c.MSCAType,
                             Target = c
                         };
 

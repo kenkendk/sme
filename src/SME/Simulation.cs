@@ -4,48 +4,47 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace SME
 {
     /// <summary>
-    /// Helper class to run a simulation
+    /// Helper class to run a simulation.
     /// </summary>
     public class Simulation : IDisposable
     {
         /// <summary>
-        /// The methods to call prior to running the simulation
+        /// The methods to call prior to running the simulation.
         /// </summary>
         private readonly List<Action<Simulation>> m_preloaders = new List<Action<Simulation>>();
         /// <summary>
-        /// The methods to call each cycle before running the network during the simulation
+        /// The methods to call each cycle before running the network during the simulation.
         /// </summary>
         private readonly List<Action<Simulation>> m_prerunners = new List<Action<Simulation>>();
         /// <summary>
-        /// The methods to call each cycle before running the network during the simulation
+        /// The methods to call each cycle before running the network during the simulation.
         /// </summary>
         private readonly List<Action<Simulation>> m_postrunners = new List<Action<Simulation>>();
         /// <summary>
-        /// The methods to call each cycle after clocked process propagation during the simulation
+        /// The methods to call each cycle after clocked process propagation during the simulation.
         /// </summary>
         private readonly List<Action<Simulation>> m_clockrunners = new List<Action<Simulation>>();
 
         /// <summary>
-        /// The methods to call after the simulation
+        /// The methods to call after the simulation.
         /// </summary>
         private readonly List<Action<Simulation>> m_postloaders = new List<Action<Simulation>>();
         /// <summary>
-        /// The list of processes in the simulation
+        /// The list of processes in the simulation.
         /// </summary>
         private readonly Dictionary<IProcess, ProcessMetadata> m_processes = new Dictionary<IProcess, ProcessMetadata>();
 
         /// <summary>
-        /// Create a unique scope for the simulation
+        /// Create a unique scope for the simulation.
         /// </summary>
         private Scope m_scope = new Scope(isolated: true);
 
         /// <summary>
-        /// The output folder
+        /// The output folder.
         /// </summary>
         public string TargetFolder { get; private set; }
 
@@ -55,38 +54,40 @@ namespace SME
         public ulong Tick { get; private set; }
 
         /// <summary>
-        /// Specifies whether or not the current simulation is running
+        /// Specifies whether or not the current simulation is running.
         /// </summary>
         private bool Running;
 
         /// <summary>
-        /// Gets the currently running processes
+        /// Gets the currently running processes.
         /// </summary>
         public IList<ProcessMetadata> Processes => m_processes.Values.ToList();
 
         /// <summary>
-        /// Bus name lookup table
+        /// Bus name lookup table.
         /// </summary>
         /// <value>The bus names.</value>
         public Dictionary<IBus, string> BusNames { get; } = new Dictionary<IBus, string>();
 
         /// <summary>
-        /// The list of bus instances that are registered as top-level inputs
+        /// The list of bus instances that are registered as top-level inputs.
         /// </summary>
         public readonly HashSet<IBus> TopLevelInputBusses = new HashSet<IBus>();
 
         /// <summary>
-        /// The list of bus instances that are registered as top-level outputs
+        /// The list of bus instances that are registered as top-level outputs.
         /// </summary>
         public readonly HashSet<IBus> TopLevelOutputBusses = new HashSet<IBus>();
 
         /// <summary>
-        /// Gets the current running dependency graph
+        /// Gets the current running dependency graph.
         /// </summary>
         public DependencyGraph Graph { get; private set; }
 
+        public static string ProjectPath { get; set; }
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:SME.Runner"/> class.
+        /// Initializes a new instance of the <see cref="T:SME.Simulation"/> class.
         /// </summary>
         /// <param name="outputfolder">The folder where output files are stored.</param>
         public Simulation(string outputfolder = "output")
@@ -129,7 +130,7 @@ namespace SME
         /// <summary>
         /// Adds pre-run handler.
         /// </summary>
-        /// <returns>The simulation instance for chaining syntax use</returns>
+        /// <returns>The simulation instance for chaining syntax use.</returns>
         /// <param name="prerunner">The prerunner method.</param>
         public Simulation AddPreRunner(Action<Simulation> prerunner)
         {
@@ -167,9 +168,9 @@ namespace SME
         }
 
         /// <summary>
-        /// Adds a callback method that is invoked after each cycle
+        /// Adds a callback method that is invoked after each cycle.
         /// </summary>
-        /// <returns>The simulation instance for chaining syntax use</returns>
+        /// <returns>The simulation instance for chaining syntax use.</returns>
         /// <param name="ticker">The method to invoke.</param>
         public Simulation AddTicker(Action<Simulation> ticker)
         {
@@ -177,9 +178,9 @@ namespace SME
         }
 
         /// <summary>
-        /// Registers one or more busses as TopLevel input
+        /// Registers one or more busses as TopLevel input.
         /// </summary>
-        /// <returns>The simulation instance for chaining syntax use</returns>
+        /// <returns>The simulation instance for chaining syntax use.</returns>
         /// <param name="inputs">The busses to register.</param>
         public Simulation AddTopLevelInputs(params IBus[] inputs)
         {
@@ -189,9 +190,9 @@ namespace SME
         }
 
         /// <summary>
-        /// Registers one or more busses as TopLevel input
+        /// Registers one or more busses as TopLevel input.
         /// </summary>
-        /// <returns>The simulation instance for chaining syntax use</returns>
+        /// <returns>The simulation instance for chaining syntax use.</returns>
         /// <param name="outputs">The busses to register.</param>
         public Simulation AddTopLevelOutputs(params IBus[] outputs)
         {
@@ -201,7 +202,7 @@ namespace SME
         }
 
         /// <summary>
-        /// Requests that the current simulation should stop
+        /// Requests that the current simulation should stop.
         /// </summary>
         public void RequestStop()
         {
@@ -209,7 +210,7 @@ namespace SME
         }
 
         /// <summary>
-        /// Creates a single process for each class that implements <see cref="IProcess"/> and runs the simulation on that
+        /// Creates a single process for each class that implements <see cref="IProcess"/> and runs the simulation on that.
         /// </summary>
         /// <param name="asm">The assembly to load.</param>
         [System.Obsolete("This method is for supporting older versions that did static exploration only. Please change your code to use Run(Loader.StartProcesses(asm, true)).")]
@@ -221,7 +222,7 @@ namespace SME
         /// <summary>
         /// Run the specified processes.
         /// </summary>
-        /// <param name="processes">The processes to run</param>
+        /// <param name="processes">The processes to run.</param>
         /// <returns>The awaitable task.</returns>
         public void Run(params IProcess[] processes)
         {
@@ -231,8 +232,8 @@ namespace SME
         /// <summary>
         /// Run the specified processes.
         /// </summary>
-        /// <param name="processes">The processes to run</param>
-        /// <param name="exitMethod">The exit method, return false to keep running</param>
+        /// <param name="processes">The processes to run.</param>
+        /// <param name="exitMethod">The exit method, return true to keep running.</param>
         /// <returns>The awaitable task.</returns>
         public void Run(IProcess[] processes = null, Func<bool> exitMethod = null)
         {
@@ -371,7 +372,7 @@ namespace SME
         }
 
         /// <summary>
-        /// Converts a type to a friendly name
+        /// Converts a type to a friendly name.
         /// </summary>
         /// <returns>The name of the type.</returns>
         /// <param name="type">The type to get the name for.</param>
@@ -409,9 +410,9 @@ namespace SME
         }
 
         /// <summary>
-        /// Registers a process for running in this simulation
+        /// Registers a process for running in this simulation.
         /// </summary>
-        /// <param name="p">P.</param>
+        /// <param name="p">The process to register.</param>
         public void RegisterProcess(IProcess p)
         {
             if (p == null)
@@ -450,13 +451,14 @@ namespace SME
                     _scopes[key] = value;
             }
         }
+        
         /// <summary>
         /// The simulation scopes matching the keys.
         /// </summary>
         private static readonly Dictionary<string, Simulation> _scopes = new Dictionary<string, Simulation>();
 
         /// <summary>
-        /// The shared scope key
+        /// The shared scope key3
         /// </summary>
         private static AsyncLocal<string> _scopekey = new AsyncLocal<string>();
 

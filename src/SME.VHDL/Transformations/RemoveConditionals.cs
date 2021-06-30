@@ -1,129 +1,130 @@
 ﻿using System;
 using SME.AST;
 using SME.AST.Transform;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace SME.VHDL.Transformations
 {
-	/// <summary>
-	/// If the output does not support VHDL 2008,
-	/// this will transform conditionals into an
-	/// <seealso cref="IfElseStatement"/>.
-	/// </summary>
-	public class RemoveConditionals : IASTTransform
-	{
-		/// <summary>
-		/// The render state
-		/// </summary>
-		private readonly RenderState State;
-		/// <summary>
-		/// The method being compiled
-		/// </summary>
-		private readonly Method Method;
+    /// <summary>
+    /// If the output does not support VHDL 2008,
+    /// this will transform conditionals into an
+    /// <seealso cref="IfElseStatement"/>.
+    /// </summary>
+    public class RemoveConditionals : IASTTransform
+    {
+        /// <summary>
+        /// The render state.
+        /// </summary>
+        private readonly RenderState State;
+        /// <summary>
+        /// The method being compiled.
+        /// </summary>
+        private readonly Method Method;
 
-		/// <summary>
-		/// Rewrites conditions based on booleans without adding a temporary variable
-		/// </summary>
-		public bool CompressLogicalAssignments = true;
+        /// <summary>
+        /// Rewrites conditions based on booleans without adding a temporary variable.
+        /// </summary>
+        public bool CompressLogicalAssignments = true;
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="T:SME.VHDL.Transformations.RemoveConditionals"/> class.
-		/// </summary>
-		/// <param name="state">The render state.</param>
-		/// <param name="method">The method being rendered.</param>
-		public RemoveConditionals(RenderState state, Method method)
-		{
-			State = state;
-			Method = method;
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:SME.VHDL.Transformations.RemoveConditionals"/> class.
+        /// </summary>
+        /// <param name="state">The render state.</param>
+        /// <param name="method">The method being rendered.</param>
+        public RemoveConditionals(RenderState state, Method method)
+        {
+            State = state;
+            Method = method;
+        }
 
-		/// <summary>
-		/// Applies the transformation
-		/// </summary>
-		/// <returns>The transformed item.</returns>
-		/// <param name="el">The item to visit.</param>
-		public ASTItem Transform(ASTItem el)
-		{
+        /// <summary>
+        /// Applies the transformation.
+        /// </summary>
+        /// <returns>The transformed item.</returns>
+        /// <param name="el">The item to visit.</param>
+        public ASTItem Transform(ASTItem el)
+        {
             if (State.Config.SUPPORTS_VHDL_2008)
-				return el;
+                return el;
 
-			if (el is ConditionalExpression)
-			{
-				var ce = el as ConditionalExpression;
+            if (el is ConditionalExpression)
+            {
+                var ce = el as ConditionalExpression;
 
-				if (CompressLogicalAssignments)
-				{
-					var pe = ce.Parent;
-					if (pe is ParenthesizedExpression)
-						pe = pe.Parent;
+                if (CompressLogicalAssignments)
+                {
+                    var pe = ce.Parent;
+                    if (pe is ParenthesizedExpression)
+                        pe = pe.Parent;
 
-					// See if we can avoid introducing a temporary variable
-					// when the conditional target is a boolean assignment
-					if (pe is AssignmentExpression)
-					{
-						var ase = pe as AssignmentExpression;
-						var tvhdl = State.VHDLType(ase.Left);
-						var svhdl = State.VHDLType(ce);
+                    // See if we can avoid introducing a temporary variable
+                    // when the conditional target is a boolean assignment
+                    if (pe is AssignmentExpression)
+                    {
+                        var ase = pe as AssignmentExpression;
+                        var tvhdl = State.VHDLType(ase.Left);
+                        var svhdl = State.VHDLType(ce);
 
-						if (tvhdl == VHDLTypes.SYSTEM_BOOL && svhdl == VHDLTypes.SYSTEM_BOOL && ase.Operator == ICSharpCode.Decompiler.CSharp.Syntax.AssignmentOperatorType.Assign)
-						{
-							var tg = ase.Left.GetTarget();
-							CreateIfElse(ce, tg);
+                        if (tvhdl == VHDLTypes.SYSTEM_BOOL && svhdl == VHDLTypes.SYSTEM_BOOL && ase.Operator == SyntaxKind.EqualsToken)
+                        {
+                            var tg = ase.Left.GetTarget();
+                            CreateIfElse(ce, tg);
 
-							ase.ReplaceWith(new EmptyExpression()
-							{
-								Parent = ase.Parent,
-								SourceExpression = ase.SourceExpression,
-								SourceResultType = null
-							});
+                            ase.ReplaceWith(new EmptyExpression()
+                            {
+                                Parent = ase.Parent,
+                                SourceExpression = ase.SourceExpression,
+                                SourceResultType = null
+                            });
 
-							return null;
-						}
-					}
-				}
+                            return null;
+                        }
+                    }
+                }
 
-				var tmp = State.RegisterTemporaryVariable(Method, ce.SourceResultType);
-				State.TypeLookup[tmp] = State.VHDLType(ce);
+                var tmp = State.RegisterTemporaryVariable(Method, ce.SourceResultType);
+                State.TypeLookup[tmp] = State.VHDLType(ce);
 
-				CreateIfElse(ce, tmp);
+                CreateIfElse(ce, tmp);
 
-				var iex = new IdentifierExpression()
-				{
-					Name = tmp.Name,
-					SourceExpression = ce.SourceExpression,
-					SourceResultType = ce.SourceResultType,
-					Target = tmp,
-				};
+                var iex = new IdentifierExpression()
+                {
+                    Name = tmp.Name,
+                    SourceExpression = ce.SourceExpression,
+                    SourceResultType = ce.SourceResultType,
+                    Target = tmp,
+                };
 
-				State.TypeLookup[iex] = State.VHDLType(tmp);
-				ce.ReplaceWith(iex);
+                State.TypeLookup[iex] = State.VHDLType(tmp);
+                ce.ReplaceWith(iex);
 
-				return iex;
-			}
+                return iex;
+            }
 
-			return el;
-		}
+            return el;
+        }
 
-		private IfElseStatement CreateIfElse(ConditionalExpression sourceExp, DataElement target)
-		{
-			Expression targetExp;
-			if (target is BusSignal)
-			{
-				targetExp = new MemberReferenceExpression()
-				{
-					SourceExpression = sourceExp.SourceExpression,
-					SourceResultType = target.CecilType,
-					Target = target
-				};
-			}
-			else
-			{
-				targetExp = new IdentifierExpression()
-				{
-					SourceExpression = sourceExp.SourceExpression,
-					SourceResultType = target.CecilType,
-					Target = target					
-				};
-			}
+        private IfElseStatement CreateIfElse(ConditionalExpression sourceExp, DataElement target)
+        {
+            Expression targetExp;
+            if (target is BusSignal)
+            {
+                targetExp = new MemberReferenceExpression()
+                {
+                    SourceExpression = sourceExp.SourceExpression,
+                    SourceResultType = target.MSCAType,
+                    Target = target
+                };
+            }
+            else
+            {
+                targetExp = new IdentifierExpression()
+                {
+                    SourceExpression = sourceExp.SourceExpression,
+                    SourceResultType = target.MSCAType,
+                    Target = target
+                };
+            }
 
             var ies = new IfElseStatement()
             {
@@ -131,29 +132,29 @@ namespace SME.VHDL.Transformations
                 TrueStatement = new ExpressionStatement()
                 {
                     Expression = new AssignmentExpression()
-					{
-						SourceResultType = targetExp.SourceResultType,
-						SourceExpression = sourceExp.SourceExpression,
-						Left = targetExp,
-						Right = sourceExp.TrueExpression
-					}
-				},
-				FalseStatement = new ExpressionStatement()
-				{
+                    {
+                        SourceResultType = targetExp.SourceResultType,
+                        SourceExpression = sourceExp.SourceExpression,
+                        Left = targetExp,
+                        Right = sourceExp.TrueExpression
+                    }
+                },
+                FalseStatement = new ExpressionStatement()
+                {
                     Expression = new AssignmentExpression()
-					{
-						SourceResultType = targetExp.SourceResultType,
-						SourceExpression = sourceExp.SourceExpression,
-						Left = targetExp,
-						Right = sourceExp.FalseExpression
-					}
-				},
-			};
-						   
-			sourceExp.PrependStatement(ies);
-			ies.UpdateParents();
+                    {
+                        SourceResultType = targetExp.SourceResultType,
+                        SourceExpression = sourceExp.SourceExpression,
+                        Left = targetExp,
+                        Right = sourceExp.FalseExpression
+                    }
+                },
+            };
 
-			return ies;
-		}
-	}
+            sourceExp.PrependStatement(ies);
+            ies.UpdateParents();
+
+            return ies;
+        }
+    }
 }

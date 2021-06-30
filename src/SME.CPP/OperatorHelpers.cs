@@ -1,115 +1,83 @@
 ﻿using System;
-using ICSharpCode.Decompiler.CSharp.Syntax;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace SME.CPP
 {
-	public static class OperatorHelpers
-	{
-        public static string ToCpp(this AssignmentOperatorType op)
+    public static class OperatorHelpers
+    {
+        public static string ToCpp(this SyntaxKind op)
         {
             switch (op)
             {
-                case AssignmentOperatorType.Assign:
+                case SyntaxKind.EqualsToken:
                     return "=";
-                case AssignmentOperatorType.Add:
+                case SyntaxKind.PlusEqualsToken:
                     return "+=";
-                case AssignmentOperatorType.BitwiseAnd:
+                case SyntaxKind.AmpersandEqualsToken:
                     return "&=";
-                case AssignmentOperatorType.BitwiseOr:
+                case SyntaxKind.BarEqualsToken:
                     return "|=";
-                case AssignmentOperatorType.Divide:
+                case SyntaxKind.SlashEqualsToken:
                     return "/=";
-                case AssignmentOperatorType.ExclusiveOr:
+                case SyntaxKind.CaretEqualsToken:
                     return "^=";
-                case AssignmentOperatorType.Modulus:
+                case SyntaxKind.PercentEqualsToken:
                     return "%=";
-                case AssignmentOperatorType.Multiply:
+                case SyntaxKind.AsteriskEqualsToken:
                     return "*=";
-                case AssignmentOperatorType.ShiftLeft:
+                case SyntaxKind.LessThanLessThanEqualsToken:
                     return "<<=";
-                case AssignmentOperatorType.ShiftRight:
+                case SyntaxKind.GreaterThanGreaterThanEqualsToken:
                     return ">>=";
-                case AssignmentOperatorType.Subtract:
+                case SyntaxKind.MinusEqualsToken:
                     return "+=";
+                case SyntaxKind.AmpersandToken:
+                    return "&";
+                case SyntaxKind.BarToken:
+                    return "|";
+                case SyntaxKind.AmpersandAmpersandToken:
+                    return "&&";
+                case SyntaxKind.BarBarToken:
+                    return "||";
+                case SyntaxKind.CaretToken:
+                    return "^";
+                case SyntaxKind.GreaterThanToken:
+                    return ">";
+                case SyntaxKind.GreaterThanEqualsToken:
+                    return ">=";
+                case SyntaxKind.EqualsEqualsToken:
+                    return "==";
+                case SyntaxKind.ExclamationEqualsToken:
+                    return "!=";
+                case SyntaxKind.LessThanToken:
+                    return "<";
+                case SyntaxKind.LessThanEqualsToken:
+                    return "<=";
+                case SyntaxKind.PlusToken:
+                    return "+";
+                case SyntaxKind.MinusToken:
+                    return "-";
+                case SyntaxKind.AsteriskToken:
+                    return "*";
+                case SyntaxKind.SlashToken:
+                    return "/";
+                case SyntaxKind.PercentToken:
+                    return "%";
+                case SyntaxKind.LessThanLessThanToken:
+                    return "<<";
+                case SyntaxKind.GreaterThanGreaterThanToken:
+                    return ">>";
+                case SyntaxKind.ExclamationToken:
+                    return "!";
+                case SyntaxKind.TildeToken:
+                    return "~";
+                case SyntaxKind.PlusPlusToken:
+                    return "++";
+                case SyntaxKind.MinusMinusToken:
+                    return "--";
                 default:
                     throw new Exception($"Unsupported assignment operator: {op}");
             }
         }
-
-		public static string ToCpp(this BinaryOperatorType op)
-		{
-			switch (op)
-			{
-			case BinaryOperatorType.BitwiseAnd:
-				return "&";
-			case BinaryOperatorType.BitwiseOr:
-				return "|";
-			case BinaryOperatorType.ConditionalAnd:
-				return "&&";
-			case BinaryOperatorType.ConditionalOr:
-				return "||";
-			case BinaryOperatorType.ExclusiveOr:
-				return "^";
-			case BinaryOperatorType.GreaterThan:
-				return ">";
-			case BinaryOperatorType.GreaterThanOrEqual:
-				return ">=";
-			case BinaryOperatorType.Equality:
-				return "==";
-			case BinaryOperatorType.InEquality:
-				return "!=";
-			case BinaryOperatorType.LessThan:
-				return "<";
-			case BinaryOperatorType.LessThanOrEqual:
-				return "<=";
-			case BinaryOperatorType.Add:
-				return "+";
-			case BinaryOperatorType.Subtract:
-				return "-";
-			case BinaryOperatorType.Multiply:
-				return "*";
-			case BinaryOperatorType.Divide:
-				return "/";
-			case BinaryOperatorType.Modulus:
-				return "%";
-			case BinaryOperatorType.ShiftLeft:
-				return "<<";
-			case BinaryOperatorType.ShiftRight:
-				return ">>";
-			case BinaryOperatorType.Any:
-			case BinaryOperatorType.NullCoalescing:
-			default:
-				return string.Format("({0})", op);
-			}
-		}
-
-		public static string ToCpp(this UnaryOperatorType op)
-		{
-			switch (op)
-			{
-			case UnaryOperatorType.Not:
-				return "!";
-			case UnaryOperatorType.BitNot:
-				return "~";
-			case UnaryOperatorType.Minus:
-				return "-";
-			case UnaryOperatorType.Plus:
-				return "+";
-			case UnaryOperatorType.Increment:
-				return "++";
-			case UnaryOperatorType.Decrement:
-				return "--";
-			case UnaryOperatorType.PostIncrement:
-				return "++";
-			case UnaryOperatorType.PostDecrement:
-				return "--";
-			case UnaryOperatorType.Dereference:
-			case UnaryOperatorType.AddressOf:
-			case UnaryOperatorType.Any:
-			case UnaryOperatorType.Await:
-			default:
-				return string.Format("({0})", op);
-			}
-		}
-	}
+    }
 }

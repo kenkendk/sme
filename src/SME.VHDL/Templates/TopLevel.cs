@@ -1,26 +1,36 @@
-﻿using System.Linq;
-using SME;
-using SME.VHDL;
-using System.Text;
-using System.Collections.Generic;
+﻿using System;
+using System.Linq;
 using SME.AST;
-using System;
 
 namespace SME.VHDL.Templates
 {
-
+    /// <summary>
+    /// Template for generating the top level VHDL file.
+    /// </summary>
     public class TopLevel : BaseTemplate
     {
-
+        /// <summary>
+        /// The network to render.
+        /// </summary>
         public readonly Network Network;
+        /// <summary>
+        /// The current render state.
+        /// </summary>
         public readonly RenderState RS;
 
+        /// <summary>
+        /// Constructs a new instance of the top level template.
+        /// </summary>
+        /// <param name="renderer">The render state to render in.</param>
         public TopLevel(RenderState renderer)
         {
             RS = renderer;
             Network = renderer.Network;
         }
 
+        /// <summary>
+        /// Writes the template to the VHDL file.
+        /// </summary>
         public override string TransformText()
         {
             GenerationEnvironment = null;
@@ -183,6 +193,7 @@ begin
                 var lastel = p.SharedVariables
                     .Cast<object>()
                     .Concat(p.SharedSignals)
+                    .Concat(p.SharedConstants)
                     .LastOrDefault();
                 if (lastel != null)
                 {
@@ -190,10 +201,18 @@ begin
                     foreach (var variable in p.SharedVariables)
                     {
                         var name = ToStringHelper.ToStringWithCulture( Naming.ToValidName($"reset_{variable.Name}") );
-                        if (variable.CecilType.IsArray)
+                        if (variable.MSCAType.IsArrayType())
                             name += $" (0 to {((Array)variable.DefaultValue).Length-1})";
                         var resetvar = ToStringHelper.ToStringWithCulture( RS.GetResetExpression(variable) );
                         var end = ToStringHelper.ToStringWithCulture( variable == lastel ? "" : "," );
+                        Write($"        {name} => {resetvar}{end}\n");
+                    }
+
+                    foreach (var constant in p.SharedConstants)
+                    {
+                        var name = ToStringHelper.ToStringWithCulture( Naming.ToValidName($"reset_{constant.Name}") );
+                        var resetvar = ToStringHelper.ToStringWithCulture( RS.GetResetExpression(constant) );
+                        var end = ToStringHelper.ToStringWithCulture( constant == lastel ? "" : "," );
                         Write($"        {name} => {resetvar}{end}\n");
                     }
 
@@ -287,7 +306,6 @@ begin
                 }
                 else
                 {
-                    // TODO underlig fejl med guards der ikke virker
                     var rdy = ToStringHelper.ToStringWithCulture( Naming.ToValidName($"RDY_{p.InstanceName}") );
                     var fin = ToStringHelper.ToStringWithCulture( Naming.ToValidName($"FIN_{parents.First()}") );
                     var zipped = parents.Skip(1)
@@ -311,7 +329,6 @@ begin
                 Write($"    FIN <= {first_fin};\n");
             else
             {
-                // TODO underlig fejl med guards der ikke virker
                 var zipped = processes.Skip(1)
                         .Zip(
                             processes.SkipLast(1),
@@ -413,7 +430,5 @@ end RTL;");
 
             return GenerationEnvironment.ToString();
         }
-
     }
-
 }

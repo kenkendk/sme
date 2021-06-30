@@ -4,25 +4,28 @@ using System.Linq;
 
 namespace SME.VHDL.CustomRenders.Native
 {
+    /// <summary>
+    /// Class for generating a Xilinx single port RAM by using macros.
+    /// </summary>
     public class XilinxSinglePortRam : ICustomRenderer
     {
         /// <summary>
-        /// Creates the include region for the component
+        /// Returns the string, which should be written in the include region of the VHDL file.
         /// </summary>
-        /// <returns>The region.</returns>
-        /// <param name="renderer">Renderer.</param>
-        /// <param name="indentation">Indentation.</param>
+        /// <param name="renderer">The renderer currently rendering VHDL files.</param>
+        /// <param name="indentation">The indentation at the current location in the VHDL file.</param>
         public string IncludeRegion(RenderStateProcess renderer, int indentation)
         {
             return VHDLHelper.CreateComponentInclude(renderer.Parent.Config, indentation);
         }
 
         /// <summary>
-        /// Gets a set of signals for communicating with a single blockram instance
+        /// Gets a set of signals for communicating with a single blockram instance.
         /// </summary>
         /// <returns>The signal region.</returns>
         /// <param name="config">The configuration to generate the signals for.</param>
-        /// <param name="index">The instance index to use, or negative for no indexing</param>
+        /// <param name="index">The instance index to use, or negative for no indexing.</param>
+        /// <param name="overrideAddrWidth">Value for overriding the width of the address bus.</param>
         private string GetSignalRegion(BlockRamConfig config, int index = -1, int overrideAddrWidth = -1)
         {
             var index_suffix = index < 0 ? string.Empty : $"_{index}";
@@ -36,7 +39,7 @@ signal ADDR_internal{index_suffix}: std_logic_vector({(overrideAddrWidth <= 0 ? 
         }
 
         /// <summary>
-        /// Creates VHDL code that chooses the block ram component data results with the top bits
+        /// Creates VHDL code that chooses the block ram component data results with the top bits.
         /// </summary>
         /// <returns>The output selector.</returns>
         /// <param name="instancename">The name of the instance to create.</param>
@@ -47,7 +50,7 @@ signal ADDR_internal{index_suffix}: std_logic_vector({(overrideAddrWidth <= 0 ? 
         {
             var cases = Enumerable
                 .Range(0, blocks)
-                .Select(i => $@"    when ""{VHDLHelper.GetDataBitString(i, fullAddressWidth - blockAddrWidth).Substring(32 - (fullAddressWidth - blockAddrWidth))}"" => 
+                .Select(i => $@"    when ""{VHDLHelper.GetDataBitString(i, fullAddressWidth - blockAddrWidth).Substring(32 - (fullAddressWidth - blockAddrWidth))}"" =>
         DO_internal <= DO_internal_{i};");
 
             return $@"
@@ -69,7 +72,9 @@ end process;
         /// <param name="config">The configuration to generate the instantiation for.</param>
         /// <param name="instancename">The name of the encapsulating instance.</param>
         /// <param name="initialvalue">The initial value for the output</param>
-        /// <param name="index">The instance index to use, or negative for no indexing</param>
+        /// <param name="memdatalines">The lines to initially fill the block RAM with.</param>
+        /// <param name="pardatalines">The lines to initially fill the parity bits with.</param>
+        /// <param name="index">The instance index to use, or negative for no indexing.</param>
         private string GetInstantiationRegion(BlockRamConfig config, string instancename, string initialvalue, IEnumerable<string> memdatalines, IEnumerable<string> pardatalines, int index = -1)
         {
             var memlines = string.Join(
@@ -113,11 +118,11 @@ generic map (
 { paritylines },
 
     INIT => X""{ initialvalue}"" --Initial values on output port
-)   
+)
 port map (
     DO => DO_internal{index_suffix},         -- Output read data port, width defined by READ_WIDTH parameter
     DI => DI_internal{index_suffix},         -- Input write data port, width defined by WRITE_WIDTH parameter
-    ADDR => ADDR_internal{index_suffix},     -- Input address, width defined by read/write port depth    
+    ADDR => ADDR_internal{index_suffix},     -- Input address, width defined by read/write port depth
     CLK => CLK,                -- 1-bit input clock
     EN => EN_internal{index_suffix},         -- 1-bit input enable
     REGCE => '0',              -- 1-bit input read output register enable
@@ -125,9 +130,14 @@ port map (
     WE => WE_internal{index_suffix}          -- Input write enable, width defined by write port depth
 );
 -- End of BRAM_SINGLE_MACRO instantiation
-";        
+";
         }
 
+        /// <summary>
+        /// Returns the string, which should be written in the body region of the VHDL file.
+        /// </summary>
+        /// <param name="renderer">The renderer currently rendering VHDL files.</param>
+        /// <param name="indentation">The indentation at the current location in the VHDL file.</param>
         public string BodyRegion(RenderStateProcess renderer, int indentation)
         {
             var initialdata = (Array)renderer.Process.SharedVariables.First(x => x.Name == "m_memory").DefaultValue;
@@ -230,7 +240,7 @@ begin
 {self.InstanceName}_Helper: process(RST,CLK, RDY)
 begin
 if RST = '1' then
-    FIN <= '0';                        
+    FIN <= '0';
 elsif rising_edge(CLK) then
     FIN <= not RDY;
     {clocktemplate}

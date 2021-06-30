@@ -1,117 +1,115 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ICSharpCode.Decompiler;
-using ICSharpCode.Decompiler.CSharp.Syntax;
-using Mono.Cecil;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace SME.AST
 {
-	// This partial part deals with statements
-	public partial class ParseProcesses
-	{
-		/// <summary>
-		/// Processes a single statement from the decompiler and returns an AST entry for it
-		/// </summary>
-		/// <param name="network">The top-level network.</param>
-		/// <param name="proc">The process where the method is located.</param>
-		/// <param name="method">The method where the statement is found.</param>
-		/// <param name="statement">The decompiler statement to process.</param>
-		protected virtual Statement Decompile(NetworkState network, ProcessState proc, MethodState method, AstNode statement)
-		{
-            if (statement is ICSharpCode.Decompiler.CSharp.Syntax.ExpressionStatement)
-                return Decompile(network, proc, method, statement as ICSharpCode.Decompiler.CSharp.Syntax.ExpressionStatement);
-            else if (statement is ICSharpCode.Decompiler.CSharp.Syntax.IfElseStatement)
-                return Decompile(network, proc, method, statement as ICSharpCode.Decompiler.CSharp.Syntax.IfElseStatement);
-            else if (statement is ICSharpCode.Decompiler.CSharp.Syntax.BlockStatement)
-                return Decompile(network, proc, method, statement as ICSharpCode.Decompiler.CSharp.Syntax.BlockStatement);
-            else if (statement is ICSharpCode.Decompiler.CSharp.Syntax.VariableDeclarationStatement)
-                return Decompile(network, proc, method, statement as ICSharpCode.Decompiler.CSharp.Syntax.VariableDeclarationStatement);
-            else if (statement is ICSharpCode.Decompiler.CSharp.Syntax.SwitchStatement)
-                return Decompile(network, proc, method, statement as ICSharpCode.Decompiler.CSharp.Syntax.SwitchStatement);
-            else if (statement is ICSharpCode.Decompiler.CSharp.Syntax.ReturnStatement)
-                return Decompile(network, proc, method, statement as ICSharpCode.Decompiler.CSharp.Syntax.ReturnStatement);
-            else if (statement is ICSharpCode.Decompiler.CSharp.Syntax.ForStatement)
-                return Decompile(network, proc, method, statement as ICSharpCode.Decompiler.CSharp.Syntax.ForStatement);
-            else if (statement is ICSharpCode.Decompiler.CSharp.Syntax.BreakStatement)
-                return Decompile(network, proc, method, statement as ICSharpCode.Decompiler.CSharp.Syntax.BreakStatement);
-            else if (statement is ICSharpCode.Decompiler.CSharp.Syntax.CheckedStatement)
+    // This partial part deals with statements.
+    public partial class ParseProcesses
+    {
+        /// <summary>
+        /// Processes a single statement from the decompiler and returns an AST entry for it.
+        /// </summary>
+        /// <param name="network">The top-level network.</param>
+        /// <param name="proc">The process where the method is located.</param>
+        /// <param name="method">The method where the statement is found.</param>
+        /// <param name="statement">The decompiler statement to process.</param>
+        protected virtual Statement Decompile(NetworkState network, ProcessState proc, MethodState method, StatementSyntax statement)
+        {
+            if (statement is ExpressionStatementSyntax)
+                return Decompile(network, proc, method, statement as ExpressionStatementSyntax);
+            else if (statement is IfStatementSyntax)
+                return Decompile(network, proc, method, statement as IfStatementSyntax);
+            else if (statement is BlockSyntax)
+                return Decompile(network, proc, method, statement as BlockSyntax);
+            else if (statement is LocalDeclarationStatementSyntax)
+                return Decompile(network, proc, method, statement as LocalDeclarationStatementSyntax);
+            else if (statement is SwitchStatementSyntax)
+                return Decompile(network, proc, method, statement as SwitchStatementSyntax);
+            else if (statement is ReturnStatementSyntax)
+                return Decompile(network, proc, method, statement as ReturnStatementSyntax);
+            else if (statement is ForStatementSyntax)
+                return Decompile(network, proc, method, statement as ForStatementSyntax);
+            else if (statement is BreakStatementSyntax)
+                return Decompile(network, proc, method, statement as BreakStatementSyntax);
+            else if (statement is CheckedStatementSyntax)
             {
-                Console.WriteLine("Warning: \"checked\" is not supported and will be ignored for statement: {0}", statement);
-                return Decompile(network, proc, method, (statement as ICSharpCode.Decompiler.CSharp.Syntax.CheckedStatement).Body);
+                // Checking for overflow is not translated.
+                return Decompile(network, proc, method, (statement as CheckedStatementSyntax).Block);
             }
-            else if (statement is ICSharpCode.Decompiler.CSharp.Syntax.UncheckedStatement)
-                return Decompile(network, proc, method, (statement as ICSharpCode.Decompiler.CSharp.Syntax.UncheckedStatement).Body);
-            else if (statement.IsNull)
-                return new EmptyStatement() { Parent = method };
-            else if (statement is ICSharpCode.Decompiler.CSharp.Syntax.GotoStatement)
-                return Decompile(network, proc, method, statement as ICSharpCode.Decompiler.CSharp.Syntax.GotoStatement);
-            else if (statement is ICSharpCode.Decompiler.CSharp.Syntax.LabelStatement)
-                return Decompile(network, proc, method, statement as ICSharpCode.Decompiler.CSharp.Syntax.LabelStatement);
-            else if (statement is ICSharpCode.Decompiler.CSharp.Syntax.WhileStatement)
-                return Decompile(network, proc, method, statement as ICSharpCode.Decompiler.CSharp.Syntax.WhileStatement);
-			else
-				throw new Exception(string.Format("Unsupported statement: {0} ({1})", statement, statement.GetType().FullName));
-		}
+            else if (statement is GotoStatementSyntax)
+                return Decompile(network, proc, method, statement as GotoStatementSyntax);
+            else if (statement is LabeledStatementSyntax)
+                return Decompile(network, proc, method, statement as LabeledStatementSyntax);
+            else if (statement is WhileStatementSyntax)
+                return Decompile(network, proc, method, statement as WhileStatementSyntax);
+            else if (statement is null)
+                return new EmptyStatement();
+            else
+                throw new Exception(string.Format("Unsupported statement: {0} ({1})", statement, statement.GetType().FullName));
+        }
 
-		/// <summary>
-		/// Processes a single statement from the decompiler and returns an AST entry for it
-		/// </summary>
-		/// <param name="network">The top-level network.</param>
-		/// <param name="proc">The process where the method is located.</param>
-		/// <param name="method">The method where the statement is found.</param>
-		/// <param name="statement">The decompiler statement to process.</param>
-		protected virtual ExpressionStatement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.Decompiler.CSharp.Syntax.ExpressionStatement statement)
-		{
-			if (statement.GetType() != typeof(ICSharpCode.Decompiler.CSharp.Syntax.ExpressionStatement))
-				throw new Exception(string.Format("Unsupported expression statement: {0} ({1})", statement, statement.GetType().FullName));
+        /// <summary>
+        /// Processes a single expression statement from the decompiler and returns an AST entry for it.
+        /// </summary>
+        /// <param name="network">The top-level network.</param>
+        /// <param name="proc">The process where the method is located.</param>
+        /// <param name="method">The method where the statement is found.</param>
+        /// <param name="statement">The decompiler statement to process.</param>
+        protected virtual ExpressionStatement Decompile(NetworkState network, ProcessState proc, MethodState method, ExpressionStatementSyntax statement)
+        {
+            if (statement.GetType() != typeof(ExpressionStatementSyntax))
+                throw new Exception(string.Format("Unsupported expression statement: {0} ({1})", statement, statement.GetType().FullName));
 
-			var s = new ExpressionStatement()
-			{
-				Parent = method
-			};
+            var s = new ExpressionStatement()
+            {
+                Parent = method
+            };
 
-			s.Expression = Decompile(network, proc, method, s, statement.Expression);
-			return s;
-		}
+            s.Expression = Decompile(network, proc, method, s, statement.Expression);
+            return s;
+        }
 
-		/// <summary>
-		/// Processes a single statement from the decompiler and returns an AST entry for it
-		/// </summary>
-		/// <param name="network">The top-level network.</param>
-		/// <param name="proc">The process where the method is located.</param>
-		/// <param name="method">The method where the statement is found.</param>
-		/// <param name="statement">The decompiler statement to process.</param>
-		protected virtual IfElseStatement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.Decompiler.CSharp.Syntax.IfElseStatement statement)
-		{
-			var s = new IfElseStatement()
-			{
-				TrueStatement = Decompile(network, proc, method, statement.TrueStatement),
-				FalseStatement = Decompile(network, proc, method, statement.FalseStatement),
-				Parent = method
-			};
+        /// <summary>
+        /// Processes a single if statement from the decompiler and returns an AST entry for it.
+        /// </summary>
+        /// <param name="network">The top-level network.</param>
+        /// <param name="proc">The process where the method is located.</param>
+        /// <param name="method">The method where the statement is found.</param>
+        /// <param name="statement">The decompiler statement to process.</param>
+        protected virtual IfElseStatement Decompile(NetworkState network, ProcessState proc, MethodState method, IfStatementSyntax statement)
+        {
+            var s = new IfElseStatement()
+            {
+                TrueStatement = Decompile(network, proc, method, statement.Statement),
+                FalseStatement = Decompile(network, proc, method, statement.Else?.Statement),
+                Parent = method
+            };
 
-			s.Condition = Decompile(network, proc, method, s, statement.Condition);
-			s.TrueStatement.Parent = s;
-			s.FalseStatement.Parent = s;
+            s.Condition = Decompile(network, proc, method, s, statement.Condition);
+            s.TrueStatement.Parent = s;
+            s.FalseStatement.Parent = s;
 
-			return s;
-		}
+            return s;
+        }
 
-		/// <summary>
-		/// Processes a single statement from the decompiler and returns an AST entry for it
-		/// </summary>
-		/// <param name="network">The top-level network.</param>
-		/// <param name="proc">The process where the method is located.</param>
-		/// <param name="method">The method where the statement is found.</param>
-		/// <param name="statement">The decompiler statement to process.</param>
-		protected virtual BlockStatement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.Decompiler.CSharp.Syntax.BlockStatement statement)
-		{
-            
-			var s = new BlockStatement
-			{
-				Parent = method
-			};
+        /// <summary>
+        /// Processes a single block statement from the decompiler and returns an AST entry for it.
+        /// </summary>
+        /// <param name="network">The top-level network.</param>
+        /// <param name="proc">The process where the method is located.</param>
+        /// <param name="method">The method where the statement is found.</param>
+        /// <param name="statement">The decompiler statement to process.</param>
+        protected virtual BlockStatement Decompile(NetworkState network, ProcessState proc, MethodState method, BlockSyntax statement)
+        {
+
+            var s = new BlockStatement
+            {
+                Parent = method
+            };
 
             method.StartScope(s);
 
@@ -122,359 +120,366 @@ namespace SME.AST
                 return n;
             }).ToArray();
 
-			method.FinishScope(s);
+            method.FinishScope(s);
 
 
-			return s;
-		}
+            return s;
+        }
 
-		/// <summary>
-		/// Processes a single variable declaration statement from the decompiler and returns an AST entry for it
-		/// </summary>
-		/// <param name="network">The top-level network.</param>
-		/// <param name="proc">The process where the method is located.</param>
-		/// <param name="method">The method where the statement is found.</param>
-		/// <param name="statement">The decompiler statement to process.</param>
-		protected virtual Statement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.Decompiler.CSharp.Syntax.VariableDeclarationStatement statement)
-		{
-			TypeReference vartype = null;
+        /// <summary>
+        /// Processes a single local variable declaration statement from the decompiler and returns an AST entry for it.
+        /// </summary>
+        /// <param name="network">The top-level network.</param>
+        /// <param name="proc">The process where the method is located.</param>
+        /// <param name="method">The method where the statement is found.</param>
+        /// <param name="statement">The decompiler statement to process.</param>
+        protected virtual Statement Decompile(NetworkState network, ProcessState proc, MethodState method, LocalDeclarationStatementSyntax statement)
+        {
+            ITypeSymbol vartype = null;
 
-			var init = statement.Variables.FirstOrDefault(x => x.Initializer is ICSharpCode.Decompiler.CSharp.Syntax.MemberReferenceExpression);
-			if (init != null)
-			{
-				var mt = TryLocateElement(network, proc, method, null, init.Initializer);
-				if (mt != null && mt is AST.Bus)
-					vartype = LoadType(((AST.Bus)mt).SourceType);
-			}
-
-			if (vartype == null)
-				vartype = LoadType(statement.Type, method);
-			
-			if (vartype.IsBusType())
-			{
-				foreach (var n in statement.Variables)
-				{
-					if (n.Initializer is ICSharpCode.Decompiler.CSharp.Syntax.MemberReferenceExpression)
-					{
-						proc.BusInstances[n.Name] = LocateBus(network, proc, method, n.Initializer);
-					}
-					else
-					{
-						var match = proc.CecilType.Resolve().Fields.Where(x => x.FieldType.IsSameTypeReference(vartype)).FirstOrDefault();
-						if (match != null)
-							proc.BusInstances[n.Name] = LocateBus(network, proc, method, n.Initializer);
-						else
-							Console.WriteLine("Unable to determine what bus is assigned to variable {0}", n.Name);
-					}
-				}
-
-				return new EmptyStatement()
-				{
-					Parent = method
-				};
-			}
-			else
-			{
-				var statements = new List<Statement>();
-
-				foreach (var n in statement.Variables)
-				{
-					RegisterVariable(network, proc, method, vartype, n);
-					if (!n.Initializer.IsNull)
-						statements.Add(Decompile(network, proc, method, new ICSharpCode.Decompiler.CSharp.Syntax.ExpressionStatement(new ICSharpCode.Decompiler.CSharp.Syntax.AssignmentExpression(new ICSharpCode.Decompiler.CSharp.Syntax.IdentifierExpression(n.Name), n.Initializer.Clone()))));
-				}
-
-				if (statements.Count == 0)
-				{
-					return new EmptyStatement()
-					{
-						Parent = method
-					};
-				}
-				else if (statements.Count == 1)
-				{
-					statements[0].Parent = method;
-					return statements[0];
-				}
-				else
-				{
-					var s = new BlockStatement()
-					{
-						Statements = statements.ToArray(),
-						Parent = method						                       
-					};
-
-					foreach (var x in s.Statements)
-						x.Parent = s;
-
-					return s;
-				}
-			}
-		}
-
-		/// <summary>
-		/// Processes a single statement from the decompiler and returns an AST entry for it
-		/// </summary>
-		/// <param name="network">The top-level network.</param>
-		/// <param name="proc">The process where the method is located.</param>
-		/// <param name="method">The method where the statement is found.</param>
-		/// <param name="statement">The decompiler statement to process.</param>
-		protected virtual SwitchStatement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.Decompiler.CSharp.Syntax.SwitchStatement statement)
-		{
-			var s = new SwitchStatement()
-			{
-				Parent = method,
-				// Default expression is a null expression
-				HasDefault = statement.SwitchSections
-					.SelectMany(x => 
-						x.CaseLabels.Select(y => 
-							y.Expression.IsNull))
-					.Contains(true)
-			};
-
-			s.SwitchExpression = Decompile(network, proc, method, s, statement.Expression);
-
-			s.Cases = statement
-				.SwitchSections
-				.Select(x => new Tuple<Expression[], Statement[]>(
-					x.CaseLabels.Select(y => Decompile(network, proc, method, s, y.Expression)).ToArray(),
-					x.Statements.Select(y => Decompile(network, proc, method, y)).ToArray()
-				)).ToArray();
-
-			foreach (var c in s.Cases)
-			{
-				foreach (var x in c.Item1)
-					x.Parent = s;
-				foreach (var x in c.Item2)
-					x.Parent = s;
-			}
-
-			return s;
-		}
-
-		/// <summary>
-		/// Processes a single statement from the decompiler and returns an AST entry for it
-		/// </summary>
-		/// <param name="network">The top-level network.</param>
-		/// <param name="proc">The process where the method is located.</param>
-		/// <param name="method">The method where the statement is found.</param>
-		/// <param name="statement">The decompiler statement to process.</param>
-		protected virtual Statement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.Decompiler.CSharp.Syntax.ReturnStatement statement)
-		{
-			var s = new ReturnStatement()
-			{
-				Parent = method
-			};
-
-			s.ReturnExpression = Decompile(network, proc, method, s, statement.Expression);
-
-			return s;
-		}
-
-		/// <summary>
-		/// Finds the length of an array or a primitive value for use in loop bounds
-		/// </summary>
-		/// <returns>The array length or primitive.</returns>
-		/// <param name="network">The top-level network.</param>
-		/// <param name="proc">The process where the method is located.</param>
-		/// <param name="method">The method where the statement is found.</param>
-		/// <param name="src">The expression to examine.</param>
-        protected virtual DataElement ResolveArrayLengthOrPrimitive(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.Decompiler.CSharp.Syntax.Expression src)
-		{
-			if (src is ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression)
-				try
-				{
-					return new Constant
-					{
-						Source = src,
-						DefaultValue = Convert.ToInt32((src as ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression).Value),
-						CecilType = LoadType(typeof(int)),
-						Parent = method
-					};
-				}
-				catch (Exception ex)
-				{
-					throw new Exception(string.Format("Unable to resolve as a constant value: {0}", src), ex);
-				}
-            DataElement member;
-			var ex_left = src as ICSharpCode.Decompiler.CSharp.Syntax.MemberReferenceExpression;
-            if (ex_left != null)
+            var init = statement.Declaration.Variables.FirstOrDefault(x => x.Initializer != null && x.Initializer.Value is MemberAccessExpressionSyntax);
+            if (init != null)
             {
-                if (ex_left.MemberName != "Length")
-                    throw new Exception(string.Format("Only plain style for loops supported: {0}", src));
-                member = LocateDataElement(network, proc, method, null, ex_left.Target);
+                var mt = TryLocateElement(network, proc, method, null, init.Initializer.Value);
+                if (mt != null && mt is AST.Bus)
+                    vartype = LoadType(((AST.Bus)mt).SourceType);
+            }
+
+            if (vartype == null)
+                vartype = LoadType(statement.Declaration.Type, method);
+
+            if (vartype.IsBusType())
+            {
+                foreach (var n in statement.Declaration.Variables)
+                {
+                    if (n.Initializer.Value is MemberAccessExpressionSyntax)
+                    {
+                        proc.BusInstances[n.Identifier.Text] = LocateBus(network, proc, method, n.Initializer.Value);
+                    }
+                    else
+                    {
+                        var match = proc.MSCAType.GetClassDecl().Members.OfType<FieldDeclarationSyntax>().Where(x => LoadType(x.Declaration.Type).IsSameTypeReference(vartype)).FirstOrDefault();
+                        if (match != null)
+                            proc.BusInstances[n.Identifier.Text] = LocateBus(network, proc, method, n.Initializer.Value);
+                        else
+                            Console.WriteLine("Unable to determine what bus is assigned to variable {0}", n.Identifier.Text);
+                    }
+                }
+
+                return new EmptyStatement()
+                {
+                    Parent = method
+                };
             }
             else
             {
-                var ex_id = src as ICSharpCode.Decompiler.CSharp.Syntax.IdentifierExpression;
+                var statements = new List<Statement>();
+
+                foreach (var n in statement.Declaration.Variables)
+                {
+                    RegisterVariable(network, proc, method, vartype, n);
+                    if (n.Initializer != null)
+                        statements.Add(Decompile(network, proc, method, SyntaxFactory.ExpressionStatement(
+                                SyntaxFactory.AssignmentExpression(
+                                    SyntaxKind.SimpleAssignmentExpression,
+                                    SyntaxFactory.IdentifierName(n.Identifier.ValueText),
+                                    SyntaxFactory.Token(SyntaxKind.EqualsToken),
+                                    n.Initializer.Value))));
+                }
+
+                if (statements.Count == 0)
+                {
+                    return new EmptyStatement()
+                    {
+                        Parent = method
+                    };
+                }
+                else if (statements.Count == 1)
+                {
+                    statements[0].Parent = method;
+                    return statements[0];
+                }
+                else
+                {
+                    var s = new BlockStatement()
+                    {
+                        Statements = statements.ToArray(),
+                        Parent = method
+                    };
+
+                    foreach (var x in s.Statements)
+                        x.Parent = s;
+
+                    return s;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Processes a single switch statement from the decompiler and returns an AST entry for it.
+        /// </summary>
+        /// <param name="network">The top-level network.</param>
+        /// <param name="proc">The process where the method is located.</param>
+        /// <param name="method">The method where the statement is found.</param>
+        /// <param name="statement">The decompiler statement to process.</param>
+        protected virtual SwitchStatement Decompile(NetworkState network, ProcessState proc, MethodState method, SwitchStatementSyntax statement)
+        {
+            var s = new SwitchStatement()
+            {
+                Parent = method,
+                // Default expression is a null expression
+                HasDefault = statement.Sections
+                    .SelectMany(x => x.Labels.OfType<DefaultSwitchLabelSyntax>())
+                    .Any()
+            };
+
+            s.SwitchExpression = Decompile(network, proc, method, s, statement.Expression);
+
+            s.Cases = statement
+                .Sections
+                .Select(x => new Tuple<Expression[], Statement[]>(
+                    x.Labels.Select(y => y is CaseSwitchLabelSyntax ? Decompile(network, proc, method, s, (y as CaseSwitchLabelSyntax).Value) : new EmptyExpression()).ToArray(),
+                    x.Statements.Select(y => Decompile(network, proc, method, y)).ToArray()
+                ))
+                .ToArray();
+
+            foreach (var c in s.Cases)
+            {
+                foreach (var x in c.Item1)
+                    x.Parent = s;
+                foreach (var x in c.Item2)
+                    x.Parent = s;
+            }
+
+            return s;
+        }
+
+        /// <summary>
+        /// Processes a single return statement from the decompiler and returns an AST entry for it.
+        /// </summary>
+        /// <param name="network">The top-level network.</param>
+        /// <param name="proc">The process where the method is located.</param>
+        /// <param name="method">The method where the statement is found.</param>
+        /// <param name="statement">The decompiler statement to process.</param>
+        protected virtual Statement Decompile(NetworkState network, ProcessState proc, MethodState method, ReturnStatementSyntax statement)
+        {
+            var s = new ReturnStatement()
+            {
+                Parent = method
+            };
+
+            s.ReturnExpression = statement.Expression == null ? new EmptyExpression() : Decompile(network, proc, method, s, statement.Expression);
+
+            return s;
+        }
+
+        /// <summary>
+        /// Finds the length of an array or a primitive value for use in loop bounds.
+        /// </summary>
+        /// <returns>The array length or primitive.</returns>
+        /// <param name="network">The top-level network.</param>
+        /// <param name="proc">The process where the method is located.</param>
+        /// <param name="method">The method where the statement is found.</param>
+        /// <param name="src">The expression to examine.</param>
+        protected virtual DataElement ResolveArrayLengthOrPrimitive(NetworkState network, ProcessState proc, MethodState method, ExpressionSyntax src)
+        {
+            if (src is LiteralExpressionSyntax)
+                try
+                {
+                    return new Constant
+                    {
+                        Source = src,
+                        DefaultValue = Convert.ToInt32((src as LiteralExpressionSyntax).Token.Value),
+                        MSCAType = LoadType(typeof(int)),
+                        Parent = method
+                    };
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception(string.Format("Unable to resolve as a constant value: {0}", src), ex);
+                }
+            DataElement member;
+            var ex_left = src as MemberAccessExpressionSyntax;
+            if (ex_left != null)
+            {
+                if (ex_left.Name.Identifier.ValueText != "Length")
+                    throw new Exception(string.Format("Only plain style for loops supported: {0}", src));
+                member = LocateDataElement(network, proc, method, null, ex_left.Expression);
+            }
+            else
+            {
+                var ex_id = src as IdentifierNameSyntax;
                 if (ex_id == null)
                     throw new ArgumentException(string.Format("Unable to resolve loop limit: {0}", src));
                 return LocateDataElement(network, proc, method, null, ex_id);
             }
 
-			if (member.CecilType.IsFixedArrayType())
-			{
-				if (member.Source is IMemberDefinition)
-				{
-					return new Constant
-					{
-						Source = member,
-						DefaultValue = ((IMemberDefinition)member.Source).GetFixedArrayLength(),
-						CecilType = LoadType(typeof(int))
-					};
-				}
-				else if (member.Source is System.Reflection.MemberInfo)
-				{
-					return new Constant
-					{
-						Source = member,
-						DefaultValue = ((System.Reflection.MemberInfo)member.Source).GetFixedArrayLength(),
-						CecilType = LoadType(typeof(int))
-					};
-				}
-			}
+            if (member.MSCAType.IsFixedArrayType())
+            {
+                if (member.Source is MemberDeclarationSyntax)
+                {
+                    return new Constant
+                    {
+                        Source = member,
+                        DefaultValue = ((MemberDeclarationSyntax)member.Source).GetFixedArrayLength(m_semantics),
+                        MSCAType = LoadType(typeof(int))
+                    };
+                }
+                else if (member.Source is System.Reflection.MemberInfo)
+                {
+                    return new Constant
+                    {
+                        Source = member,
+                        DefaultValue = ((System.Reflection.MemberInfo)member.Source).GetFixedArrayLength(),
+                        MSCAType = LoadType(typeof(int))
+                    };
+                }
+            }
 
-			var value = member.DefaultValue;
+            var value = member.DefaultValue;
 
-			if (value is AST.ArrayCreateExpression)
-			{
-				var ce = (value as ArrayCreateExpression);
-				var target = ce.ElementExpressions.Length;
-				return new Constant()
-				{
-					DefaultValue = target,
-					Source = ce,
-					CecilType = LoadType(typeof(int))
-				};
-				
-			}
-			else if (value is AST.EmptyArrayCreateExpression)
-			{
-				var ce = (value as EmptyArrayCreateExpression);
-				var target = ce.SizeExpression.GetTarget();
-				if (target == null)
-				{
-					return new Constant()
-					{
-						DefaultValue = ((PrimitiveExpression)ce.SizeExpression).Value,
-						Source = ce,
-						CecilType = LoadType(typeof(int))
-					};
-				}
-				else
-				{
-					return new Constant()
-					{
-						DefaultValue = target.DefaultValue,
-						Source = target.Source,
-						CecilType = LoadType(typeof(int))
-					};
-				}
-			}
-					
+            if (value is AST.ArrayCreateExpression)
+            {
+                var ce = (value as ArrayCreateExpression);
+                var target = ce.ElementExpressions.Length;
+                return new Constant()
+                {
+                    DefaultValue = target,
+                    Source = ce,
+                    MSCAType = LoadType(typeof(int))
+                };
 
-			if (value is ICSharpCode.Decompiler.CSharp.Syntax.ArrayCreateExpression)
-				return new Constant() 
-				{ 
-					Source = value, 
-					DefaultValue = (value as ICSharpCode.Decompiler.CSharp.Syntax.ArrayCreateExpression).Initializer.Children.Count(),
-					CecilType = LoadType(typeof(int)),
-					Parent = method
-				};
+            }
+            else if (value is AST.EmptyArrayCreateExpression)
+            {
+                var ce = (value as EmptyArrayCreateExpression);
+                var target = ce.SizeExpression.GetTarget();
+                if (target == null)
+                {
+                    return new Constant()
+                    {
+                        DefaultValue = ((PrimitiveExpression)ce.SizeExpression).Value,
+                        Source = ce,
+                        MSCAType = LoadType(typeof(int))
+                    };
+                }
+                else
+                {
+                    return new Constant()
+                    {
+                        DefaultValue = target.DefaultValue,
+                        Source = target.Source,
+                        MSCAType = LoadType(typeof(int))
+                    };
+                }
+            }
+
+
+            if (value is ArrayCreationExpressionSyntax)
+                return new Constant()
+                {
+                    Source = value,
+                    DefaultValue = (value as ArrayCreationExpressionSyntax).Initializer.Expressions.Count(),
+                    MSCAType = LoadType(typeof(int)),
+                    Parent = method
+                };
 
             if (value is Array)
                 return new Constant()
                 {
                     DefaultValue = ((Array)value).Length,
                     Source = value,
-                    CecilType = LoadType(typeof(int))
+                    MSCAType = LoadType(typeof(int))
                 };
 
-			if (value is IMemberDefinition)
-			{
-				try
-				{
-					var mr = value as IMemberDefinition;
-					if (mr is FieldDefinition && network.ConstantLookup.ContainsKey(mr as FieldDefinition))
-						return ResolveArrayLengthOrPrimitive(network, proc, method, new ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression(network.ConstantLookup[mr as FieldDefinition]));
-				}
-				catch (Exception ex)
-				{
-					throw new Exception(string.Format("Unable to resolve as a constant value: {0}", src), ex);
-				}
-			}
+            if (value is MemberDeclarationSyntax)
+            {
+                try
+                {
+                    var mr = value as MemberDeclarationSyntax;
+                    var mrsym = (mr as FieldDeclarationSyntax).LoadSymbol(m_semantics) as IFieldSymbol;
+                    if (mr is FieldDeclarationSyntax && network.ConstantLookup.ContainsKey(mrsym))
+                    {
+                        return ResolveArrayLengthOrPrimitive(network, proc, method, ((FieldDeclarationSyntax)mr).Declaration.Variables.First().Initializer.Value);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception(string.Format("Unable to resolve as a constant value: {0}", src), ex);
+                }
+            }
 
 
 
-			try
-			{
-				return new Constant() { 
-					Source = value, 
-					DefaultValue = Convert.ToInt32(value),
-					CecilType = LoadType(typeof(int)),
-					Parent = method
-				};
-			}
-			catch (Exception ex)
-			{
-				throw new Exception(string.Format("Unable to resolve as a constant value: {0}", src), ex);
-			}
-		}
-		/// <summary>
-		/// Processes a single statement from the decompiler and returns an AST entry for it
-		/// </summary>
-		/// <param name="network">The top-level network.</param>
-		/// <param name="proc">The process where the method is located.</param>
-		/// <param name="method">The method where the statement is found.</param>
-		/// <param name="statement">The decompiler statement to process.</param>
-		protected virtual BreakStatement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.Decompiler.CSharp.Syntax.BreakStatement statement)
-		{
-			return new BreakStatement()
-			{
-				Parent = method,
-			};
-		}
-
+            try
+            {
+                return new Constant() {
+                    Source = value,
+                    DefaultValue = Convert.ToInt32(value),
+                    MSCAType = LoadType(typeof(int)),
+                    Parent = method
+                };
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(string.Format("Unable to resolve as a constant value: {0}", src), ex);
+            }
+        }
         /// <summary>
-        /// Processes a single statement from the decompiler and returns an AST entry for it
+        /// Processes a single break statement from the decompiler and returns an AST entry for it.
         /// </summary>
         /// <param name="network">The top-level network.</param>
         /// <param name="proc">The process where the method is located.</param>
         /// <param name="method">The method where the statement is found.</param>
         /// <param name="statement">The decompiler statement to process.</param>
-        protected virtual GotoStatement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.Decompiler.CSharp.Syntax.GotoStatement statement)
+        protected virtual BreakStatement Decompile(NetworkState network, ProcessState proc, MethodState method, BreakStatementSyntax statement)
+        {
+            return new BreakStatement()
+            {
+                Parent = method,
+            };
+        }
+
+        /// <summary>
+        /// Processes a single goto statement from the decompiler and returns an AST entry for it.
+        /// </summary>
+        /// <param name="network">The top-level network.</param>
+        /// <param name="proc">The process where the method is located.</param>
+        /// <param name="method">The method where the statement is found.</param>
+        /// <param name="statement">The decompiler statement to process.</param>
+        protected virtual GotoStatement Decompile(NetworkState network, ProcessState proc, MethodState method, GotoStatementSyntax statement)
         {
             return new GotoStatement()
             {
                 Parent = method,
-                Label = statement.Label
+                Label = (statement.Expression as IdentifierNameSyntax).Identifier.ValueText
             };
         }
 
         /// <summary>
-        /// Processes a single statement from the decompiler and returns an AST entry for it
+        /// Processes a single labeled statement from the decompiler and returns an AST entry for it.
         /// </summary>
         /// <param name="network">The top-level network.</param>
         /// <param name="proc">The process where the method is located.</param>
         /// <param name="method">The method where the statement is found.</param>
         /// <param name="statement">The decompiler statement to process.</param>
-        protected virtual LabelStatement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.Decompiler.CSharp.Syntax.LabelStatement statement)
+        protected virtual LabelStatement Decompile(NetworkState network, ProcessState proc, MethodState method, LabeledStatementSyntax statement)
         {
             return new LabelStatement()
             {
                 Parent = method,
-                Label = statement.Label
+                Label = statement.Identifier.ValueText
             };
         }
 
         /// <summary>
-        /// Processes a single statement from the decompiler and returns an AST entry for it
+        /// Processes a single while statement from the decompiler and returns an AST entry for it.
         /// </summary>
         /// <param name="network">The top-level network.</param>
         /// <param name="proc">The process where the method is located.</param>
         /// <param name="method">The method where the statement is found.</param>
         /// <param name="statement">The decompiler statement to process.</param>
-        protected virtual WhileStatement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.Decompiler.CSharp.Syntax.WhileStatement statement)
+        protected virtual WhileStatement Decompile(NetworkState network, ProcessState proc, MethodState method, WhileStatementSyntax statement)
         {
             var res = new WhileStatement()
             {
@@ -483,198 +488,47 @@ namespace SME.AST
 
 
             res.Condition = Decompile(network, proc, method, res, statement.Condition);
-            res.Body = Decompile(network, proc, method, statement.EmbeddedStatement);
+            res.Body = Decompile(network, proc, method, statement.Statement);
             res.Body.Parent = res;
 
             return res;
         }
 
-		/// <summary>
-		/// Processes a single statement from the decompiler and returns an AST entry for it
-		/// </summary>
-		/// <param name="network">The top-level network.</param>
-		/// <param name="proc">The process where the method is located.</param>
-		/// <param name="method">The method where the statement is found.</param>
-		/// <param name="statement">The decompiler statement to process.</param>
-		/*protected virtual ForStatement DecompileOld(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.Decompiler.CSharp.Syntax.ForStatement statement)
-		{
-			if (statement.Initializers.Count != 1)
-				throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
-
-			if (statement.Iterators.Count != 1)
-				throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
-
-
-			var init = statement.Initializers.First() as ICSharpCode.Decompiler.CSharp.Syntax.VariableDeclarationStatement;
-			if (init == null)
-				throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
-
-			if (init.Variables.Count != 1)
-				throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
-
-			var name = init.Variables.First().Name;
-			var initial = init.Variables.First().Initializer as ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression;
-
-			if (initial == null || !(initial.Value is int))
-				throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
-
-			var startvalue = new Constant() 
-			{ 
-				Source = initial, 
-				DefaultValue = (int)initial.Value,
-				CecilType = LoadType(typeof(int))
-			};
-
-			var cond = statement.Condition as ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorExpression;
-			if (cond == null)
-				throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
-
-			if (cond.Operator != BinaryOperatorType.LessThan)
-				throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
-
-			var condleft = cond.Left as ICSharpCode.Decompiler.CSharp.Syntax.IdentifierExpression;
-			var condright = cond.Right as ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression;
-
-			// Handling cases where the upper limit is the length of an array
-			if (condright == null)
-			{
-				// Some plus/minus expression
-				if (cond.Right is ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorExpression)
-				{
-					var binop = cond.Right as ICSharpCode.Decompiler.CSharp.Syntax.BinaryOperatorExpression;
-
-					var leftval = ResolveArrayLengthOrPrimitive(network, proc, method, binop.Left);
-					var rightval = ResolveArrayLengthOrPrimitive(network, proc, method, binop.Right);
-
-					if (binop.Operator == BinaryOperatorType.Add)
-                        condright = new ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression((int)leftval.DefaultValue + (int)rightval.DefaultValue);
-					else if (binop.Operator == BinaryOperatorType.Subtract)
-						condright = new ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression((int)leftval.DefaultValue - (int)rightval.DefaultValue);
-					else
-						throw new Exception(string.Format("Only add and subtract operations are supported in for loop bounds: {0}", statement));
-				}
-				// Plain limit
-				else if (cond.Right is ICSharpCode.Decompiler.CSharp.Syntax.IdentifierExpression || cond.Right is ICSharpCode.Decompiler.CSharp.Syntax.MemberReferenceExpression)
-				{
-                    condright = new ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression(ResolveArrayLengthOrPrimitive(network, proc, method, cond.Right));
-				}
-			}
-
-			if (condleft == null || condright == null || !(condright.Value is int) || condleft.Identifier != name)
-				throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
-
-			var endvalue = new Constant() 
-			{ 
-				Source = condright,
-				DefaultValue = (int)condright.Value,
-				CecilType = LoadType(typeof(int))
-			};
-
-			var increment = new Constant() 
-			{ 
-				DefaultValue = 1,
-				CecilType = LoadType(typeof(int)),
-				Source = cond
-			};
-
-			var itr = statement.Iterators.First() as ICSharpCode.Decompiler.CSharp.Syntax.ExpressionStatement;
-            if (itr == null || !(itr.Expression is ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorExpression))
-            {
-                var ae = itr == null ? null : itr.Expression as ICSharpCode.Decompiler.CSharp.Syntax.AssignmentExpression;
-
-                if (ae != null && ae.Left is ICSharpCode.Decompiler.CSharp.Syntax.IdentifierExpression && (ae.Left as ICSharpCode.Decompiler.CSharp.Syntax.IdentifierExpression).Identifier == name && ae.Right is ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression)
-                {
-                    // Support for increments like "i += 2"
-                    increment = new Constant()
-                    {
-                        Source = ae.Right,
-                        DefaultValue = ResolveArrayLengthOrPrimitive(network, proc, method, ae.Right as ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression),
-                        CecilType = LoadType(typeof(int))
-                    };
-                }
-                else
-                    throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
-            }
-            else
-            {
-                var itre = itr.Expression as ICSharpCode.Decompiler.CSharp.Syntax.UnaryOperatorExpression;
-                var itro = itre.Expression as ICSharpCode.Decompiler.CSharp.Syntax.IdentifierExpression;
-
-                if (itro == null || itre.Operator != UnaryOperatorType.PostIncrement || itro.Identifier != name)
-                    throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
-            }
-
-			var loopvar = new Variable()
-			{
-				CecilType = LoadType(typeof(int)),
-				Name = name,
-				Source = statement.Clone(),
-                DefaultValue = startvalue.DefaultValue
-			};
-
-			var res = new ForStatement()
-			{
-				StartValue = startvalue,
-				EndValue = endvalue,
-				Increment = increment,
-				LoopIndex = loopvar,
-				//LoopBody = Decompile(network, proc, method, statement.EmbeddedStatement),
-				Parent = method
-			};
-
-            method.StartScope(res);
-            method.AddVariable(loopvar);
-
-			loopvar.Parent = res;
-            res.LoopBody = Decompile(network, proc, method, statement.EmbeddedStatement);
-
-			res.LoopBody.Parent = res;
-            method.FinishScope(res);
-
-			return res;
-		}*/
-
-
         /// <summary>
-        /// Processes a single statement from the decompiler and returns an AST entry for it
+        /// Processes a single for statement from the decompiler and returns an AST entry for it.
         /// </summary>
         /// <param name="network">The top-level network.</param>
         /// <param name="proc">The process where the method is located.</param>
         /// <param name="method">The method where the statement is found.</param>
         /// <param name="statement">The decompiler statement to process.</param>
-        protected virtual ForStatement Decompile(NetworkState network, ProcessState proc, MethodState method, ICSharpCode.Decompiler.CSharp.Syntax.ForStatement statement)
+        protected virtual ForStatement Decompile(NetworkState network, ProcessState proc, MethodState method, ForStatementSyntax statement)
         {
-            if (statement.Initializers.Count != 1)
+            if (statement.Incrementors.Count != 1)
                 throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
 
-            if (statement.Iterators.Count != 1)
+            if (statement.Declaration.Variables.Count != 1)
                 throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
 
+            var vari = statement.Declaration.Variables.First();
+            var name = vari.Identifier.ValueText;
 
-            var init = statement.Initializers.First() as ICSharpCode.Decompiler.CSharp.Syntax.VariableDeclarationStatement;
-            if (init == null)
-                throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
-
-            if (init.Variables.Count != 1)
-                throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
-
-            var name = init.Variables.First().Name;
-            var initial = init.Variables.First().Initializer;
-
-            var itr = statement.Iterators.First() as ICSharpCode.Decompiler.CSharp.Syntax.ExpressionStatement;
+            var itr = statement.Incrementors.First();
             if (itr == null)
-                throw new Exception($"Unsupported iterator expression: {statement.Iterators.First()}");
-            
+                throw new Exception($"Unsupported iterator expression: {statement.Incrementors.First()}");
+
             var loopvar = new Variable()
             {
-                CecilType = LoadType(typeof(int)),
+                MSCAType = LoadType(typeof(int)),
                 Name = name,
-                Source = statement.Clone(),
-				isLoopIndex = true
+                Source = statement,
+                isLoopIndex = true
             };
 
-            if (initial is ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression)
-                loopvar.DefaultValue = (initial as ICSharpCode.Decompiler.CSharp.Syntax.PrimitiveExpression).Value;
+            var initial = SyntaxFactory.AssignmentExpression(
+                SyntaxKind.SimpleAssignmentExpression,
+                SyntaxFactory.IdentifierName(vari.Identifier.ValueText),
+                SyntaxFactory.Token(SyntaxKind.EqualsToken),
+                vari.Initializer.Value);
 
             var res = new ForStatement()
             {
@@ -686,15 +540,15 @@ namespace SME.AST
             method.AddVariable(loopvar);
 
             loopvar.Parent = res;
-            res.Initializer = Decompile(network, proc, method, res, initial);
+            res.Initializer = Decompile(network, proc, method, res, vari.Initializer.Value);
             res.Condition = Decompile(network, proc, method, res, statement.Condition);
-            res.Increment = Decompile(network, proc, method, res, itr.Expression);
-            res.LoopBody = Decompile(network, proc, method, statement.EmbeddedStatement);
+            res.Increment = Decompile(network, proc, method, res, itr);
+            res.LoopBody = Decompile(network, proc, method, statement.Statement);
 
             res.LoopBody.Parent = res;
             method.FinishScope(res);
 
             return res;
         }
-	}
+    }
 }

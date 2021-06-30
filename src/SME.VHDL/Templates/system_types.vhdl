@@ -2,6 +2,7 @@
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
+-- package containing system types of SME
 package SYSTEM_TYPES is
     pure function clog2 (A : NATURAL) return INTEGER;
 
