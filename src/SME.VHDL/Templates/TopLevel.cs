@@ -211,6 +211,8 @@ begin
                     foreach (var constant in p.SharedConstants)
                     {
                         var name = ToStringHelper.ToStringWithCulture( Naming.ToValidName($"reset_{constant.Name}") );
+                        if (constant.MSCAType.IsArrayType())
+                            name += $" (0 to {((Array)constant.DefaultValue).Length-1})";
                         var resetvar = ToStringHelper.ToStringWithCulture( RS.GetResetExpression(constant) );
                         var end = ToStringHelper.ToStringWithCulture( constant == lastel ? "" : "," );
                         Write($"        {name} => {resetvar}{end}\n");
