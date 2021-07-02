@@ -7,10 +7,10 @@
     <ProjectReference Include="..\..\SME.Tracer\SME.Tracer.csproj" />
     <ProjectReference Include="..\..\SME.VHDL\SME.VHDL.csproj" />
   </ItemGroup>
-  
+
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
 
 </Project>
