@@ -74,7 +74,7 @@ namespace SME.Components
         /// The stored memory.
         /// </summary>
         [Signal]
-        public readonly T[] m_memory;
+        public T[] m_memory;
 
         /// <summary>
         /// Flag indicating whether a warning message regarding clashing read/write addresses have been issued.
