@@ -10,7 +10,7 @@
             "request": "launch",
             "preLaunchTask": "build example AES256CBC",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/src/Examples/AES256CBC/bin/Debug/netcoreapp3.1/AES256CBC.dll",
+            "program": "${workspaceFolder}/src/Examples/AES256CBC/bin/Debug/net5.0/AES256CBC.dll",
             "args": [],
             "cwd": "${workspaceFolder}/src/Examples/AES256CBC",
             // For more information about the 'console' field, see https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md#console-terminal-window
@@ -24,7 +24,7 @@
             "request": "launch",
             "preLaunchTask": "build example ColorBin",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/src/Examples/ColorBin/bin/Debug/netcoreapp3.1/ColorBin.dll",
+            "program": "${workspaceFolder}/src/Examples/ColorBin/bin/Debug/net5.0/ColorBin.dll",
             "args": [],
             "cwd": "${workspaceFolder}/src/Examples/ColorBin",
             // For more information about the 'console' field, see https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md#console-terminal-window
@@ -38,7 +38,7 @@
             "request": "launch",
             "preLaunchTask": "build example DependencyCycle",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/src/Examples/DependencyCycle/bin/Debug/netcoreapp3.1/DependencyCycle.dll",
+            "program": "${workspaceFolder}/src/Examples/DependencyCycle/bin/Debug/net5.0/DependencyCycle.dll",
             "args": [],
             "cwd": "${workspaceFolder}/src/Examples/DependencyCycle",
             // For more information about the 'console' field, see https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md#console-terminal-window
@@ -52,7 +52,7 @@
             "request": "launch",
             "preLaunchTask": "build example ExternalComponent",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/src/Examples/ExternalComponent/bin/Debug/netcoreapp3.1/ExternalComponent.dll",
+            "program": "${workspaceFolder}/src/Examples/ExternalComponent/bin/Debug/net5.0/ExternalComponent.dll",
             "args": [],
             "cwd": "${workspaceFolder}/src/Examples/ExternalComponent",
             // For more information about the 'console' field, see https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md#console-terminal-window
@@ -67,7 +67,7 @@
             "preLaunchTask": "build example NoiseFilter",
             "justMyCode": true,
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/src/Examples/NoiseFilter/bin/Debug/netcoreapp3.1/NoiseFilter.dll",
+            "program": "${workspaceFolder}/src/Examples/NoiseFilter/bin/Debug/net5.0/NoiseFilter.dll",
             "args": [],
             "cwd": "${workspaceFolder}/src/Examples/NoiseFilter",
             // For more information about the 'console' field, see https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md#console-terminal-window
@@ -81,7 +81,7 @@
             "request": "launch",
             "preLaunchTask": "build example SimpleComponents",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/src/Examples/SimpleComponents/bin/Debug/netcoreapp3.1/SimpleComponents.dll",
+            "program": "${workspaceFolder}/src/Examples/SimpleComponents/bin/Debug/net5.0/SimpleComponents.dll",
             "args": [],
             "cwd": "${workspaceFolder}/src/Examples/SimpleComponents",
             // For more information about the 'console' field, see https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md#console-terminal-window
@@ -95,7 +95,7 @@
             "request": "launch",
             "preLaunchTask": "build example SimpleMemoryBus",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/src/Examples/SimpleMemoryBus/bin/Debug/netcoreapp3.1/SimpleMemoryBus.dll",
+            "program": "${workspaceFolder}/src/Examples/SimpleMemoryBus/bin/Debug/net5.0/SimpleMemoryBus.dll",
             "args": [],
             "cwd": "${workspaceFolder}/src/Examples/SimpleMemoryBus",
             // For more information about the 'console' field, see https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md#console-terminal-window
@@ -109,7 +109,7 @@
             "request": "launch",
             "preLaunchTask": "build example SimpleMIPS",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/src/Examples/SimpleMIPS/bin/Debug/netcoreapp3.1/SimpleMIPS.dll",
+            "program": "${workspaceFolder}/src/Examples/SimpleMIPS/bin/Debug/net5.0/SimpleMIPS.dll",
             "args": [],
             "cwd": "${workspaceFolder}/src/Examples/SimpleMIPS",
             // For more information about the 'console' field, see https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md#console-terminal-window
@@ -123,7 +123,7 @@
             "request": "launch",
             "preLaunchTask": "build example SimpleNestedComponent",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/src/Examples/SimpleNestedComponent/bin/Debug/netcoreapp3.1/SimpleNestedComponent.dll",
+            "program": "${workspaceFolder}/src/Examples/SimpleNestedComponent/bin/Debug/net5.0/SimpleNestedComponent.dll",
             "args": [],
             "cwd": "${workspaceFolder}/src/Examples/SimpleNestedComponent",
             // For more information about the 'console' field, see https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md#console-terminal-window
@@ -137,7 +137,7 @@
             "request": "launch",
             "preLaunchTask": "build example SimpleTrader",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/src/Examples/SimpleTrader/bin/Debug/netcoreapp3.1/SimpleTrader.dll",
+            "program": "${workspaceFolder}/src/Examples/SimpleTrader/bin/Debug/net5.0/SimpleTrader.dll",
             "args": [],
             "cwd": "${workspaceFolder}/src/Examples/SimpleTrader",
             // For more information about the 'console' field, see https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md#console-terminal-window
@@ -151,7 +151,7 @@
             "request": "launch",
             "preLaunchTask": "build example StatebasedCounter",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/src/Examples/StatebasedCounter/bin/Debug/netcoreapp3.1/StatebasedCounter.dll",
+            "program": "${workspaceFolder}/src/Examples/StatebasedCounter/bin/Debug/net5.0/StatebasedCounter.dll",
             "args": [],
             "cwd": "${workspaceFolder}/src/Examples/StatebasedCounter",
             // For more information about the 'console' field, see https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md#console-terminal-window
@@ -165,7 +165,7 @@
             "request": "launch",
             "preLaunchTask": "build example StatedAdder",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/src/Examples/StatedAdder/bin/Debug/netcoreapp3.1/StatedAdder.dll",
+            "program": "${workspaceFolder}/src/Examples/StatedAdder/bin/Debug/net5.0/StatedAdder.dll",
             "args": [],
             "cwd": "${workspaceFolder}/src/Examples/StatedAdder",
             // For more information about the 'console' field, see https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md#console-terminal-window
@@ -179,7 +179,7 @@
             "request": "launch",
             "preLaunchTask": "build example StateMachineTester",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/src/Examples/StateMachineTester/bin/Debug/netcoreapp3.1/StateMachineTester.dll",
+            "program": "${workspaceFolder}/src/Examples/StateMachineTester/bin/Debug/net5.0/StateMachineTester.dll",
             "args": [],
             "cwd": "${workspaceFolder}/src/Examples/StateMachineTester",
             // For more information about the 'console' field, see https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md#console-terminal-window
@@ -193,7 +193,7 @@
             "request": "launch",
             "preLaunchTask": "build example Stopwatch",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/src/Examples/Stopwatch/bin/Debug/netcoreapp3.1/Stopwatch.dll",
+            "program": "${workspaceFolder}/src/Examples/Stopwatch/bin/Debug/net5.0/Stopwatch.dll",
             "args": [],
             "cwd": "${workspaceFolder}/src/Examples/Stopwatch",
             // For more information about the 'console' field, see https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md#console-terminal-window
@@ -207,7 +207,7 @@
             "request": "launch",
             "preLaunchTask": "build example UnitTester",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/src/Examples/UnitTester/bin/Debug/netcoreapp3.1/UnitTester.dll",
+            "program": "${workspaceFolder}/src/Examples/UnitTester/bin/Debug/net5.0/UnitTester.dll",
             "args": [],
             "cwd": "${workspaceFolder}/src/Examples/UnitTester",
             // For more information about the 'console' field, see https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md#console-terminal-window
@@ -221,7 +221,7 @@
             "request": "launch",
             "preLaunchTask": "build UnitTest",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/src/UnitTest/bin/Debug/netcoreapp3.1/UnitTest.dll",
+            "program": "${workspaceFolder}/src/UnitTest/bin/Debug/net5.0/UnitTest.dll",
             "args": [],
             "cwd": "${workspaceFolder}/src/UnitTest",
             // For more information about the 'console' field, see https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md#console-terminal-window

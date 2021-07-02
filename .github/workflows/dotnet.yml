@@ -16,7 +16,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 3.1.113
+        dotnet-version: 5.0.*
     - name: Setup GHDL
       uses: ghdl/setup-ghdl-ci@nightly
       with:
