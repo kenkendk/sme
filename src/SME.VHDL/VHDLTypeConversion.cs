@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using SME.AST;
 using Microsoft.CodeAnalysis;
@@ -582,30 +583,40 @@ namespace SME.VHDL
             // Structs TODO better fix? It captures VHDL.UINT_10
             else if (e.GetType().IsValueType && !e.GetType().IsPrimitive && !(e is SME.Tracer.ITracerSerializable))
             {
-                var fields = tvhdl.SourceType.GetMembers().OfType<IFieldSymbol>().ToDictionary(x => x.Name);
-                return "(" +
+                var fields = tvhdl.SourceType
+                    .GetMembers()
+                    .OfType<IFieldSymbol>();
+                    //.ToDictionary(x => x.Name); // TODO compare symbols correctly
+                // TODO works, but isn't pretty
+                var field_map = new Dictionary<string, IFieldSymbol>();
+                foreach (var field in fields)
+                    field_map[field.Name] = field;
+                return
+                    "(" +
                     string.Join(", ",
-                        e.GetType().GetFields()
-                        .Select(x => {
-                            var f = fields[x.Name];
+                        e
+                            .GetType()
+                            .GetFields()
+                            .Select(x => {
+                                var f = field_map[x.Name];
 
-                            var exp = new AST.PrimitiveExpression(x.GetValue(e), f.Type);
-                            var stm = new ExpressionStatement()
-                            {
-                                Expression = new AssignmentExpression()
+                                var exp = new AST.PrimitiveExpression(x.GetValue(e), f.Type);
+                                var stm = new ExpressionStatement()
                                 {
-                                    Left = null,
-                                    Right = exp
-                                }
-                            };
-                            exp.Parent = stm.Expression;
-                            stm.Expression.Parent = stm;
+                                    Expression = new AssignmentExpression()
+                                    {
+                                        Left = null,
+                                        Right = exp
+                                    }
+                                };
+                                exp.Parent = stm.Expression;
+                                stm.Expression.Parent = stm;
 
-                            var conv = ConvertExpression(render, null, exp, render.TypeScope.GetVHDLType(f), f.Type, false);
+                                var conv = ConvertExpression(render, null, exp, render.TypeScope.GetVHDLType(f), f.Type, false);
 
-                            return $"{x.Name} => {new RenderHelper(render, null).RenderExpression(conv)}";
-                        })
-                    )
+                                return $"{x.Name} => {new RenderHelper(render, null).RenderExpression(conv)}";
+                            })
+                        )
                     + ")";
             }
 

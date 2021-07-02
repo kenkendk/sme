@@ -103,7 +103,7 @@ namespace SME.CPP
                 .All()
                 .OfType<DataElement>()
                 .Select(x => x.MSCAType)
-                .Distinct(new TypeRefComp())
+                .Distinct((IEqualityComparer<ITypeSymbol>) SymbolEqualityComparer.Default)
                 .ToArray();
 
             Network.Name = Naming.ToValidName(simulation.Processes.First().Instance.GetType().Assembly.GetName().Name);
@@ -340,7 +340,7 @@ namespace SME.CPP
                         var cpptype = TypeScope.GetType(n);
 
                         string values;
-                        if (new[] { typeof(sbyte), typeof(byte), typeof(ushort), typeof(short), typeof(int), typeof(uint), typeof(long), typeof(ulong) }.Select(x => eltype.LoadType(x)).Contains(eltype))
+                        if (new[] { typeof(sbyte), typeof(byte), typeof(ushort), typeof(short), typeof(int), typeof(uint), typeof(long), typeof(ulong) }.Select(x => eltype.LoadType(x)).Contains(eltype, (IEqualityComparer<ITypeSymbol>) SymbolEqualityComparer.Default))
                             values = string.Join(", ", arc.Initializer.Expressions.Select(x => string.Format("{0}", x)));
                         else
                             throw new Exception("Unexpected initializer type");
@@ -354,7 +354,7 @@ namespace SME.CPP
                         var cpptype = TypeScope.GetType(n);
 
                         string values;
-                        if (new[] { typeof(sbyte), typeof(byte), typeof(ushort), typeof(short), typeof(int), typeof(uint), typeof(long), typeof(ulong) }.Select(x => eltype.LoadType(x)).Contains(eltype))
+                        if (new[] { typeof(sbyte), typeof(byte), typeof(ushort), typeof(short), typeof(int), typeof(uint), typeof(long), typeof(ulong) }.Select(x => eltype.LoadType(x)).Contains(eltype, (IEqualityComparer<ITypeSymbol>) SymbolEqualityComparer.Default))
                             values = string.Join(", ", arc.ElementExpressions.Select(x => Renderer.RenderExpression(x)));
                         else
                             throw new Exception("Unexpected initializer type");
@@ -375,7 +375,7 @@ namespace SME.CPP
                         var cpptype = TypeScope.GetType(n);
 
                         string values;
-                        if (new[] { typeof(sbyte), typeof(byte), typeof(ushort), typeof(short), typeof(int), typeof(uint), typeof(long), typeof(ulong) }.Select(x => eltype.LoadType(x)).Contains(eltype))
+                        if (new[] { typeof(sbyte), typeof(byte), typeof(ushort), typeof(short), typeof(int), typeof(uint), typeof(long), typeof(ulong) }.Select(x => eltype.LoadType(x)).Contains(eltype, (IEqualityComparer<ITypeSymbol>) SymbolEqualityComparer.Default))
                             values = string.Join(", ", Enumerable.Range(0, arc.GetLength(0)).Select(x => arc.GetValue(x).ToString()));
                         else
                             throw new Exception("Unexpected initializer type");

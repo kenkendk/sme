@@ -443,10 +443,13 @@ namespace SME.AST
                 while (!proctype.BaseType.ToDisplayString().StartsWith("SME"))
                 {
                     proctype = proctype.BaseType;
-                    Fields = Fields.Union(proctype.GetMembers()
+                    Fields = Fields.Union(proctype
+                        .GetMembers()
                         .OfType<IFieldSymbol>()
-                        .Where(x => !x.GetAttributes<IgnoreAttribute>()
-                        .Any()));
+                        .Where(x => !x
+                            .GetAttributes<IgnoreAttribute>()
+                            .Any()
+                        ), (IEqualityComparer<IFieldSymbol>) SymbolEqualityComparer.Default);
                 }
                 // Register all variables
                 foreach (var f in Fields)

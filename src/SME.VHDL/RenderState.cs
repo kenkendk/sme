@@ -151,8 +151,7 @@ namespace SME.VHDL
                 .All()
                 .OfType<DataElement>()
                 .Select(x => x.MSCAType)
-                //.Distinct(new TypeRefComp())
-                .Distinct()
+                .Distinct((IEqualityComparer<ITypeSymbol>) SymbolEqualityComparer.Default)
                 .ToArray();
 
             Network.Name = Naming.AssemblyToValidName();
