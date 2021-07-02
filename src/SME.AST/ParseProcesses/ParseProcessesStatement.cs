@@ -398,7 +398,7 @@ namespace SME.AST
                 {
                     var mr = value as MemberDeclarationSyntax;
                     var mrsym = (mr as FieldDeclarationSyntax).LoadSymbol(m_semantics) as IFieldSymbol;
-                    if (mr is FieldDeclarationSyntax && network.ConstantLookup.ContainsKey(mrsym))
+                    if (mr is FieldDeclarationSyntax && network.ConstantLookup.Keys.Select(x => x.Item2.Equals(mrsym)).Any())
                     {
                         return ResolveArrayLengthOrPrimitive(network, proc, method, ((FieldDeclarationSyntax)mr).Declaration.Variables.First().Initializer.Value);
                     }

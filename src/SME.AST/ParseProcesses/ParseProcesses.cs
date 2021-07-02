@@ -21,9 +21,9 @@ namespace SME.AST
         protected class NetworkState : Network
         {
             /// <summary>
-            /// The table of all the constants in a convenient lookup table.
+            /// The table of all the public constants in a convenient lookup table.
             /// </summary>
-            public readonly Dictionary<IFieldSymbol, Constant> ConstantLookup = new Dictionary<IFieldSymbol, Constant>();
+            public readonly Dictionary<Tuple<ProcessState, IFieldSymbol>, Constant> ConstantLookup = new Dictionary<Tuple<ProcessState, IFieldSymbol>, Constant>();
             /// <summary>
             /// A variable counter, used to make unique variable names.
             /// </summary>

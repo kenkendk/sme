@@ -90,7 +90,7 @@ namespace SME.AST
                         Source = constsymbol,
                         Parent = network
                     };
-                    network.ConstantLookup.Add(constsymbol, global_constant);
+                    network.ConstantLookup.Add(new Tuple<ProcessState, IFieldSymbol>(proc, constsymbol), global_constant);
                     return global_constant;
                 }
 
@@ -182,11 +182,11 @@ namespace SME.AST
                                 else
                                 {
                                     // This is a constant of sorts
-                                    var pe = network.ConstantLookup.Keys.FirstOrDefault(x => x.Name.Equals(parts[0]));
+                                    var pe = network.ConstantLookup.Keys.FirstOrDefault(x => x.Item2.Name.Equals(parts[0]));
                                     if (pe != null)
                                         return network.ConstantLookup[pe];
 
-                                    return network.ConstantLookup[px] = new Constant()
+                                    return network.ConstantLookup[new Tuple<ProcessState, IFieldSymbol>(proc, px)] = new Constant()
                                     {
                                         MSCAType = px.ContainingType,
                                         Name = parts[0],
@@ -228,7 +228,7 @@ namespace SME.AST
 
                     if (current == null)
                     {
-                        var pe = network.ConstantLookup.Keys.FirstOrDefault(x => x.Name.Equals(el));
+                        var pe = network.ConstantLookup.Keys.FirstOrDefault(x => x.Item2.Name.Equals(el));
                         if (pe != null)
                         {
                             current = network.ConstantLookup[pe];
@@ -515,7 +515,7 @@ namespace SME.AST
                 };
                 res = c;
                 if (field.DeclaredAccessibility == Accessibility.Public)
-                    network.ConstantLookup.Add(field, c);
+                    network.ConstantLookup.Add(new Tuple<ProcessState, IFieldSymbol>(proc, field), c);
                 else
                     proc.Constants.Add(field.Name, c);
             }
