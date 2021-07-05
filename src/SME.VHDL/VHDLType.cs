@@ -60,18 +60,18 @@ namespace SME.VHDL
         }
 
         /// <summary>
-		/// Gets a value indicating whether this <see cref="T:SME.VHDL.VHDLType"/> is a floating point type.
-		/// </summary>
-		public bool IsFloating
-		{
-			get
-			{
-				return new[] {
-					VHDLTypes.SYSTEM_FLOAT,
-					VHDLTypes.SYSTEM_DOUBLE
-				}.Contains(this);
-			}
-		}
+        /// Gets a value indicating whether this <see cref="T:SME.VHDL.VHDLType"/> is a floating point type.
+        /// </summary>
+        public bool IsFloating
+        {
+            get
+            {
+                return new[] {
+                    VHDLTypes.SYSTEM_FLOAT,
+                    VHDLTypes.SYSTEM_DOUBLE
+                }.Contains(this);
+            }
+        }
 
         /// <summary>
         /// Gets a value indicating whether this <see cref="T:SME.VHDL.VHDLType"/> is a numeric type.
@@ -1177,23 +1177,23 @@ namespace SME.VHDL
         };
 
         public static readonly VHDLType SYSTEM_FLOAT = new VHDLType()
-		{
-			Name = "STD_LOGIC_VECTOR(31 downto 0)",
-			Alias = "T_SYSTEM_FLOAT",
-			IsArray = true,
-			ElementName = "STD_LOGIC",
-			LowerBound = 0,
-			UpperBound = 31
-		};
+        {
+            Name = "STD_LOGIC_VECTOR(31 downto 0)",
+            Alias = "T_SYSTEM_FLOAT",
+            IsArray = true,
+            ElementName = "STD_LOGIC",
+            LowerBound = 0,
+            UpperBound = 31
+        };
 
-		public static readonly VHDLType SYSTEM_DOUBLE = new VHDLType()
-		{
-			Name = "STD_LOGIC_VECTOR(63 downto 0)",
-			Alias = "T_SYSTEM_DOUBLE",
-			IsArray = true,
-			ElementName = "STD_LOGIC",
-			LowerBound = 0,
-			UpperBound = 63
-		};
+        public static readonly VHDLType SYSTEM_DOUBLE = new VHDLType()
+        {
+            Name = "STD_LOGIC_VECTOR(63 downto 0)",
+            Alias = "T_SYSTEM_DOUBLE",
+            IsArray = true,
+            ElementName = "STD_LOGIC",
+            LowerBound = 0,
+            UpperBound = 63
+        };
     }
 }

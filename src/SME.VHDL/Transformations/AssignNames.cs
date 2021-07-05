@@ -15,15 +15,15 @@ namespace SME.VHDL.Transformations
         /// </summary>
         private string TopLevelName = null;
 
-		/// <summary>
-		/// Applies the transformation
-		/// </summary>
-		/// <returns>The transformed item.</returns>
-		/// <param name="el">The item to visit.</param>
-		public ASTItem Transform(ASTItem el)
-		{
-			if (el.Name != null && (el is AST.Bus || el is AST.Process || el is AST.DataElement))
-				el.Name = Naming.ToValidName(el.Name, is_bus_signal:el is AST.BusSignal);
+        /// <summary>
+        /// Applies the transformation
+        /// </summary>
+        /// <returns>The transformed item.</returns>
+        /// <param name="el">The item to visit.</param>
+        public ASTItem Transform(ASTItem el)
+        {
+            if (el.Name != null && (el is AST.Bus || el is AST.Process || el is AST.DataElement))
+                el.Name = Naming.ToValidName(el.Name, is_bus_signal:el is AST.BusSignal);
 
             if (el is AST.Bus && ((AST.Bus)el).InstanceName != null)
                 ((AST.Bus)el).InstanceName = Naming.ToValidName(((AST.Bus)el).InstanceName);
@@ -33,7 +33,7 @@ namespace SME.VHDL.Transformations
                     ((AST.Process)el).InstanceName = Naming.ToValidName(((AST.Process)el).InstanceName);
 
                 if (TopLevelName == null)
-					TopLevelName = Naming.AssemblyToValidName();
+                    TopLevelName = Naming.AssemblyToValidName();
 
                 if (string.Equals(((AST.Process)el).InstanceName, TopLevelName, StringComparison.OrdinalIgnoreCase))
                     ((AST.Process)el).InstanceName = "cls_" + ((AST.Process)el).InstanceName;

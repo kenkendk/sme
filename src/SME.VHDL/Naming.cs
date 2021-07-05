@@ -7,12 +7,12 @@ using System.Text.RegularExpressions;
 namespace SME.VHDL
 {
 
-	public static class Naming
-	{
-		public static string AssemblyNameToFileName()
-		{
-			return $"{Assembly.GetEntryAssembly().GetName().Name}.vhdl";
-		}
+    public static class Naming
+    {
+        public static string AssemblyNameToFileName()
+        {
+            return $"{Assembly.GetEntryAssembly().GetName().Name}.vhdl";
+        }
 
         /// <summary>
         /// Gets the filename corresponding to the name of the given process.
@@ -84,11 +84,11 @@ namespace SME.VHDL
             return ToValidName(busname);
         }
 
-		public static string AssemblyToValidName()
-		{
-			return ToValidName(Assembly.GetEntryAssembly().GetName().Name);
-		}
-        
+        public static string AssemblyToValidName()
+        {
+            return ToValidName(Assembly.GetEntryAssembly().GetName().Name);
+        }
+
         /// <summary>
         /// Gets a valid name corresponding to the name of the assembly of the given simulation.
         /// </summary>
@@ -112,11 +112,11 @@ namespace SME.VHDL
         /// </summary>
         private static Regex RX_ALPHANUMERIC = new Regex(@"[^\u0030-\u0039|\u0041-\u005A|\u0061-\u007A]");
 
-		public static string ToValidName(string name, bool is_bus_signal = false)
-		{
-			var r = RX_ALPHANUMERIC.Replace(name, "_");
-			if (!is_bus_signal && new string[] { "register", "record", "variable", "process", "if", "then", "else", "begin", "end", "architecture", "of", "is", "wait", "block", "generate" }.Contains(r.ToLowerInvariant()))
-				r = "vhdl_" + r;
+        public static string ToValidName(string name, bool is_bus_signal = false)
+        {
+            var r = RX_ALPHANUMERIC.Replace(name, "_");
+            if (!is_bus_signal && new string[] { "register", "record", "variable", "process", "if", "then", "else", "begin", "end", "architecture", "of", "is", "wait", "block", "generate" }.Contains(r.ToLowerInvariant()))
+                r = "vhdl_" + r;
 
             while (r.IndexOf("__", StringComparison.Ordinal) >= 0)
                 r = r.Replace("__", "_");

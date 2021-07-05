@@ -41,27 +41,27 @@ The communication has an input and an out, that we define as C# interfaces:
 ```csharp
 public interface ImageInputLine : IBus
 {
-	[InitialValue]
-	bool IsValid { get; set; }
-	[InitialValue]
-	bool LastPixel { get; set; }
+    [InitialValue]
+    bool IsValid { get; set; }
+    [InitialValue]
+    bool LastPixel { get; set; }
 
-	byte R { get; set; }
-	byte G { get; set; }
-	byte B { get; set; }
+    byte R { get; set; }
+    byte G { get; set; }
+    byte B { get; set; }
 }
 
 public interface BinCountOutput : IBus
 {
-	[InitialValue]
-	bool IsValid { get; set; }
+    [InitialValue]
+    bool IsValid { get; set; }
 
-	[InitialValue]
-	uint Low { get; set; }
-	[InitialValue]
-	uint Medium { get; set; }
-	[InitialValue]
-	uint High { get; set; }
+    [InitialValue]
+    uint Low { get; set; }
+    [InitialValue]
+    uint Medium { get; set; }
+    [InitialValue]
+    uint High { get; set; }
 }
 ```
 
@@ -81,84 +81,84 @@ The actual processing code is writtin in a simplistic manner that does not requi
 /// </summary>
 public class ColorBinCollector : SimpleProcess
 {
-	/// <summary>
-	/// The bus that we read input pixels from
-	/// </summary>
-	[InputBus] private readonly ImageInputLine m_input;
+    /// <summary>
+    /// The bus that we read input pixels from
+    /// </summary>
+    [InputBus] private readonly ImageInputLine m_input;
 
-	/// <summary>
-	/// The bus that we write results to
-	/// </summary>
-	[OutputBus] public readonly BinCountOutput Output = Scope.CreateBus<BinCountOutput>();
+    /// <summary>
+    /// The bus that we write results to
+    /// </summary>
+    [OutputBus] public readonly BinCountOutput Output = Scope.CreateBus<BinCountOutput>();
 
-	/// <summary>
-	/// The threshold when a pixel is deemed high intensity
-	/// </summary>
-	const uint HighThreshold = 200;
-	/// <summary>
-	/// The threshold when a pixel is deemed medium intensity
-	/// </summary>
-	const uint MediumThreshold = 100;
+    /// <summary>
+    /// The threshold when a pixel is deemed high intensity
+    /// </summary>
+    const uint HighThreshold = 200;
+    /// <summary>
+    /// The threshold when a pixel is deemed medium intensity
+    /// </summary>
+    const uint MediumThreshold = 100;
 
-	/// <summary>
-	/// The current number of low intensity pixels
-	/// </summary>
-	private uint m_low;
-	/// <summary>
-	/// The current number of medium intensity pixels
-	/// </summary>
-	private uint m_med;
-	/// <summary>
-	/// The current number of high intensity pixels
-	/// </summary>
-	private uint m_high;
+    /// <summary>
+    /// The current number of low intensity pixels
+    /// </summary>
+    private uint m_low;
+    /// <summary>
+    /// The current number of medium intensity pixels
+    /// </summary>
+    private uint m_med;
+    /// <summary>
+    /// The current number of high intensity pixels
+    /// </summary>
+    private uint m_high;
 
-	/// <summary>
-	/// Constructs a new bin counter process
-	/// </summary>
-	/// <param name="input">The camera input bus</param>
-	public ColorBinCollector(ImageInputLine input)
-	{
-		// The constructor is not translated into hardware,
-		// so it is possible to have dynamic and initialization
-		// When the simulation "run" method is called,
-		// the values of all variables are captured and used for
-		// initialization
-		m_input = input ?? throw new ArgumentNullException(nameof(input));
-	}
+    /// <summary>
+    /// Constructs a new bin counter process
+    /// </summary>
+    /// <param name="input">The camera input bus</param>
+    public ColorBinCollector(ImageInputLine input)
+    {
+        // The constructor is not translated into hardware,
+        // so it is possible to have dynamic and initialization
+        // When the simulation "run" method is called,
+        // the values of all variables are captured and used for
+        // initialization
+        m_input = input ?? throw new ArgumentNullException(nameof(input));
+    }
 
-	/// <summary>
-	/// The method invoked when all inputs are ready.
-	/// The method is only invoked once pr. clock cycle
-	/// </summary>
-	protected override void OnTick()
-	{
-		// If the input pixel is valid, increment the relevant counter
-		if (m_input.IsValid)
-		{
-			//R=0.299, G=0.587, B=0.114
-			var color = ((m_input.R * 299u) + (m_input.G * 587u) + (m_input.B * 114u)) / 1000u;
-			if (color > HighThreshold)
-				m_high++;
-			else if (color > MediumThreshold)
-				m_med++;
-			else
-				m_low++;
-		}
+    /// <summary>
+    /// The method invoked when all inputs are ready.
+    /// The method is only invoked once pr. clock cycle
+    /// </summary>
+    protected override void OnTick()
+    {
+        // If the input pixel is valid, increment the relevant counter
+        if (m_input.IsValid)
+        {
+            //R=0.299, G=0.587, B=0.114
+            var color = ((m_input.R * 299u) + (m_input.G * 587u) + (m_input.B * 114u)) / 1000u;
+            if (color > HighThreshold)
+                m_high++;
+            else if (color > MediumThreshold)
+                m_med++;
+            else
+                m_low++;
+        }
 
-		// Check if this is the last pixel
-		var done = m_input.IsValid && m_input.LastPixel;
+        // Check if this is the last pixel
+        var done = m_input.IsValid && m_input.LastPixel;
 
-		// Send the output
-		Output.Low = m_low;
-		Output.Medium = m_med;
-		Output.High = m_high;
-		Output.IsValid = done;
+        // Send the output
+        Output.Low = m_low;
+        Output.Medium = m_med;
+        Output.High = m_high;
+        Output.IsValid = done;
 
-		// Make sure we reset if this was the last pixel
-		if (done)
-			m_low = m_med = m_high = 0;
-	}
+        // Make sure we reset if this was the last pixel
+        if (done)
+            m_low = m_med = m_high = 0;
+    }
 }
 ```
 
@@ -174,89 +174,89 @@ To simulate a camera, we load an image and outputs the pixels one at a time. Sin
 /// </summary>
 public class ImageInputSimulator : SimulationProcess
 {
-	/// <summary>
-	/// The camera connection bus
-	/// </summary>
-	[OutputBus]
-	public readonly ImageInputLine Data = Scope.CreateBus<ImageInputLine>();
+    /// <summary>
+    /// The camera connection bus
+    /// </summary>
+    [OutputBus]
+    public readonly ImageInputLine Data = Scope.CreateBus<ImageInputLine>();
 
-	/// <summary>
-	/// The images to process
-	/// </summary>
-	private readonly string[] IMAGES;
+    /// <summary>
+    /// The images to process
+    /// </summary>
+    private readonly string[] IMAGES;
 
-	/// <summary>
-	/// Initializes a new instance of the <see cref="T:GettingStarted.ImageInputSimulator"/> class.
-	/// </summary>
-	/// <param name="images">The images to process.</param>
-	public ImageInputSimulator(params string[] images)
-	{
-	    if (images == null)
-		throw new ArgumentNullException(nameof(images));
-	    if (images.Length == 0)
-		throw new ArgumentOutOfRangeException(nameof(images), "No images to send?");
-	    IMAGES = images;
-	}
+    /// <summary>
+    /// Initializes a new instance of the <see cref="T:GettingStarted.ImageInputSimulator"/> class.
+    /// </summary>
+    /// <param name="images">The images to process.</param>
+    public ImageInputSimulator(params string[] images)
+    {
+        if (images == null)
+        throw new ArgumentNullException(nameof(images));
+        if (images.Length == 0)
+        throw new ArgumentOutOfRangeException(nameof(images), "No images to send?");
+        IMAGES = images;
+    }
 
-	/// <summary>
-	/// Run this instance.
-	/// </summary>
-	public override async Task Run()
-	{
-		// Wait for the initial reset to propagate
-		await ClockAsync();
+    /// <summary>
+    /// Run this instance.
+    /// </summary>
+    public override async Task Run()
+    {
+        // Wait for the initial reset to propagate
+        await ClockAsync();
 
-		// Run through all images
-		foreach (var file in IMAGES)
-		{
-			// Sanity check
-			if (!System.IO.File.Exists(file))
-			{
-				Console.WriteLine($"File not found: {file}");
-			}
-			else
-			{
-				// Load the image as a bitmap
-				using (var img = System.Drawing.Image.FromFile(file))
-				using (var bmp = new System.Drawing.Bitmap(img))
-				{
-					// Write some console progress
-					Console.WriteLine($"Writing {bmp.Width * bmp.Height} pixels from {file}");
+        // Run through all images
+        foreach (var file in IMAGES)
+        {
+            // Sanity check
+            if (!System.IO.File.Exists(file))
+            {
+                Console.WriteLine($"File not found: {file}");
+            }
+            else
+            {
+                // Load the image as a bitmap
+                using (var img = System.Drawing.Image.FromFile(file))
+                using (var bmp = new System.Drawing.Bitmap(img))
+                {
+                    // Write some console progress
+                    Console.WriteLine($"Writing {bmp.Width * bmp.Height} pixels from {file}");
 
-					// We are now transmitting data
-					Data.IsValid = true;
+                    // We are now transmitting data
+                    Data.IsValid = true;
 
-					// Loop through the image pixels
-					for (var i = 0; i < img.Height; i++)
-					{
-						for (var j = 0; j < img.Width; j++)
-						{
-							// Grab a pixel and send it to the output bus
-							var pixel = bmp.GetPixel(j, i);
-							Data.R = pixel.R;
-							Data.G = pixel.G;
-							Data.B = pixel.B;
+                    // Loop through the image pixels
+                    for (var i = 0; i < img.Height; i++)
+                    {
+                        for (var j = 0; j < img.Width; j++)
+                        {
+                            // Grab a pixel and send it to the output bus
+                            var pixel = bmp.GetPixel(j, i);
+                            Data.R = pixel.R;
+                            Data.G = pixel.G;
+                            Data.B = pixel.B;
 
-							// Update the LastPixel flag as required
-							Data.LastPixel = i == img.Height - 1 && j == img.Width - 1;
+                            // Update the LastPixel flag as required
+                            Data.LastPixel = i == img.Height - 1 && j == img.Width - 1;
 
-							await ClockAsync();
-						}
+                            await ClockAsync();
+                        }
 
-						// Write progress after each line
-						Console.WriteLine($"Still need to write {bmp.Width * (bmp.Height - i - 1)} pixels");
-					}
+                        // Write progress after each line
+                        Console.WriteLine($"Still need to write {bmp.Width * (bmp.Height - i - 1)} pixels");
+                    }
 
-					// We are now done with the image, so signal that
-					Data.IsValid = false;
-					Data.LastPixel = false;
-				}
-			}
-		}
+                    // We are now done with the image, so signal that
+                    Data.IsValid = false;
+                    Data.LastPixel = false;
+                }
+            }
+        }
 
-		// Make sure the last pixel has propagated
-		await ClockAsync();
-	}
+        // Make sure the last pixel has propagated
+        await ClockAsync();
+    }
 }
 ```
 
@@ -267,29 +267,29 @@ To load the libraries, run the simulation, generate the trace file, and transpil
 ```csharp
 public static void Main(string[] args)
 {
-	using(var sim = new Simulation())
-	{
-		var simulator = new ImageInputSimulator("image1.png");
-		var calculator = new ColorBinCollector(simulator.Data);
+    using(var sim = new Simulation())
+    {
+        var simulator = new ImageInputSimulator("image1.png");
+        var calculator = new ColorBinCollector(simulator.Data);
 
-		// Use fluent syntax to configure the simulator.
-		// The order does not matter, but `Run()` must be
-		// the last method called.
+        // Use fluent syntax to configure the simulator.
+        // The order does not matter, but `Run()` must be
+        // the last method called.
 
-		// The top-level input and outputs are exposed
-		// for interfacing with other VHDL code or board pins
+        // The top-level input and outputs are exposed
+        // for interfacing with other VHDL code or board pins
 
-		sim
-		    .AddTopLevelOutputs(calculator.Output)
-		    .AddTopLevelInputs(simulator.Data)
-		    .BuildCSVFile()
-		    .BuildVHDL()
-		    .Run();
+        sim
+            .AddTopLevelOutputs(calculator.Output)
+            .AddTopLevelInputs(simulator.Data)
+            .BuildCSVFile()
+            .BuildVHDL()
+            .Run();
 
-		// After `Run()` has been invoked the folder
-		// `output/vhdl` contains a Makefile that can
-		// be used for testing the generated design
-    	}
+        // After `Run()` has been invoked the folder
+        // `output/vhdl` contains a Makefile that can
+        // be used for testing the generated design
+        }
 }
 ```
 

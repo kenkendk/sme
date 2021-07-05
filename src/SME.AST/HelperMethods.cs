@@ -432,14 +432,14 @@ namespace SME.AST
         /// <param name="n">The argument to examine.</param>
         public static ArgumentInOut GetArgumentInOut(this IParameterSymbol n, DataFlowAnalysis MSCAFlow)
         {
-			// TODO A fix had been applied to the decompiler version, to add support to pass objects by reference to functions. It is kept here in case it doesn't work any more.
-			/*
-			var inarg = (n.Attributes & ParameterAttributes.In) == ParameterAttributes.In || n.IsIn;
-			var outarg = (n.Attributes & ParameterAttributes.Out) == ParameterAttributes.Out || n.IsOut;
-			var inoutarg = (inarg && outarg) || (!n.IsIn && !n.IsOut && n.ParameterType.IsByReference);
-			var inoutoverride = n.ParameterType.IsArray && !((n.Attributes & ParameterAttributes.Out) == ParameterAttributes.Out || (n.Attributes & ParameterAttributes.In) == ParameterAttributes.In);
-			return inoutarg || inoutoverride ? ArgumentInOut.InOut : (outarg ? ArgumentInOut.Out : ArgumentInOut.In);
-			*/
+            // TODO A fix had been applied to the decompiler version, to add support to pass objects by reference to functions. It is kept here in case it doesn't work any more.
+            /*
+            var inarg = (n.Attributes & ParameterAttributes.In) == ParameterAttributes.In || n.IsIn;
+            var outarg = (n.Attributes & ParameterAttributes.Out) == ParameterAttributes.Out || n.IsOut;
+            var inoutarg = (inarg && outarg) || (!n.IsIn && !n.IsOut && n.ParameterType.IsByReference);
+            var inoutoverride = n.ParameterType.IsArray && !((n.Attributes & ParameterAttributes.Out) == ParameterAttributes.Out || (n.Attributes & ParameterAttributes.In) == ParameterAttributes.In);
+            return inoutarg || inoutoverride ? ArgumentInOut.InOut : (outarg ? ArgumentInOut.Out : ArgumentInOut.In);
+            */
             var inarg = n.HasAttribute<System.Runtime.InteropServices.InAttribute>() || (MSCAFlow.Succeeded && MSCAFlow.DataFlowsIn.Contains(n));
             var outarg = n.HasAttribute<System.Runtime.InteropServices.OutAttribute>() || (MSCAFlow.Succeeded && MSCAFlow.DataFlowsOut.Contains(n));
             var inoutarg = inarg && outarg;

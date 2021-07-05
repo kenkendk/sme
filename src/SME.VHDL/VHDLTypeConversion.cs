@@ -451,12 +451,12 @@ namespace SME.VHDL
 
                 return wrapped;
             }
-			else
-				throw new Exception(string.Format("Unexpected target type: {0} for source: {1}", target, svhdl));
-		}
+            else
+                throw new Exception(string.Format("Unexpected target type: {0} for source: {1}", target, svhdl));
+        }
 
-		public static Expression WrapExpression(RenderState render, Expression expression, string template, VHDLType vhdltarget)
-		{
+        public static Expression WrapExpression(RenderState render, Expression expression, string template, VHDLType vhdltarget)
+        {
             // Handle double conversion
             var conv_exp = expression as CustomNodes.ConversionExpression;
             if (conv_exp != null && conv_exp.WrappingTemplate.Equals(template))
@@ -465,19 +465,19 @@ namespace SME.VHDL
                 return expression;
             }
 
-			var self = expression.ReplaceWith(new CustomNodes.ConversionExpression()
-			{
-				Expression = expression,
-				WrappingTemplate = template,
-				SourceExpression = expression.SourceExpression,
-				SourceResultType = expression.SourceResultType
-			});
+            var self = expression.ReplaceWith(new CustomNodes.ConversionExpression()
+            {
+                Expression = expression,
+                WrappingTemplate = template,
+                SourceExpression = expression.SourceExpression,
+                SourceResultType = expression.SourceResultType
+            });
 
-			expression.Parent = self;
-			render.TypeLookup[self] = vhdltarget;
+            expression.Parent = self;
+            render.TypeLookup[self] = vhdltarget;
 
-			return self;
-		}
+            return self;
+        }
 
         /// <summary>
         /// Wraps the given expression in a set of parenthesis.

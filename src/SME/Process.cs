@@ -220,16 +220,16 @@ namespace SME
             }
         }
 
-		/// <summary>
-		/// Returns an awaitable task that is signaled when the process can run
-		/// </summary>
-		/// <returns>The async awaitable task.</returns>
-		public async Task ClockAsync()
-		{
-			SignalProcessReady();
-			await m_clock.WaitAsync();
-			await m_inputready.Task;
-		}
+        /// <summary>
+        /// Returns an awaitable task that is signaled when the process can run
+        /// </summary>
+        /// <returns>The async awaitable task.</returns>
+        public async Task ClockAsync()
+        {
+            SignalProcessReady();
+            await m_clock.WaitAsync();
+            await m_inputready.Task;
+        }
 
         /// <summary>
         /// Returns an awaitable task indicating that the process has finished.
@@ -272,12 +272,12 @@ namespace SME
         protected void SimulationOnly(Action f)
         {
             f();
-		}
+        }
 
-		/// <summary>
-		/// Field for storing an instance of SME.VHDL.ICustomRenderer
-		/// TODO it is an object, since SME should not depend on SME.VHDL
-		/// </summary>
-		public virtual object CustomRenderer { get { return null; } }
-	}
+        /// <summary>
+        /// Field for storing an instance of SME.VHDL.ICustomRenderer
+        /// TODO it is an object, since SME should not depend on SME.VHDL
+        /// </summary>
+        public virtual object CustomRenderer { get { return null; } }
+    }
 }

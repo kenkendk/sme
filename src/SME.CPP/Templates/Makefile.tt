@@ -6,7 +6,7 @@
 all: build
 
 GPP = g++
-CPPFLAGS = 
+CPPFLAGS =
 
 build: <#= Naming.AssemblyNameToFileName(Network) #>
 
@@ -20,28 +20,28 @@ custom_files: <# foreach(var file in CustomFiles) { #><#= file #>.o <# } #>
 <# } #>
 
 <#= Naming.BusImplementationsFileName(Network) #>.o: SystemTypes.hpp <#= Naming.BusDefinitionsFileName(Network) #> <#= Naming.SharedDefinitionsFileName(Network) #> <#= Naming.BusImplementationsFileName(Network) #>.cpp
-	${GPP} ${CPPFLAGS} -c <#= Naming.BusImplementationsFileName(Network) #>.cpp
+    ${GPP} ${CPPFLAGS} -c <#= Naming.BusImplementationsFileName(Network) #>.cpp
 
 <# foreach (var file in Filenames) { #>
 <#= file #>.o: <#= file #>.cpp <#= file #>.hpp SystemTypes.hpp <#= Naming.SharedDefinitionsFileName(Network) #> <#= Naming.BusDefinitionsFileName(Network) #><#= cust_tag #>
-	${GPP} ${CPPFLAGS} -c <#= file #>.cpp
+    ${GPP} ${CPPFLAGS} -c <#= file #>.cpp
 <# } #>
 
 <# if (!string.IsNullOrEmpty(cust_tag)) { #>
 <#     foreach (var file in CustomFiles) { #>
 <#= file #>.o: <#= file #>.cpp SystemTypes.hpp <#= Naming.SharedDefinitionsFileName(Network) #> <#= Naming.BusDefinitionsFileName(Network) #>
-	${GPP} ${CPPFLAGS} -c <#= file #>.cpp
+    ${GPP} ${CPPFLAGS} -c <#= file #>.cpp
 <#     } #>
 <# } #>
 
 <#= Naming.SimulatorFileName(Network) #>.o: <#= Naming.SimulatorFileName(Network) #>.cpp <#= Naming.SimulatorFileName(Network) #>.hpp SystemTypes.hpp <#= Naming.SharedDefinitionsFileName(Network) #> <#= Naming.BusDefinitionsFileName(Network) #> <# foreach(var file in Filenames) { #><#= file #>.o <#= file #>.hpp <# } #><#= cust_tag #>
-	${GPP} ${CPPFLAGS} -c <#= Naming.SimulatorFileName(Network) #>.cpp
+    ${GPP} ${CPPFLAGS} -c <#= Naming.SimulatorFileName(Network) #>.cpp
 
 <#= Naming.AssemblyNameToFileName(Network) #>: <#= Naming.AssemblyNameToFileName(Network) #>.cpp SystemTypes.hpp <#= Naming.SharedDefinitionsFileName(Network) #> <#= Naming.BusDefinitionsFileName(Network) #> <#= Naming.BusImplementationsFileName(Network) #>.o <#= Naming.SimulatorFileName(Network) #>.o <#= Naming.SimulatorFileName(Network) #>.hpp <# foreach(var file in Filenames) { #><#= file #>.o <#= file #>.hpp <# } #><#= cust_tag #>
-	${GPP} <#= Naming.AssemblyNameToFileName(Network) #>.cpp <#= Naming.BusImplementationsFileName(Network) #>.o <#= Naming.SimulatorFileName(Network) #>.o <# foreach(var file in Filenames) { #><#= file #>.o <# } #> -o <#= Network.Name #>
+    ${GPP} <#= Naming.AssemblyNameToFileName(Network) #>.cpp <#= Naming.BusImplementationsFileName(Network) #>.o <#= Naming.SimulatorFileName(Network) #>.o <# foreach(var file in Filenames) { #><#= file #>.o <# } #> -o <#= Network.Name #>
 
 clean:
-	rm -rf *.o <#= Network.Name #>
+    rm -rf *.o <#= Network.Name #>
 
 
 .PHONY: all clean <#= cust_tag #>
