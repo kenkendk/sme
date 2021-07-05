@@ -255,10 +255,19 @@ namespace SME.AST
             var workspace = MSBuildWorkspace.Create();
             var proj_task = workspace.OpenProjectAsync(project_path);
             proj_task.Wait();
+            if (workspace.Diagnostics.Count > 0) {
+                var messages = workspace.Diagnostics.Select(x => x.Message);
+                var message_string = string.Join(Environment.NewLine, messages);
+                throw new Exception($"{workspace.Diagnostics.Count} errors when opening the workspace.{Environment.NewLine}{message_string}");
+            }
             var project = proj_task.Result;
             var compile_task = project.GetCompilationAsync();
             compile_task.Wait();
             m_compilation = compile_task.Result;
+            var diags = m_compilation.GetDiagnostics();
+            foreach (var diag in diags)
+                if (diag.WarningLevel == 0)
+                    throw new Exception($"Error when compiling the project: {diag.GetMessage()}");
             m_syntaxtrees = m_compilation.SyntaxTrees;
             m_semantics = m_compilation.SyntaxTrees.Select(x => m_compilation.GetSemanticModel(x));
 
