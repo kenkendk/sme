@@ -24,6 +24,20 @@ namespace ExternalComponent
                 new TrueDualPortBlockRamTester<int>(blocksize, rnd, make_top_level: true);
                 new TrueDualPortBlockRamTester<ulong>(blocksize, rnd, make_top_level: true);
 
+                rnd = false;
+
+                new SinglePortBlockRamTester<UInt10>(blocksize, rnd, make_top_level: true);
+                new SinglePortBlockRamTester<int>(blocksize, rnd, make_top_level: true);
+                new SinglePortBlockRamTester<ulong>(blocksize, rnd, make_top_level: true);
+
+                new SimpleDualPortBlockRamTester<UInt10>(blocksize, rnd, make_top_level: true);
+                new SimpleDualPortBlockRamTester<int>(blocksize, rnd, make_top_level: true);
+                new SimpleDualPortBlockRamTester<ulong>(blocksize, rnd, make_top_level: true);
+
+                new TrueDualPortBlockRamTester<UInt10>(blocksize, rnd, make_top_level: true);
+                new TrueDualPortBlockRamTester<int>(blocksize, rnd, make_top_level: true);
+                new TrueDualPortBlockRamTester<ulong>(blocksize, rnd, make_top_level: true);
+
                 sim
                     .BuildCSVFile()
                     .BuildGraph()
