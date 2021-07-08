@@ -8,7 +8,10 @@ namespace NoiseFilter
         {
             using (var sim = new Simulation())
             {
-                var inpu_simu = new ImageInputSimulator("input/image1.png");
+                // Short test
+                //var inpu_simu = new ImageInputSimulator("input/image1.png");
+                // Long test
+                var inpu_simu = new ImageInputSimulator();
                 var bord_emit = new BorderEmitter();
                 var sten_emit = new StencilEmitter();
                 var sten_appl = new StencilApplier();
