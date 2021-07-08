@@ -3,6 +3,13 @@ using System;
 
 namespace ColorBin
 {
+
+    /// <summary>
+    /// Counts the values of the given pixels into three bins: low, medium and
+    /// high. Once the last pixel have been written, it outputs these bins for
+    /// exactly one clock cycle. After this cycle, the internal counters are
+    /// reset to 0.
+    /// </summary>
     public class ColorBinCollector : SimpleProcess
     {
         [InputBus]
@@ -43,4 +50,5 @@ namespace ColorBin
             Output.IsValid = was_valid;
         }
     }
+
 }

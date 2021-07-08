@@ -54,7 +54,6 @@ namespace ColorBin
 
             foreach (var file in IMAGES)
             {
-                //Console.WriteLine($"Processing {file}");
                 Debug.Assert(System.IO.File.Exists(file), $"File not found: {file}");
 
                 using (var img = System.Drawing.Image.FromFile(file))
@@ -66,7 +65,6 @@ namespace ColorBin
 
                     for (var i = 0; i < img.Height; i++)
                     {
-                        //Console.WriteLine($"Still need to write {bmp.Width * (bmp.Height - i)} pixels");
                         for (var j = 0; j < img.Width; j++)
                         {
                             var pixel = bmp.GetPixel(j, i);
@@ -83,6 +81,8 @@ namespace ColorBin
                     Data.LastPixel = false;
                 }
 
+                // If the collector is clocked, the simulator should wait for
+                // it to be ready
                 while (!Result.IsValid)
                     await ClockAsync();
 
@@ -92,9 +92,9 @@ namespace ColorBin
                 Debug.Assert(expected[0] == Result.Low, $"Low: Got {Result.Low}, expected {expected[0]}");
                 Debug.Assert(expected[1] == Result.Medium, $"Medium: Got {Result.Medium}, expected {expected[1]}");
                 Debug.Assert(expected[2] == Result.High, $"High: Got {Result.High}, expected {expected[2]}");
-            }
 
-            await ClockAsync();
+                await ClockAsync();
+            }
         }
     }
 }
