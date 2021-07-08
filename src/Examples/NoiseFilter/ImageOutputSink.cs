@@ -37,10 +37,8 @@ namespace NoiseFilter
             public void WritePixel(byte r, byte g, byte b)
             {
                 var color = Color.FromArgb(r, g, b);
-                var x = m_index % m_image.Width;
-                var y = m_index / m_image.Width;
-                Debug.Assert(m_image_expected.GetPixel(x, y).Equals(color));
-                m_image.SetPixel(x, y, color);
+                Debug.Assert(m_image_expected.GetPixel(X, Y).Equals(color), $"Error when comparing pixels, expected {m_image_expected.GetPixel(X,Y)}, got {color}");
+                m_image.SetPixel(X, Y, color);
                 m_index++;
             }
 
@@ -56,6 +54,7 @@ namespace NoiseFilter
 
             public int X { get { return m_index % m_image.Width; } }
             public int Y { get { return m_index / m_image.Width; } }
+            public int idx { get { return _imageIndex; } }
         }
 
         public override async Task Run()
@@ -81,7 +80,7 @@ namespace NoiseFilter
 
                     if (cur.IsComplete)
                     {
-                        Console.WriteLine("--------------> Wrote image to disk in output/ folder");
+                        Console.WriteLine($"--------------> Wrote image ({cur.idx}) to disk in output/ folder");
                         work.Dequeue().Dispose();
                     }
                 }
@@ -93,7 +92,7 @@ namespace NoiseFilter
 
                     if (cur.IsComplete)
                     {
-                        Console.WriteLine("--------------> Wrote padded image to disk in output/ folder");
+                        Console.WriteLine($"--------------> Wrote padded image ({cur.idx}) to disk in output/ folder");
                         workPadded.Dequeue().Dispose();
                     }
                 }
