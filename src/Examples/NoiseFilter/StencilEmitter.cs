@@ -84,13 +84,8 @@ namespace NoiseFilter
 
                 var sourcepos = (Internal.InputIndex / COLOR_WIDTH) + (Data.IsValid ? 1 : 0);
 
-                //if (Internal.OutputIndex >= 47)
-                //    Console.WriteLine("{0}: {1} > {2}", Internal.OutputIndex, sourcepos, maxindex);
-
                 if (sourcepos > maxindex)
                 {
-                    //Console.WriteLine("Stencil {0} {1}x{2} ->", Internal.OutputIndex, outputx, outputy);
-
                     var minindex = (centerindex - half_dist) * COLOR_WIDTH;
                     for (var i = 0; i < STENCIL_HEIGHT; i++)
                     {
@@ -99,26 +94,18 @@ namespace NoiseFilter
                             var bufix = (minindex + (((Internal.InputWidth * i) + j) * COLOR_WIDTH)) % m_buffer.Length;
                             var outix = ((STENCIL_WIDTH * i) + j) * COLOR_WIDTH;
 
-                            //Console.Write("{0} => {1}: ", bufix / 3, outix / 3);
-
                             for (var k = 0; k < COLOR_WIDTH; k++)
                             {
                                 if (ix + 3 == bufix && Data.IsValid)
                                 {
                                     Output.Data[outix + k] = Data.Color[k];
-                                    //Console.Write("{0}, ", Data.Color[k]);
                                 }
                                 else
                                 {
                                     Output.Data[outix + k] = m_buffer[bufix + k];
-                                    //Console.Write("{0}, ", m_buffer[bufix + k]);
                                 }
                             }
-
-                            //Console.Write(" ");
                         }
-
-                        //Console.WriteLine();
                     }
 
                     Output.IsValid = true;

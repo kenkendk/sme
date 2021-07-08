@@ -90,9 +90,6 @@ namespace NoiseFilter
 
                                 await ClockAsync();
                             }
-
-                            Console.WriteLine($"Still need to write {bmp.Width * (bmp.Height - i)} pixels");
-
                         }
 
                         Data.IsValid = false;

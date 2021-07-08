@@ -102,10 +102,6 @@ namespace NoiseFilter
                         for (var i = 0; i < COLOR_WIDTH; i++)
                             Output.Color[i] = Input.Color[i];
                         Internal.TargetIndex++;
-
-                        //Console.WriteLine("Border -> source pixel {0}x{1}, values: {2},{3},{4}", sourcex, sourcey, Input.Color[0], Input.Color[1], Input.Color[2]);
-                        Console.WriteLine("Border -> target pixel {0}x{1}, values: {2},{3},{4}", targetx, targety, Input.Color[0], Input.Color[1], Input.Color[2]);
-
                     }
                     else if (sourceix < Internal.SourceIndex)
                     {
@@ -116,13 +112,10 @@ namespace NoiseFilter
                             Output.Color[i] = m_buffer[ix + i];
 
                         Internal.TargetIndex++;
-                        //Console.WriteLine("Border -> source pixel {0}x{1}, values: {2},{3},{4}", sourcex, sourcey, m_buffer[ix + 0], m_buffer[ix + 1], m_buffer[ix + 2]);
-                        Console.WriteLine("Border -> target pixel {0}x{1}, values: {2},{3},{4}", targetx, targety, m_buffer[ix + 0], m_buffer[ix + 1], m_buffer[ix + 2]);
                     }
 
                     if (Internal.TargetIndex == Internal.TargetPixels - 1)
                     {
-                        Console.WriteLine("Wrote final pixel {0}", Internal.TargetIndex);
                         Delay.IsReady = true;
                         Internal.HasSize = false;
                     }

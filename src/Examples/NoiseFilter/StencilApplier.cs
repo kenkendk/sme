@@ -60,8 +60,6 @@ namespace NoiseFilter
                 for (var i = 0; i < m_buffer.Length; i++)
                     Output.Color[i] = (byte)(m_buffer[i] / FILTER_SUMS[i]);
 
-                Console.WriteLine("Apply {3} -> {0},{1},{2}", Input.Data[0 + (3 * 4)], Input.Data[1 + (3 * 4)], Input.Data[2 + (3 * 4)], Internal.Index);
-
                 Internal.Index++;
 
                 Output.IsValid = true;
