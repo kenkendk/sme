@@ -3,6 +3,7 @@ using static NoiseFilter.StencilConfig;
 
 namespace NoiseFilter
 {
+
     /// <summary>
     /// A bus for sending image dimensions
     /// </summary>
@@ -16,8 +17,7 @@ namespace NoiseFilter
     }
 
     /// <summary>
-    /// A bus for reading image values from a sensor,
-    /// one pixel at a time
+    /// A bus for reading image values from a sensor, one pixel at a time
     /// </summary>
     public interface ImageInputLine : IBus
     {
@@ -29,8 +29,8 @@ namespace NoiseFilter
     }
 
     /// <summary>
-    /// A bus for sending filtered image values from a sensor,
-    /// one pixel at a time
+    /// A bus for sending filtered image values from a sensor, one pixel at a
+    /// time
     /// </summary>
     [TopLevelOutputBus]
     public interface ImageOutputLine : IBus
@@ -43,8 +43,7 @@ namespace NoiseFilter
     }
 
     /// <summary>
-    /// A bus for reading image values from a sensor,
-    /// one pixel at a time
+    /// A bus for reading image values from a sensor, one pixel at a time
     /// </summary>
     public interface PaddedInputLine : IBus
     {
@@ -79,4 +78,5 @@ namespace NoiseFilter
         [InitialValue]
         bool IsReady { get; set; }
     }
+
 }
