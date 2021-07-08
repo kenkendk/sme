@@ -1,4 +1,4 @@
-﻿using SME;
+using SME;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -32,12 +32,6 @@ namespace AES256CBC
         {
             string hex = BitConverter.ToString(ba);
             return hex.Replace("-","");
-        }
-
-        public static string ToHex(uint data)
-        {
-            string hex = BitConverter.ToString(BitConverter.GetBytes(data));
-            return hex.Replace("-", "");
         }
 
         [OutputBus]
