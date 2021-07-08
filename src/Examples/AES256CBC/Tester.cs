@@ -1,4 +1,4 @@
-using SME;
+﻿using SME;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -17,8 +17,8 @@ namespace AES256CBC
             StringToByteArray("f69f2445df4f9b17ad2b417be66c3710"),
         };
 
-        // Set to zero or less to use the reference vectors
-        public static int NUMBER_OF_RUNS = -1;
+        // The first four entries are the reference vectors
+        public static int NUMBER_OF_RUNS = 8;
 
         public static byte[] StringToByteArray(string hex) {
             return Enumerable.Range(0, hex.Length)
@@ -86,20 +86,15 @@ namespace AES256CBC
 
         private static IEnumerable<byte[]> RandomVectors(int count)
         {
-            if (count <= 0)
+            byte[] tmp = new byte[16];
+            var rng = new Random();
+            int i = 0;
+            while (i < REFERENCE_VECTORS.Length)
+                yield return REFERENCE_VECTORS[i++];
+            while (i++ < count)
             {
-                foreach (var v in REFERENCE_VECTORS)
-                    yield return v;
-            }
-            else
-            {
-                var rng = new Random();
-                byte[] tmp = new byte[16];
-                while (count-- > 0)
-                {
-                    rng.NextBytes(tmp);
-                    yield return tmp;
-                }
+                rng.NextBytes(tmp);
+                yield return tmp;
             }
         }
 
