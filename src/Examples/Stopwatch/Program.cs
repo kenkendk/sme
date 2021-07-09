@@ -15,6 +15,7 @@ namespace Stopwatch
 
                 watch.buttons = tester.buttons;
                 counter.watch = watch.output;
+                tester.number = counter.output;
                 tester.watch = watch.output;
 
                 sim

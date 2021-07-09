@@ -14,7 +14,7 @@ namespace Stopwatch
         public NumberOutput output = Scope.CreateBus<NumberOutput>();
 
         UInt6 num = 0;
-        int skips = 5000000; // 5 MHz to 1 Hz
+        int skips = 100; // Set to 5000000 (5 MHz) for 1 Hz blinking (if clocked at 5 MHz)
         int current = 0;
 
         protected override void OnTick()
