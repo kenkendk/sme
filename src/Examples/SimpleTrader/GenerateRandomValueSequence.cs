@@ -49,34 +49,5 @@ namespace SimpleTrader
         {
             return GetValues(seed, maxrange).Select(x => (uint)(x * range));
         }
-
-        public static void SaveSequence<T>(this IEnumerable<T> values, string filename, Func<T, string> serial = null)
-        {
-            if (serial == null)
-                serial = x => x == null ? null : x.ToString();
-
-            using (var fs = System.IO.File.OpenWrite(filename))
-            using (var sw = new System.IO.StreamWriter(fs))
-                foreach (var n in values)
-                    sw.WriteLine(serial(n));
-        }
-
-        public static IEnumerable<uint> LoadSequence(string filename)
-        {
-            return LoadSequence<uint>(filename, x => uint.Parse(x));
-        }
-
-
-        public static IEnumerable<T> LoadSequence<T>(string filename, Func<string, T> serial)
-        {
-            using (var fs = System.IO.File.OpenRead(filename))
-            using (var sr = new System.IO.StreamReader(fs))
-            {
-                string str;
-                while ((str = sr.ReadLine()) != null)
-                    yield return serial(str);
-            }
-        }
     }
 }
-
