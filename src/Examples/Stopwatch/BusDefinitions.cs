@@ -4,7 +4,7 @@ using SME.VHDL;
 
 namespace Stopwatch
 {
-    [InitializedBus, TopLevelInputBus]
+    [InitializedBus]
     public interface Buttons : IBus
     {
         bool reset { get; set; }
@@ -18,7 +18,7 @@ namespace Stopwatch
         bool reset { get; set; }
     }
 
-    [InitializedBus, TopLevelOutputBus]
+    [InitializedBus]
     public interface NumberOutput : IBus
     {
         UInt6 val { get; set; }

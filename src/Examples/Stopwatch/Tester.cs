@@ -7,10 +7,10 @@ namespace Stopwatch
     public class Tester : SimulationProcess
     {
         [InputBus]
-        WatchOutput watch = Scope.CreateOrLoadBus<WatchOutput>();
+        public WatchOutput watch;
 
         [OutputBus]
-        Buttons buttons = Scope.CreateOrLoadBus<Buttons>();
+        public Buttons buttons = Scope.CreateBus<Buttons>();
 
         public async override System.Threading.Tasks.Task Run()
         {

@@ -7,13 +7,23 @@ namespace Stopwatch
     {
         public static void Main(string[] args)
         {
-            new Simulation()
-                .BuildCSVFile()
-                .BuildVHDL()
-                .Run(
-                    new Stopwatch(),
-                    new Counter(),
-                    new Tester());
+            using (var sim = new Simulation())
+            {
+                var watch = new Stopwatch();
+                var counter = new Counter();
+                var tester = new Tester();
+
+                watch.buttons = tester.buttons;
+                counter.watch = watch.output;
+                tester.watch = watch.output;
+
+                sim
+                    .AddTopLevelInputs(watch.buttons)
+                    .AddTopLevelOutputs(counter.output)
+                    .BuildCSVFile()
+                    .BuildVHDL()
+                    .Run();
+            }
         }
     }
 }

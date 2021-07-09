@@ -7,10 +7,10 @@ namespace Stopwatch
     public class Stopwatch : StateProcess
     {
         [InputBus]
-        Buttons buttons = Scope.CreateOrLoadBus<Buttons>();
+        public Buttons buttons;
 
         [OutputBus]
-        WatchOutput output = Scope.CreateOrLoadBus<WatchOutput>();
+        public WatchOutput output = Scope.CreateBus<WatchOutput>();
 
         protected async override System.Threading.Tasks.Task OnTickAsync()
         {

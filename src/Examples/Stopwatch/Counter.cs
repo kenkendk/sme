@@ -8,10 +8,10 @@ namespace Stopwatch
     public class Counter : SimpleProcess
     {
         [InputBus]
-        WatchOutput watch = Scope.CreateOrLoadBus<WatchOutput>();
+        public WatchOutput watch;
 
         [OutputBus]
-        NumberOutput output = Scope.CreateOrLoadBus<NumberOutput>();
+        public NumberOutput output = Scope.CreateBus<NumberOutput>();
 
         UInt6 num = 0;
         int skips = 5000000; // 5 MHz to 1 Hz
