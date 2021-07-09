@@ -622,38 +622,47 @@ namespace SME.AST.Transform
                 return item;
 
             var enumname = method.Parent.Name + "_FSM";
-
-            // Construct an enum type that matches the desired states
-            var enumsyntax = SyntaxFactory.EnumDeclaration(enumname);
-            enumsyntax = enumsyntax.AddModifiers(
-                SyntaxFactory.Token(SyntaxKind.PublicKeyword)
-            );
-            enumsyntax = enumsyntax.AddBaseListTypes(SyntaxFactory.SimpleBaseType(SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.IntKeyword))));
-
-            var statenametemplate = $"{enumname}_";
-
             var fragments = SplitIntoFragments(method.Statements);
-
             var statecount = fragments.Count;
             var enumfields = new EnumMemberDeclarationSyntax[statecount];
-
-            // Add each of the states to the type
-            for (var i = 0; i < statecount; i++)
-                enumfields[i] = SyntaxFactory.EnumMemberDeclaration($"State{i}");
-            enumsyntax = enumsyntax.AddMembers(enumfields).NormalizeWhitespace();
-
             var ns = (method.Parent as Process).MSCAType.ContainingNamespace.Name;
 
-            var cu = SyntaxFactory.CompilationUnit()
-                .AddMembers(
-                    SyntaxFactory.NamespaceDeclaration(SyntaxFactory.IdentifierName(ns))
-                    .AddMembers(
-                        enumsyntax
-                    )
-                );
-
-            m_compilation = m_compilation.AddSyntaxTrees(cu.SyntaxTree);
             var enumtype = m_compilation.GetTypeByMetadataName($"{ns}.{enumname}");
+            if (enumtype == null) {
+                // Construct an enum type that matches the desired states
+                var enumsyntax = SyntaxFactory.EnumDeclaration(enumname);
+                enumsyntax = enumsyntax.AddModifiers(
+                    SyntaxFactory.Token(SyntaxKind.PublicKeyword)
+                );
+                enumsyntax = enumsyntax.AddBaseListTypes(SyntaxFactory.SimpleBaseType(SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.IntKeyword))));
+
+                var statenametemplate = $"{enumname}_";
+
+                // Add each of the states to the type
+                for (var i = 0; i < statecount; i++)
+                    enumfields[i] = SyntaxFactory.EnumMemberDeclaration($"State{i}");
+                enumsyntax = enumsyntax.AddMembers(enumfields).NormalizeWhitespace();
+
+
+                var cu = SyntaxFactory.CompilationUnit()
+                    .AddMembers(
+                        SyntaxFactory.NamespaceDeclaration(SyntaxFactory.IdentifierName(ns))
+                        .AddMembers(
+                            enumsyntax
+                        )
+                    );
+
+                m_compilation = m_compilation.AddSyntaxTrees(cu.SyntaxTree);
+                enumtype = m_compilation.GetTypeByMetadataName($"{ns}.{enumname}");
+            }
+            else
+            {
+                var enum_syntax = m_compilation.GetSymbolsWithName(enumname).First().GetSyntax();
+                for (int i = 0; i < enumfields.Length; i++)
+                    foreach (var child in enum_syntax.ChildNodes().OfType<EnumMemberDeclarationSyntax>())
+                        if (child.Identifier.Text.Equals($"State{i}"))
+                            enumfields[i] = child;
+            }
 
             // The variable being updated internally in the method
             var run_state_var = new AST.Variable("FSM_RunState", enumfields[0])
