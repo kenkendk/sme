@@ -41,6 +41,7 @@ jobs:
         brew install docker docker-machine
         docker-machine create --driver virtualbox default
         docker-machine env default
+        eval $(docker-machine env default)
         docker pull ghdl/ghdl:ubuntu20-mcode
         brew install mono-libgdiplus
     - name: Restore
