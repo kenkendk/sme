@@ -62,8 +62,8 @@ jobs:
         SME_TEST_SKIP_VCD: 1
         SME_TEST_USE_NATIVE_GHDL: 1
       run: |
-        "$env:GHDL" --version
-        "$($env:MSYS2_PATH)MINGW64\bin\ghdl.exe" --version
+        & "$env:GHDL" --version
+        & "$($env:MSYS2_PATH)MINGW64\bin\ghdl.exe" --version
         dotnet test --no-build --logger:"console;verbosity=detailed" src/UnitTest
     - name: Test (MacOS)
       if: runner.os == 'macOS'
