@@ -61,7 +61,9 @@ jobs:
       env:
         SME_TEST_USE_NATIVE_GHDL: 1
         SME_TEST_SKIP_VCD: 1
-      run: dotnet test --no-build --logger:"console;verbosity=detailed" src/UnitTest
+      run: |
+        $env:Path += ";$($env:MSYS2_PATH)MINGW64\bin\"
+        dotnet test --no-build --logger:"console;verbosity=detailed" src/UnitTest
     - name: Test (MacOS)
       if: runner.os == 'macOS'
       env:
