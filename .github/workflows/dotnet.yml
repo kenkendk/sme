@@ -25,9 +25,11 @@ jobs:
       run: |
         docker pull ghdl/ghdl:ubuntu20-mcode
         sudo apt install libc6-dev libgdiplus
-    - name: Setup libraries (Windows)
+    - name: Setup shell (Windows)
       if: runner.os == 'Windows'
       uses: msys2/setup-msys2@v2
+    - name: Setup GHDL (Windows)
+      if: runner.os == 'Windows'
       uses: ghdl/setup-ghdl-ci@nightly
       with:
         backend: llvm
