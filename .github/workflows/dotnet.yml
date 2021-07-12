@@ -29,7 +29,7 @@ jobs:
         docker-machine create --driver virtualbox default
         docker-machine env default
     - name: Setup GHDL
-      run: docker pull ghdl/ghdl
+      run: docker pull ghdl/ghdl:ubuntu20-mcode
     - name: Install extra libraries (Linux)
       if: runner.os == 'Linux'
       run: sudo apt install libc6-dev libgdiplus
