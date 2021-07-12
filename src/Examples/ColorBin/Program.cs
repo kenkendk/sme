@@ -9,9 +9,9 @@ namespace ColorBin
             using (var sim = new Simulation())
             {
                 // Short test
-                //var tester = new ImageInputSimulator("input/image1.png");
+                var tester = new ImageInputSimulator("input/image1.png");
                 // Long test
-                var tester = new ImageInputSimulator();
+                //var tester = new ImageInputSimulator();
                 var collector = new ColorBinCollector();
 
                 collector.Input = tester.Data;
