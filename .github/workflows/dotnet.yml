@@ -31,8 +31,6 @@ jobs:
       uses: ghdl/setup-ghdl-ci@nightly
       with:
         backend: llvm
-      shell: msys2{0}
-      run: ghdl --version
     - name: Setup libraries (MacOS)
       if: runner.os == 'macOS'
       run: |
