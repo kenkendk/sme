@@ -28,4 +28,6 @@ jobs:
     - name: Build
       run: dotnet build --no-restore src/UnitTest
     - name: Test
+      env:
+        SME_SKIP_VCD=1
       run: dotnet test --no-build --logger:"console;verbosity=detailed" src/UnitTest

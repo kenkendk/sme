@@ -94,8 +94,11 @@ STD=93c
 # std_logic_textio from Synopsys
 IEEE=synopsys
 
+ifndef SME_SKIP_VCD
 # VCD trace file for GTKWave
 VCDFILE=trace.vcd
+VCDFLAG=--vcd=$(VCDFILE)
+endif
 
 # Disable the 'Warning: redundant others'
 FLAGS=--warn-no-others
@@ -176,7 +179,7 @@ FLAGS=--warn-no-others
 
             var csv = ToStringHelper.ToStringWithCulture( RS.CSVTracename );
             Write($"test: {networklower}_tb\n");
-            Write($"\tghdl -r --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) $(FLAGS) {network}_tb --vcd=$(VCDFILE)\n");
+            Write($"\tghdl -r --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) $(FLAGS) {network}_tb $(VCDFLAG)\n");
             Write("\n");
 
             Write("clean:\n");
