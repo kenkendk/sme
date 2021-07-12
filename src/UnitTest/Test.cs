@@ -21,9 +21,7 @@ namespace UnitTest
             var vcd_env = Environment.GetEnvironmentVariable(vcd_name);
             var vcd_str = vcd_env == null ? "" : $"{vcd_name}={vcd_env}";
 
-            var use_native_ghdl = Environment.GetEnvironmentVariable("SME_TEST_USE_NATIVE_GHDL") == "1";
-
-            var shell_to_use = Environment.GetEnvironmentVariable("SME_TEST_SHELL_TO_USE") ?? "";
+            var use_native_ghdl = "1".Equals(Environment.GetEnvironmentVariable("SME_TEST_USE_NATIVE_GHDL"));
 
             Environment.CurrentDirectory = targetfolder;
 
@@ -36,7 +34,7 @@ namespace UnitTest
                 var vhdlfolder = Path.Combine(outputfolder, "vhdl");
                 if (use_native_ghdl)
                 {
-                    if (RunExternalProgram($"{shell_to_use} make", "", vhdlfolder) != 0)
+                    if (RunExternalProgram("make", "", vhdlfolder) != 0)
                         throw new Exception($"Failed to run VHDL for {programname}");
                 }
                 else

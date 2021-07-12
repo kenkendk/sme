@@ -59,7 +59,6 @@ jobs:
     - name: Test (Windows)
       if: runner.os == 'Windows'
       env:
-        SME_TEST_SHELL_TO_USE: msys
         SME_TEST_SKIP_VCD: 1
         SME_TEST_USE_NATIVE_GHDL: 1
       run: |
