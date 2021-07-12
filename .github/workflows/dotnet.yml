@@ -28,6 +28,8 @@ jobs:
         brew install docker docker-machine
         docker-machine create --driver virtualbox default
         docker-machine env default
+        echo "alias docker=docker-machine" >> ~/.bashrc
+        source ~/.bashrc
     - name: Setup GHDL
       run: docker pull ghdl/ghdl:ubuntu20-mcode
     - name: Install extra libraries (Linux)
