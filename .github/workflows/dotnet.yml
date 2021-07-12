@@ -12,7 +12,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ macos-latest ]
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
 
     steps:
     - uses: actions/checkout@v2
@@ -28,6 +28,9 @@ jobs:
     - name: Setup shell (Windows)
       if: runner.os == 'Windows'
       uses: msys2/setup-msys2@v2
+      with:
+        msystem: MINGW64
+        update: true
     - name: Setup GHDL (Windows)
       if: runner.os == 'Windows'
       uses: ghdl/setup-ghdl-ci@nightly
@@ -55,7 +58,7 @@ jobs:
       run: dotnet test --no-build --logger:"console;verbosity=detailed" src/UnitTest
     - name: Test (Windows)
       if: runner.os == 'Windows'
-      shell: msys2{0}
+      shell: msys2 {0}
       env:
         SME_TEST_USE_NATIVE_GHDL: 1
         SME_TEST_SKIP_VCD: 1
