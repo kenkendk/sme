@@ -21,9 +21,7 @@ jobs:
       with:
         dotnet-version: 5.0.*
     - name: Setup GHDL
-      uses: ghdl/setup-ghdl-ci@nightly
-      with:
-        backend: llvm
+      run: docker pull ghdl/ghdl:ubuntu20-mcode
     - name: Install extra libraries
       run: sudo apt install libc6-dev libgdiplus
     - name: Restore dependencies
