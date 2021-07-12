@@ -94,7 +94,7 @@ STD=93c
 # std_logic_textio from Synopsys
 IEEE=synopsys
 
-ifndef SME_SKIP_VCD
+ifndef SME_TEST_SKIP_VCD
 # VCD trace file for GTKWave
 VCDFILE=trace.vcd
 VCDFLAG=--vcd=$(VCDFILE)

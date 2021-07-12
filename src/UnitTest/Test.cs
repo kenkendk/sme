@@ -16,8 +16,12 @@ namespace UnitTest
             var examplesfolder = Path.Combine(testfolder, "../../../../../Examples");
             var targetfolder = Path.GetFullPath(Path.Combine(examplesfolder, programname));
             SME.Simulation.ProjectPath = Path.Combine(targetfolder, $"{programname}.csproj");
-            var vcd_env = Environment.GetEnvironmentVariable("SME_SKIP_VCD");
-            var vcd_str = vcd_env == null ? "" : $"SME_SKIP_VCD={vcd_env}";
+
+            var vcd_name = "SME_TEST_SKIP_VCD";
+            var vcd_env = Environment.GetEnvironmentVariable(vcd_name);
+            var vcd_str = vcd_env == null ? "" : $"{vcd_name}={vcd_env}";
+
+            var use_native_ghdl = Environment.GetEnvironmentVariable("SME_TEST_USE_NATIVE_GHDL") == "1";
 
             Environment.CurrentDirectory = targetfolder;
 
@@ -26,9 +30,14 @@ namespace UnitTest
 
             if (runGhdl)
             {
-                var vhdlfolder = Path.Combine(targetfolder, "output");
-                if (RunExternalProgram("docker", $"run -t -v {vhdlfolder}:/mnt/data ghdl/ghdl:ubuntu20-mcode /bin/bash -c \"cd /mnt/data/vhdl; {vcd_str} make; ret=$?; rm -r work; exit $ret\"", targetfolder) != 0)
-                    throw new Exception($"Failed to run VHDL for {programname}");
+                var outputfolder = Path.Combine(targetfolder, "output");
+                var vhdlfolder = Path.Combine(outputfolder, "vhdl");
+                if (use_native_ghdl)
+                    if (RunExternalProgram("make", "", vhdlfolder) != 0)
+                        throw new Exception($"Failed to run VHDL for {programname}");
+                else
+                    if (RunExternalProgram("docker", $"run -t -v {outputfolder}:/mnt/data ghdl/ghdl:ubuntu20-mcode /bin/bash -c \"cd /mnt/data/vhdl; {vcd_str} make; ret=$?; rm -r work; exit $ret\"", targetfolder) != 0)
+                        throw new Exception($"Failed to run VHDL for {programname}");
             }
 
             if (runCpp)

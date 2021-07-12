@@ -20,7 +20,20 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 5.0.*
-    - name: Setup Docker
+    - name: Setup libraries (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        docker pull ghdl/ghdl:ubuntu20-mcode
+        sudo apt install libc6-dev libgdiplus
+    - name: Setup libraries (Windows)
+      if: runner.os == 'Windows'
+      uses: msys2/setup-msys2@v2
+      uses: ghdl/setup-ghdl-ci@nightly
+      with:
+        backend: llvm
+      shell: msys2{0}
+      run: ghdl --version
+    - name: Setup libraries (MacOS)
       if: runner.os == 'macOS'
       run: |
         mkdir -p ~/.docker/machine/cache
@@ -28,25 +41,28 @@ jobs:
         brew install docker docker-machine
         docker-machine create --driver virtualbox default
         docker-machine env default
-        echo "Reached post install ??"
-        brew services start docker-machine
-    - name: Setup GHDL
-      run: |
         docker pull ghdl/ghdl:ubuntu20-mcode
-    - name: Install extra libraries (Linux)
-      if: runner.os == 'Linux'
-      run: sudo apt install libc6-dev libgdiplus
-    - name: Install extra libraries (Windows)
-      if: runner.os == 'Windows'
-      run: echo "No extra libraries needed"
-    - name: Install extra libraries (MacOS)
-      if: runner.os == 'macOS'
-      run: brew install mono-libgdiplus
-    - name: Restore dependencies
+        brew install mono-libgdiplus
+    - name: Restore
       run: dotnet restore src/SME.sln
     - name: Build
       run: dotnet build --no-restore src/UnitTest
-    - name: Test
+    - name: Test (Linux)
+      if: runner.os == 'Linux'
       env:
-        SME_SKIP_VCD: 1
+        SME_TEST_SKIP_VCD: 1
       run: dotnet test --no-build --logger:"console;verbosity=detailed" src/UnitTest
+    - name: Test (Windows)
+      if: runner.os == 'Windows'
+      shell: msys2{0}
+      env:
+        SME_TEST_USE_NATIVE_GHDL: 1
+        SME_TEST_SKIP_VCD: 1
+      run: dotnet test --no-build --logger:"console;verbosity=detailed" src/UnitTest
+    - name: Test (MacOS)
+      if: runner.os == 'macOS'
+      env:
+        SME_TEST_SKIP_VCD: 1
+      run: |
+        eval $(docker-machine env default)
+        dotnet test --no-build --logger:"console;verbosity=detailed" src/UnitTest
