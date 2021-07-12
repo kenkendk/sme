@@ -31,7 +31,9 @@ jobs:
         echo "Reached post install ??"
         eval $(docker-machine env default)
     - name: Setup GHDL
-      run: docker pull ghdl/ghdl:ubuntu20-mcode
+      run: |
+        eval "$(docker-machine env default)"
+        docker pull ghdl/ghdl:ubuntu20-mcode
     - name: Install extra libraries (Linux)
       if: runner.os == 'Linux'
       run: sudo apt install libc6-dev libgdiplus
