@@ -12,7 +12,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ ubuntu-latest, macos-latest ]
+        os: [ macos-latest ]
 
     steps:
     - uses: actions/checkout@v2
@@ -28,8 +28,7 @@ jobs:
         brew install docker docker-machine
         docker-machine create --driver virtualbox default
         docker-machine env default
-        echo "alias docker=docker-machine" >> ~/.bashrc
-        source ~/.bashrc
+        open --background -a Docker
     - name: Setup GHDL
       run: docker pull ghdl/ghdl:ubuntu20-mcode
     - name: Install extra libraries (Linux)
