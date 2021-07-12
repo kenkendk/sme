@@ -176,7 +176,6 @@ FLAGS=--warn-no-others
 
             var csv = ToStringHelper.ToStringWithCulture( RS.CSVTracename );
             Write($"test: {networklower}_tb\n");
-            Write($"\tcp \"{csv}\" .\n");
             Write($"\tghdl -r --std=$(STD) --ieee=$(IEEE) --workdir=$(WORKDIR) $(FLAGS) {network}_tb --vcd=$(VCDFILE)\n");
             Write("\n");
 

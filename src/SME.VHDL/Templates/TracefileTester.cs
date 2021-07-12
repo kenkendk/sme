@@ -115,7 +115,7 @@ begin
         file F: TEXT;
         variable L: LINE;
         variable Status: FILE_OPEN_STATUS;
-        constant filename : string := ""./trace.csv"";
+        constant filename : string := ""../trace.csv"";
         variable clockcycle : integer := 0;
         variable tmp : CSV_LINE_T;
         variable readOK : boolean;
