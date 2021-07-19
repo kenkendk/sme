@@ -133,18 +133,22 @@ namespace SME
     /// Marker attribute for ignoring a member or process.
     /// </summary>
     public class IgnoreAttribute : Attribute { }
+
     /// <summary>
     /// Marker attribute for attempting to compile a member method.
     /// </summary>
     public class CompileAttribute : Attribute { }
+
     /// <summary>
     /// Marker attribute for supressing the body.
     /// </summary>
     public class SuppressBodyAttribute : Attribute { }
+
     /// <summary>
     /// Marker attribute for supressing output.
     /// </summary>
     public class SuppressOutputAttribute : Attribute { }
+
     /// <summary>
     /// Marker attribute for rendering a variable as a signal.
     /// </summary>

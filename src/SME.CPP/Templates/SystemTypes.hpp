@@ -42,7 +42,7 @@ public:
     ~SignalException() throw() {}
 };
 
-class InvalidReadException: public SignalException { 
+class InvalidReadException: public SignalException {
 public:
     InvalidReadException(std::string what)
     : SignalException(what) { }

@@ -307,7 +307,7 @@ begin
                     }
                     Write("\n");
                 }
-                
+
                 if (!RSP.Process.IsClocked)
                     Write("        variable reentry_guard: std_logic;\n");
 

@@ -140,7 +140,7 @@ namespace SME.VHDL.Transformations
             stm.Condition = new BinaryOperatorExpression(
                 new IdentifierExpression(stm.LoopIndex),
                 SyntaxKind.LessThanToken,
-                new PrimitiveExpression((loopedges.Item2-1-loopedges.Item1) / loopedges.Item3 + 1, 
+                new PrimitiveExpression((loopedges.Item2-1-loopedges.Item1) / loopedges.Item3 + 1,
                 tmp.MSCAType.LoadType(typeof(int)))
             )
             {
@@ -153,5 +153,5 @@ namespace SME.VHDL.Transformations
             return nstm;
         }
     }
-    
+
 }

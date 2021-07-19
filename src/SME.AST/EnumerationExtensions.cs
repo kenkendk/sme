@@ -106,7 +106,7 @@ namespace SME.AST
 
             visitor(network, VisitorState.Leave);
         }
-        
+
         /// <summary>
         /// Returns all the leaves in the sequence originating in the given item.
         /// </summary>
@@ -202,7 +202,7 @@ namespace SME.AST
                         yield break;
                     visitor(p, VisitorState.Leave);
                 }
-            
+
             if (proc.MainMethod != null)
                 foreach (var x in proc.MainMethod.All(visitor))
                     yield return x;
@@ -243,7 +243,7 @@ namespace SME.AST
 
             visitor(bus, VisitorState.Leave);
         }
-        
+
         /// <summary>
         /// Enumerates all elements in the bus, and optionally applies the visitor function.
         /// <summary>
@@ -1069,5 +1069,5 @@ namespace SME.AST
             }
         }
     }
-    
+
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -451,7 +451,7 @@ namespace SME
                     _scopes[key] = value;
             }
         }
-        
+
         /// <summary>
         /// The simulation scopes matching the keys.
         /// </summary>

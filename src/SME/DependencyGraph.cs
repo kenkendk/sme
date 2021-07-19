@@ -202,8 +202,8 @@ namespace SME
         public INode[] ExecutionPlan { get { return m_executionPlan.Cast<INode>().ToArray(); } }
 
         /// <summary>
-        /// Returns a collection of Node, indicating a dependency cycle. 
-        /// Assumes non of the Nodes in the given graph are clocked, as they 
+        /// Returns a collection of Node, indicating a dependency cycle.
+        /// Assumes non of the Nodes in the given graph are clocked, as they
         /// should have been removed prior to calling this function.
         /// </summary>
         /// <param name="start">The start Node of the cycle</param>
@@ -213,7 +213,7 @@ namespace SME
         {
             if (start == current)
                 yield return current;
-            else 
+            else
             {
                 var cycle = current.Children.SelectMany(x => ContainsCycle(start, x));
                 if (cycle.Any())
@@ -242,10 +242,10 @@ namespace SME
             var neededForOutput = nodeLookup
                 .SelectMany(x => x.Key.OutputBusses
                     .Where(y => y != null)
-                    .Select(y => new 
-                        { 
-                            Bus = y, 
-                            Node = x.Value 
+                    .Select(y => new
+                        {
+                            Bus = y,
+                            Node = x.Value
                         }
                     )
                 )

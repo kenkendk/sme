@@ -16,42 +16,42 @@ using System.Text;
 
 
 public partial class CustomTypes : CustomTypesBase {
-    
+
     public virtual string TransformText() {
         this.GenerationEnvironment = null;
-        
+
         #line 1 ""
         this.Write("﻿");
-        
+
         #line default
         #line hidden
-        
+
         #line 6 ""
         this.Write("\n");
-        
+
         #line default
         #line hidden
         return this.GenerationEnvironment.ToString();
     }
-    
+
     public virtual void Initialize() {
     }
 }
 
 public class CustomTypesBase {
-    
+
     private global::System.Text.StringBuilder builder;
-    
+
     private global::System.Collections.Generic.IDictionary<string, object> session;
-    
+
     private global::System.CodeDom.Compiler.CompilerErrorCollection errors;
-    
+
     private string currentIndent = string.Empty;
-    
+
     private global::System.Collections.Generic.Stack<int> indents;
-    
+
     private ToStringInstanceHelper _toStringHelper = new ToStringInstanceHelper();
-    
+
     public virtual global::System.Collections.Generic.IDictionary<string, object> Session {
         get {
             return this.session;
@@ -60,7 +60,7 @@ public class CustomTypesBase {
             this.session = value;
         }
     }
-    
+
     public global::System.Text.StringBuilder GenerationEnvironment {
         get {
             if ((this.builder == null)) {
@@ -72,7 +72,7 @@ public class CustomTypesBase {
             this.builder = value;
         }
     }
-    
+
     protected global::System.CodeDom.Compiler.CompilerErrorCollection Errors {
         get {
             if ((this.errors == null)) {
@@ -81,13 +81,13 @@ public class CustomTypesBase {
             return this.errors;
         }
     }
-    
+
     public string CurrentIndent {
         get {
             return this.currentIndent;
         }
     }
-    
+
     private global::System.Collections.Generic.Stack<int> Indents {
         get {
             if ((this.indents == null)) {
@@ -96,23 +96,23 @@ public class CustomTypesBase {
             return this.indents;
         }
     }
-    
+
     public ToStringInstanceHelper ToStringHelper {
         get {
             return this._toStringHelper;
         }
     }
-    
+
     public void Error(string message) {
         this.Errors.Add(new global::System.CodeDom.Compiler.CompilerError(null, -1, -1, null, message));
     }
-    
+
     public void Warning(string message) {
         global::System.CodeDom.Compiler.CompilerError val = new global::System.CodeDom.Compiler.CompilerError(null, -1, -1, null, message);
         val.IsWarning = true;
         this.Errors.Add(val);
     }
-    
+
     public string PopIndent() {
         if ((this.Indents.Count == 0)) {
             return string.Empty;
@@ -122,40 +122,40 @@ public class CustomTypesBase {
         this.currentIndent = this.currentIndent.Substring(0, lastPos);
         return last;
     }
-    
+
     public void PushIndent(string indent) {
         this.Indents.Push(indent.Length);
         this.currentIndent = (this.currentIndent + indent);
     }
-    
+
     public void ClearIndent() {
         this.currentIndent = string.Empty;
         this.Indents.Clear();
     }
-    
+
     public void Write(string textToAppend) {
         this.GenerationEnvironment.Append(textToAppend);
     }
-    
+
     public void Write(string format, params object[] args) {
         this.GenerationEnvironment.AppendFormat(format, args);
     }
-    
+
     public void WriteLine(string textToAppend) {
         this.GenerationEnvironment.Append(this.currentIndent);
         this.GenerationEnvironment.AppendLine(textToAppend);
     }
-    
+
     public void WriteLine(string format, params object[] args) {
         this.GenerationEnvironment.Append(this.currentIndent);
         this.GenerationEnvironment.AppendFormat(format, args);
         this.GenerationEnvironment.AppendLine();
     }
-    
+
     public class ToStringInstanceHelper {
-        
+
         private global::System.IFormatProvider formatProvider = global::System.Globalization.CultureInfo.InvariantCulture;
-        
+
         public global::System.IFormatProvider FormatProvider {
             get {
                 return this.formatProvider;
@@ -166,7 +166,7 @@ public class CustomTypesBase {
                 }
             }
         }
-        
+
         public string ToStringWithCulture(object objectToConvert) {
             if ((objectToConvert == null)) {
                 throw new global::System.ArgumentNullException("objectToConvert");

@@ -11,9 +11,9 @@
 // #### USER-DATA-INCLUDE-START
 // #### USER-DATA-INCLUDE-END
 
-<# 
+<#
 var known = new HashSet<Type>();
-foreach(var bus in Network.Busses) { 
+foreach(var bus in Network.Busses) {
     if (known.Contains(bus.SourceType))
         continue;
     known.Add(bus.SourceType);
@@ -33,7 +33,7 @@ foreach(var bus in Network.Busses) {
                    arraylen = RS.Renderer.RenderExpression((signal.DefaultValue as SME.AST.EmptyArrayCreateExpression).SizeExpression);
                else
                    arraylen = RS.GetArrayLength(signal).DefaultValue.ToString();
-#>    
+#>
     size_<#= signal.Name #> = <#= arraylen #>;
     valid_<#= signal.Name #> = new bool[size_<#= signal.Name #>];
     written_<#= signal.Name #> = new bool[size_<#= signal.Name #>];
@@ -62,7 +62,7 @@ foreach(var bus in Network.Busses) {
 <#         } #>
 <#     } #>
 
-<#     foreach(var signal in bus.Signals.Where(x => x.DefaultValue != null)) { 
+<#     foreach(var signal in bus.Signals.Where(x => x.DefaultValue != null)) {
            var cpptype = RS.TypeScope.GetType(signal);
            var ini = RS.Renderer.GetInitializer(signal);
 
@@ -75,7 +75,7 @@ foreach(var bus in Network.Busses) {
 <#     } #>
 }
 
-<#     foreach(var signal in bus.Signals) { 
+<#     foreach(var signal in bus.Signals) {
            var cpptype = RS.TypeScope.GetType(signal);
            if (cpptype.IsArray) {
                var eltype = cpptype.ElementName;
@@ -123,7 +123,7 @@ void <#= bus.Name #>::forward_signals() {
 <#     foreach(var signal in bus.Signals) {
            var cpptype = RS.TypeScope.GetType(signal);
            if (cpptype.IsArray) {
-               var eltype = cpptype.ElementName; 
+               var eltype = cpptype.ElementName;
 #>
     for(i = 0; i < size_<#= signal.Name #>; i++) {
         if (staged_<#= signal.Name #>[i]) {

@@ -7,7 +7,7 @@
 
 // The names of all signals
 std::string <#= Naming.AssemblyNameToFileName(Network) #>_SIGNAL_NAMES[] = {
-<# foreach (var signal in RS.DriverSignals.Concat(RS.VerifySignals)) { 
+<# foreach (var signal in RS.DriverSignals.Concat(RS.VerifySignals)) {
        var cpptype = RS.TypeScope.GetType(signal);
        if (cpptype.IsArray) {
            var eltype = cpptype.ElementName;
@@ -28,7 +28,7 @@ std::string <#= Naming.AssemblyNameToFileName(Network) #>_SIGNAL_NAMES[] = {
            .Union(process.SharedSignals)
            //.Where(x => RS.TypeScope.GetType(x).IsArray)
            .Where(x => (x.DefaultValue is SME.AST.ArrayCreateExpression) || (x.DefaultValue is Array));
-           foreach (var v in members) { 
+           foreach (var v in members) {
                var rt = RS.TypeScope.GetType(v);
                var eltype = rt.ElementName;
                var arraylen = RS.GetArrayLength(v).DefaultValue;
@@ -38,7 +38,7 @@ const <#= eltype #> init_<#= Naming.ProcessNameToValidName(process) #>_<#= Namin
 <# } #>
 
 
-<#= Naming.AssemblyNameToFileName(Network) #>::<#= Naming.AssemblyNameToFileName(Network) #>() 
+<#= Naming.AssemblyNameToFileName(Network) #>::<#= Naming.AssemblyNameToFileName(Network) #>()
     :
 <# foreach(var bus in Network.Busses) { #>
         bus_<#= Naming.BusNameToValidName(bus) #>(),
@@ -52,9 +52,9 @@ const <#= eltype #> init_<#= Naming.ProcessNameToValidName(process) #>_<#= Namin
 <# foreach(var bus in busses) { #>
             &bus_<#= Naming.BusNameToValidName(bus) #><#= (bus == busses.Last() & members.Length == 0) ? "" : ", " #>
 <# } #>
-<# foreach(var v in members) { 
+<# foreach(var v in members) {
        var initializer = RS.Renderer.GetInitializer(v);
-       if (!string.IsNullOrWhiteSpace(initializer)) { 
+       if (!string.IsNullOrWhiteSpace(initializer)) {
            var rt = RS.TypeScope.GetType(v);
            if (rt.IsArray) {
                var eltype = rt.ElementName;
@@ -155,7 +155,7 @@ bool <#= Naming.AssemblyNameToFileName(Network) #>::DriveFromTraceInput()
     std::istringstream valuestream(input_line);
     size_t field = 0;
 
-<#  foreach (var signal in RS.DriverSignals) { 
+<#  foreach (var signal in RS.DriverSignals) {
        var cpptype = RS.TypeScope.GetType(signal);
        if (cpptype.IsArray) {
            var eltype = cpptype.ElementName;
@@ -169,10 +169,10 @@ bool <#= Naming.AssemblyNameToFileName(Network) #>::DriveFromTraceInput()
             throw MessageException(sstm.str());
         }
         if (token.compare("U") != 0)
-            bus_<#= Naming.BusNameToValidName(signal.Parent as AST.Bus) #>.<#= signal.Name #>(i, parse_<#= eltype #>(token));            
+            bus_<#= Naming.BusNameToValidName(signal.Parent as AST.Bus) #>.<#= signal.Name #>(i, parse_<#= eltype #>(token));
         field++;
     }
-<#     
+<#
        } else {
            driver_signal_count++;
 #>
@@ -191,7 +191,7 @@ bool <#= Naming.AssemblyNameToFileName(Network) #>::DriveFromTraceInput()
     return true;
 }
 
-void <#= Naming.AssemblyNameToFileName(Network) #>::FinishCycle() 
+void <#= Naming.AssemblyNameToFileName(Network) #>::FinishCycle()
 {
     cycle++;
 <# if (Network.Busses.Any(x => x.IsClocked)) { #>
@@ -213,7 +213,7 @@ void <#= Naming.AssemblyNameToFileName(Network) #>::OnTick()
 <#     } #>
 
 
-<# foreach(var n in Graph.ExecutionPlan) { 
+<# foreach(var n in Graph.ExecutionPlan) {
        var pn = GetProcess(n.Item);
        if (pn != null && !pn.IsClocked) {
 #>

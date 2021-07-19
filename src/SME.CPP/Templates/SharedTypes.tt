@@ -14,7 +14,7 @@
 
 <# foreach(var e in RS.EnumTypes) { #>
 enum <#= e.Name #> {
-<#     
+<#
        var members = RS.ListMembers(e).ToArray();
        foreach(var el in members) {
 #>
@@ -25,7 +25,7 @@ enum <#= e.Name #> {
 
 <# foreach(var e in RS.StructTypes) { #>
 struct <#= e.Name #> {
-<#     
+<#
        var members = RS.ListMembers(e).ToArray();
        foreach(var el in members) {
 #>
