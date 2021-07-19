@@ -68,6 +68,25 @@ namespace UnitTester
         }
     }
 
+    /// <summary>
+    /// Tests whether SimulationOnly() is truely ignored.
+    /// </summary>
+    public class SimulationOnlyTest : Test
+    {
+        public SimulationOnlyTest()
+        {
+            inputs = new int[] { 1, 2, 3 };
+            outputs = inputs;
+        }
+
+        protected override void OnTick()
+        {
+            output.valid = input.valid;
+            output.value = input.value;
+            SimulationOnly(() => inputs[0] = inputs[0]);
+        }
+    }
+
     // Missing tests
     // TODO constant array
     // TODO BusProperty?
@@ -88,7 +107,6 @@ namespace UnitTester
     // TODO build an AST with a custom subclass (Why would you do this?)
     // TODO Parse an parameter?? (SME.AST.ParseProcesses)
     // TODO Parse a variable?? (SME.AST.ParseProcesses)
-    // TODO A process with either base.PrintDebug or SimulationOnly(() => {})
     // TODO ArrayCreationExpression
     // TODO CheckedExpression
     // TODO UsingStatement
