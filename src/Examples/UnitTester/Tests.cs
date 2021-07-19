@@ -87,6 +87,25 @@ namespace UnitTester
         }
     }
 
+    /// <summary>
+    /// Tests whether checked and unchecked expressions are correctly handled.
+    /// </summary>
+    public class CheckedAndUnchecked : Test
+    {
+        public CheckedAndUnchecked()
+        {
+            inputs = new int[] { 1, 2, 3 };
+            outputs = inputs;
+        }
+
+        protected override void OnTick()
+        {
+            output.valid = input.valid;
+            uint tmp = unchecked((uint)input.value);
+            output.value = checked((int)tmp);
+        }
+    }
+
     // Missing tests
     // TODO constant array
     // TODO BusProperty?
@@ -108,7 +127,6 @@ namespace UnitTester
     // TODO Parse an parameter?? (SME.AST.ParseProcesses)
     // TODO Parse a variable?? (SME.AST.ParseProcesses)
     // TODO ArrayCreationExpression
-    // TODO CheckedExpression
     // TODO UsingStatement
     // TODO MemberAccessExpression (From an InvocationExpression (SME.AST.ParseProcessesIL))
     // TODO A method with an IgnoreAttribute
@@ -149,7 +167,6 @@ namespace UnitTester
     // TODO SME.Parameter
     // TODO WrappingExpression
     // TODO EmptyArrayCreateExpression
-    // TODO UncheckedExpression
     // TODO JSON trace ??
     // TODO -=
     // TODO *=
