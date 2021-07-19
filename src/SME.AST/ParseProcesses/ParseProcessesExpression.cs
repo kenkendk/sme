@@ -45,14 +45,9 @@ namespace SME.AST
                 {
                     var mt = si.Expression as MemberAccessExpressionSyntax;
 
-                    if (mt.ToString() == "base.PrintDebug" || mt.ToString() == "base.SimulationOnly")
-                        return new EmptyExpression()
-                        {
-                            SourceExpression = si,
-                            Parent = statement
-                        };
-
-                    if (mt.ToString() == "Console.WriteLine" || mt.ToString() == "Console.Write")
+                    if (mt.ToString() == "base.SimulationOnly" ||
+                        mt.ToString() == "Console.WriteLine" ||
+                        mt.ToString() == "Console.Write")
                         return new EmptyExpression()
                         {
                             SourceExpression = si,
@@ -62,7 +57,7 @@ namespace SME.AST
                 if (si.Expression is IdentifierNameSyntax)
                 {
                     var method_name = ((IdentifierNameSyntax)si.Expression).Identifier.ValueText;
-                    if (method_name.Equals("PrintDebug") || method_name.Equals("SimulationOnly"))
+                    if (method_name.Equals("SimulationOnly"))
                         return new EmptyExpression()
                         {
                             SourceExpression = si,
