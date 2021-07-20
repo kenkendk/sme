@@ -6,31 +6,6 @@ namespace UnitTester
 {
 
     /// <summary>
-    /// Tests whether SME can translate a member reference to this
-    /// </summary>
-    public class ThisMemberReference : Test
-    {
-        public ThisMemberReference()
-        {
-            inputs = new int[] { 1, 2, 3, 4, 5 };
-            outputs = inputs.Select(x => x + const_val).ToArray();
-        }
-
-        protected bool valid = false;
-        protected int  value = 0;
-        protected readonly int const_val = 1;
-
-        protected override void OnTick()
-        {
-            output.valid = this.valid;
-            output.value = this.value + const_val;
-
-            this.valid = input.valid;
-            this.value = input.value;
-        }
-    }
-
-    /// <summary>
     /// Tests whether SME can translate a member reference to base
     /// </summary>
     public class BaseMemberReference : ThisMemberReference
@@ -44,6 +19,25 @@ namespace UnitTester
 
             base.valid = input.valid;
             base.value = input.value;
+        }
+    }
+
+    /// <summary>
+    /// Tests whether checked and unchecked expressions are correctly handled.
+    /// </summary>
+    public class CheckedAndUnchecked : Test
+    {
+        public CheckedAndUnchecked()
+        {
+            inputs = new int[] { 1, 2, 3 };
+            outputs = inputs;
+        }
+
+        protected override void OnTick()
+        {
+            output.valid = input.valid;
+            uint tmp = unchecked((uint)input.value);
+            output.value = checked((int)tmp);
         }
     }
 
@@ -88,21 +82,27 @@ namespace UnitTester
     }
 
     /// <summary>
-    /// Tests whether checked and unchecked expressions are correctly handled.
+    /// Tests whether SME can translate a member reference to this
     /// </summary>
-    public class CheckedAndUnchecked : Test
+    public class ThisMemberReference : Test
     {
-        public CheckedAndUnchecked()
+        public ThisMemberReference()
         {
-            inputs = new int[] { 1, 2, 3 };
-            outputs = inputs;
+            inputs = new int[] { 1, 2, 3, 4, 5 };
+            outputs = inputs.Select(x => x + const_val).ToArray();
         }
+
+        protected bool valid = false;
+        protected int  value = 0;
+        protected readonly int const_val = 1;
 
         protected override void OnTick()
         {
-            output.valid = input.valid;
-            uint tmp = unchecked((uint)input.value);
-            output.value = checked((int)tmp);
+            output.valid = this.valid;
+            output.value = this.value + const_val;
+
+            this.valid = input.valid;
+            this.value = input.value;
         }
     }
 
