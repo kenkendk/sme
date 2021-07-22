@@ -169,7 +169,6 @@ namespace UnitTester
     // TODO InvocationExpression
     // TODO SME.Signal
     // TODO Custom type inside an OnTick
-    // TODO this keyword inside an OnTick
     // TODO public static constant ?
     // TODO TryLocateElement(Method) (SME.AST)
     // TODO Variable in Ontick (hasn't this been done??)
