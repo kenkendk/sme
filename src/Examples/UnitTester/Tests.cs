@@ -36,6 +36,18 @@ namespace UnitTester
     }
 
     /// <summary>
+    /// Tests whether a method is correctly ignored, so not rendered in VHDL.
+    /// </summary>
+    public class IgnoreMethod : Test
+    {
+        [Ignore]
+        private int BoringMethod(int input)
+        {
+            return input + 42;
+        }
+    }
+
+    /// <summary>
     /// Tests whether a public readonly or constant variable is correctly
     /// parsed.
     /// </summary>
@@ -136,7 +148,6 @@ namespace UnitTester
     // TODO ArrayCreationExpression
     // TODO UsingStatement
     // TODO MemberAccessExpression (From an InvocationExpression (SME.AST.ParseProcessesIL))
-    // TODO A method with an IgnoreAttribute
     // TODO GotoStatement
     // TODO LabeledStatement
     // TODO Local decleration of a bus type (Is this allowed?? Maybe in an aliasing sort of fashion)
