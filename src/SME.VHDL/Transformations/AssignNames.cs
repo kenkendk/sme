@@ -43,8 +43,6 @@ namespace SME.VHDL.Transformations
             {
                 if (((Constant)el).Source is IFieldSymbol && ((Constant)el).Parent is Network)
                     el.Name = Naming.ToValidName(el.Name);
-                else if (((Constant)el).Source is IFieldSymbol)
-                    el.Name = Naming.ToValidName((((Constant)el).Source as IFieldSymbol).Type.ToDisplayString() + "." + el.Name);
                 else if (el.Parent != null && !string.IsNullOrWhiteSpace(el.Parent.Name))
                     el.Name = Naming.ToValidName(el.Parent.Name + "." + el.Name);
             }
