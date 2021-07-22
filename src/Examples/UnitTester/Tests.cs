@@ -48,6 +48,23 @@ namespace UnitTester
     }
 
     /// <summary>
+    /// Tests an invocation expression
+    /// </summary>
+    public class InvocationExpression : Test
+    {
+        private void LocalMethod()
+        {
+            output.valid = true;
+            output.value = input.value;
+        }
+
+        protected override void OnTick()
+        {
+            LocalMethod();
+        }
+    }
+
+    /// <summary>
     /// Tests whether a public readonly or constant variable is correctly
     /// parsed.
     /// </summary>
@@ -193,7 +210,6 @@ namespace UnitTester
     // TODO long type
     // TODO float type
     // TODO double type
-    // TODO InvocationExpression
     // TODO SME.Signal
     // TODO Custom type inside an OnTick
     // TODO public static constant ?
