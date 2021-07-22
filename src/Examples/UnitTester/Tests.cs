@@ -42,6 +42,28 @@ namespace UnitTester
     }
 
     /// <summary>
+    /// Tests whether a public readonly or constant variable is correctly
+    /// parsed.
+    /// </summary>
+    public class PublicReadonlyOrConstant : Test
+    {
+        public PublicReadonlyOrConstant()
+        {
+            inputs = new int[] { 1, 2, 3 };
+            outputs = inputs.Select(x => x + ro_value + c_value).ToArray();
+        }
+
+        public readonly int ro_value = 42;
+        public const int c_value = 33;
+
+        protected override void OnTick()
+        {
+            output.valid = input.valid;
+            output.value = input.value + ro_value + c_value;
+        }
+    }
+
+    /// <summary>
     /// Tests whether SME can translate a member reference with process type
     /// prefix
     /// </summary>
@@ -152,8 +174,6 @@ namespace UnitTester
     // TODO TryLocateElement(Method) (SME.AST)
     // TODO Variable in Ontick (hasn't this been done??)
     // TODO Property
-    // TODO public readonly variable
-    // TODO public constant variable
     // TODO SME.AST.ParseProcesses.LocateBus() ??
     // TODO State process without any awaits
     // TODO State process with a for loop without any awaits
