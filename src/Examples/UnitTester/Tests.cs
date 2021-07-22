@@ -27,12 +27,6 @@ namespace UnitTester
     /// </summary>
     public class CheckedAndUnchecked : Test
     {
-        public CheckedAndUnchecked()
-        {
-            inputs = new int[] { 1, 2, 3 };
-            outputs = inputs;
-        }
-
         protected override void OnTick()
         {
             output.valid = input.valid;
@@ -49,7 +43,6 @@ namespace UnitTester
     {
         public PublicReadonlyOrConstant()
         {
-            inputs = new int[] { 1, 2, 3 };
             outputs = inputs.Select(x => x + ro_value + c_value).ToArray();
         }
 
@@ -71,7 +64,6 @@ namespace UnitTester
     {
         public SelfTypeMemberReference()
         {
-            inputs = new int[] { 1, 2, 3, 4, 5 };
             outputs = inputs.Select(x => x + const_val).ToArray();
         }
 
@@ -89,12 +81,6 @@ namespace UnitTester
     /// </summary>
     public class SimulationOnlyTest : Test
     {
-        public SimulationOnlyTest()
-        {
-            inputs = new int[] { 1, 2, 3 };
-            outputs = inputs;
-        }
-
         protected override void OnTick()
         {
             output.valid = input.valid;
@@ -110,7 +96,6 @@ namespace UnitTester
     {
         public ThisMemberReference()
         {
-            inputs = new int[] { 1, 2, 3, 4, 5 };
             outputs = inputs.Select(x => x + const_val).ToArray();
         }
 

@@ -6,13 +6,25 @@ using SME;
 // TODO find a better name?
 namespace UnitTester
 {
+    public class Helper
+    {
+        public static readonly Random generator = new Random();
+        public static readonly int[] random_values = Enumerable.Range(0, 100).Select(x => generator.Next()).ToArray();
+    }
+
     public abstract class Test : SimpleProcess
     {
         [InputBus]  public ValueBus input  = Scope.CreateBus<ValueBus>();
         [OutputBus] public ValueBus output = Scope.CreateBus<ValueBus>();
 
-        [Ignore] public int[] inputs;
-        [Ignore] public int[] outputs;
+        [Ignore] public int[] inputs  = Helper.random_values;
+        [Ignore] public int[] outputs = Helper.random_values;
+
+        protected override void OnTick()
+        {
+            output.valid = input.valid;
+            output.value = input.value;
+        }
     }
 
     public abstract class ExceptionTest : Test
