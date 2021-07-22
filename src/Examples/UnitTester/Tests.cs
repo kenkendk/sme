@@ -102,6 +102,39 @@ namespace UnitTester
     }
 
     /// <summary>
+    /// Helper class containing static fields and methods
+    /// </summary>
+    public class StaticHelper
+    {
+        public static int StaticMethod(int input) // TODO Static methods outside of processes aren't rendered correctly
+        {
+            return input + 42;
+        }
+    }
+
+    /// <summary>
+    /// Member access to a static method
+    /// </summary>
+    public class StaticMethod : Test
+    {
+        public StaticMethod()
+        {
+            outputs = inputs.Select(x => x + 42).ToArray();
+        }
+
+        public static int LocalStaticMethod(int input) // TODO generated method can be simplified
+        {
+            return input + 42;
+        }
+
+        protected override void OnTick()
+        {
+            output.valid = true;
+            output.value = StaticMethod.LocalStaticMethod(input.value);
+        }
+    }
+
+    /// <summary>
     /// Tests whether SME can translate a member reference to this
     /// </summary>
     public class ThisMemberReference : Test
@@ -147,13 +180,11 @@ namespace UnitTester
     // TODO Parse a variable?? (SME.AST.ParseProcesses)
     // TODO ArrayCreationExpression
     // TODO UsingStatement
-    // TODO MemberAccessExpression (From an InvocationExpression (SME.AST.ParseProcessesIL))
     // TODO GotoStatement
     // TODO LabeledStatement
     // TODO Local decleration of a bus type (Is this allowed?? Maybe in an aliasing sort of fashion)
     // TODO Local declaration with multiple values
     // TODO ResolveArrayLengthOrPrimitive() (SME.AST.ParseProcessStatement)
-    // TODO Member access to a method
     // TODO arithmetic operations with float or double (Although it isn't fully implemented yet.)
     // TODO Generic types
     // TODO Load type array? (I'm guessing custom types)
