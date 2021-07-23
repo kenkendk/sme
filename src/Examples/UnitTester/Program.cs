@@ -30,7 +30,17 @@ namespace UnitTester
     public abstract class ExceptionTest
     {
         public Exception exception_to_catch;
-        public Func<bool> exit_method = () => false;
+        public Func<bool> exit_method = () => Simulation.Current.Tick >= 5;
+    }
+
+    public class DidNotThrowExceptionException : Exception
+    {
+        public DidNotThrowExceptionException(string msg) : base(msg) { }
+    }
+
+    public class IncorrectExceptionException : Exception
+    {
+        public IncorrectExceptionException(string msg) : base(msg) { }
     }
 
     public class Program
@@ -83,7 +93,7 @@ namespace UnitTester
                             .BuildVHDL()
                             .Run(exitMethod: ex_test.exit_method);
                     }
-                    throw new Exception($"Test {ex_test_type.Name} did not throw exception");
+                    throw new DidNotThrowExceptionException($"Test {ex_test_type.Name} did not throw exception");
                 }
                 catch (Exception e)
                 {
@@ -91,7 +101,7 @@ namespace UnitTester
                     while (ex is AggregateException)
                         ex = ex.InnerException;
                     if (ex.GetType() != expected.GetType())
-                        throw new Exception($"Test {ex_test_type.Name} threw an incorrect exception. Expected {expected.GetType().Name}, got {ex.GetType().Name}");
+                        throw new IncorrectExceptionException($"Test {ex_test_type.Name} threw an incorrect exception. Expected {expected.GetType().Name}, got {ex.GetType().Name}");
                 }
             }
         }
