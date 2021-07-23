@@ -70,6 +70,23 @@ namespace UnitTester
     }
 
     /// <summary>
+    /// Tests whether a ternary (conditional) expression is rendered correctly
+    /// </summary>
+    public class ConditionalExpressionTest : Test
+    {
+        public ConditionalExpressionTest()
+        {
+            outputs = inputs.Select(x => x % 2 == 0 ? x : ~x).ToArray();
+        }
+
+        protected override void OnTick()
+        {
+            output.valid = input.valid;
+            output.value = input.value % 2 == 0 ? input.value : ~input.value;
+        }
+    }
+
+    /// <summary>
     /// Tests whether a method is correctly ignored, so not rendered in VHDL.
     /// </summary>
     public class IgnoreMethod : Test
@@ -318,9 +335,6 @@ namespace UnitTester
     // TODO VendorAltera attribute
     // TODO VendorSimulation attribute
     // TODO Simulation.Render() -- rather than .BuildVHDL()
-    // TODO Function without a return variable
-    // TODO Temporary variables
-    // TODO Conditional expression
     // TODO Cast expression
     // TODO Direction expression
     // TODO Array of std_logic (bool)
