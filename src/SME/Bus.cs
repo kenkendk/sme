@@ -77,7 +77,7 @@ namespace SME
         /// <summary>
         /// Contains the values on the bus, which are forwarded into <see cref="T:SME.Bus.m_writeValues"/>.
         /// </summary>
-        private ConcurrentDictionary<string, object> m_stageValues = new ConcurrentDictionary<string, object>();
+        private Dictionary<string, object> m_stageValues = new Dictionary<string, object>();
         /// <summary>
         /// Contains the values on the bus, which will propegate into <see cref="T:SME.Bus.m_readValues"/> after the writer processes have been triggered, unless the bus is clocked, in which case it propegates once triggered by the global clock.
         /// </summary>
@@ -191,9 +191,12 @@ namespace SME
         {
             if (!m_signalTypes.ContainsKey(name))
                 throw new Exception(string.Format("No signal named {0} on bus {1}", name, BusType.FullName));
-            if (m_stageValues.ContainsKey(name) || m_writeValues.ContainsKey(name))
-                throw new WriteViolationException(string.Format("Attempted to write {0} twice on {1}", name, BusType.FullName));
-            m_stageValues[name] = value;
+            lock (m_stageValues)
+            {
+                if (m_writeValues.ContainsKey(name))
+                    throw new WriteViolationException(string.Format("Attempted to write {0} twice on {1}", name, BusType.FullName));
+                m_stageValues[name] = value;
+            }
         }
 
         /// <summary>

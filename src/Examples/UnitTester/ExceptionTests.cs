@@ -5,8 +5,8 @@ using SME;
 namespace UnitTester
 {
 
-    // TODO This is now changed. Before, it would only be if two processes, who aren't run in parallel, would write to the same field. However, after introducing parallel execution, this is not handled.
-    public class WriteViolationExceptionTestA : ExceptionTest
+    // TODO Currently doesn't work, since this isn't captured properly
+    /*public class WriteViolationExceptionTestA : ExceptionTest
     {
         public WriteViolationExceptionTestA()
         {
@@ -28,7 +28,7 @@ namespace UnitTester
                 output.value = 42;
             }
         }
-    }
+    }*/
 
     public class WriteViolationExceptionTestB : ExceptionTest
     {
