@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -279,9 +279,6 @@ namespace SME
             var busmap = new Dictionary<Type, List<IRuntimeBus>>();
             foreach (var b in m_processes.Values.Select(x => x.Instance).SelectMany(x => x.InputBusses.Concat(x.OutputBusses).Concat(x.InternalBusses).Concat(x.ClockedInputBusses)).Distinct())
             {
-                if (b == null)
-                    continue;
-
                 List<IRuntimeBus> lp;
                 if (!busmap.TryGetValue(b.BusType, out lp))
                     busmap[b.BusType] = lp = new List<IRuntimeBus>();

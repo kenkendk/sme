@@ -413,7 +413,7 @@ namespace SME
                         .ToArray();
 
                 // Trigger the processes
-                 Task.WhenAll(
+                Task.WhenAll(
                     next.Select(x => x.Item.SignalInputReady())
                 ).Wait();
 
