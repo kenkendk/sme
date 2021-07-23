@@ -10,4 +10,11 @@ namespace UnitTester
         int  value { get; set; }
     }
 
+    [ClockedBus]
+    public interface ClockedValueBus : IBus
+    {
+        bool valid { get; set; }
+        int  value { get; set; }
+    }
+
 }

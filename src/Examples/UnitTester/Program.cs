@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Reflection;
 using SME;
@@ -27,14 +27,23 @@ namespace UnitTester
         }
     }
 
-    public abstract class ExceptionTest : Test
+    public abstract class ExceptionTest
     {
         public Exception exception_to_catch;
+        public Func<bool> exit_method = () => false;
     }
 
     public class Program
     {
         static void Main(string[] args)
+        {
+            // Run the exception tests first, so they don't overwrite the
+            // tests that shouldn't fail
+            RunExceptionTests();
+            RunTests();
+        }
+
+        public static void RunTests()
         {
             var assembly = Assembly.GetExecutingAssembly();
             using (var sim = new Simulation())
@@ -51,8 +60,12 @@ namespace UnitTester
                     .BuildVHDL()
                     .Run();
             }
+        }
 
-            var ex_test_types = assembly
+        public static void RunExceptionTests()
+        {
+            var ex_test_types = Assembly
+                .GetExecutingAssembly()
                 .GetTypes()
                 .Where(x => x.IsSubclassOf(typeof(ExceptionTest)));
             foreach (var ex_test_type in ex_test_types)
@@ -63,20 +76,22 @@ namespace UnitTester
                     using (var sim = new Simulation())
                     {
                         var ex_test = (ExceptionTest)Activator.CreateInstance(ex_test_type);
-                        var tester = new Tester(ex_test);
 
                         expected = ex_test.exception_to_catch;
 
                         sim
                             .BuildVHDL()
-                            .Run();
+                            .Run(exitMethod: ex_test.exit_method);
                     }
                     throw new Exception($"Test {ex_test_type.Name} did not throw exception");
                 }
                 catch (Exception e)
                 {
-                    if (e.GetType() != expected.GetType())
-                        throw new Exception($"Test {ex_test_type.Name} threw an incorrect exception. Expected {expected.GetType().Name}, got {e.GetType().Name}");
+                    Exception ex = e;
+                    while (ex is AggregateException)
+                        ex = ex.InnerException;
+                    if (ex.GetType() != expected.GetType())
+                        throw new Exception($"Test {ex_test_type.Name} threw an incorrect exception. Expected {expected.GetType().Name}, got {ex.GetType().Name}");
                 }
             }
         }
