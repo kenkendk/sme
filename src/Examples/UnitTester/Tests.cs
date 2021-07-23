@@ -6,6 +6,40 @@ namespace UnitTester
 {
 
     /// <summary>
+    /// Tests a bunch of assignment operators
+    /// </summary>
+    public class AssignmentOperators : Test
+    {
+        public AssignmentOperators()
+        {
+            outputs = new int[inputs.Length];
+            int init_tmp = 0;
+            for (int i = 0; i < inputs.Length; i++)
+            {
+                init_tmp -= inputs[i];
+                init_tmp &= 0x7FFF_FFFE;
+                outputs[i] = init_tmp;
+            }
+        }
+
+        int tmp = 0;
+        int max_val = int.MaxValue;
+
+        protected override void OnTick()
+        {
+            output.valid = input.valid;
+            tmp -= input.value;
+            tmp &= 0x7FFF_FFFF;
+            tmp *= 1;
+            tmp %= max_val;
+            tmp >>= 1;
+            tmp <<= 1;
+            tmp ^= 0;
+            output.value = tmp;
+        }
+    }
+
+    /// <summary>
     /// Tests whether SME can translate a member reference to base
     /// </summary>
     public class BaseMemberReference : ThisMemberReference
@@ -31,7 +65,7 @@ namespace UnitTester
         {
             output.valid = input.valid;
             uint tmp = unchecked((uint)input.value);
-            output.value = checked((int)tmp);
+            output.value = checked((int)(tmp & 0x7FFFFFFF));
         }
     }
 
@@ -54,7 +88,7 @@ namespace UnitTester
     {
         private void LocalMethod()
         {
-            output.valid = true;
+            output.valid = input.valid;
             output.value = input.value;
         }
 
@@ -146,7 +180,7 @@ namespace UnitTester
 
         protected override void OnTick()
         {
-            output.valid = true;
+            output.valid = input.valid;
             output.value = StaticMethod.LocalStaticMethod(input.value);
         }
     }
@@ -230,13 +264,6 @@ namespace UnitTester
     // TODO WrappingExpression
     // TODO EmptyArrayCreateExpression
     // TODO JSON trace ??
-    // TODO -=
-    // TODO *=
-    // TODO %=
-    // TODO <<=
-    // TODO >>=
-    // TODO &=
-    // TODO ^=
     // TODO Trigger the warning in SimpleDualPortMemory
     // TODO Trigger the warning in TrueDualPortMemory
     // TODO Simulation.BuildGraph(render_buses: false)
