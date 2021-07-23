@@ -99,6 +99,31 @@ namespace UnitTester
     }
 
     /// <summary>
+    /// Tests whether some operators are correctly translated. The list is
+    /// based on what wasn't already hit during running the other samples.
+    /// </summary>
+    public class MissingOperators : Test
+    {
+        public MissingOperators()
+        {
+            outputs = inputs
+                .Select(x => ~(x & 0x7FFF_FFFE))
+                .ToArray();
+        }
+
+        protected override void OnTick()
+        {
+            output.valid = input.valid;
+            int tmp = input.value & 0x7FFF_FFFF;
+            tmp = tmp >> 1;
+            tmp = tmp << 1;
+            tmp++;
+            tmp--;
+            output.value = ~tmp;
+        }
+    }
+
+    /// <summary>
     /// Tests whether a public readonly or constant variable is correctly
     /// parsed.
     /// </summary>
@@ -290,11 +315,6 @@ namespace UnitTester
     // TODO All of the VHDL.* types
     // TODO A process with the same name as the project. (I'm sure this is normally hit, but not during testing.)
     // TODO A bus signal with a keyword as name (SME.VHDL.Naming line 119)
-    // TODO << operator
-    // TODO >> operator
-    // TODO ~ operator
-    // TODO ++ operator
-    // TODO -- operator
     // TODO VendorAltera attribute
     // TODO VendorSimulation attribute
     // TODO Simulation.Render() -- rather than .BuildVHDL()
