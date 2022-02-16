@@ -643,7 +643,6 @@ namespace SME.AST.Transform
                     enumfields[i] = SyntaxFactory.EnumMemberDeclaration($"State{i}");
                 enumsyntax = enumsyntax.AddMembers(enumfields).NormalizeWhitespace();
 
-
                 var cu = SyntaxFactory.CompilationUnit()
                     .AddMembers(
                         SyntaxFactory.NamespaceDeclaration(SyntaxFactory.IdentifierName(ns))
@@ -651,8 +650,9 @@ namespace SME.AST.Transform
                             enumsyntax
                         )
                     );
+                var tree = SyntaxFactory.SyntaxTree(cu.SyntaxTree.GetRoot(), CSharpParseOptions.Default.WithLanguageVersion(((CSharpCompilation)m_compilation).LanguageVersion));
 
-                m_compilation = m_compilation.AddSyntaxTrees(cu.SyntaxTree);
+                m_compilation = m_compilation.AddSyntaxTrees(tree);
                 enumtype = m_compilation.GetTypeByMetadataName($"{ns}.{enumname}");
             }
             else

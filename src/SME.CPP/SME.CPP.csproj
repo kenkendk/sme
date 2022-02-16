@@ -6,7 +6,7 @@
         <ProjectReference Include="..\SME.AST\SME.AST.csproj" />
 
         <PackageReference Include="System.CodeDom" Version="*" />
-        <PackageReference Include="Microsoft.CodeAnalysis" Version="3.10.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis" Version="4.1.0-3.final" />
 
         <EmbeddedResource Include="Templates/*.hpp" />
         <EmbeddedResource Include="Templates/*.cpp" />
