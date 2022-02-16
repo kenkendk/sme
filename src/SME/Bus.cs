@@ -77,7 +77,7 @@ namespace SME
         /// <summary>
         /// Contains the values on the bus, which are forwarded into <see cref="T:SME.Bus.m_writeValues"/>.
         /// </summary>
-        private Dictionary<string, object> m_stageValues = new Dictionary<string, object>();
+        private ConcurrentDictionary<string, object> m_stageValues = new ConcurrentDictionary<string, object>();
         /// <summary>
         /// Contains the values on the bus, which will propegate into <see cref="T:SME.Bus.m_readValues"/> after the writer processes have been triggered, unless the bus is clocked, in which case it propegates once triggered by the global clock.
         /// </summary>
@@ -86,11 +86,6 @@ namespace SME
         /// A List specifying the type of the signals on the bus.
         /// </summary>
         private Dictionary<string, Type> m_signalTypes = new Dictionary<string, Type>();
-
-        /// <summary>
-        /// A list containing all of the processes, which depend on the bus.
-        /// </summary>
-        private List<TaskCompletionSource<bool>> m_waiters = new List<TaskCompletionSource<bool>>();
 
         /// <summary>
         /// The global clock.
@@ -191,12 +186,9 @@ namespace SME
         {
             if (!m_signalTypes.ContainsKey(name))
                 throw new Exception(string.Format("No signal named {0} on bus {1}", name, BusType.FullName));
-            lock (m_stageValues)
-            {
-                if (m_writeValues.ContainsKey(name))
-                    throw new WriteViolationException(string.Format("Attempted to write {0} twice on {1}", name, BusType.FullName));
-                m_stageValues[name] = value;
-            }
+            if (m_writeValues.ContainsKey(name))
+                throw new WriteViolationException(string.Format("Attempted to write {0} twice on {1}", name, BusType.FullName));
+            m_stageValues[name] = value;
         }
 
         /// <summary>
@@ -242,9 +234,6 @@ namespace SME
         {
             Forward();
 
-            var lst = m_waiters;
-            m_waiters = new List<TaskCompletionSource<bool>>();
-
             foreach (var x in m_writeValues)
                 m_readValues[x.Key] = x.Value;
 
@@ -252,8 +241,6 @@ namespace SME
 
             foreach (var n in m_readValues.Values.Select(x => x as IFixedArrayInteraction).Where(x => x != null))
                 n.Propagate();
-
-            lst.ForEach(x => x.SetResult(true));
         }
 
         /// <summary>
