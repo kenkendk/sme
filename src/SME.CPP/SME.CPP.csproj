@@ -26,7 +26,7 @@
         <PackageVersion>0.4.4</PackageVersion>
         <Authors>Kenneth Skovhede, Carl-Johannes Johnsen</Authors>
         <Description>C++ transpiler for SME networks</Description>
-        <Copyright>Copyright ©2021 - The SME team</Copyright>
+        <Copyright>Copyright ©2022 - The SME team</Copyright>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
         <DevelopmentDependency>false</DevelopmentDependency>
         <PackageTags>SME;hardware simulation</PackageTags>
