@@ -5,7 +5,7 @@ New in version 0.5.0 since 0.4.4
 *****************
 - The decompiler backend (ICSharpCode) has been replaced by a compiler backend
   (Microsoft Codeanalysis).
-- Upgraded to support .NET Core 3.1 and .NET 5
+- Upgraded to support .NET 5
 
 ***********
 * Changes *
