@@ -10,7 +10,7 @@
     <!-- Project output name and format -->
     <PropertyGroup>
         <OutputType>library</OutputType>
-        <TargetFramework>net5.0</TargetFramework>
+        <TargetFramework>net6.0</TargetFramework>
         <RootNamespace>SME.Tracer</RootNamespace>
     </PropertyGroup>
 
