@@ -1,23 +1,60 @@
-New in version 0.4.4 since 0.4.3
+New in version 0.5.0 since 0.4.4
+
+*****************
+* Major changes *
+*****************
+- The decompiler backend (ICSharpCode) has been replaced by a compiler backend
+  (Microsoft Codeanalysis).
+- Upgraded to support .NET Core 3.1 and .NET 5
 
 ***********
 * Changes *
 ***********
-- Added support for passing objects by reference to functions.
-- Changed call to Run() when specifying an exit condition.
-- Made the internal memory of RAMs in SME.Components public, as this is useful
-  for verification.
+- VHDL keyword avoidance prefix was incorrectly added to bus signal names in
+  the trace file. They already carried a prefix from the bus name.
+- Moved from Travis to Github Actions.
+- Added support for supplying custom renderers to processes.
+- Added preliminary support for floating point data types. They can be used on
+  buses and initialization values. The generated VHDL inside of the processes
+  are still incorrect, however.
+- Added "generate" as a VHDL keyword.
+- Added the clog2 function to the generated VHDL.
+- Processes, which uses arrays, are now parameterized in the generated VHDL,
+  instead of being hardcoded.
+- NuGet packages have been updated.
+- Added "next" and "constant" VHDL keywords.
+- Added optional code coverage during testing.
+- Unit testing has increased to improve coverage.
 
 *********
 * Fixes *
 *********
-- Added "block" as an VHDL keyword.
-- Procedures without arguments shouldn't have parenthesis in VHDL.
-- Fixed nameclash in variables local to a method. The decompiler would rename
-  local variables to a lower case version of the variable it is copying. This
-  is a problem in VHDL, as it is case insensitive.
-- Fixed a problem where irregular loops wouldn't run for a correct number of
-  iterations.
-- Handled nameclash for static constants.
-- Fixed problem where RAM in SME.Components would throw an exception, due to
-  them reading undefined values.
+- Omitted type definitions when buses have multiple fields of IFixedArray type.
+- Buses would sometimes carry U values, when it should have been the default
+  value, in the trace file.
+- Naming of the top-level scope now matches the assembly namespace, not the
+  namespace of the first created process.
+- Some processes were incorrectly named.
+- Array lengths was sometimes placed incorrectly.
+- Multiple type definitions were generated.
+- Multiple type conversions on signals were generated.
+- Dual port memory is now correctly reset.
+- Missing type conversions in function invocations.
+- Some loop edges were incorrectly transformed for irregular loop edges.
+- Missing sizes on constant arrays.
+- Missing initial value in dependency cycle test.
+- Internal arrays in memory components shouldn't be readonly.
+- Incorrect warning about comparing symbols.
+- Updated RAMs to be generic.
+- ColorBin example wasn't properly checked.
+- Increased the size of the ColorBin, AES, NoiseFilter, ExternalComponent,
+  SimpleMIPS, and StopWatch tests longer.
+- Enum definitions wouldn't compile.
+- Found incorrect string comparisons when launching programs.
+- Type wasn't loaded properly for parameters.
+- Found a race condition in the code for buses, which lead to an improper
+  modeling of multiple processes writing to the same bus signal. This is still
+  not properly captured, so multiple processes running in parallel can write to
+  the same signal, which is not allowed in actual hardware. Current solution
+  suggestion is to introduce a warning, since the bus cannot know which process
+  wrote what.

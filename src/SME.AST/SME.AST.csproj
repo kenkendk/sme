@@ -21,7 +21,7 @@
     <PropertyGroup>
         <PackageId>SME.AST</PackageId>
         <Title>Synchronous Message Exchange (SME)</Title>
-        <PackageVersion>0.4.4</PackageVersion>
+        <PackageVersion>0.5.0</PackageVersion>
         <Authors>Kenneth Skovhede, Carl-Johannes Johnsen</Authors>
         <Description>Abstract syntax tree builder for SME networks</Description>
         <Copyright>Copyright ©2022 - The SME team</Copyright>
