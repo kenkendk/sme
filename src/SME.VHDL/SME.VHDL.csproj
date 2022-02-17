@@ -8,7 +8,7 @@
         <ProjectReference Include="..\SME.Components\SME.Components.csproj" />
 
         <PackageReference Include="System.CodeDom" Version="*" />
-        <PackageReference Include="Microsoft.CodeAnalysis" Version="4.1.0-3.final" />
+        <PackageReference Include="Microsoft.CodeAnalysis" Version="4.1.0" />
 
         <EmbeddedResource Include="Templates/*.vhdl" />
     </ItemGroup>

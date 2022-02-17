@@ -15,6 +15,9 @@ nupkg/%.$(VERSION).nupkg: %
 
 pack: build nupkg_folder $(PKG_TARGETS)
 
+test: build
+	dotnet test --no-build --logger:"console;verbosity=normal" UnitTest
+
 deploy: pack
 	dotnet nuget push "nupkg/*.nupkg" -s https://api.nuget.org/v3/index.json -k $(API)
 
