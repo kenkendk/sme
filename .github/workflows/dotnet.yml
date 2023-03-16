@@ -41,7 +41,6 @@ jobs:
       run: |
         brew install docker
         colima start
-        eval $(docker-machine env default)
         docker pull ghdl/ghdl:ubuntu20-mcode
         brew install mono-libgdiplus
     - name: Restore
@@ -60,7 +59,8 @@ jobs:
         SME_TEST_SKIP_VCD: 1
         SME_TEST_USE_NATIVE_GHDL: 1
       run: |
-        & "$($env:MSYS2_PATH)MINGW64\bin\ghdl.exe" --version
+        Add-Content $env:GITHUB_PATH "$($env:MSYS2_PATH)MINGW64\bin"
+        ghdl --version
 
         dotnet test --no-build --logger:"console;verbosity=detailed" src/UnitTest
     - name: Test (MacOS)
@@ -68,7 +68,6 @@ jobs:
       env:
         SME_TEST_SKIP_VCD: 1
       run: |
-        eval $(docker-machine env default)
         HOMEBREW_PREFIX=$(brew config | grep HOMEBREW_PREFIX | sed -n 's/HOMEBREW_PREFIX: //p')
         export DYLD_LIBRARY_PATH=$HOMEBREW_PREFIX/lib
         dotnet test --no-build --logger:"console;verbosity=detailed" src/UnitTest
