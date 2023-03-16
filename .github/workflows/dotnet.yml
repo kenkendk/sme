@@ -25,6 +25,7 @@ jobs:
       run: |
         docker pull ghdl/ghdl:ubuntu20-mcode
         sudo apt install libc6-dev libgdiplus
+        ln -s /usr/lib/x86_64-linux-gnu/libdl.so.2 libdl.so
     - name: Setup shell (Windows)
       if: runner.os == 'Windows'
       uses: msys2/setup-msys2@v2
