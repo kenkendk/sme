@@ -25,7 +25,9 @@ jobs:
       run: |
         docker pull ghdl/ghdl:ubuntu20-mcode
         sudo apt install libc6-dev libgdiplus
-        ln -s /usr/lib/x86_64-linux-gnu/libdl.so.2 libdl.so
+        # Symlink workaround for pointing to libdl
+        mkdir lib
+        ln -s /usr/lib/x86_64-linux-gnu/libdl.so.2 lib/libdl.so
     - name: Setup shell (Windows)
       if: runner.os == 'Windows'
       uses: msys2/setup-msys2@v2
@@ -52,7 +54,10 @@ jobs:
       if: runner.os == 'Linux'
       env:
         SME_TEST_SKIP_VCD: 1
-      run: dotnet test --no-build --logger:"console;verbosity=detailed" src/UnitTest
+      run: |
+        # Point to the symlinked libdl.so
+        export LD_LIBRARY_PATH=$PWD/lib:$LD_LIBRARY_PATH
+        dotnet test --no-build --logger:"console;verbosity=detailed" src/UnitTest
     - name: Test (Windows)
       if: runner.os == 'Windows'
       shell: powershell
