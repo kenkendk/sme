@@ -12,7 +12,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ ubuntu-latest ] # TODO macos-latest, windows-latest
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
 
     steps:
     - uses: actions/checkout@v2
@@ -72,4 +72,6 @@ jobs:
         SME_TEST_SKIP_VCD: 1
       run: |
         eval $(docker-machine env default)
+        HOMEBREW_PREFIX=$(brew config | grep HOMEBREW_PREFIX | sed -n 's/HOMEBREW_PREFIX: //p')
+        export DYLD_LIBRARY_PATH=$HOMEBREW_PREFIX/lib
         dotnet test --no-build --logger:"console;verbosity=detailed" src/UnitTest
