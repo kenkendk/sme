@@ -65,7 +65,7 @@ jobs:
         SME_TEST_SKIP_VCD: 1
         SME_TEST_USE_NATIVE_GHDL: 1
       run: |
-        Set-Alias ghdl $($env:MSYS2_PATH)MINGW64\bin\ghdl.exe
+        Set-Alias -Name ghdl -Value $($env:MSYS2_PATH)MINGW64\bin\ghdl.exe
         ghdl --version
 
         dotnet test --no-build --logger:"console;verbosity=detailed" src/UnitTest
