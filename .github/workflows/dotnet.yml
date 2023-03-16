@@ -39,11 +39,8 @@ jobs:
     - name: Setup libraries (MacOS)
       if: runner.os == 'macOS'
       run: |
-        mkdir -p ~/.docker/machine/cache
-        curl -Lo ~/.docker/machine/cache/boot2docker.iso https://github.com/boot2docker/boot2docker/releases/download/v19.03.12/boot2docker.iso
-        brew install docker docker-machine
-        docker-machine create --driver virtualbox default
-        docker-machine env default
+        brew install docker
+        colima start
         eval $(docker-machine env default)
         docker pull ghdl/ghdl:ubuntu20-mcode
         brew install mono-libgdiplus
