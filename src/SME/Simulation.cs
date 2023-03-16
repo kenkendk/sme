@@ -334,24 +334,37 @@ namespace SME
                             Proc = x,
                             HasOutputs = x.OutputBusses.Any()
                         };
-                    }).ToArray();
+                    })
+                    .ToArray();
 
                 // Determine when to quit
                 if (exitMethod == null)
                 {
-                    // Wait until all simulation processes are completed
-                    exitMethod = () => running_tasks.Where(x => x.Proc is SimulationProcess).All(x => x.Task.IsCompleted);
-                    // Wait until all simulation processes that write are done
-                    //exitMethod = () => running_tasks.Where(x => x.Proc is SimulationProcess && x.HasOutputs).All(x => x.Task.IsCompleted);
+                    // Wait until all simulation processes completes
+                    exitMethod = () => running_tasks
+                        .Where(x => x.Proc is SimulationProcess)
+                        .All(x => x.Task.IsCompleted);
+
+                    // Wait until all simulation processes that write completes
+                    //exitMethod = () => running_tasks
+                    //    .Where(x => x.Proc is SimulationProcess && x.HasOutputs)
+                    //    .All(x => x.Task.IsCompleted);
+
                     // Wait until one of the simulation processes completes
-                    //exitMethod = () => running_tasks.Any(x => x.Proc is SimulationProcess && x.Task.IsCompleted);
+                    //exitMethod = () => running_tasks
+                    //    .Any(x => x.Proc is SimulationProcess && x.Task.IsCompleted);
                 }
 
                 // Keep running until all simulation (stimulation) processes have finished
                 while (!exitMethod() && Running)
                 {
                     Graph.Execute();
-                    var crashes = running_tasks.Where(x => x.Task.Exception != null).SelectMany(x => x.Task.Exception.InnerExceptions);
+                    foreach (var t in running_tasks)
+                        if (t.Task.Status == System.Threading.Tasks.TaskStatus.Running)
+                            t.Task.Wait();
+                    var crashes = running_tasks
+                        .Where(x => x.Task.Exception != null)
+                        .SelectMany(x => x.Task.Exception.InnerExceptions);
                     if (crashes.Any())
                         throw new AggregateException(crashes);
 
