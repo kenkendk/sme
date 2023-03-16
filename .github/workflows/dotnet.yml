@@ -66,7 +66,7 @@ jobs:
         SME_TEST_USE_NATIVE_GHDL: 1
       run: |
         $env:Path += ";$($env:MSYS2_PATH)MINGW64\\bin\\"
-        $env:Path += ";$(MSYS2_PATH)\\usr\\bin"
+        $env:Path += ";$($env:MSYS2_PATH)\\usr\\bin"
         ghdl --version
 
         dotnet test --no-build --logger:"console;verbosity=detailed" src/UnitTest
