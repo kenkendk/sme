@@ -59,7 +59,7 @@ jobs:
         SME_TEST_SKIP_VCD: 1
         SME_TEST_USE_NATIVE_GHDL: 1
       run: |
-        Add-Content $env:GITHUB_PATH "$($env:MSYS2_PATH)MINGW64\bin"
+        Set-Alias ghdl $($env:MSYS2_PATH)MINGW64\bin\ghdl.exe
         ghdl --version
 
         dotnet test --no-build --logger:"console;verbosity=detailed" src/UnitTest
