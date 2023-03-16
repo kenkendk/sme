@@ -27,7 +27,7 @@
         <PackageVersion>0.5.0</PackageVersion>
         <Authors>Kenneth Skovhede, Carl-Johannes Johnsen</Authors>
         <Description>VHDL transpiler for SME networks</Description>
-        <Copyright>Copyright ©2022 - The SME team</Copyright>
+        <Copyright>Copyright ©2023 - The SME team</Copyright>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
         <DevelopmentDependency>false</DevelopmentDependency>
         <PackageTags>SME;hardware simulation</PackageTags>
