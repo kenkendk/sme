@@ -67,12 +67,15 @@ use work.CUSTOM_TYPES.ALL;
 
                 var busname = ToStringHelper.ToStringWithCulture( bus.Name );
                 Write($"        -- Top-level bus {busname} signals\n");
+
+                var multiplier = bus.SourceInstances.Length;
+
                 foreach (var signal in bus.Signals)
                 {
                     var instancename = ToStringHelper.ToStringWithCulture( bus.InstanceName );
                     var signalname = ToStringHelper.ToStringWithCulture( signal.Name );
                     var signaltypename = ToStringHelper.ToStringWithCulture( signaltype );
-                    var vhdltype = ToStringHelper.ToStringWithCulture( RS.VHDLExportTypeName(RS.VHDLType(signal)) );
+                    var vhdltype = ToStringHelper.ToStringWithCulture( RS.VHDLExportTypeName(RS.VHDLType(signal), multiplier) );
                     if (signal.MSCAType.IsArrayType())
                     {
                         // https://forums.xilinx.com/t5/Design-Entry/Error-quot-port-is-not-recognized-quot/td-p/956645
@@ -158,6 +161,32 @@ use work.CUSTOM_TYPES.ALL;
                 Write("\n");
             }
 
+            // Emit conversion functions for arrays of busses
+            // Input busses
+            foreach (var bus in Network.Busses.Where(x => x.IsTopLevelInput && x.SourceInstances.Length > 1))
+            {
+                var arraylength = bus.SourceInstances.Length;
+                foreach (var signal in bus.Signals)
+                {
+                    var busname = ToStringHelper.ToStringWithCulture( bus.InstanceName );
+                    var signalname = ToStringHelper.ToStringWithCulture( signal.Name );
+                    var signaltypename = ToStringHelper.ToStringWithCulture( RS.VHDLWrappedTypeName(signal) );
+                    var signaltype = RS.VHDLType(signal);
+                    var typecast = RS.VHDLExportTypeCast(signaltype);
+                    var slice = signaltype.Length > 1 ? $"(i*{signaltype.Length})+{signaltype.Length-1} downto (i*{signaltype.Length})" : "i";
+                    Write($@"
+    pure function {busname}_{signalname}_conversion(slv : in std_logic_vector) return {signaltypename}_ARRAY is
+        variable tmp : {signaltypename}_ARRAY(0 to {arraylength-1});
+    begin
+        for i in 0 to {arraylength-1} loop
+            tmp(i) := {typecast}(slv({slice}));
+        end loop;
+        return tmp;
+    end function;
+");
+                }
+            }
+
             Write("begin\n");
 
             if (converted_outputs.Count > 0)
@@ -205,6 +234,8 @@ use work.CUSTOM_TYPES.ALL;
                 var busname = ToStringHelper.ToStringWithCulture( bus.Name );
                 Write($"        -- {directionname} bus {busname}\n");
 
+                var multiplier = bus.SourceInstances.Length;
+
                 foreach(var signal in bus.Signals)
                 {
                     var vt = RS.VHDLType(signal);
@@ -212,7 +243,9 @@ use work.CUSTOM_TYPES.ALL;
                     var signalname = ToStringHelper.ToStringWithCulture( signal.Name );
 
                     var external = $"{instancename}_{signalname}";
-                    if (converted_outputs.Contains(signal))
+                    if (multiplier > 1)
+                        external = $"{external}_conversion({external})";
+                    else if (converted_outputs.Contains(signal))
                         external = $"tmp_{external}";
                     else if (vt.IsUnsigned)
                         external = $"unsigned({external})";

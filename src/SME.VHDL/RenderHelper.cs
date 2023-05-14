@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using SME.AST;
 using System.Linq;
@@ -587,10 +587,14 @@ namespace SME.VHDL
                 if (Process != null && Process.LocalBusNames.ContainsKey(bus))
                     busname = Process.LocalBusNames[bus];
 
-                if (Process.IsClocked && Process.Methods.Any(x => x.IsStateMachine) && Process.InputBusses.Contains(bus))
-                    return Naming.ToValidName("capture_" + busname + "_" + e.Target.Name);
+                var index_render = "";
+                if (e.TargetExpression is IndexerExpression)
+                    index_render = $"({RenderExpression((e.TargetExpression as IndexerExpression).IndexExpression)})";
 
-                return Naming.ToValidName(busname + "_" + e.Target.Name);
+                if (Process.IsClocked && Process.Methods.Any(x => x.IsStateMachine) && Process.InputBusses.Contains(bus))
+                    return Naming.ToValidName("capture_" + busname + "_" + e.Target.Name) + index_render;
+
+                return Naming.ToValidName(busname + "_" + e.Target.Name) + index_render;
 
             }
             else if (e.Target is AST.Constant)

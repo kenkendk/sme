@@ -115,7 +115,8 @@ use work.CUSTOM_TYPES.ALL;
                     {
                         var signalname = ToStringHelper.ToStringWithCulture( Naming.ToValidName($"{busname}_{signal.Name}") );
                         var signaltype = ToStringHelper.ToStringWithCulture( RS.VHDLWrappedTypeName(signal) );
-                        Write($"        {signalname}: in {signaltype};\n");
+                        var signalquantifier = bus.SourceInstances.Length > 1 ? $"_ARRAY({bus.SourceInstances.Length - 1} downto 0)" : "";
+                        Write($"        {signalname}: in {signaltype}{signalquantifier};\n");
                     }
                 }
                 Write("\n");
@@ -232,8 +233,10 @@ end ");
                     foreach (var c in Process.SharedConstants)
                     {
                         var constname = ToStringHelper.ToStringWithCulture( c.Name );
+                        constname = Naming.ToValidName(constname);
                         var consttype = ToStringHelper.ToStringWithCulture( RS.VHDLWrappedTypeName(c) );
                         var defaultvalue = $"reset_{constname}";
+                        defaultvalue = Naming.ToValidName(defaultvalue);
 
                         var constant = ToStringHelper.ToStringWithCulture( $"constant {constname} : {consttype} := {defaultvalue}" );
                         Write($"    {constant};\n");

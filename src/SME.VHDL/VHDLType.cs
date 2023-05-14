@@ -614,12 +614,12 @@ namespace SME.VHDL
         /// </summary>
         /// <returns>The std_logic_vector equivalent.</returns>
         /// <param name="type">The type to get an equivalent for.</param>
-        public VHDLType StdLogicVectorEquivalent(VHDLType type)
+        public VHDLType StdLogicVectorEquivalent(VHDLType type, int multiplier = 1)
         {
             if (!type.IsStdLogicVector && !type.IsSystemSigned && !type.IsSystemUnsigned && !type.IsVHDLSigned && !type.IsVHDLUnsigned)
                 throw new Exception(string.Format("Unable to find suitable std_logic_vector type for {0}", type.Alias ?? type.Name));
 
-            return GetStdLogicVector(type.Length);
+            return GetStdLogicVector(type.Length * multiplier);
         }
 
         /// <summary>

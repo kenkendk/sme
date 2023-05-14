@@ -71,12 +71,15 @@ use work.CUSTOM_TYPES.ALL;
                 var busname = ToStringHelper.ToStringWithCulture( bus.Name );
                 Write($"        -- Top-level bus {busname} signals\n");
 
+                // TODO An array of buses can only be used by one process at the time? It shouldn't be a problem for the readers, but the writers will break the multiple writer analysis
+                var quantifier = bus.SourceInstances.Length > 1 ? $"_ARRAY({bus.SourceInstances.Length-1} downto 0)" : "";
+
                 foreach (var signal in bus.Signals)
                 {
                     var signalname = ToStringHelper.ToStringWithCulture( Naming.ToValidName($"{bus.InstanceName}_{signal.Name}") );
                     var signaltypename = ToStringHelper.ToStringWithCulture( signaltype );
                     var vhdltype = ToStringHelper.ToStringWithCulture( RS.VHDLWrappedTypeName(signal) );
-                    Write($"        {signalname}: {signaltypename} {vhdltype};\n");
+                    Write($"        {signalname}: {signaltypename} {vhdltype}{quantifier};\n");
                 }
 
                 Write("\n");

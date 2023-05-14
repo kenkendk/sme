@@ -440,6 +440,7 @@ namespace SME.VHDL
         public string VHDLWrappedTypeName(AST.DataElement element)
         {
             var vt = VHDLType(element);
+            var isarray = element.MSCAType.IsArrayType() || (element.Parent is AST.Bus && (element.Parent as AST.Bus).SourceInstances.Length > 1);
             if (element.MSCAType.IsArrayType())
             {
                 if (element.Parent is AST.Bus)
@@ -462,11 +463,14 @@ namespace SME.VHDL
         /// Gets the type name for the given element in the top level export file.
         /// </summary>
         /// <param name="element">The element to convert.</param>
-        public string VHDLExportTypeName(AST.DataElement element)
+        public string VHDLExportTypeName(AST.DataElement element, int multiplier = 1)
         {
             var vt = VHDLType(element);
             if (vt == VHDLTypes.BOOL || vt == VHDLTypes.SYSTEM_BOOL)
-                return "STD_LOGIC";
+                if (multiplier > 1) return
+                    "STD_LOGIC_VECTOR(" + (multiplier - 1) + " downto 0)";
+                else
+                    return "STD_LOGIC";
 
             if (vt.IsSystemType || vt.IsVHDLSigned || vt.IsVHDLUnsigned)
                 return TypeScope.StdLogicVectorEquivalent(vt).ToSafeVHDLName();
@@ -517,13 +521,16 @@ namespace SME.VHDL
         /// </summary>
         /// <returns>The type name</returns>
         /// <param name="vt">The type to get the name for</param>
-        public string VHDLExportTypeName(VHDLType vt)
+        public string VHDLExportTypeName(VHDLType vt, int multiplier = 1)
         {
             if (vt == VHDLTypes.BOOL || vt == VHDLTypes.SYSTEM_BOOL)
-                return "STD_LOGIC";
+                if (multiplier > 1) return
+                    "STD_LOGIC_VECTOR(" + (multiplier - 1) + " downto 0)";
+                else
+                    return "STD_LOGIC";
 
             if (vt.IsSystemType || vt.IsVHDLSigned || vt.IsVHDLUnsigned)
-                return TypeScope.StdLogicVectorEquivalent(vt).ToSafeVHDLName();
+                return TypeScope.StdLogicVectorEquivalent(vt, multiplier).ToSafeVHDLName();
 
             return vt.ToSafeVHDLName();
         }
@@ -981,7 +988,7 @@ namespace SME.VHDL
         /// </summary>
         /// <returns>The array signals.</returns>
         /// <param name="signal">The signal to split.</param>
-        private IEnumerable<BusSignal> SplitArray(BusSignal signal)
+        public IEnumerable<BusSignal> SplitArray(BusSignal signal)
         {
             if (!signal.MSCAType.IsArrayType())
             {
@@ -1012,14 +1019,29 @@ namespace SME.VHDL
         {
             var bus = (AST.Bus)s.Parent;
             var st = bus.SourceType;
-            if (bus.SourceInstance != null && Simulation.BusNames.ContainsKey(bus.SourceInstance))
-                return (Simulation.BusNames[bus.SourceInstance] + "." + s.Name).Replace(",", "_");
+            var bi = bus.SourceInstances.First();
+            if (bi != null && Simulation.BusNames.ContainsKey(bi))
+            {
+                var res = (Simulation.BusNames[bi] + "." + s.Name).Replace(",", "_");
+                return res;
+            }
 
             var name = st.Name + "." + s.Name;
             if (st.DeclaringType != null)
                 name = st.DeclaringType.Name + "." + name;
 
             return name.Replace(",", "_");
+        }
+
+        /// <summary>
+        /// Returns all the top-level input busses.
+        /// </summary>
+        public IEnumerable<SME.AST.Bus> DriverBusses
+        {
+            get
+            {
+                return Network.Busses.Where(x => x.IsTopLevelInput).OrderBy(x => x.InstanceName);
+            }
         }
 
         /// <summary>
@@ -1034,6 +1056,17 @@ namespace SME.VHDL
                               .SelectMany(x => x.Signals)
                               .OrderBy(x => TestBenchSignalName(x))
                               .SelectMany(x => SplitArray(x));
+            }
+        }
+
+        /// <summary>
+        /// Returns all the top-level output busses.
+        /// </summary>
+        public IEnumerable<SME.AST.Bus> VerifyBusses
+        {
+            get
+            {
+                return Network.Busses.Where(x => !x.IsTopLevelInput && !x.IsInternal).OrderBy(x => x.InstanceName);
             }
         }
 
