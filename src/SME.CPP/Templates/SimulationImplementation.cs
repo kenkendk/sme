@@ -1042,7 +1042,7 @@ void ");
             #line hidden
 
             #line 222 ""
-     foreach(var b in n.Item.OutputBusses.Distinct()) {
+     foreach(var b in n.Item.OutputBusses.SelectMany(x => x).Distinct()) {
 
             #line default
             #line hidden
@@ -1102,7 +1102,7 @@ void ");
             #line hidden
 
             #line 228 ""
-     foreach(var b in n.Item.InternalBusses) {
+     foreach(var b in n.Item.InternalBusses.SelectMany(x => x)) {
 
             #line default
             #line hidden

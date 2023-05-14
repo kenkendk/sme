@@ -219,13 +219,13 @@ void <#= Naming.AssemblyNameToFileName(Network) #>::OnTick()
 #>
     proc_<#= Naming.ProcessNameToValidName(pn) #>.onTick();
 <#     } #>
-<#     foreach(var b in n.Item.OutputBusses.Distinct()) { #>
+<#     foreach(var b in n.Item.OutputBusses.SelectMany(x => x).Distinct()) { #>
     bus_<#= Naming.BusNameToValidName(GetBus(b)) #>.forward_signals();
 <#     } #>
 <#     foreach(var b in n.PropagateAfter) { #>
     bus_<#= Naming.BusNameToValidName(GetBus(b)) #>.propagate_signals();
 <#     } #>
-<#     foreach(var b in n.Item.InternalBusses) { #>
+<#     foreach(var b in n.Item.InternalBusses.SelectMany(x => x)) { #>
     bus_<#= Naming.BusNameToValidName(GetBus(b)) #>.forward_signals();
     bus_<#= Naming.BusNameToValidName(GetBus(b)) #>.propagate_signals();
 <#     } #>

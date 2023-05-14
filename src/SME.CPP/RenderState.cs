@@ -261,8 +261,9 @@ namespace SME.CPP
         {
             var bus = (AST.Bus)s.Parent;
             var st = bus.SourceType;
-            if (bus.SourceInstance != null && Simulation.BusNames.ContainsKey(bus.SourceInstance))
-                return Simulation.BusNames[bus.SourceInstance] + "." + s.Name;
+            var bi = bus.SourceInstances.First();
+            if (bi != null && Simulation.BusNames.ContainsKey(bi))
+                return Simulation.BusNames[bi] + "." + s.Name;
 
             var name = st.Name + "." + s.Name;
             if (st.DeclaringType != null)

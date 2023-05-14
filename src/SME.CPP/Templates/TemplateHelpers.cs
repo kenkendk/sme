@@ -229,7 +229,7 @@ namespace SME.CPP.Templates
 
         public AST.Bus GetBus(IBus bus)
         {
-            return Network.Busses.First(x => x.SourceInstance == bus);
+            return Network.Busses.First(x => x.SourceInstances.First() == bus);
         }
 
     }
