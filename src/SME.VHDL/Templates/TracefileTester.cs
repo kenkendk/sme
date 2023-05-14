@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using SME.AST;
 
 namespace SME.VHDL.Templates
@@ -68,12 +70,17 @@ use work.csv_util.all;
 
 ");
 
-            foreach (var signal in RS.AllSignals)
+            foreach (var bus in Network.Busses.OrderBy(x => x.InstanceName))
             {
-                var busname = ToStringHelper.ToStringWithCulture( ((AST.Bus)signal.Parent).InstanceName);
-                var signalname = ToStringHelper.ToStringWithCulture( signal.Name);
-                var vhdltype = ToStringHelper.ToStringWithCulture( RS.VHDLWrappedTypeName(signal) );
-                Write($"    signal {busname}_{signalname} : {vhdltype};\n");
+                var multiplier = bus.SourceInstances.Length;
+                foreach (var signal in bus.Signals.OrderBy(x => x.Name))
+                {
+                    var busname = ToStringHelper.ToStringWithCulture( bus.InstanceName);
+                    var signalname = ToStringHelper.ToStringWithCulture( signal.Name);
+                    var vhdltype = ToStringHelper.ToStringWithCulture( RS.VHDLWrappedTypeName(signal) );
+                    var quantifier = multiplier > 1 ? $"_ARRAY({multiplier - 1} downto 0)" : "";
+                    Write($"    signal {busname}_{signalname} : {vhdltype}{quantifier};\n");
+                }
             }
 
             Write(@"
@@ -140,11 +147,8 @@ begin
             fieldno := 0;
 ");
 
-            var signalnames = RS.DriverSignals
-                .Concat(RS.VerifySignals)
-                .Select(x =>
-                    ToStringHelper.ToStringWithCulture( RS.TestBenchSignalName(x) )
-                );
+            var signalnames = ToStringHelper.ToEnumeratedString(RS, RS.DriverBusses.Concat(RS.VerifyBusses));
+
             foreach (var signalname in signalnames)
             {
                 Write($"            read_csv_field(L, tmp);\n");
@@ -177,39 +181,46 @@ begin
 
 ");
 
-            if (RS.DriverSignals.Count() > 0)
+            foreach (var bus in RS.DriverBusses.OrderBy(x => x.InstanceName))
             {
-                foreach (var signal in RS.DriverSignals)
+                var idxs = ToStringHelper.ToEnumeratedIndices(RS, bus);
+                foreach (var idx in idxs)
                 {
-                    var vhdltype = RS.VHDLType(signal);
-                    var busname = ToStringHelper.ToStringWithCulture( ((AST.Bus)signal.Parent).InstanceName);
-                    var signalname = ToStringHelper.ToStringWithCulture(signal.Name);
-                    var vhdltypename = ToStringHelper.ToStringWithCulture( vhdltype.ToSafeVHDLName());
-                    Write("                read_csv_field(L, tmp);\n");
-                    if (vhdltype.IsStdLogic || vhdltype == VHDLTypes.SYSTEM_BOOL)
+                    foreach (var signal in bus.Signals.OrderBy(x => ToStringHelper.ToStringWithCulture(x.Name)).SelectMany(x => RS.SplitArray(x)))
                     {
-                        Write($"                if are_strings_equal(tmp, \"U\") then\n");
-                        Write($"                    {busname}_{signalname} <= 'U';\n");
-                        Write($"                else\n");
-                        Write($"                    {busname}_{signalname} <= to_std_logic(truncate(tmp));\n");
-                        Write($"                end if;\n");
-                    }
-                    else if (vhdltype.IsStdLogicVector || vhdltype.IsSystemType || vhdltype.IsVHDLSigned || vhdltype.IsVHDLUnsigned)
-                    {
-                        Write($"                if are_strings_equal(tmp, \"U\") then\n");
-                        Write($"                    {busname}_{signalname} <= (others => 'U');\n");
-                        Write($"                else\n");
-                        if ((vhdltype.IsSystemType || vhdltype.IsVHDLSigned) && vhdltype.IsSigned)
-                            Write($"                    {busname}_{signalname} <= signed(to_std_logic_vector(truncate(tmp)));\n");
-                        else if ((vhdltype.IsSystemType || vhdltype.IsVHDLUnsigned) && vhdltype.IsUnsigned)
-                            Write($"                    {busname}_{signalname} <= unsigned(to_std_logic_vector(truncate(tmp)));\n");
+                        // TODO will this work for buses with a single instance? Probably not.
+                        var indexstr = idxs.Count() > 1 ? $"({idx})" : "";
+                        var vhdltype = RS.VHDLType(signal);
+                        var busname = ToStringHelper.ToStringWithCulture( ((AST.Bus)signal.Parent).InstanceName);
+                        var signalname = ToStringHelper.ToStringWithCulture(signal.Name);
+                        signalname += indexstr;
+                        var vhdltypename = ToStringHelper.ToStringWithCulture( vhdltype.ToSafeVHDLName());
+                        Write("                read_csv_field(L, tmp);\n");
+                        if (vhdltype.IsStdLogic || vhdltype == VHDLTypes.SYSTEM_BOOL)
+                        {
+                            Write($"                if are_strings_equal(tmp, \"U\") then\n");
+                            Write($"                    {busname}_{signalname} <= 'U';\n");
+                            Write($"                else\n");
+                            Write($"                    {busname}_{signalname} <= to_std_logic(truncate(tmp));\n");
+                            Write($"                end if;\n");
+                        }
+                        else if (vhdltype.IsStdLogicVector || vhdltype.IsSystemType || vhdltype.IsVHDLSigned || vhdltype.IsVHDLUnsigned)
+                        {
+                            Write($"                if are_strings_equal(tmp, \"U\") then\n");
+                            Write($"                    {busname}_{signalname} <= (others => 'U');\n");
+                            Write($"                else\n");
+                            if ((vhdltype.IsSystemType || vhdltype.IsVHDLSigned) && vhdltype.IsSigned)
+                                Write($"                    {busname}_{signalname} <= signed(to_std_logic_vector(truncate(tmp)));\n");
+                            else if ((vhdltype.IsSystemType || vhdltype.IsVHDLUnsigned) && vhdltype.IsUnsigned)
+                                Write($"                    {busname}_{signalname} <= unsigned(to_std_logic_vector(truncate(tmp)));\n");
+                            else
+                                Write($"                    {busname}_{signalname} <= to_std_logic_vector(truncate(tmp));\n");
+                            Write($"                end if;\n");
+                        }
                         else
-                            Write($"                    {busname}_{signalname} <= to_std_logic_vector(truncate(tmp));\n");
-                        Write($"                end if;\n");
+                            Write($"            {busname}_{signalname} <= {vhdltypename}'value(to_safe_name(truncate(tmp)));\n");
+                        Write($"                fieldno := fieldno + 1;\n");
                     }
-                    else
-                        Write($"            {busname}_{signalname} <= {vhdltypename}'value(to_safe_name(truncate(tmp)));\n");
-                    Write($"                fieldno := fieldno + 1;\n");
                 }
             }
 
@@ -224,30 +235,39 @@ begin
                 -- Compare each signal with the value in the CSV file
 ");
 
-            foreach (var signal in RS.VerifySignals)
+            foreach (var bus in RS.VerifyBusses)
             {
-                var vhdltype = RS.VHDLType(signal);
-                var busname = ToStringHelper.ToStringWithCulture( ((AST.Bus)signal.Parent).InstanceName);
-                var signalname = ToStringHelper.ToStringWithCulture(signal.Name);
-                var vhdltypename = ToStringHelper.ToStringWithCulture( vhdltype.ToSafeVHDLName());
-                Write($"                read_csv_field(L, tmp);\n");
-                Write($"                if not are_strings_equal(tmp, \"U\") then\n");
-                if (vhdltype.IsStdLogicVector || vhdltype.IsSystemType || vhdltype.IsVHDLSigned || vhdltype.IsVHDLUnsigned)
+                var idxs = ToStringHelper.ToEnumeratedIndices(RS, bus);
+                foreach (var idx in idxs)
                 {
-                    Write($"                    if not are_strings_equal(str({busname}_{signalname}), tmp) then\n");
-                    Write($"                        newfailures := newfailures + 1;\n");
-                    Write($"                        report \"Value for {busname}_{signalname} in cycle \" & integer'image(clockcycle) & \" was: \" & str({busname}_{signalname}) & \" but should have been: \" & truncate(tmp) severity Error;\n");
-                    Write($"                    end if;\n");
+                    foreach (var signal in bus.Signals.OrderBy(x => ToStringHelper.ToStringWithCulture(x.Name)).SelectMany(x => RS.SplitArray(x)))
+                    {
+                        var indexstr = idxs.Count() > 1 ? $"({idx})" : "";
+                        var vhdltype = RS.VHDLType(signal);
+                        var busname = ToStringHelper.ToStringWithCulture( ((AST.Bus)signal.Parent).InstanceName);
+                        var signalname = ToStringHelper.ToStringWithCulture(signal.Name);
+                        signalname += indexstr;
+                        var vhdltypename = ToStringHelper.ToStringWithCulture( vhdltype.ToSafeVHDLName());
+                        Write($"                read_csv_field(L, tmp);\n");
+                        Write($"                if not are_strings_equal(tmp, \"U\") then\n");
+                        if (vhdltype.IsStdLogicVector || vhdltype.IsSystemType || vhdltype.IsVHDLSigned || vhdltype.IsVHDLUnsigned)
+                        {
+                            Write($"                    if not are_strings_equal(str({busname}_{signalname}), tmp) then\n");
+                            Write($"                        newfailures := newfailures + 1;\n");
+                            Write($"                        report \"Value for {busname}_{signalname} in cycle \" & integer'image(clockcycle) & \" was: \" & str({busname}_{signalname}) & \" but should have been: \" & truncate(tmp) severity Error;\n");
+                            Write($"                    end if;\n");
+                        }
+                        else
+                        {
+                            Write($"                    if not are_strings_equal({vhdltypename}'image({busname}_{signalname}), to_safe_name(tmp)) then\n");
+                            Write($"                        newfailures := newfailures + 1;\n");
+                            Write($"                        report \"Value for {busname}_{signalname} in cycle \" & integer'image(clockcycle) & \" was: \" & {vhdltypename}'image({busname}_{signalname}) & \" but should have been: \" & to_safe_name(truncate(tmp)) severity Error;\n");
+                            Write($"                    end if;\n");
+                        }
+                        Write("                end if;\n");
+                        Write("                fieldno := fieldno + 1;\n");
+                    }
                 }
-                else
-                {
-                    Write($"                    if not are_strings_equal({vhdltypename}'image({busname}_{signalname}), to_safe_name(tmp)) then\n");
-                    Write($"                        newfailures := newfailures + 1;\n");
-                    Write($"                        report \"Value for {busname}_{signalname} in cycle \" & integer'image(clockcycle) & \" was: \" & {vhdltypename}'image({busname}_{signalname}) & \" but should have been: \" & to_safe_name(truncate(tmp)) severity Error;\n");
-                    Write($"                    end if;\n");
-                }
-                Write("                end if;\n");
-                Write("                fieldno := fieldno + 1;\n");
             }
 
             Write(@"
