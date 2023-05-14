@@ -1,6 +1,8 @@
 using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Text;
 
 namespace SME.VHDL.Templates
@@ -259,6 +261,73 @@ namespace SME.VHDL.Templates
                         formatProvider = value;
                     }
                 }
+            }
+
+            /// <summary>
+            /// Returns a collection of indices of the given (potentially array of) bus(ses).
+            /// </summary>
+            /// <param name="bus">The given (potentially array of) bus(ses).</param>
+            public IEnumerable<string> ToEnumeratedIndices(RenderState RS, AST.Bus bus)
+            {
+                if ((bus == null))
+                {
+                    throw new ArgumentNullException("bus");
+                }
+
+                if ((bus.SourceInstances.Length == 1))
+                {
+                    return new string[] {
+                            string.Empty};
+                }
+
+                // Extract the offset
+                var offset = int.Parse(Regex.Match(RS.TestBenchSignalName(bus.Signals.First()), "#([0-9]+)").Groups[1].Value);
+
+                // Return the range TODO order by their string name, but return array index!
+                return Enumerable.Range(0, bus.SourceInstances.Length).OrderBy(x => (x + offset).ToString()).Select(x => x.ToString());
+            }
+
+            /// <summary>
+            /// Converts the given collection of busses to a collection of strings. If a bus is an array of busses, the strings are incremented with the index of the first bus. E.g. an array of buses `somebus#3` with two instances will return `["somebus#3", "somebus#4"]`.
+            /// </summary>
+            /// <param name="busses">The given collection of busses.</param>
+            public IEnumerable<string> ToEnumeratedString(RenderState RS, IEnumerable<AST.Bus> busses)
+            {
+                if ((busses == null))
+                {
+                    throw new ArgumentNullException("busses");
+                }
+
+                List<string> result = new List<string>();
+
+                foreach (var bus in busses)
+                {
+                    List<string> signalnames = new List<string>();
+
+                    if (bus.SourceInstances.Length > 1)
+                    {
+                        var offset = int.Parse(Regex.Match(RS.TestBenchSignalName(bus.Signals.First()), "#([0-9]+)").Groups[1].Value);
+                        var formats = bus.Signals
+                            .OrderBy(x => x.Name)
+                            .SelectMany(x => RS.SplitArray(x))
+                            .Select(x => Regex.Replace( RS.TestBenchSignalName(x), "#[0-9]+", "#{0}" ));
+
+                        for (int i = 0; i < bus.SourceInstances.Length; i++)
+                        {
+                            signalnames.AddRange(formats.Select(x => ToStringWithCulture(string.Format(x, i + offset))));
+                        }
+
+                        result.AddRange(signalnames);
+                    } else {
+                        result.AddRange(bus.Signals
+                            .OrderBy(x => x.Name)
+                            .SelectMany(x => RS.SplitArray(x))
+                            .Select(x => RS.TestBenchSignalName(x)));
+                    }
+
+                }
+
+                return result;
             }
 
             /// <summary>
