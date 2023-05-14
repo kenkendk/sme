@@ -117,6 +117,12 @@ namespace UnitTest
         }
 
         [TestMethod]
+        public void RunArrayOfBuses()
+        {
+            RunTest(typeof(ArrayOfBuses.ReduceAddTester), true, false);
+        }
+
+        [TestMethod]
         public void RunColorBin()
         {
             RunTest(typeof(ColorBin.ImageInputSimulator), true, false);
