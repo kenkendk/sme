@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -98,6 +98,10 @@ namespace SME.AST
                 if (proc != null && proc.Signals.TryGetValue(name, out signal))
                     return signal;
 
+                Bus bus;
+                if (proc != null && proc.BusInstances.TryGetValue(name, out bus))
+                    return bus;
+
                 return null;
             }
             else if (expression is MemberAccessExpressionSyntax)
@@ -144,6 +148,17 @@ namespace SME.AST
                         parts.Add(ecs);
                         ec = null;
                         break;
+                    }
+                    else if (ec is ElementAccessExpressionSyntax)
+                    {
+                        // For now, an element access within a member access is only supported for buses.
+                        // In the future, this should be extended to support structs as well.
+                        // TODO Handle this properly, it is an array of buses, so it should lookup the type of the field, and return it.
+                        var eae = ec as ElementAccessExpressionSyntax;
+                        var ecs = eae.Expression as IdentifierNameSyntax;
+                        var idxs = eae.ArgumentList.Arguments.Select(x => "0"); // Hardcoded to 0, as we are after the type, not the value
+                        // Otherwise, lookup the index variable in the constants. If it is not found, just go with 0.
+                        ec = eae.Expression;
                     }
                     else if (ec is TypeSyntax)
                     {
@@ -219,6 +234,10 @@ namespace SME.AST
                         throw new Exception("Attempting to do a resolve of \this\" but no process context is provided");
                     current = proc;
                 }
+
+                // Shortcut for getting array of buses length
+                if (proc.Constants.ContainsKey(fullname))
+                    return proc.Constants[fullname];
 
                 var first = true;
                 foreach (var el in parts)
@@ -314,7 +333,8 @@ namespace SME.AST
 
                     if (current is Variable)
                     {
-                        var fi = ((Variable)current).MSCAType.GetMembers().OfType<IFieldSymbol>().FirstOrDefault(x => x.Name.Equals(el));
+                        var vc = current as Variable;
+                        var fi = vc.MSCAType.GetMembers().OfType<IFieldSymbol>().FirstOrDefault(x => x.Name.Equals(el));
                         if (fi != null)
                         {
                             current = new Variable()
@@ -329,15 +349,15 @@ namespace SME.AST
                             continue;
                         }
 
-                        var pi = ((Variable)current).MSCAType.GetMembers().OfType<IPropertySymbol>().FirstOrDefault(x => x.Name.Equals(el));
+                        var pi = vc.MSCAType.GetMembers().OfType<IPropertySymbol>().FirstOrDefault(x => x.Name.Equals(el));
                         if (pi != null)
                         {
                             current = new Variable()
                             {
                                 Name = el,
                                 Parent = current,
-                                Source = fi,
-                                MSCAType = fi.ContainingType,
+                                Source = pi,
+                                MSCAType = pi.ContainingType,
                                 DefaultValue = null
                             };
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -563,7 +563,7 @@ namespace SME.AST
     }
 
     /// <summary>
-    /// An expression targeting a member.
+    /// An expression targeting a member. The format is "target.member".
     /// </summary>
     public class MemberReferenceExpression : Expression
     {
@@ -571,6 +571,14 @@ namespace SME.AST
         /// The item being targeted.
         /// </summary>
         public DataElement Target;
+        /// <summary>
+        /// The expression for the target.
+        /// </summary>
+        public Expression TargetExpression;
+        /// <summary>
+        /// The expression for the member.
+        /// </summary>
+        public Expression MemberExpression;
 
         /// <summary>
         /// Default constructor.
@@ -583,10 +591,12 @@ namespace SME.AST
         /// Specialized helper constructor.
         /// </summary>
         /// <param name="target">The member that is being referenced.</param>
-        public MemberReferenceExpression(DataElement target)
+        public MemberReferenceExpression(DataElement target, Expression targetExpression, Expression memberExpression)
         {
             this.Target = target;
             this.SourceResultType = target.MSCAType;
+            this.TargetExpression = targetExpression;
+            this.MemberExpression = memberExpression;
         }
 
         /// <summary>

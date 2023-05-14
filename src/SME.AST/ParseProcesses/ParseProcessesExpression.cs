@@ -75,6 +75,12 @@ namespace SME.AST
                 return Decompile(network, proc, method, statement, expression as CheckedExpressionSyntax);
             else if (expression is AwaitExpressionSyntax)
                 return Decompile(network, proc, method, statement, expression as AwaitExpressionSyntax);
+            else if (expression is BaseExpressionSyntax)
+                // TODO: handle base expressions properly
+                return new EmptyExpression() {
+                    SourceExpression = expression,
+                    Parent = statement
+                };
             else
                 throw new Exception(string.Format("Unsupported expression: {0} ({1})", expression, expression.GetType().FullName));
         }
@@ -162,13 +168,17 @@ namespace SME.AST
         /// <param name="expression">The expression to decompile.</param>
         protected MemberReferenceExpression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, MemberAccessExpressionSyntax expression)
         {
-            return new MemberReferenceExpression()
+            var mre = new MemberReferenceExpression()
             {
                 SourceResultType = ResolveExpressionType(network, proc, method, statement, expression),
                 SourceExpression = expression,
                 Target = LocateDataElement(network, proc, method, statement, expression),
                 Parent = statement
             };
+            // TODO proper evaluation for not-buses. Could be useful for supporting array of constant classes. Maybe also nested structs?
+            if (mre.Target is Bus)
+                mre.TargetExpression = Decompile(network, proc, method, statement, expression.Expression);
+            return mre;
         }
 
         /// <summary>

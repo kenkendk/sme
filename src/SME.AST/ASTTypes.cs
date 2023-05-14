@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -50,7 +50,7 @@ namespace SME.AST
     /// <summary>
     /// Description of a bus.
     /// </summary>
-    public class Bus : ASTItem
+    public class Bus : DataElement
     {
         /// <summary>
         /// Gets a value indicating if the bus is a top-level input.

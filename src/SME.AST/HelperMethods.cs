@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
@@ -42,7 +42,7 @@ namespace SME.AST
                 var at = (IArrayTypeSymbol)td;
                 return at.ElementType.IsBusType();
             } else {
-            return td.Interfaces.Any(x => SymbolEqualityComparer.Default.Equals(ParseProcesses.m_compilation.GetTypeByMetadataName(typeof(IBus).FullName), x));
+                return td.Interfaces.Any(x => SymbolEqualityComparer.Default.Equals(ParseProcesses.m_compilation.GetTypeByMetadataName(typeof(IBus).FullName), x));
             }
         }
         /// <summary>
@@ -479,7 +479,7 @@ namespace SME.AST
             if (self is IdentifierExpression)
                 return ((IdentifierExpression)self).Target;
             if (self is MemberReferenceExpression)
-                return ((MemberReferenceExpression)self).Target;
+                return GetTarget(((MemberReferenceExpression)self).Target);
             if (self is WrappingExpression)
                 return GetTarget(((WrappingExpression)self).Expression);
             if (self is CustomExpression)
@@ -520,7 +520,7 @@ namespace SME.AST
             if (self is IdentifierExpression)
                 ((IdentifierExpression)self).Target = target;
             else if (self is MemberReferenceExpression)
-                ((MemberReferenceExpression)self).Target = target;
+                SetTarget(((MemberReferenceExpression)self).Target, target);
             else if (self is WrappingExpression)
                 SetTarget(((WrappingExpression)self).Expression, target);
             else if (self is Expression && self != ((Expression)self).GetUnwrapped())
