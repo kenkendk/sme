@@ -82,7 +82,7 @@ namespace SME.GraphViz
                         p.InstanceName, Environment.NewLine);
 
                 foreach(var p in map.ClockedProcesses.Union(map.UnclockedProcesses))
-                    foreach (var b in p.Instance.OutputBusses)
+                    foreach (var b in p.Instance.OutputBusses.SelectMany(x => x))
                         foreach (var s in map.BusDependsOn[b])
                             sb.AppendFormat(
                                 "\"{0}\" -> \"{1}\";{2}",
@@ -189,7 +189,7 @@ namespace SME.GraphViz
                 DependsOnBus =
                     (from g in
                     from c in components
-                    from b in c.Instance.OutputBusses
+                    from b in c.Instance.OutputBusses.SelectMany(x => x)
                     select new {Bus = b, Component = c}
                     group g by g.Bus)
                         .ToDictionary(
@@ -200,7 +200,7 @@ namespace SME.GraphViz
                 BusDependsOn =
                     (from g in
                         from c in components
-                        from b in c.Instance.InputBusses.Union(c.Instance.ClockedInputBusses).Distinct()
+                        from b in c.Instance.InputBusses.SelectMany(x => x).Union(c.Instance.ClockedInputBusses.SelectMany(x => x)).Distinct()
                         select new {Bus = b, Component = c}
                         group g by g.Bus)
                         .ToDictionary(
@@ -211,7 +211,7 @@ namespace SME.GraphViz
                 DependsOnClockedBus =
                     (from g in
                         from c in components
-                        from b in c.Instance.ClockedInputBusses
+                        from b in c.Instance.ClockedInputBusses.SelectMany(x => x)
                         select new {Bus = b, Component = c}
                         group g by g.Bus)
                         .ToDictionary(
