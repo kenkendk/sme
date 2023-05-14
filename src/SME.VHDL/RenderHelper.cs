@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using SME.AST;
 using System.Linq;
@@ -449,7 +449,7 @@ namespace SME.VHDL
         /// <param name="e">The expression to render.</param>
         private string RenderExpression(AST.AssignmentExpression e)
         {
-            DataElement target;
+            ASTItem target;
 
             if (e.Left is AST.MemberReferenceExpression)
                 target = (e.Left as MemberReferenceExpression).Target;
