@@ -110,19 +110,28 @@ namespace SME.Tracer
                     Name = x.Key.Name,
                     IsClocked = x.Key.IsClockedProcess,
                     SourceClass = x.Key.GetType().ToString(),
-                    Variables =
-                    m_variables[x.Key]
-                    .Select(y => new SME.Tracer.JsonTypes.Variable()
-                    {
-                        ID = y.Value,
-                        IsSignal = false,
-                        Name = y.Key.Name,
-                        Type = y.Key.FieldType.ToString()
-                    })
-                    .ToArray(),
-                    InputBusses = x.Key.InputBusses.Union(x.Key.ClockedInputBusses).Select(y => busmap[y]).ToArray(),
-                    OutputBusses = x.Key.OutputBusses.Select(y => busmap[y]).ToArray(),
-                    InternalBusses = x.Key.InternalBusses.Select(y => busmap[y]).ToArray()
+                    Variables = m_variables[x.Key]
+                        .Select(y => new SME.Tracer.JsonTypes.Variable()
+                        {
+                            ID = y.Value,
+                            IsSignal = false,
+                            Name = y.Key.Name,
+                            Type = y.Key.FieldType.ToString()
+                        })
+                        .ToArray(),
+                    InputBusses = x.Key.InputBusses
+                        .SelectMany(y => y)
+                        .Union(x.Key.ClockedInputBusses.SelectMany(y => y))
+                        .Select(y => busmap[y])
+                        .ToArray(),
+                    OutputBusses = x.Key.OutputBusses
+                        .SelectMany(y => y)
+                        .Select(y => busmap[y])
+                        .ToArray(),
+                    InternalBusses = x.Key.InternalBusses
+                        .SelectMany(y => y)
+                        .Select(y => busmap[y])
+                        .ToArray()
                 }).ToArray(),
 
                 Busses = busmap.OrderBy(x => x.Value).Select(x => new SME.Tracer.JsonTypes.Bus()
