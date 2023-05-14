@@ -22,6 +22,16 @@
             "problemMatcher": "$msCompile"
         },
         {
+            "label": "build example ArrayOfBuses",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/src/Examples/ArrayOfBuses/ArrayOfBuses.csproj"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
             "label": "build example ColorBin",
             "command": "dotnet",
             "type": "process",
