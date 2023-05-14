@@ -80,7 +80,7 @@ namespace SME.AST
 
             var proctype = proc.MSCAType;
             IEnumerable<IMethodSymbol> methsyns = new List<IMethodSymbol>();
-            while (proctype.ContainingNamespace.ToString().Equals(method.DeclaringType.Namespace))
+            while (proctype.ContainingNamespace.ToString().Equals(method.DeclaringType.Namespace ?? "<global namespace>"))
             {
                 methsyns = methsyns.Concat(proctype
                     .GetMembers()
