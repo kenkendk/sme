@@ -277,7 +277,15 @@ namespace SME
 
             // Assign unique names to busses if there are multiple instances
             var busmap = new Dictionary<Type, List<IRuntimeBus>>();
-            foreach (var b in m_processes.Values.Select(x => x.Instance).SelectMany(x => x.InputBusses.Concat(x.OutputBusses).Concat(x.InternalBusses).Concat(x.ClockedInputBusses)).Distinct())
+            var allBusses = m_processes.Values
+                .Select(x => x.Instance)
+                .SelectMany(x => x.InputBusses.SelectMany(y => y)
+                    .Concat(x.OutputBusses.SelectMany(y => y))
+                    .Concat(x.InternalBusses.SelectMany(y => y))
+                    .Concat(x.ClockedInputBusses.SelectMany(y => y)))
+                .Distinct();
+
+            foreach (var b in allBusses)
             {
                 List<IRuntimeBus> lp;
                 if (!busmap.TryGetValue(b.BusType, out lp))

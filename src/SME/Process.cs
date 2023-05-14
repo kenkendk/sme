@@ -17,40 +17,40 @@ namespace SME
         /// <summary>
         /// The collection of clocked input buses.
         /// </summary>
-        private IRuntimeBus[] m_clockedinputbusses;
+        private IRuntimeBus[][] m_clockedinputbusses;
         /// <summary>
         /// The collection of input buses.
         /// </summary>
-        private IRuntimeBus[] m_inputbusses;
+        private IRuntimeBus[][] m_inputbusses;
         /// <summary>
         /// The collection of output buses.
         /// </summary>
-        private IRuntimeBus[] m_outputbusses;
+        private IRuntimeBus[][] m_outputbusses;
         /// <summary>
         /// The collection of internal buses.
         /// </summary>
-        private IRuntimeBus[] m_internalbusses;
+        private IRuntimeBus[][] m_internalbusses;
 
         /// <summary>
         /// Gets the collection of clocked input buses.
         /// </summary>
         /// <value>The collection of input buses.</value>
-        IRuntimeBus[] IProcess.ClockedInputBusses { get { return m_clockedinputbusses; } }
+        IRuntimeBus[][] IProcess.ClockedInputBusses { get { return m_clockedinputbusses; } }
         /// <summary>
         /// Gets the collection of input buses.
         /// </summary>
         /// <value>The collection of input buses.</value>
-        IRuntimeBus[] IProcess.InputBusses { get { return m_inputbusses; } }
+        IRuntimeBus[][] IProcess.InputBusses { get { return m_inputbusses; } }
         /// <summary>
         /// Gets the collection of output buses.
         /// </summary>
         /// <value>The collection of output buses.</value>
-        IRuntimeBus[] IProcess.OutputBusses { get { return m_outputbusses; } }
+        IRuntimeBus[][] IProcess.OutputBusses { get { return m_outputbusses; } }
         /// <summary>
         /// Gets the collection of output buses.
         /// </summary>
         /// <value>The collection of output buses.</value>
-        IRuntimeBus[] IProcess.InternalBusses { get { return m_internalbusses; } }
+        IRuntimeBus[][] IProcess.InternalBusses { get { return m_internalbusses; } }
 
         /// <summary>
         /// Gets a value indicating whether this instance is a clocked process.
@@ -143,57 +143,79 @@ namespace SME
         {
             m_internalbusses =
                 Loader.GetBusFields(this.GetType())
-                      .Where(n => n.GetCustomAttributes(typeof(InternalBusAttribute), true).Any())
-                      .SelectMany(n => Loader.GetBusInstances(this, n))
-                      .Where(n => n != null)
-                      .Distinct()
-                      .Cast<IRuntimeBus>()
-                      .ToArray();
+                        .Where(n => n.GetCustomAttributes(typeof(InternalBusAttribute), true).Any())
+                        .Select(n => Loader.GetBusInstances(this, n))
+                        .Select(n =>
+                            n.Where(m => m != null)
+                                .Distinct()
+                                .Cast<IRuntimeBus>())
+                        .Where(n => n != null)
+                        .Distinct()
+                        .Select(n => n.ToArray())
+                        .ToArray();
 
             m_outputbusses =
                 Loader.GetBusFields(this.GetType())
-                      .Where(n => {
-                          var attrIn = n.GetCustomAttributes(typeof(InputBusAttribute), true).FirstOrDefault();
-                          var attrOut = n.GetCustomAttributes(typeof(OutputBusAttribute), true).FirstOrDefault();
-                          var attrInternal = n.GetCustomAttributes(typeof(InternalBusAttribute), true).FirstOrDefault();
-                          return attrInternal == null && (attrOut != null || ((attrIn == null) == (attrOut == null)));
-                      })
-                      .SelectMany(n => Loader.GetBusInstances(this, n))
-                      .Where(n => n != null)
-                      .Distinct()
-                      .Cast<IRuntimeBus>()
-                      .ToArray();
+                        .Where(n => {
+                            var attrIn = n.GetCustomAttributes(typeof(InputBusAttribute), true).FirstOrDefault();
+                            var attrOut = n.GetCustomAttributes(typeof(OutputBusAttribute), true).FirstOrDefault();
+                            var attrInternal = n.GetCustomAttributes(typeof(InternalBusAttribute), true).FirstOrDefault();
+                            return attrInternal == null && (attrOut != null || ((attrIn == null) == (attrOut == null)));
+                        })
+                        .Select(n => Loader.GetBusInstances(this, n))
+                        .Select(n =>
+                            n.Where(m => m != null)
+                                .Distinct()
+                                .Cast<IRuntimeBus>())
+                        .Where(n => n != null)
+                        .Distinct()
+                        .Select(n => n.ToArray())
+                        .ToArray();
 
             var inputList =
                 Loader.GetBusFields(this.GetType())
-                      .Where(n => {
-                          var attrIn = n.GetCustomAttributes(typeof(InputBusAttribute), true).FirstOrDefault();
-                          var attrOut = n.GetCustomAttributes(typeof(OutputBusAttribute), true).FirstOrDefault();
-                          var attrInternal = n.GetCustomAttributes(typeof(InternalBusAttribute), true).FirstOrDefault();
-                          return attrInternal == null && (attrOut == null || ((attrIn == null) == (attrOut == null)));
-                      })
-                      .SelectMany(n => Loader.GetBusInstances(this, n))
-                      .Where(n => n != null)
-                      .Distinct()
-                      .Cast<IRuntimeBus>()
-                      .ToArray();
+                        .Where(n => {
+                            var attrIn = n.GetCustomAttributes(typeof(InputBusAttribute), true).FirstOrDefault();
+                            var attrOut = n.GetCustomAttributes(typeof(OutputBusAttribute), true).FirstOrDefault();
+                            var attrInternal = n.GetCustomAttributes(typeof(InternalBusAttribute), true).FirstOrDefault();
+                            return attrInternal == null && (attrOut == null || ((attrIn == null) == (attrOut == null)));
+                        })
+                        .Select(n => Loader.GetBusInstances(this, n))
+                        .Select(n =>
+                            n.Where(m => m != null)
+                            .Distinct()
+                            .Cast<IRuntimeBus>())
+                        .Where(n => n != null)
+                        .Distinct()
+                        .Select(n => n.ToArray())
+                        .ToArray();
 
-            var violator = m_internalbusses.FirstOrDefault(x => x.BusType.GetCustomAttributes(typeof(TopLevelInputBusAttribute), true).FirstOrDefault() != null);
+            var violator = m_internalbusses
+                .FirstOrDefault(x =>
+                    x.FirstOrDefault().BusType
+                        .GetCustomAttributes(typeof(TopLevelInputBusAttribute), true)
+                        .FirstOrDefault() != null
+                )?.FirstOrDefault();
             if (violator != null)
                 throw new NotSupportedException($"The bus {violator.BusType.FullName} is marked with [{nameof(InternalBusAttribute)}], but is also marked with [{nameof(TopLevelInputBusAttribute)}] ");
 
-            violator = m_internalbusses.FirstOrDefault(x => x.BusType.GetCustomAttributes(typeof(TopLevelOutputBusAttribute), true).FirstOrDefault() != null);
+            violator = m_internalbusses
+                .FirstOrDefault(x =>
+                    x.FirstOrDefault().BusType
+                        .GetCustomAttributes(typeof(TopLevelOutputBusAttribute), true)
+                        .FirstOrDefault() != null
+                )?.FirstOrDefault();
             if (violator != null)
                 throw new NotSupportedException($"The bus {violator.BusType.FullName} is marked with [{nameof(InternalBusAttribute)}], but is also marked with [{nameof(TopLevelOutputBusAttribute)}] ");
 
             if (((IProcess)this).IsClockedProcess)
             {
-                m_inputbusses = new IRuntimeBus[0];
+                m_inputbusses = new IRuntimeBus[0][];
                 m_clockedinputbusses = inputList;
             }
             else
             {
-                m_clockedinputbusses = new IRuntimeBus[0];
+                m_clockedinputbusses = new IRuntimeBus[0][];
                 m_inputbusses = inputList;
             }
         }
@@ -204,19 +226,27 @@ namespace SME
         /// <param name="inputBusses">The collection of input buses.</param>
         /// <param name="outputBusses">The collection of output buses.</param>
         /// <param name="internalBusses">The collection of internal buses.</param>
-        protected void RegisterBusses(IBus[] inputBusses, IBus[] outputBusses, IBus[] internalBusses)
+        protected void RegisterBusses(IBus[][] inputBusses, IBus[][] outputBusses, IBus[][] internalBusses)
         {
-            m_internalbusses = (internalBusses ?? new IBus[0]).Cast<IRuntimeBus>().ToArray();
-            m_outputbusses = (outputBusses ?? new IBus[0]).Cast<IRuntimeBus>().ToArray();
+            m_internalbusses = (internalBusses ?? new IBus[0][])
+                .Select(x => x.Cast<IRuntimeBus>().ToArray())
+                .ToArray();
+            m_outputbusses = (outputBusses ?? new IBus[0][])
+                .Select(x => x.Cast<IRuntimeBus>().ToArray())
+                .ToArray();
             if (((IProcess)this).IsClockedProcess)
             {
-                m_inputbusses = new IRuntimeBus[0];
-                m_clockedinputbusses = (inputBusses ?? new IBus[0]).Cast<IRuntimeBus>().ToArray();
+                m_inputbusses = new IRuntimeBus[0][];
+                m_clockedinputbusses = (inputBusses ?? new IBus[0][])
+                    .Select(n => n.Cast<IRuntimeBus>().ToArray())
+                    .ToArray();
             }
             else
             {
-                m_clockedinputbusses = new IRuntimeBus[0];
-                m_inputbusses = (inputBusses ?? new IBus[0]).Cast<IRuntimeBus>().ToArray();
+                m_clockedinputbusses = new IRuntimeBus[0][];
+                m_inputbusses = (inputBusses ?? new IBus[0][])
+                    .Select(n => n.Cast<IRuntimeBus>().ToArray())
+                    .ToArray();
             }
         }
 
@@ -276,7 +306,8 @@ namespace SME
 
         /// <summary>
         /// Field for storing an instance of SME.VHDL.ICustomRenderer
-        /// TODO it is an object, since SME should not depend on SME.VHDL
+        /// TODO it is an object, since SME should not depend on SME.VHDL,
+        /// but the type should be ICustomRenderer
         /// </summary>
         public virtual object CustomRenderer { get { return null; } }
     }

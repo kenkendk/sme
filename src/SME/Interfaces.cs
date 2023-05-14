@@ -84,19 +84,19 @@ namespace SME
         /// <summary>
         /// Array of buses, from which the process can read and which are clocked.
         /// </summary>
-        IRuntimeBus[] ClockedInputBusses { get; }
+        IRuntimeBus[][] ClockedInputBusses { get; }
         /// <summary>
         /// Array of buses, from which the process can read.
         /// </summary>
-        IRuntimeBus[] InputBusses { get; }
+        IRuntimeBus[][] InputBusses { get; }
         /// <summary>
         /// Array of buses, which are private to the process.
         /// </summary>
-        IRuntimeBus[] InternalBusses { get; }
+        IRuntimeBus[][] InternalBusses { get; }
         /// <summary>
         /// Array of buses, to which the process can write.
         /// </summary>
-        IRuntimeBus[] OutputBusses { get; }
+        IRuntimeBus[][] OutputBusses { get; }
 
         /// <summary>
         /// Method for waiting for the clock signal.

@@ -236,11 +236,14 @@ namespace SME
             m_clocktickcallback = clocktickcallback;
 
             // Wrap all processes in nodes
-            var nodeLookup = components.Select(x => new Node(x)).ToDictionary(k => k.Item, k => k);
+            var nodeLookup = components
+                .Select(x => new Node(x))
+                .ToDictionary(k => k.Item, k => k);
 
             // Build a map, indicating which processes write to a given bus
             var neededForOutput = nodeLookup
                 .SelectMany(x => x.Key.OutputBusses
+                    .SelectMany(y => y)
                     .Where(y => y != null)
                     .Select(y => new
                         {
@@ -260,17 +263,20 @@ namespace SME
                     .Concat(x.InternalBusses)
                     .Concat(x.ClockedInputBusses)
                 )
+                .SelectMany(x => x)
                 .Where(x => x != null)
                 .Distinct()
                 .Cast<IRuntimeBus>()
                 .ToArray();
 
-            m_clockedBusses = AllBusses.Where(x => x.IsClocked).ToArray();
+            m_clockedBusses = AllBusses
+                .Where(x => x.IsClocked)
+                .ToArray();
 
             // Build the tree by assigning children and parents to the nodes
             foreach (var n in nodeLookup.Values)
             {
-                foreach (var b in n.Item.InputBusses)
+                foreach (var b in n.Item.InputBusses.SelectMany(x => x))
                 {
                     if (b == null)
                         throw new Exception(string.Format("Found an unassigned input bus for {0}", n.Item.GetType().FullName));
@@ -294,13 +300,24 @@ namespace SME
             }
 
             // All clocked processes are pre-processed
-            var unfinishedProcesses = nodeLookup.Values.Where(x => !x.Item.IsClockedProcess).ToList();
-            var finished = nodeLookup.Values.Where(x => x.Item.IsClockedProcess).ToList();
-            var completed = finished.ToDictionary(k => k, v => (string)null);
+            var unfinishedProcesses = nodeLookup.Values
+                .Where(x => !x.Item.IsClockedProcess)
+                .ToList();
+            var finished = nodeLookup.Values
+                .Where(x => x.Item.IsClockedProcess)
+                .ToList();
+            var completed = finished
+                .ToDictionary(k => k, v => (string)null);
 
-            // The last clocked process drives the bus signals for clocked processes
+            // The last clocked process drives the bus signals for clocked
+            // processes
             var lastClockedProcess = finished.Last();
-            lastClockedProcess.AddBus(finished.SelectMany(x => x.Item.OutputBusses).Distinct());
+            lastClockedProcess.AddBus(
+                finished
+                    .SelectMany(x =>
+                        x.Item.OutputBusses
+                            .SelectMany(y => y))
+                    .Distinct());
 
             var count = 0;
             while(count != unfinishedProcesses.Count)
@@ -329,7 +346,7 @@ namespace SME
                         completed[p] = null;
                         finished.Add(p);
 
-                        foreach (var b in p.Item.OutputBusses)
+                        foreach (var b in p.Item.OutputBusses.SelectMany(x => x))
                             if (!neededForOutput[b].Where(x => !(completed.ContainsKey(x) || p.IsInChildren(x))).Any())
                             {
                                 // Clocked busses are handled by the execution system
@@ -438,11 +455,11 @@ namespace SME
                 foreach (var node in next)
                 {
                     // Propegate the buses
-                    foreach (var b in node.Item.OutputBusses)
+                    foreach (var b in node.Item.OutputBusses.SelectMany(x => x))
                         b.Forward();
                     foreach (var b in node.PropagateAfter)
                         b.Propagate();
-                    foreach (var b in node.Item.InternalBusses)
+                    foreach (var b in node.Item.InternalBusses.SelectMany(x => x))
                         b.Propagate();
 
                     // Update the graph
