@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
@@ -38,7 +38,12 @@ namespace SME.AST
         /// <param name="td">The type to evaluate.</param>
         public static bool IsBusType(this ITypeSymbol td)
         {
+            if (td.IsArrayType()) {
+                var at = (IArrayTypeSymbol)td;
+                return at.ElementType.IsBusType();
+            } else {
             return td.Interfaces.Any(x => SymbolEqualityComparer.Default.Equals(ParseProcesses.m_compilation.GetTypeByMetadataName(typeof(IBus).FullName), x));
+            }
         }
         /// <summary>
         /// Returns <c>true</c> if the type has an attribute of the given type.

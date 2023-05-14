@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -460,33 +460,31 @@ namespace SME.AST
             if (fd == null)
                 throw new Exception($"No such field: {field.Name} on {proc.SourceType.FullName}");
 
-            var businstance = fd.GetValue(proc.SourceInstance.Instance);
-            if (businstance == null)
+            var fdinstance = fd.GetValue(proc.SourceInstance.Instance);
+            if (fdinstance == null)
                 return;
+            var businstance = fdinstance.GetType().IsArray ? fdinstance as IBus[] : new IBus[] {fdinstance as IBus};
 
             var allBusses = proc.InputBusses.Concat(proc.OutputBusses).Concat(proc.InternalBusses);
-            if (businstance.GetType().IsArray)
-            {
-                var a = (Array)businstance;
-                for (var i = 0; i < a.Length; i++)
-                {
-                    var v = a.GetValue(i);
-                    var bus = allBusses.FirstOrDefault(x => x.SourceInstance == v);
-                    if (bus == null)
-                        throw new Exception($"No such bus: {field.ToDisplayString()}[{i}]");
-                    proc.BusInstances.Add(field.Name + $"[{i}]", bus);
-                }
-            }
-            else
-            {
-                var bus = allBusses.FirstOrDefault(x => x.SourceInstance == businstance);
+
+            var bus = allBusses.FirstOrDefault(x => x.SourceInstances.Zip(businstance).All(y => y.First == y.Second));
                 if (bus == null)
                     throw new Exception($"No such bus: {field.ToDisplayString()}");
 
                 proc.BusInstances.Add(field.Name, bus);
+
+            if (bus.SourceInstances.Length > 1)
+            {
+                // Add a constant to the process for the length of the array
+                var l = new Constant {
+                    MSCAType = m_compilation.GetSpecialType(SpecialType.System_Int32), DefaultValue = bus.SourceInstances.Length,
+                    Name = $"{field.Name}.Length",
+                    Source = field,
+                    Parent = proc
+                };
+                proc.Constants.Add($"{field.Name}.Length", l);
             }
         }
-
 
         /// <summary>
         /// Parses a a field reference and returns the associated variable.
@@ -599,8 +597,9 @@ namespace SME.AST
         protected virtual Bus LocateBus(NetworkState network, ProcessState proc, MethodState method, ExpressionSyntax expression)
         {
             var de = TryLocateElement(network, proc, method, null, expression);
-            if (de is AST.Bus)
-                return de as AST.Bus;
+            var det = de.GetType();
+            if (det.IsArray && det.GetElementType() == typeof(Bus))
+                return de as Bus;
 
             throw new Exception("Need to walk the tree?");
         }

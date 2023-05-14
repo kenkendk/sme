@@ -337,8 +337,9 @@ namespace SME.AST
             // Assign bus names, processes are handled elsewhere
             foreach (var el in network.All().OfType<AST.Bus>())
             {
-                if (el.SourceInstance != null && simulation.BusNames.ContainsKey(el.SourceInstance))
-                    el.InstanceName = simulation.BusNames[el.SourceInstance];
+                foreach (var src in el.SourceInstances)
+                    if (simulation.BusNames.ContainsKey(src))
+                        el.InstanceName = simulation.BusNames[src];
             }
 
             return network;
@@ -437,8 +438,21 @@ namespace SME.AST
             foreach(var b in res.InputBusses.Union(res.OutputBusses).Union(res.InternalBusses))
             {
                 var f = st
-                    .GetFields(BindingFlags.Instance | BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.NonPublic)
-                    .FirstOrDefault(x => x.GetValue(process.Instance) == b.SourceInstance);
+                    .GetFields(
+                        BindingFlags.Instance |
+                        BindingFlags.FlattenHierarchy |
+                        BindingFlags.Public |
+                        BindingFlags.NonPublic)
+                    .FirstOrDefault(x =>
+                        {
+                            var bus = x.GetValue(process.Instance);
+                            var bust = bus.GetType();
+                            if (!(bus is IBus || (bust.IsArray && (bust.GetElementType() is IBus))))
+                                return false;
+                            var busarr = bust.IsArray ? bus as IBus[] : new[] { bus as IBus };
+                            return busarr.Zip(b.SourceInstances)
+                                .All(y => y.First == y.Second);
+                        });
                 if (f != null)
                     res.LocalBusNames[b] = f.Name;
             }
@@ -496,26 +510,30 @@ namespace SME.AST
         /// <param name="proc">The process where the bus is located.</param>
         /// <param name="bus">The bus to build the AST for.</param>
         /// <param name="simulation">The simulation the AST is built for.</param>
-        protected virtual Bus Parse(NetworkState network, ProcessState proc, IBus bus, Simulation simulation)
+        protected virtual Bus Parse(NetworkState network, ProcessState proc, IBus[] bus, Simulation simulation)
         {
-            var st = ((IRuntimeBus)bus).BusType;
+            var bu = bus.FirstOrDefault();
+            var st = ((IRuntimeBus)bu).BusType;
 
-            if (network.BusInstanceLookup.ContainsKey(bus))
-                return network.BusInstanceLookup[bus];
+            if (network.BusInstanceLookup.ContainsKey(bu))
+                return network.BusInstanceLookup[bu];
 
             var res = new Bus()
             {
                 Name = NameWithoutPrefix(network, st.FullName, st),
                 SourceType = st,
-                SourceInstance = bus,
-                IsTopLevelInput = simulation.TopLevelInputBusses.Contains(bus),
-                IsTopLevelOutput = simulation.TopLevelOutputBusses.Contains(bus),
+                SourceInstances = bus,
+                IsTopLevelInput = bus.Any(x => simulation.TopLevelInputBusses.Contains(x)),
+                IsTopLevelOutput = bus.Any(x => simulation.TopLevelOutputBusses.Contains(x)),
                 IsClocked = st.HasAttribute<ClockedBusAttribute>(),
                 IsInternal = st.HasAttribute<InternalBusAttribute>(),
-                Parent = network
+                Parent = network,
+                MSCAType = bus.Length > 1 ? LoadType(bus.GetType()) : LoadType(st)
             };
 
-            network.BusInstanceLookup[bus] = res;
+            // TODO currently working on the first element of the bus array, as arrays and dictionaries are a bad match.
+            foreach (var b in bus)
+                network.BusInstanceLookup[b] = res;
             res.Signals = st.GetPropertiesRecursive().Where(x => x.DeclaringType != typeof(IBus)).Select(x => Parse(network, proc, res, x)).ToArray();
             return res;
         }

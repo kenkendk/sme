@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -80,7 +80,7 @@ namespace SME.AST
         /// <summary>
         /// The instance that this AST bus represents.
         /// </summary>
-        public IBus SourceInstance;
+        public IBus[] SourceInstances;
 
         /// <summary>
         /// The name of the instance, if different from the type name.
