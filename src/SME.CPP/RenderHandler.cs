@@ -322,7 +322,7 @@ namespace SME.CPP
         /// <param name="e">The expression to render</param>
         private string RenderExpression(AST.AssignmentExpression e)
         {
-            DataElement target;
+            ASTItem target;
 
             if (e.Left is AST.MemberReferenceExpression)
                 target = (e.Left as MemberReferenceExpression).Target;
@@ -345,7 +345,7 @@ namespace SME.CPP
                 var tg = lx.Substring(0, lx.Length - 1);
 
                 // If we are writing a bus-array, arguments are provided as method parameters
-                if (target.MSCAType.IsFixedArrayType())
+                if ((target as DataElement)?.MSCAType.IsFixedArrayType() ?? false)
                     tg += ", ";
 
                 if (e.Operator != SyntaxKind.EqualsToken)
