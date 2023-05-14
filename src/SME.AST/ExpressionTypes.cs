@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -497,7 +497,7 @@ namespace SME.AST
         /// </summary>
         public override string ToString()
         {
-            return $"{TargetExpression.ToString()}[{IndexExpression.ToString()}]";
+            return SourceExpression.ToString();
         }
     }
 
@@ -604,7 +604,7 @@ namespace SME.AST
         /// </summary>
         public override string ToString()
         {
-            return Target.Name;
+            return SourceExpression.ToString();
         }
     }
 
