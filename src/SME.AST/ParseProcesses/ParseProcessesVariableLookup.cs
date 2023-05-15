@@ -493,7 +493,7 @@ namespace SME.AST
 
             proc.BusInstances.Add(field.Name, bus);
 
-            if (bus.SourceInstances.Length > 1)
+            if (bus.SourceInstances.Length > 1 || fd.FieldType.IsArray)
             {
                 // Add a constant to the process for the length of the array
                 var l = new Constant {
