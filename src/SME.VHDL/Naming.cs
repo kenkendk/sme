@@ -112,10 +112,22 @@ namespace SME.VHDL
         /// </summary>
         private static Regex RX_ALPHANUMERIC = new Regex(@"[^\u0030-\u0039|\u0041-\u005A|\u0061-\u007A]");
 
+        /// <summary>
+        /// Gets a valid name corresponding to the given name. Ensures there's
+        /// no clash with VHDL keywords, and that the name can be parsed by
+        /// VHDL.
+        /// </summary>
+        /// <param name="name">The given name.</param>
+        /// <param name="is_bus_signal">If the name is a bus signal.</param>
         public static string ToValidName(string name, bool is_bus_signal = false)
         {
             var r = RX_ALPHANUMERIC.Replace(name, "_");
-            if (!is_bus_signal && new string[] { "register", "record", "variable", "process", "if", "then", "else", "begin", "end", "architecture", "of", "is", "wait", "block", "generate", "next", "constant" }.Contains(r.ToLowerInvariant()))
+            var keywords = new string[] {
+                "register", "record", "variable", "process", "if", "then",
+                "else", "begin", "end", "architecture", "of", "is", "wait",
+                "block", "generate", "next", "constant", "buffer"
+            };
+            if (!is_bus_signal && keywords.Contains(r.ToLowerInvariant()))
                 r = "vhdl_" + r;
 
             while (r.IndexOf("__", StringComparison.Ordinal) >= 0)
