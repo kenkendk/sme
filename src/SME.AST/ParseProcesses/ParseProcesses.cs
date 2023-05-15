@@ -447,7 +447,7 @@ namespace SME.AST
                         {
                             var bus = x.GetValue(process.Instance);
                             var bust = bus.GetType();
-                            if (!(bus is IBus || (bust.IsArray && (bust.GetElementType() is IBus))))
+                            if (!(bus is IBus || (bust.IsArray && (bust.GetElementType().GetInterfaces().Any(y => y == typeof(IBus))))))
                                 return false;
                             var busarr = bust.IsArray ? bus as IBus[] : new[] { bus as IBus };
                             return busarr.Zip(b.SourceInstances)

@@ -491,7 +491,7 @@ namespace SME.AST
                 if (bus == null)
                     throw new Exception($"No such bus: {field.ToDisplayString()}");
 
-                proc.BusInstances.Add(field.Name, bus);
+            proc.BusInstances.Add(field.Name, bus);
 
             if (bus.SourceInstances.Length > 1)
             {
