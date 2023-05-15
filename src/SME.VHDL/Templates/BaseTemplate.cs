@@ -302,8 +302,6 @@ namespace SME.VHDL.Templates
 
                 foreach (var bus in busses)
                 {
-                    List<string> signalnames = new List<string>();
-
                     if (bus.SourceInstances.Length > 1)
                     {
                         var offset = int.Parse(Regex.Match(RS.TestBenchSignalName(bus.Signals.First()), "#([0-9]+)").Groups[1].Value);
@@ -311,11 +309,13 @@ namespace SME.VHDL.Templates
                             .OrderBy(x => x.Name)
                             .SelectMany(x => RS.SplitArray(x))
                             .Select(x => Regex.Replace( RS.TestBenchSignalName(x), "#[0-9]+", "#{0}" ));
-
-                        for (int i = 0; i < bus.SourceInstances.Length; i++)
-                        {
-                            signalnames.AddRange(formats.Select(x => ToStringWithCulture(string.Format(x, i + offset))));
-                        }
+                        var idxs = Enumerable
+                            .Range(0, bus.SourceInstances.Length)
+                            .OrderBy(x => (x + offset).ToString());
+                        var signalnames = idxs
+                            .SelectMany(x =>
+                                formats.Select(y =>
+                                    ToStringWithCulture(string.Format(y, x))));
 
                         result.AddRange(signalnames);
                     } else {
