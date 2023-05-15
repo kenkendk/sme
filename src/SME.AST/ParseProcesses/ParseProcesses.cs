@@ -556,7 +556,7 @@ namespace SME.AST
             var initvalattr = pi.GetCustomAttribute(typeof(InitialValueAttribute), true) as InitialValueAttribute;
 
             if (initvalattr != null && initvalattr.Value != null)
-                defaultvalue = initvalattr.Value;
+                defaultvalue = Convert.ChangeType(initvalattr.Value, pi.PropertyType);
 
             return new BusSignal()
             {
