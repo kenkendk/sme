@@ -626,7 +626,7 @@ namespace SME.VHDL
             if (e.Target.Parent is Variable && !string.IsNullOrEmpty(e.Target.Parent.Name))
                 return e.Target.Parent.Name + "." + e.Target.Name;
 
-            return e.Target.Name;
+            return Naming.ToValidName(e.Target.Name);
         }
 
         /// <summary>
