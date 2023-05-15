@@ -176,7 +176,8 @@ namespace SME.AST
                 Parent = statement
             };
             // TODO proper evaluation for not-buses. Could be useful for supporting array of constant classes. Maybe also nested structs?
-            if (mre.Target is Bus)
+            // TODO if the length checks are removed, then normal buses are evaluated as well. This shouldn't be a problem, but for simpleMIPS, it sets the terminate opcode as being a global constant, which then break later evaluation, as the CPU uses a bus named terminate as well. This is a bug because there's a nameclash, but it should be able to handle it, as while they share a name, it's in two widely different scopes.
+            if ((mre.Target is Bus && (mre.Target as Bus).SourceInstances.Length > 1) || (mre.Target is BusSignal &&((mre.Target as BusSignal).Parent as Bus).SourceInstances.Length > 1))
                 mre.TargetExpression = Decompile(network, proc, method, statement, expression.Expression);
             return mre;
         }

@@ -79,6 +79,14 @@ namespace SME.AST
                 if (constant != null)
                     return constant;
 
+                Signal signal;
+                if (proc != null && proc.Signals.TryGetValue(name, out signal))
+                    return signal;
+
+                Bus bus;
+                if (proc != null && proc.BusInstances.TryGetValue(name, out bus))
+                    return bus;
+
                 var constsymbol = m_compilation.GetSymbolsWithName(name).FirstOrDefault() as IFieldSymbol;
                 if (constsymbol != null && constsymbol.IsStatic && constsymbol.HasConstantValue)
                 {
@@ -93,14 +101,6 @@ namespace SME.AST
                     network.ConstantLookup.Add(new Tuple<ProcessState, IFieldSymbol>(proc, constsymbol), global_constant);
                     return global_constant;
                 }
-
-                Signal signal;
-                if (proc != null && proc.Signals.TryGetValue(name, out signal))
-                    return signal;
-
-                Bus bus;
-                if (proc != null && proc.BusInstances.TryGetValue(name, out bus))
-                    return bus;
 
                 return null;
             }
