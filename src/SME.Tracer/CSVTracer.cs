@@ -197,6 +197,17 @@ namespace SME.Tracer
                     Convert.ToString((int)(((ulong)value >> 32) & 0xffffffff), 2).PadLeft(32, '0') +
                     Convert.ToString((int)((ulong)value & 0xffffffff), 2).PadLeft(32, '0')
                 ;
+            else if (itemtype == typeof(float))
+                return Convert.ToString(BitConverter.ToUInt32(BitConverter.GetBytes((float)value), 0), 2).PadLeft(32, '0');
+            else if (itemtype == typeof(double))
+            {
+                long l = BitConverter.DoubleToInt64Bits((double)value);
+                var lh = (int)((l >> 32) & 0xffffffff);
+                var lr = (int)(l & 0xffffffff);
+                return
+                    Convert.ToString(lh, 2).PadLeft(32, '0') +
+                    Convert.ToString(lr, 2).PadLeft(32, '0');
+            }
             else
                 return (value ?? string.Empty).ToString();
         }
