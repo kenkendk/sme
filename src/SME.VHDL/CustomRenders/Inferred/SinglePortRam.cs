@@ -30,8 +30,8 @@ namespace SME.VHDL.CustomRenders.Inferred
             var size = initialdata.Length;
             var datawidth = VHDLHelper.GetBitWidthFromType(initialdata.GetType().GetElementType());
 
-            var datavhdltype = renderer.Parent.TypeLookup[renderer.Process.InputBusses.First().Signals.First(x => x.Name == nameof(SME.Components.SinglePortMemory<int>.IControl.Data))];
-            var addrvhdltype = renderer.Parent.TypeLookup[renderer.Process.InputBusses.First().Signals.First(x => x.Name == nameof(SME.Components.SinglePortMemory<int>.IControl.Address))];
+            var datavhdltype = renderer.Parent.TypeLookup[renderer.Process.InputBusses.Keys.First().Signals.First(x => x.Name == nameof(SME.Components.SinglePortMemory<int>.IControl.Data))];
+            var addrvhdltype = renderer.Parent.TypeLookup[renderer.Process.InputBusses.Keys.First().Signals.First(x => x.Name == nameof(SME.Components.SinglePortMemory<int>.IControl.Address))];
 
             var control_bus_data_name = $"{ nameof(SME.Components.SinglePortMemory<int>.Control) }_{ nameof(SME.Components.SinglePortMemory<int>.IControl.Data) }";
             var control_bus_addr_name = $"{ nameof(SME.Components.SinglePortMemory<int>.Control) }_{ nameof(SME.Components.SinglePortMemory<int>.IControl.Address) }";

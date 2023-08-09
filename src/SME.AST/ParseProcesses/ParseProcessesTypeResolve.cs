@@ -260,8 +260,7 @@ namespace SME.AST
                     case SyntaxKind.DoubleKeyword: return LoadType(typeof(double));
                     case SyntaxKind.VoidKeyword:   return LoadType(typeof(void));
                 }
-            var res = t.LoadType(m_semantics) ?? m_compilation.GetSymbolsWithName(t.ToString()).FirstOrDefault() as ITypeSymbol;
-
+            var res = t.LoadType(m_semantics) ?? m_compilation.GetSymbolsWithName(t.ToString()).FirstOrDefault() as ITypeSymbol ?? LoadTypeByName(t.ToString());
             if (res == null)
                 throw new Exception($"Failed to load {t.ToString()}");
             else

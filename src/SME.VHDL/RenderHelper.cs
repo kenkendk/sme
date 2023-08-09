@@ -61,7 +61,7 @@ namespace SME.VHDL
 
             yield return "    if RST = '1' then";
 
-            foreach (var bus in Process.OutputBusses.Concat(Process.InternalBusses).Distinct())
+            foreach (var bus in Process.OutputBusses.Keys.Concat(Process.InternalBusses.Keys).Distinct())
                 foreach (var signal in rsp.WrittenSignals(bus))
                     foreach (var s in RenderStatement(null, Parent.GetResetStatement(signal), 8))
                         yield return s;
@@ -465,7 +465,7 @@ namespace SME.VHDL
             if (target.Parent is AST.Bus)
             {
                 var pbus = target.Parent as AST.Bus;
-                if (Process.InputBusses.Contains(pbus) && Process.OutputBusses.Contains(pbus))
+                if (Process.InputBusses.Keys.Contains(pbus) && Process.OutputBusses.Keys.Contains(pbus))
                     prefix = "out_";
                 //else if (!Process.IsClocked && (pbus.IsClocked || pbus.IsInternal))
                 //    prefix = "next_";
@@ -591,7 +591,7 @@ namespace SME.VHDL
                 if (e.TargetExpression is IndexerExpression)
                     index_render = $"({RenderExpression((e.TargetExpression as IndexerExpression).IndexExpression)})";
 
-                if (Process.IsClocked && Process.Methods.Any(x => x.IsStateMachine) && Process.InputBusses.Contains(bus))
+                if (Process.IsClocked && Process.Methods.Any(x => x.IsStateMachine) && Process.InputBusses.Keys.Contains(bus))
                     return Naming.ToValidName("capture_" + busname + "_" + e.Target.Name) + index_render;
 
                 return Naming.ToValidName(busname + "_" + e.Target.Name) + index_render;
@@ -678,7 +678,8 @@ namespace SME.VHDL
             }
             else if (tvhdl == VHDLTypes.SYSTEM_BOOL)
             {
-                return ((bool)e.Value) ? "'1'" : "'0'";
+                bool cnd = e.Value is bool ? (bool)e.Value : (int)e.Value != 0;
+                return cnd ? "'1'" : "'0'";
             }
             else if (((INamedTypeSymbol)e.SourceResultType).EnumUnderlyingType != null)
             {

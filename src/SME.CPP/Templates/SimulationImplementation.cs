@@ -303,7 +303,7 @@ namespace SME.CPP.Templates {
             #line 46 ""
  foreach(var process in Network.Processes) {
 
-       var busses = process.InputBusses.Concat(process.OutputBusses).Concat(process.InternalBusses).Distinct().OrderBy(x => x.Name).ToArray();
+       var busses = process.InputBusses.Keys.Concat(process.OutputBusses.Keys).Concat(process.InternalBusses.Keys).Distinct().OrderBy(x => x.Name).ToArray();
        var members = process.SharedVariables.Cast<AST.DataElement>().Union(process.SharedSignals).ToArray();
 
 

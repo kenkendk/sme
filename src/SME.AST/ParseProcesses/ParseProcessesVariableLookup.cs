@@ -487,19 +487,24 @@ namespace SME.AST
 
             var allBusses = proc.InputBusses.Concat(proc.OutputBusses).Concat(proc.InternalBusses);
 
-            var bus = allBusses.FirstOrDefault(x => x.SourceInstances.Zip(businstance).All(y => y.First == y.Second));
-                if (bus == null)
-                    throw new Exception($"No such bus: {field.ToDisplayString()}");
+            var bus = allBusses.FirstOrDefault(x =>
+                x.Value.Length == businstance.Length ? // Has the indices been correctly created?
+                Enumerable.Range(0, x.Value.Length) // Check that all instances match
+                    .All(y => x.Key.SourceInstances[x.Value[y]] == businstance[y])
+                : false ).Key;
+            // TODO a firstordefault returns a keyvaluepair, and not null ??
+            if (bus == null)
+                throw new Exception($"No such bus: {field.ToDisplayString()}");
 
             proc.BusInstances.Add(field.Name, bus);
 
-            if (bus.SourceInstances.Length > 1 || fd.FieldType.IsArray)
+            if (fd.FieldType.IsArray)
             {
                 // Add a constant to the process for the length of the array
                 var l = new Constant {
                     MSCAType = m_compilation.GetSpecialType(SpecialType.System_Int32), DefaultValue = bus.SourceInstances.Length,
                     Name = $"{field.Name}.Length",
-                    Source = field,
+                    Source = fdinstance,
                     Parent = proc
                 };
                 proc.Constants.Add($"{field.Name}.Length", l);

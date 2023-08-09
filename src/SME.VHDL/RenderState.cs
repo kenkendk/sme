@@ -229,7 +229,7 @@ namespace SME.VHDL
         /// <param name="network">The network to validate.</param>
         private static void ValidateNetwork(AST.Network network)
         {
-            var sp = network.Processes.SelectMany(x => x.InternalBusses).FirstOrDefault(x => x.IsTopLevelInput || x.IsTopLevelOutput);
+            var sp = network.Processes.SelectMany(x => x.InternalBusses.Keys).FirstOrDefault(x => x.IsTopLevelInput || x.IsTopLevelOutput);
             if (sp != null)
                 throw new Exception($"Cannot have an internal bus that is also toplevel input or output: {sp.Name}");
         }
@@ -1118,7 +1118,7 @@ namespace SME.VHDL
         {
             get
             {
-                return Network.Processes.SelectMany(x => x.InputBusses.Where(y => x.OutputBusses.Contains(y) && y.IsTopLevelOutput));
+                return Network.Processes.SelectMany(x => x.InputBusses.Keys.Where(y => x.OutputBusses.Keys.Contains(y) && y.IsTopLevelOutput));
             }
         }
 
@@ -1184,14 +1184,31 @@ namespace SME.VHDL
         /// </summary>
         /// <returns>The statement expressing reset of the date element.</returns>
         /// <param name="element">The target element.</param>
-        public AST.Statement GetResetStatement(DataElement element)
+        public AST.Statement GetResetStatement(DataElement element, int? index = null)
         {
             var exp = new AST.AssignmentExpression()
             {
-                Left = new MemberReferenceExpression()
+                Left = index == null ?
+                new MemberReferenceExpression()
                 {
                     Name = element.Name,
                     Target = element,
+                    SourceResultType = element.MSCAType
+                }
+                : new MemberReferenceExpression()
+                {
+                    Name = element.Name,
+                    Target = element,
+                    TargetExpression = new IndexerExpression()
+                    {
+                        Target = element,
+                        IndexExpression = new PrimitiveExpression()
+                        {
+                            Value = index.Value,
+                            SourceResultType = element.MSCAType.LoadType(typeof(int))
+                        },
+                        SourceResultType = element.MSCAType
+                    },
                     SourceResultType = element.MSCAType
                 }
             };

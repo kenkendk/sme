@@ -153,8 +153,8 @@ port map (
             var fullAddressWidth = (int)Math.Ceiling(Math.Log(size, 2));
 
             var self = renderer.Process;
-            var outbus = self.OutputBusses.First();
-            var inbus = self.InputBusses.First();
+            var outbus = self.OutputBusses.Keys.First();
+            var inbus = self.InputBusses.Keys.First();
 
             string signaltemplate;
             string instancetemplate;

@@ -158,10 +158,14 @@ namespace SME.VHDL
                 // We do these in the FSM method
                 if (FiniteStateMethod == null)
                 {
-                    foreach (var bus in Process.OutputBusses.Concat(Process.InternalBusses).Distinct())
-                        foreach (var signal in WrittenSignals(bus))
-                            foreach (var s in Helper.RenderStatement(null, Parent.GetResetStatement(signal), 0))
-                                yield return s;
+                    foreach (var (bus, indices) in Process.OutputBusses.Concat(Process.InternalBusses).Distinct())
+                        for (int i = 0; i < indices.Length; i++)
+                        {
+                            int? idx = indices.Length > 1 ? i : null;
+                            foreach (var signal in WrittenSignals(bus))
+                                foreach (var s in Helper.RenderStatement(null, Parent.GetResetStatement(signal, idx), 0))
+                                    yield return s;
+                        }
                 }
                 // For FSM, we reset the current state
                 else
@@ -202,7 +206,7 @@ namespace SME.VHDL
         {
             get
             {
-                foreach (var bus in Process.InternalBusses)
+                foreach (var bus in Process.InternalBusses.Keys)
                     foreach (var signal in bus.Signals)
                         foreach (var s in Helper.RenderStatement(null, Parent.GetResetStatement(signal), 0))
                             yield return s;

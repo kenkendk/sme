@@ -30,8 +30,8 @@ namespace SME.VHDL.CustomRenders.Inferred
             var datawidth = VHDLHelper.GetBitWidthFromType(initialdata.GetType().GetElementType());
             var addrwidth = (int)Math.Ceiling(Math.Log(initialdata.Length, 2));
 
-            var datavhdltype = renderer.Parent.TypeLookup[renderer.Process.InputBusses.SelectMany(x => x.Signals).First(x => x.Name == nameof(SME.Components.SimpleDualPortMemory<int>.IWriteControl.Data))];
-            var addrvhdltype = renderer.Parent.TypeLookup[renderer.Process.InputBusses.SelectMany(x => x.Signals).First(x => x.Name == nameof(SME.Components.SimpleDualPortMemory<int>.IWriteControl.Address))];
+            var datavhdltype = renderer.Parent.TypeLookup[renderer.Process.InputBusses.Keys.SelectMany(x => x.Signals).First(x => x.Name == nameof(SME.Components.SimpleDualPortMemory<int>.IWriteControl.Data))];
+            var addrvhdltype = renderer.Parent.TypeLookup[renderer.Process.InputBusses.Keys.SelectMany(x => x.Signals).First(x => x.Name == nameof(SME.Components.SimpleDualPortMemory<int>.IWriteControl.Address))];
 
             var read_control_addr_name = $"{ nameof(SME.Components.SimpleDualPortMemory<int>.ReadControl) }_{ nameof(SME.Components.SimpleDualPortMemory<int>.IReadControl.Address) }";
             var read_control_enabled_name = $"{ nameof(SME.Components.SimpleDualPortMemory<int>.ReadControl) }_{ nameof(SME.Components.SimpleDualPortMemory<int>.IReadControl.Enabled) }";

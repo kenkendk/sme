@@ -175,11 +175,11 @@ port map (
             var fullAddressWidth = (int)Math.Ceiling(Math.Log(size, 2));
 
             var self = renderer.Process;
-            var outabus = self.OutputBusses.First(x => renderer.Parent.GetLocalBusName(x, renderer.Process) == nameof(SME.Components.TrueDualPortMemory<int>.ReadResultA));
-            var outbbus = self.OutputBusses.First(x => renderer.Parent.GetLocalBusName(x, renderer.Process) == nameof(SME.Components.TrueDualPortMemory<int>.ReadResultB));
+            var outabus = self.OutputBusses.Keys.First(x => renderer.Parent.GetLocalBusName(x, renderer.Process) == nameof(SME.Components.TrueDualPortMemory<int>.ReadResultA));
+            var outbbus = self.OutputBusses.Keys.First(x => renderer.Parent.GetLocalBusName(x, renderer.Process) == nameof(SME.Components.TrueDualPortMemory<int>.ReadResultB));
 
-            var inabus = self.InputBusses.First(x => renderer.Parent.GetLocalBusName(x, renderer.Process) == nameof(SME.Components.TrueDualPortMemory<int>.ControlA));
-            var inbbus = self.InputBusses.First(x => renderer.Parent.GetLocalBusName(x, renderer.Process) == nameof(SME.Components.TrueDualPortMemory<int>.ControlB));
+            var inabus = self.InputBusses.Keys.First(x => renderer.Parent.GetLocalBusName(x, renderer.Process) == nameof(SME.Components.TrueDualPortMemory<int>.ControlA));
+            var inbbus = self.InputBusses.Keys.First(x => renderer.Parent.GetLocalBusName(x, renderer.Process) == nameof(SME.Components.TrueDualPortMemory<int>.ControlB));
 
             string signaltemplate;
             string instancetemplate;

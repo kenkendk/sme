@@ -206,8 +206,8 @@ namespace SME.VHDL
             var format_string = $"x\"{{{width_string}}}\"";
             switch (data)
             {
-                case double d: return string.Format(format_string, BitConverter.ToInt64(BitConverter.GetBytes(d)));
-                case float f: return string.Format(format_string, BitConverter.ToInt32(BitConverter.GetBytes(f)));
+                case double d: return string.Format(format_string, BitConverter.ToInt64(BitConverter.GetBytes(d).Reverse().ToArray()));
+                case float f: return string.Format(format_string, BitConverter.ToInt32(BitConverter.GetBytes(f).Reverse().ToArray()));
                 default: return string.Format(format_string, data);
             }
         }

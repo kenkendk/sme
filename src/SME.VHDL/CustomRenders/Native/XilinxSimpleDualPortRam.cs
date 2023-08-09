@@ -162,9 +162,9 @@ port map (
             var fullAddressWidth = (int)Math.Ceiling(Math.Log(size, 2));
 
             var self = renderer.Process;
-            var outbus = self.OutputBusses.First();
-            var inreadbus = self.InputBusses.First(x => renderer.Parent.GetLocalBusName(x, renderer.Process) == nameof(SME.Components.SimpleDualPortMemory<int>.ReadControl));
-            var inwritebus = self.InputBusses.First(x => renderer.Parent.GetLocalBusName(x, renderer.Process) == nameof(SME.Components.SimpleDualPortMemory<int>.WriteControl));
+            var outbus = self.OutputBusses.Keys.First();
+            var inreadbus = self.InputBusses.Keys.First(x => renderer.Parent.GetLocalBusName(x, renderer.Process) == nameof(SME.Components.SimpleDualPortMemory<int>.ReadControl));
+            var inwritebus = self.InputBusses.Keys.First(x => renderer.Parent.GetLocalBusName(x, renderer.Process) == nameof(SME.Components.SimpleDualPortMemory<int>.WriteControl));
 
             string signaltemplate;
             string instancetemplate;

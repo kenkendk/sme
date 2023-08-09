@@ -104,10 +104,10 @@ use work.CUSTOM_TYPES.ALL;
             }
 
             Write("    port(\n");
-            var inputbusses = Process.InputBusses.Where(x => !Process.OutputBusses.Contains(x));
-            if (inputbusses.Any())
+            var inputbusses = Process.InputBusses.Where(x => !Process.OutputBusses.Keys.Contains(x.Key));
+            if (inputbusses.Count() > 0)
             {
-                foreach (var bus in inputbusses)
+                foreach (var (bus, indices) in inputbusses)
                 {
                     var busname = RS.GetLocalBusName(bus, Process);
                     Write($"        -- Input bus {ToStringHelper.ToStringWithCulture( busname )} signals\n");
@@ -115,17 +115,17 @@ use work.CUSTOM_TYPES.ALL;
                     {
                         var signalname = ToStringHelper.ToStringWithCulture( Naming.ToValidName($"{busname}_{signal.Name}") );
                         var signaltype = ToStringHelper.ToStringWithCulture( RS.VHDLWrappedTypeName(signal) );
-                        var signalquantifier = bus.SourceInstances.Length > 1 ? $"_ARRAY({bus.SourceInstances.Length - 1} downto 0)" : "";
+                        var signalquantifier = indices.Length > 1 ? $"_ARRAY({indices.Length - 1} downto 0)" : "";
                         Write($"        {signalname}: in {signaltype}{signalquantifier};\n");
                     }
                 }
                 Write("\n");
             }
 
-            var outputbusses = Process.OutputBusses.Where(x => !Process.InputBusses.Contains(x));
-            if (outputbusses.Any())
+            var outputbusses = Process.OutputBusses.Where(x => !Process.InputBusses.Keys.Contains(x.Key));
+            if (outputbusses.Count() > 0)
             {
-                foreach (var bus in outputbusses)
+                foreach (var (bus, indices) in outputbusses)
                 {
                     var busname = RS.GetLocalBusName(bus, Process);
                     Write($"        -- Output bus {ToStringHelper.ToStringWithCulture( busname )} signals\n");
@@ -133,13 +133,14 @@ use work.CUSTOM_TYPES.ALL;
                     {
                         var signalname = ToStringHelper.ToStringWithCulture( Naming.ToValidName($"{busname}_{signal.Name}") );
                         var signaltype = ToStringHelper.ToStringWithCulture( RS.VHDLWrappedTypeName(signal) );
-                        Write($"        {signalname}: out {signaltype};\n");
+                        var signalquantifier = indices.Length > 1 ? $"_ARRAY({indices.Length - 1} downto 0)" : "";
+                        Write($"        {signalname}: out {signaltype}{signalquantifier};\n");
                     }
                 }
                 Write("\n");
             }
 
-            var inoutbusses = Process.InputBusses.Where(x => Process.OutputBusses.Contains(x));
+            var inoutbusses = Process.InputBusses.Keys.Where(x => Process.OutputBusses.Keys.Contains(x));
             if (inoutbusses.Any())
             {
                 foreach (var bus in inoutbusses)
@@ -190,7 +191,7 @@ end ");
                 Write($"{ToStringHelper.ToStringWithCulture( RSP.CustomRendererBody )}\n");
             else
             {
-                foreach (var bus in Process.InternalBusses)
+                foreach (var bus in Process.InternalBusses.Keys)
                 {
                     var busname = RS.GetLocalBusName(bus, Process);
                     Write($"    -- Internal bus {ToStringHelper.ToStringWithCulture( busname )} signals\n");
@@ -247,7 +248,7 @@ end ");
                 if (Process.IsClocked && RSP.FiniteStateMethod != null)
                 {
                     Write("    -- Clock-edge capture signals\n");
-                    foreach (var bus in Process.InputBusses)
+                    foreach (var bus in Process.InputBusses.Keys)
                     {
                         var busname = RS.GetLocalBusName(bus, Process);
                         Write($"    -- Input bus {ToStringHelper.ToStringWithCulture( busname )} signals\n");
@@ -354,7 +355,7 @@ begin
 
                 if (Process.IsClocked && RSP.FiniteStateMethod != null)
                 {
-                    foreach (var bus in Process.InputBusses)
+                    foreach (var bus in Process.InputBusses.Keys)
                     {
                         var busname = RS.GetLocalBusName(bus, Process);
                         foreach (var signal in bus.Signals)
@@ -406,7 +407,7 @@ begin
 
                 if (Process.IsClocked && RSP.FiniteStateMethod != null) {
                     Write("            -- Clock-edge capture signals\n");
-                    foreach (var bus in Process.InputBusses) {
+                    foreach (var bus in Process.InputBusses.Keys) {
                         var busname = RS.GetLocalBusName(bus, Process);
                         foreach (var signal in bus.Signals) {
                             var capture = ToStringHelper.ToStringWithCulture( Naming.ToValidName("capture_" + busname + "_" + signal.Name) );

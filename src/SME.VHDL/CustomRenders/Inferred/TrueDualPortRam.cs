@@ -29,8 +29,8 @@ namespace SME.VHDL.CustomRenders.Inferred
             var size = initialdata.Length;
             var datawidth = VHDLHelper.GetBitWidthFromType(initialdata.GetType().GetElementType());
 
-            var datavhdltype = renderer.Parent.TypeLookup[renderer.Process.InputBusses.SelectMany(x => x.Signals).First(x => x.Name == nameof(SME.Components.TrueDualPortMemory<int>.IControl.Data))];
-            var addrvhdltype = renderer.Parent.TypeLookup[renderer.Process.InputBusses.SelectMany(x => x.Signals).First(x => x.Name == nameof(SME.Components.TrueDualPortMemory<int>.IControl.Address))];
+            var datavhdltype = renderer.Parent.TypeLookup[renderer.Process.InputBusses.Keys.SelectMany(x => x.Signals).First(x => x.Name == nameof(SME.Components.TrueDualPortMemory<int>.IControl.Data))];
+            var addrvhdltype = renderer.Parent.TypeLookup[renderer.Process.InputBusses.Keys.SelectMany(x => x.Signals).First(x => x.Name == nameof(SME.Components.TrueDualPortMemory<int>.IControl.Address))];
 
             var controla_bus_data_name = $"{ nameof(SME.Components.TrueDualPortMemory<int>.ControlA) }_{ nameof(SME.Components.TrueDualPortMemory<int>.IControl.Data) }";
             var controla_bus_addr_name = $"{ nameof(SME.Components.TrueDualPortMemory<int>.ControlA) }_{ nameof(SME.Components.TrueDualPortMemory<int>.IControl.Address) }";

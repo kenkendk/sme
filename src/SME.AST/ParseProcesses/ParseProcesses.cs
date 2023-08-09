@@ -18,7 +18,7 @@ namespace SME.AST
         /// <summary>
         /// A class that contains intermediate information collected while traversing the network.
         /// </summary>
-        protected class NetworkState : Network
+        public class NetworkState : Network
         {
             /// <summary>
             /// The table of all the public constants in a convenient lookup table.
@@ -37,7 +37,7 @@ namespace SME.AST
         /// <summary>
         /// A class that contains intermediate information collected while traversion a process.
         /// </summary>
-        protected class ProcessState : Process
+        public class ProcessState : Process
         {
             /// <summary>
             /// The variables shared in the current process.
@@ -116,7 +116,7 @@ namespace SME.AST
         /// <summary>
         /// A class that contains intermediate information collected while traversing a method.
         /// </summary>
-        protected class MethodState : Method
+        public class MethodState : Method
         {
             /// <summary>
             /// List of all variables found in the method.
@@ -289,7 +289,16 @@ namespace SME.AST
             if (network.Processes.Length == 0)
                 throw new Exception("No processes were found in the list");
 
-            network.Busses = network.Processes.SelectMany(x => x.InternalBusses.Concat(x.InputBusses).Concat(x.OutputBusses)).Distinct().ToArray();
+            // Update bus references and indices
+            foreach (var proc in network.Processes)
+            {
+                proc.InputBusses = UpdateBusReferences(network, proc.InputBusses);
+                proc.OutputBusses = UpdateBusReferences(network, proc.OutputBusses);
+                proc.InternalBusses = UpdateBusReferences(network, proc.InternalBusses);
+                BuildLocalBusMap(proc);
+            }
+
+            network.Busses = network.Processes.SelectMany(x => x.InternalBusses.Keys.Concat(x.InputBusses.Keys).Concat(x.OutputBusses.Keys)).Distinct().ToArray();
             network.Constants = network.ConstantLookup.Values.ToArray();
 
             if (decompile)
@@ -428,14 +437,15 @@ namespace SME.AST
                     res.GenericTypes[gennames[i]] = gentypes[i];
             }
 
-            res.InputBusses = inputbusses.Select(x => Parse(network, res, x, simulation)).ToArray();
-            res.OutputBusses = outputbusses.Select(x => Parse(network, res, x, simulation)).ToArray();
-            res.InternalBusses = process.Instance.InternalBusses.Select(x => Parse(network, res, x,simulation)).ToArray();
-            foreach (var ib in res.InternalBusses)
+
+            res.InputBusses = inputbusses.Select(x => Parse(network, res, x, simulation)).ToDictionary(x => x.Item1, x => x.Item2);
+            res.OutputBusses = outputbusses.Select(x => Parse(network, res, x, simulation)).ToDictionary(x => x.Item1, x => x.Item2);
+            res.InternalBusses = process.Instance.InternalBusses.Select(x => Parse(network, res, x,simulation)).ToDictionary(x => x.Item1, x => x.Item2);
+            foreach (var ib in res.InternalBusses.Keys)
                 ib.IsInternal = true;
 
             // Set up the local names by finding the field that holds the instance reference
-            foreach(var b in res.InputBusses.Union(res.OutputBusses).Union(res.InternalBusses))
+            /*foreach(var b in res.InputBusses.Keys.Union(res.OutputBusses.Keys).Union(res.InternalBusses.Keys))
             {
                 var f = st
                     .GetFields(
@@ -455,7 +465,7 @@ namespace SME.AST
                         });
                 if (f != null)
                     res.LocalBusNames[b] = f.Name;
-            }
+            }*/
 
             if (res.Decompile)
             {
@@ -510,17 +520,52 @@ namespace SME.AST
         /// <param name="proc">The process where the bus is located.</param>
         /// <param name="bus">The bus to build the AST for.</param>
         /// <param name="simulation">The simulation the AST is built for.</param>
-        protected virtual Bus Parse(NetworkState network, ProcessState proc, IBus[] bus, Simulation simulation)
+        protected virtual (Bus, int[]) Parse(NetworkState network, ProcessState proc, IBus[] bus, Simulation simulation)
         {
-            var bu = bus.FirstOrDefault();
-            var st = ((IRuntimeBus)bu).BusType;
+            var bu = bus.FirstOrDefault(x => network.BusInstanceLookup.ContainsKey(x));
+            if (bu != null)
+            {
+                var nbu = network.BusInstanceLookup[bu];
+                var indices = new List<int>();
+                var buses = new List<IBus>(bus);
+                for (int i = bus.Length-1; i >= 0; i--)
+                {
+                    for (int j = 0; j < nbu.SourceInstances.Length; j++)
+                    {
+                        if (nbu.SourceInstances[j] == bus[i])
+                        {
+                            indices.Add(j);
+                            buses.RemoveAt(i);
+                            break;
+                        }
+                    }
+                }
 
-            if (network.BusInstanceLookup.ContainsKey(bu))
-                return network.BusInstanceLookup[bu];
+                // Check that the indices are in order
+                var in_order = () => Enumerable.Range(0, indices.Count).All(x => bus[x] == nbu.SourceInstances[indices[x]]);
+                if (!in_order())
+                    indices.Reverse();
+                System.Diagnostics.Debug.Assert(in_order()); // Beautiful handling :)
 
+
+                if (buses.Count == 0)
+                    return (nbu, indices.ToArray());
+                else
+                {
+                    var newindices = indices.Concat(Enumerable.Range(0, buses.Count).Select(x => x + nbu.SourceInstances.Length)).ToArray();
+                    nbu.SourceInstances = nbu.SourceInstances.Concat(buses).ToArray();
+                    foreach(var src in buses)
+                        network.BusInstanceLookup[src] = nbu;
+                    return (nbu, newindices);
+                }
+            }
+            // TODO merge dangling bus references to same array, if they exist
+
+            var st = ((IRuntimeBus)bus.FirstOrDefault()).BusType;
             var res = new Bus()
             {
                 Name = NameWithoutPrefix(network, st.FullName, st),
+                Registrator = proc,
                 SourceType = st,
                 SourceInstances = bus,
                 IsTopLevelInput = bus.Any(x => simulation.TopLevelInputBusses.Contains(x)),
@@ -528,14 +573,15 @@ namespace SME.AST
                 IsClocked = st.HasAttribute<ClockedBusAttribute>(),
                 IsInternal = st.HasAttribute<InternalBusAttribute>(),
                 Parent = network,
-                MSCAType = bus.Length > 1 ? LoadType(bus.GetType()) : LoadType(st)
+                MSCAType = LoadType(bus.GetType())
             };
 
-            // TODO currently working on the first element of the bus array, as arrays and dictionaries are a bad match.
             foreach (var b in bus)
                 network.BusInstanceLookup[b] = res;
+
             res.Signals = st.GetPropertiesRecursive().Where(x => x.DeclaringType != typeof(IBus)).Select(x => Parse(network, proc, res, x)).ToArray();
-            return res;
+
+            return (res, Enumerable.Range(0, bus.Length).ToArray());
         }
 
         /// <summary>
@@ -603,6 +649,64 @@ namespace SME.AST
                 Type = lv.LocalType,
                 Parent = method
             };
+        }
+
+        /// <summary>
+        /// Builds the map of local bus names for the given process.
+        /// </summary>
+        /// <param name="network">The top-level network.</param>
+        /// <param name="proc">The process to build the map for.</param>
+        protected void BuildLocalBusMap(Process proc)
+        {
+            var st = proc.SourceInstance.Instance.GetType();
+            foreach(var (b,i) in proc.InputBusses.Union(proc.OutputBusses).Union(proc.InternalBusses))
+            {
+                var fields = st
+                    .GetFields(
+                        BindingFlags.Instance |
+                        BindingFlags.FlattenHierarchy |
+                        BindingFlags.Public |
+                        BindingFlags.NonPublic);
+                var f = fields
+                    .FirstOrDefault(x =>
+                        {
+                            var bus = x.GetValue(proc.SourceInstance.Instance);
+                            var bust = bus.GetType();
+                            if (!(bus is IBus || (bust.IsArray && (bust.GetElementType().GetInterfaces().Any(y => y == typeof(IBus))))))
+                                return false;
+                            var busarr = bust.IsArray ? bus as IBus[] : new[] { bus as IBus };
+                            var srcs = i.Select(y => b.SourceInstances[y]);
+                            return srcs.All(y => busarr.Contains(y));
+                        });
+                if (f != null)
+                    proc.LocalBusNames[b] = f.Name;
+            }
+        }
+
+        /// <summary>
+        /// Updates all bus references to point to the largest collection.
+        /// </summary>
+        protected Dictionary<AST.Bus, int[]> UpdateBusReferences(NetworkState network, Dictionary<AST.Bus, int[]> busses)
+        {
+            // Check all of the busses
+            Dictionary<AST.Bus, int[]> new_busses = new Dictionary<AST.Bus, int[]>();
+            foreach (var (bus, indices) in busses)
+            {
+                var largest = bus.SourceInstances
+                    .Select(x => network.BusInstanceLookup[x])
+                    .Distinct()
+                    .OrderBy(x => x.SourceInstances.Count())
+                    .LastOrDefault();
+                var original_instances = indices
+                    .Select(x => bus.SourceInstances[x]);
+                var new_indices = original_instances
+                    .Select(x => Array.IndexOf(largest.SourceInstances, x))
+                    .ToArray();
+
+                new_busses.Add(largest, new_indices);
+            }
+
+            return new_busses;
         }
     }
 }

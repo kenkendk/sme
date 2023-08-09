@@ -53,6 +53,11 @@ namespace SME.AST
     public class Bus : DataElement
     {
         /// <summary>
+        /// The process reference that registered this bus. Used for debug
+        /// purposes.
+        /// </summary>
+        public Process Registrator;
+        /// <summary>
         /// Gets a value indicating if the bus is a top-level input.
         /// </summary>
         public bool IsTopLevelInput;
@@ -251,15 +256,18 @@ namespace SME.AST
         /// <summary>
         /// The input busses.
         /// </summary>
-        public Bus[] InputBusses;
+        //public Bus[] InputBusses;
+        public Dictionary<Bus, int[]> InputBusses;
         /// <summary>
         /// The output busses.
         /// </summary>
-        public Bus[] OutputBusses;
+        //public Bus[] OutputBusses;
+        public Dictionary<Bus, int[]> OutputBusses;
         /// <summary>
         /// The internal busses.
         /// </summary>
-        public Bus[] InternalBusses;
+        //public Bus[] InternalBusses;
+        public Dictionary<Bus, int[]> InternalBusses;
 
         /// <summary>
         /// The list of class-wide variables.

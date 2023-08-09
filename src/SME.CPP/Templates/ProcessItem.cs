@@ -48,7 +48,7 @@ namespace SME.CPP.Templates {
 
             #line 17 ""
 
-var busses = RSP.Process.InputBusses.Concat(RSP.Process.OutputBusses).Concat(RSP.Process.InternalBusses).Distinct().OrderBy(x => x.Name).ToArray();
+var busses = RSP.Process.InputBusses.Keys.Concat(RSP.Process.OutputBusses.Keys).Concat(RSP.Process.InternalBusses.Keys).Distinct().OrderBy(x => x.Name).ToArray();
 var members = RSP.Process.SharedVariables.Cast<DataElement>().Union(RSP.Process.SharedSignals).ToArray();
 
 

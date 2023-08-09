@@ -197,7 +197,7 @@ namespace SME.CPP
         /// <param name="network">The network to validate.</param>
         private static void ValidateNetwork(AST.Network network)
         {
-            var sp = network.Processes.SelectMany(x => x.InternalBusses).FirstOrDefault(x => x.IsTopLevelInput || x.IsTopLevelOutput);
+            var sp = network.Processes.SelectMany(x => x.InternalBusses.Keys).FirstOrDefault(x => x.IsTopLevelInput || x.IsTopLevelOutput);
             if (sp != null)
                 throw new Exception($"Cannot have an internal bus that is also toplevel input or output: {sp.Name}");
         }

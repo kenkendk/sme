@@ -158,15 +158,15 @@ namespace SME.AST
             if (!visitor(proc, VisitorState.Visited))
                 yield break;
 
-            foreach (var p in proc.InputBusses)
+            foreach (var p in proc.InputBusses.Keys)
                 foreach (var x in p.All(visitor))
                     yield return x;
 
-            foreach (var p in proc.InternalBusses)
+            foreach (var p in proc.InternalBusses.Keys)
                 foreach (var x in p.All(visitor))
                     yield return x;
 
-            foreach (var p in proc.OutputBusses)
+            foreach (var p in proc.OutputBusses.Keys)
                 foreach (var x in p.All(visitor))
                     yield return x;
 

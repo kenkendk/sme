@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using SME.AST;
 
@@ -55,7 +56,7 @@ use work.CUSTOM_TYPES.ALL;
             var networkname = ToStringHelper.ToStringWithCulture( Network.Name );
             var feedbacks = RS.FeedbackBusses.ToArray();
             var processes = Network.Processes.Where(x => !x.IsSimulation).ToArray();
-            var tmps = processes.SelectMany(x => x.InputBusses.Where(y => y.IsTopLevelOutput)).Distinct().ToArray();
+            var tmps = processes.SelectMany(x => x.InputBusses.Keys.Where(y => y.IsTopLevelOutput)).Distinct().ToArray();
 
             Write($"entity {networkname} is\n");
             Write("    port(\n");
@@ -90,11 +91,13 @@ use work.CUSTOM_TYPES.ALL;
                 var busname = ToStringHelper.ToStringWithCulture( bus.Name );
                 Write($"        -- Interconnection bus {busname} signals\n");
 
+                var quantifier = bus.SourceInstances.Length > 1 ? $"_ARRAY({bus.SourceInstances.Length-1} downto 0)" : "";
+
                 foreach (var signal in bus.Signals)
                 {
                     var signalname = ToStringHelper.ToStringWithCulture( Naming.ToValidName($"{bus.InstanceName}_{signal.Name}") );
                     var vhdltype = ToStringHelper.ToStringWithCulture( RS.VHDLWrappedTypeName(signal) );
-                    Write($"        {signalname}: inout {vhdltype};\n");
+                    Write($"        {signalname}: inout {vhdltype}{quantifier};\n");
                 }
 
                 Write("\n");
@@ -155,7 +158,7 @@ use work.CUSTOM_TYPES.ALL;
             }
             Write("\n");
 
-            foreach (var bus in processes.SelectMany(x => x.OutputBusses.Intersect(x.InputBusses).Except(feedbacks)))
+            foreach (var bus in processes.SelectMany(x => x.OutputBusses.Keys.Intersect(x.InputBusses.Keys).Except(feedbacks)))
             {
                 var busname = ToStringHelper.ToStringWithCulture( bus.Name );
                 Write($"    -- Bus {busname} intermediate signals\n");
@@ -193,49 +196,53 @@ begin
                 var processname = ToStringHelper.ToStringWithCulture( Naming.ProcessNameToValidName(p.SourceInstance.Instance) );
                 Write($"    -- Entity {instance} signals\n");
                 Write($"    {instancename}: entity work.{processname}\n");
-                var lastel = p.SharedVariables
-                    .Cast<object>()
-                    .Concat(p.SharedSignals)
-                    .Concat(p.SharedConstants)
-                    .LastOrDefault();
-                if (lastel != null)
+                List<string> generic_map = new List<string>();
+                foreach (var variable in p.SharedVariables)
                 {
+                    var name = ToStringHelper.ToStringWithCulture( Naming.ToValidName($"reset_{variable.Name}") );
+                    if (variable.MSCAType.IsArrayType())
+                        name += $" (0 to {((Array)variable.DefaultValue).Length-1})";
+                    var resetvar = ToStringHelper.ToStringWithCulture( RS.GetResetExpression(variable) );
+                    generic_map.Add($"        {name} => {resetvar}");
+                }
+
+                foreach (var constant in p.SharedConstants)
+                {
+                    // TODO array of busses length sometimes emitted to processes, that don't need it.
+                    if (constant.Source is IBus)
+                    {
+                        var bus = constant.Source as IBus;
+                        var allBusses = p.InputBusses.Concat(p.OutputBusses).Concat(p.InternalBusses).Where(x => x.Value.Length == 1);
+                        var busindices = allBusses.FirstOrDefault(x => x.Key.SourceInstances.Contains(bus)).Value;
+                        // TODO if the array of buses is length 1 on a global scale, this won't work.
+                        if (busindices != null)
+                            continue;
+                    }
+                    var name = ToStringHelper.ToStringWithCulture( Naming.ToValidName($"reset_{constant.Name}") );
+                    if (constant.MSCAType.IsArrayType() && ((Array)constant.DefaultValue).Length > 1)
+                        name += $" (0 to {((Array)constant.DefaultValue).Length-1})";
+                    var resetvar = ToStringHelper.ToStringWithCulture( RS.GetResetExpression(constant) );
+                    generic_map.Add($"        {name} => {resetvar}");
+                }
+
+                foreach (var variable in p.SharedSignals)
+                {
+                    var name = ToStringHelper.ToStringWithCulture( Naming.ToValidName($"reset_{variable.Name}") );
+                    var resetvar = ToStringHelper.ToStringWithCulture( RS.GetResetExpression(variable) );
+                    generic_map.Add($"        {name} => {resetvar}");
+                }
+
+                if (generic_map.Any()) {
                     Write("    generic map(\n");
-                    foreach (var variable in p.SharedVariables)
-                    {
-                        var name = ToStringHelper.ToStringWithCulture( Naming.ToValidName($"reset_{variable.Name}") );
-                        if (variable.MSCAType.IsArrayType())
-                            name += $" (0 to {((Array)variable.DefaultValue).Length-1})";
-                        var resetvar = ToStringHelper.ToStringWithCulture( RS.GetResetExpression(variable) );
-                        var end = ToStringHelper.ToStringWithCulture( variable == lastel ? "" : "," );
-                        Write($"        {name} => {resetvar}{end}\n");
-                    }
-
-                    foreach (var constant in p.SharedConstants)
-                    {
-                        var name = ToStringHelper.ToStringWithCulture( Naming.ToValidName($"reset_{constant.Name}") );
-                        if (constant.MSCAType.IsArrayType())
-                            name += $" (0 to {((Array)constant.DefaultValue).Length-1})";
-                        var resetvar = ToStringHelper.ToStringWithCulture( RS.GetResetExpression(constant) );
-                        var end = ToStringHelper.ToStringWithCulture( constant == lastel ? "" : "," );
-                        Write($"        {name} => {resetvar}{end}\n");
-                    }
-
-                    foreach (var variable in p.SharedSignals)
-                    {
-                        var name = ToStringHelper.ToStringWithCulture( Naming.ToValidName($"reset_{variable.Name}") );
-                        var resetvar = ToStringHelper.ToStringWithCulture( RS.GetResetExpression(variable) );
-                        var end = ToStringHelper.ToStringWithCulture( variable == lastel ? "" : "," );
-                        Write($"        {name} => {resetvar}{end}\n");
-                    }
-                    Write("    )\n");
+                    Write(string.Join(",\n", generic_map));
+                    Write("\n    )\n");
                 }
 
                 Write("    port map (\n");
-                foreach (var bus in p.InputBusses.Union(p.OutputBusses))
+                foreach (var (bus, indices) in p.InputBusses.Union(p.OutputBusses))
                 {
-                    var isInput = p.InputBusses.Contains(bus);
-                    var isOutput = p.OutputBusses.Contains(bus);
+                    var isInput = p.InputBusses.Keys.Contains(bus);
+                    var isOutput = p.OutputBusses.Keys.Contains(bus);
                     var isBoth = isInput && isOutput;
                     var type = "Input/Output";
                     if (isInput && !isOutput)
@@ -260,12 +267,21 @@ begin
                     var name = ToStringHelper.ToStringWithCulture( bus.Name );
                     Write($"        -- {direction} bus {name}\n");
 
+                    // TODO I would like to interchange the loops, but VHDL
+                    // doesn't allow it. The ports need to be contiguous. Which
+                    // I guess means that we can't do this with scrambled
+                    // indices? I.e. Views? In that case, it may just be easier
+                    // to have all of the arrays unrolled here in the toplevel,
+                    // as the arrays won't be scrambled inside of a process.
                     foreach(var signal in signals)
+                    for (int i = 0; i < indices.Length; i++)
                     {
+                        var global_idx = bus.SourceInstances.Length > 1 ? $"({indices[i]})" : string.Empty;
+                        var local_idx = indices.Length > 1 ? $"({i})" : string.Empty;
                         var prefix = isInput || isBoth ? input_prefix : output_prefix;
                         var signalname = ToStringHelper.ToStringWithCulture( Naming.ToValidName($"{busname}_{signal.Name}") );
                         var signalinstancename = ToStringHelper.ToStringWithCulture( Naming.ToValidName($"{prefix}{bus.InstanceName}_{signal.Name}") );
-                        Write($"        {signalname} => {signalinstancename},\n");
+                        Write($"        {signalname}{local_idx} => {signalinstancename}{global_idx},\n");
                     }
 
                     if (isBoth)
@@ -377,7 +393,7 @@ begin
             }
 
             var intermediates = processes
-                .SelectMany(x => x.OutputBusses.Intersect(x.InputBusses))
+                .SelectMany(x => x.OutputBusses.Keys.Intersect(x.InputBusses.Keys))
                 .Except(feedbacks)
                 .Where(x => !x.IsTopLevelInput);
             foreach (var bus in intermediates)
