@@ -411,7 +411,7 @@ namespace SME.VHDL
 
             }
 
-            return "(" + string.Join(", ", e.ElementExpressions.Select(x => RenderExpression(x))) + ")";
+            return "(" + string.Join(", ", e.ElementExpressions.Select((x, i) => $"{i} => {RenderExpression(x)}")) + ")";
         }
 
         /// <summary>
