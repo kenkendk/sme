@@ -570,7 +570,13 @@ namespace SME.AST
                 return (int)Convert.ChangeType(((AST.PrimitiveExpression)expression).Value, typeof(int));
             var target = expression.GetTarget();
             if (target.DefaultValue != null)
-                return (int)Convert.ChangeType(target.DefaultValue, typeof(int));
+                try {
+                    return (int)Convert.ChangeType(target.DefaultValue, typeof(int));
+                }
+                catch (InvalidCastException ice) {
+                    dynamic val = target.DefaultValue;
+                    return (int)val;
+                }
             if (target is Constant && ((Constant)target).ArrayLengthSource != null)
                 return GetArrayLength(target);
 
