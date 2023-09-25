@@ -407,7 +407,7 @@ namespace SME
         /// <summary>
         /// Advances all processes a tick according to the execution plan.
         /// </summary>
-        public void Execute()
+        public async Task Execute()
         {
             var clock = Scope.Current.Clock;
             clock.Tick();
@@ -423,24 +423,24 @@ namespace SME
                 // Reset and get a new processready task
                 var outputready_or_done =
                     next
-                        .Select(x => Task.WhenAny(
+                        .Select(async x => await Task.WhenAny(
                             x.Item.ResetProcessReady(),
                             x.Item.Finished()
                         ))
                         .ToArray();
 
                 // Trigger the processes
-                Task.WhenAll(
+                await Task.WhenAll(
                     next.Select(x => x.Item.SignalInputReady())
-                ).Wait();
+                );
 
                 // Wait for the processes to be ready again, or for them to finish
-                Task.WhenAll(outputready_or_done).Wait();
+                await Task.WhenAll(outputready_or_done);
 
                 // Reset the inputready tasks
-                Task.WhenAll(
+                await Task.WhenAll(
                     next.Select(x => x.Item.ResetInputReady())
-                ).Wait();
+                );
 
                 // After triggering the clocked processes, we need to trigger
                 // all of the clocked buses

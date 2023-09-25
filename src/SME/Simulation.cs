@@ -366,7 +366,7 @@ namespace SME
                 // Keep running until all simulation (stimulation) processes have finished
                 while (!exitMethod() && Running)
                 {
-                    Graph.Execute();
+                    Graph.Execute().Wait();
                     foreach (var t in running_tasks)
                         if (t.Task.Status == System.Threading.Tasks.TaskStatus.Running)
                             t.Task.Wait();
