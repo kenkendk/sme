@@ -1,9 +1,10 @@
-﻿using System;
+﻿using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SME;
+using System;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
-using SME;
 
 
 namespace NoiseFilter
@@ -65,14 +66,13 @@ namespace NoiseFilter
                 while (!Delay.IsReady)
                     await ClockAsync();
 
-                using (var img = Image.FromFile(file))
-                    using (var bmp = new Bitmap(img))
+                    using (var img = Image.Load<Rgb24>(file))
                     {
-                        Console.WriteLine($"Writing {bmp.Width * bmp.Height} pixels from {file}");
+                        Console.WriteLine($"Writing {img.Width * img.Height} pixels from {file}");
 
                         Configuration.IsValid = true;
-                        Configuration.Width = (ushort)bmp.Width;
-                        Configuration.Height = (ushort)bmp.Height;
+                        Configuration.Width = (ushort)img.Width;
+                        Configuration.Height = (ushort)img.Height;
 
                         await ClockAsync();
 
@@ -83,7 +83,7 @@ namespace NoiseFilter
                         {
                             for (var j = 0; j < img.Width; j++)
                             {
-                                var pixel = bmp.GetPixel(j, i);
+                                var pixel = img[j, i];
                                 Data.Color[0] = pixel.R;
                                 Data.Color[1] = pixel.G;
                                 Data.Color[2] = pixel.B;

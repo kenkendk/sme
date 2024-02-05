@@ -1,9 +1,10 @@
-﻿using System;
+﻿using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SME;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.Threading.Tasks;
-using SME;
 
 namespace NoiseFilter
 {
@@ -23,22 +24,22 @@ namespace NoiseFilter
 
         private class Item : IDisposable
         {
-            private readonly Bitmap m_image;
-            private Bitmap m_image_expected;
+            private readonly Image<Rgb24> m_image;
+            private Image<Rgb24> m_image_expected;
             private int m_index;
             private static int _imageIndex;
 
             public Item(int width, int height, string filename)
             {
-                m_image = new Bitmap(width, height);
-                m_image_expected = new Bitmap(Image.FromFile(filename));
+                m_image = new Image<Rgb24>(width, height);
+                m_image_expected = Image.Load<Rgb24>(filename);
             }
 
             public void WritePixel(byte r, byte g, byte b)
             {
-                var color = Color.FromArgb(r, g, b);
-                Debug.Assert(m_image_expected.GetPixel(X, Y).Equals(color), $"Error when comparing pixels, expected {m_image_expected.GetPixel(X,Y)}, got {color}");
-                m_image.SetPixel(X, Y, color);
+                var color = new Rgb24(r, g, b);
+                Debug.Assert(m_image_expected[X, Y].Equals(color), $"Error when comparing pixels, expected {m_image_expected[X, Y]}, got {color}");
+                m_image[X, Y] = color;
                 m_index++;
             }
 
@@ -48,7 +49,7 @@ namespace NoiseFilter
             {
                 System.IO.Directory.CreateDirectory("output");
                 var filename = string.Format("output/output-{0}.png", System.Threading.Interlocked.Increment(ref _imageIndex));
-                m_image.Save(filename, System.Drawing.Imaging.ImageFormat.Png);
+                m_image.SaveAsPng(filename);
                 m_image.Dispose();
             }
 

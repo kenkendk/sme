@@ -1,4 +1,6 @@
-﻿using SME;
+﻿using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SME;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -56,10 +58,9 @@ namespace ColorBin
             {
                 Debug.Assert(System.IO.File.Exists(file), $"File not found: {file}");
 
-                using (var img = System.Drawing.Image.FromFile(file))
-                using (var bmp = new System.Drawing.Bitmap(img))
+                using (var img = Image.Load<Rgb24>(file))
                 {
-                    Console.WriteLine($"Writing {bmp.Width * bmp.Height} pixels from {file}");
+                    Console.WriteLine($"Writing {img.Width * img.Height} pixels from {file}");
 
                     Data.IsValid = true;
 
@@ -67,7 +68,7 @@ namespace ColorBin
                     {
                         for (var j = 0; j < img.Width; j++)
                         {
-                            var pixel = bmp.GetPixel(j, i);
+                            var pixel = img[j, i];
                             Data.R = pixel.R;
                             Data.G = pixel.G;
                             Data.B = pixel.B;
