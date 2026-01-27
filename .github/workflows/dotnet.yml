@@ -39,12 +39,20 @@ jobs:
         uses: ghdl/setup-ghdl-ci@nightly
         with:
           backend: llvm
-      - name: Setup libraries (MacOS)
+      - name: Setup Docker on (MacOS)
+        id: setup-docker
+        uses: douglascamata/setup-docker-macos-action@v1.0.1
+        with:
+          lima: v1.2.1
+          colima: v0.9.1
+          colima-network-address: false
+      - name: Start Colima and pull GHDL image (MacOS)
         if: runner.os == 'macOS'
         run: |
-          brew install docker
           colima start
           docker pull ghdl/ghdl:ubuntu20-mcode
+      - name: Setup libraries (MacOS)
+        run: |
           brew install mono-libgdiplus
       - name: Restore
         run: dotnet restore src/SME.sln
