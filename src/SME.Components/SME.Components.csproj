@@ -8,7 +8,7 @@
     <!-- Project output name and format -->
     <PropertyGroup>
         <OutputType>library</OutputType>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <RootNamespace>SME.Components</RootNamespace>
     </PropertyGroup>
 
