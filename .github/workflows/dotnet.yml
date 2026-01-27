@@ -13,6 +13,8 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
+        ghdl-backend: [mcode, llvm, mcode]
+        ghdl-investigate: [true, false, false]
 
     env:
       SME_TEST_SKIP_VCD: 1
@@ -28,8 +30,8 @@ jobs:
         uses: ghdl/setup-ghdl@v1
         with:
           version: latest
-          backend: llvm
-          investigate: true
+          backend: ${{ matrix.ghdl-backend }}
+          investigate: ${{ matrix.ghdl-investigate }}
       - name: Restore
         run: dotnet restore src/SME.sln
       - name: Build
