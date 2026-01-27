@@ -54,6 +54,7 @@ jobs:
           colima start
           docker pull ghdl/ghdl:ubuntu20-mcode
       - name: Setup libraries (MacOS)
+        if: runner.os == 'macOS'
         run: |
           brew install mono-libgdiplus
       - name: Restore
