@@ -651,7 +651,10 @@ namespace SME.AST.Transform
                             enumsyntax
                         )
                     );
-                var tree = SyntaxFactory.SyntaxTree(cu.SyntaxTree.GetRoot(), CSharpParseOptions.Default.WithLanguageVersion(((CSharpCompilation)m_compilation).LanguageVersion));
+                var parseOptions = ((CSharpCompilation)m_compilation).SyntaxTrees.FirstOrDefault()?.Options as CSharpParseOptions
+                    ?? CSharpParseOptions.Default.WithLanguageVersion(((CSharpCompilation)m_compilation).LanguageVersion);
+
+                var tree = SyntaxFactory.SyntaxTree(cu, parseOptions);
 
                 m_compilation = m_compilation.AddSyntaxTrees(tree);
                 enumtype = m_compilation.GetTypeByMetadataName($"{ns}.{enumname}");
