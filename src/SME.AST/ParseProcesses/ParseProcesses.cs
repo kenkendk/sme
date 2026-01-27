@@ -240,16 +240,6 @@ namespace SME.AST
             try
             {
                 var instance = Microsoft.Build.Locator.MSBuildLocator.RegisterDefaults();
-                // workaround from https://github.com/microsoft/MSBuildLocator/issues/86
-                System.Runtime.Loader.AssemblyLoadContext.Default.Resolving += (assemblyLoadContext, assemblyName) =>
-                {
-                    var path = Path.Combine(instance.MSBuildPath, assemblyName.Name + ".dll");
-                    if (File.Exists(path))
-                    {
-                        return assemblyLoadContext.LoadFromAssemblyPath(path);
-                    }
-                    return null;
-                };
             }
             catch (Exception) { }
             var workspace = MSBuildWorkspace.Create();
