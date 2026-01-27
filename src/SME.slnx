@@ -1,0 +1,28 @@
+<Solution>
+  <Folder Name="/Examples/">
+    <Project Path="Examples/AES256CBC/AES256CBC.csproj" />
+    <Project Path="Examples/ArrayOfBuses/ArrayOfBuses.csproj" />
+    <Project Path="Examples/ColorBin/ColorBin.csproj" />
+    <Project Path="Examples/DependencyCycle/DependencyCycle.csproj" />
+    <Project Path="Examples/ExternalComponent/ExternalComponent.csproj" />
+    <Project Path="Examples/NoiseFilter/NoiseFilter.csproj" />
+    <Project Path="Examples/SimpleComponents/SimpleComponents.csproj" />
+    <Project Path="Examples/SimpleMemoryBus/SimpleMemoryBus.csproj" />
+    <Project Path="Examples/SimpleMIPS/SimpleMIPS.csproj" />
+    <Project Path="Examples/SimpleNestedComponent/SimpleNestedComponent.csproj" />
+    <Project Path="Examples/SimpleTrader/SimpleTrader.csproj" />
+    <Project Path="Examples/StatebasedCounter/StatebasedCounter.csproj" />
+    <Project Path="Examples/StatedAdder/StatedAdder.csproj" />
+    <Project Path="Examples/StateMachineTester/StateMachineTester.csproj" />
+    <Project Path="Examples/Stopwatch/Stopwatch.csproj" />
+    <Project Path="Examples/UnitTester/UnitTester.csproj" />
+  </Folder>
+  <Project Path="SME.AST/SME.AST.csproj" />
+  <Project Path="SME.Components/SME.Components.csproj" />
+  <Project Path="SME.CPP/SME.CPP.csproj" />
+  <Project Path="SME.GraphViz/SME.GraphViz.csproj" />
+  <Project Path="SME.Tracer/SME.Tracer.csproj" />
+  <Project Path="SME.VHDL/SME.VHDL.csproj" />
+  <Project Path="SME/SME.csproj" />
+  <Project Path="UnitTest/UnitTest.csproj" />
+</Solution>
