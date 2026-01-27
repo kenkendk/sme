@@ -7,8 +7,8 @@
         <ProjectReference Include="..\SME.Tracer\SME.Tracer.csproj" />
         <ProjectReference Include="..\SME.Components\SME.Components.csproj" />
 
-        <PackageReference Include="System.CodeDom" Version="*" />
-        <PackageReference Include="Microsoft.CodeAnalysis" Version="4.5.0" />
+        <PackageReference Include="System.CodeDom" Version="10.0.2" />
+        <PackageReference Include="Microsoft.CodeAnalysis" Version="5.0.0" />
 
         <EmbeddedResource Include="Templates/*.vhdl" />
     </ItemGroup>
