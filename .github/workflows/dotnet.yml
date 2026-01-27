@@ -2,9 +2,9 @@ name: .NET 10.0
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   tests:
@@ -12,69 +12,69 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v1
-      with:
+      - uses: actions/checkout@v2
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
           dotnet-version: 10.0.*
-    - name: Setup libraries (Linux)
-      if: runner.os == 'Linux'
-      run: |
-        docker pull ghdl/ghdl:ubuntu20-mcode
-        sudo apt install libc6-dev libgdiplus
-        # Symlink workaround for pointing to libdl
-        mkdir lib
-        ln -s /usr/lib/x86_64-linux-gnu/libdl.so.2 lib/libdl.so
-    - name: Setup shell (Windows)
-      if: runner.os == 'Windows'
-      uses: msys2/setup-msys2@v2
-      with:
-        msystem: MINGW64
-        update: true
-    - name: Setup GHDL (Windows)
-      if: runner.os == 'Windows'
-      uses: ghdl/setup-ghdl-ci@nightly
-      with:
-        backend: llvm
-    - name: Setup libraries (MacOS)
-      if: runner.os == 'macOS'
-      run: |
-        brew install docker
-        colima start
-        docker pull ghdl/ghdl:ubuntu20-mcode
-        brew install mono-libgdiplus
-    - name: Restore
-      run: dotnet restore src/SME.sln
-    - name: Build
-      run: dotnet build --no-restore src/UnitTest
-    - name: Test (Linux)
-      if: runner.os == 'Linux'
-      env:
-        SME_TEST_SKIP_VCD: 1
-      run: |
-        # Point to the symlinked libdl.so
-        export LD_LIBRARY_PATH=$PWD/lib:$LD_LIBRARY_PATH
-        dotnet test --no-build --logger:"console;verbosity=detailed" src/UnitTest
-    - name: Test (Windows)
-      if: runner.os == 'Windows'
-      shell: powershell
-      env:
-        SME_TEST_SKIP_VCD: 1
-        SME_TEST_USE_NATIVE_GHDL: 1
-      run: |
-        $env:Path += ";$($env:MSYS2_PATH)MINGW64\\bin\\"
-        $env:Path += ";$($env:MSYS2_PATH)\\usr\\bin"
-        ghdl --version
+      - name: Setup libraries (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          docker pull ghdl/ghdl:ubuntu20-mcode
+          sudo apt install libc6-dev libgdiplus
+          # Symlink workaround for pointing to libdl
+          mkdir lib
+          ln -s /usr/lib/x86_64-linux-gnu/libdl.so.2 lib/libdl.so
+      - name: Setup shell (Windows)
+        if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+      - name: Setup GHDL (Windows)
+        if: runner.os == 'Windows'
+        uses: ghdl/setup-ghdl-ci@nightly
+        with:
+          backend: llvm
+      - name: Setup libraries (MacOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew install docker
+          colima start
+          docker pull ghdl/ghdl:ubuntu20-mcode
+          brew install mono-libgdiplus
+      - name: Restore
+        run: dotnet restore src/SME.sln
+      - name: Build
+        run: dotnet build --no-restore src/UnitTest
+      - name: Test (Linux)
+        if: runner.os == 'Linux'
+        env:
+          SME_TEST_SKIP_VCD: 1
+        run: |
+          # Point to the symlinked libdl.so
+          export LD_LIBRARY_PATH=$PWD/lib:$LD_LIBRARY_PATH
+          dotnet test --no-build --logger:"console;verbosity=detailed" src/UnitTest
+      - name: Test (Windows)
+        if: runner.os == 'Windows'
+        shell: powershell
+        env:
+          SME_TEST_SKIP_VCD: 1
+          SME_TEST_USE_NATIVE_GHDL: 1
+        run: |
+          $env:Path += ";$($env:MSYS2_PATH)MINGW64\\bin\\"
+          $env:Path += ";$($env:MSYS2_PATH)\\usr\\bin"
+          ghdl --version
 
-        dotnet test --no-build --logger:"console;verbosity=detailed" src/UnitTest
-    - name: Test (MacOS)
-      if: runner.os == 'macOS'
-      env:
-        SME_TEST_SKIP_VCD: 1
-      run: |
-        HOMEBREW_PREFIX=$(brew config | grep HOMEBREW_PREFIX | sed -n 's/HOMEBREW_PREFIX: //p')
-        export DYLD_LIBRARY_PATH=$HOMEBREW_PREFIX/lib
-        dotnet test --no-build --logger:"console;verbosity=detailed" src/UnitTest
+          dotnet test --no-build --logger:"console;verbosity=detailed" src/UnitTest
+      - name: Test (MacOS)
+        if: runner.os == 'macOS'
+        env:
+          SME_TEST_SKIP_VCD: 1
+        run: |
+          HOMEBREW_PREFIX=$(brew config | grep HOMEBREW_PREFIX | sed -n 's/HOMEBREW_PREFIX: //p')
+          export DYLD_LIBRARY_PATH=$HOMEBREW_PREFIX/lib
+          dotnet test --no-build --logger:"console;verbosity=detailed" src/UnitTest
