@@ -12,9 +12,16 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        ghdl-backend: [mcode, llvm, mcode]
-        ghdl-investigate: [true, false, false]
+        include:
+          - os: ubuntu-latest
+            ghdl-backend: mcode
+            ghdl-investigate: true
+          - os: macos-latest
+            ghdl-backend: llvm
+            ghdl-investigate: false
+          - os: windows-latest
+            ghdl-backend: mcode
+            ghdl-investigate: false
 
     env:
       SME_TEST_SKIP_VCD: 1
