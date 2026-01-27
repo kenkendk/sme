@@ -49,11 +49,11 @@ namespace SME.AST.Transform
         {
             switch (statement)
             {
-                case BlockStatement s:      return s.Statements.Where(x => AllBranchesHasAwait(x)).Any();
+                case BlockStatement s: return s.Statements.Where(x => AllBranchesHasAwait(x)).Any();
                 case ExpressionStatement s: return s.Expression is AwaitExpression;
-                case IfElseStatement s:     return AllBranchesHasAwait(s.TrueStatement) && AllBranchesHasAwait(s.FalseStatement);
-                case SwitchStatement s:     return s.HasDefault && s.Cases.Select(x => x.Item2).All(x => x.Select(y => AllBranchesHasAwait(y)).Contains(true));
-                default:                    return false;
+                case IfElseStatement s: return AllBranchesHasAwait(s.TrueStatement) && AllBranchesHasAwait(s.FalseStatement);
+                case SwitchStatement s: return s.HasDefault && s.Cases.Select(x => x.Item2).All(x => x.Select(y => AllBranchesHasAwait(y)).Contains(true));
+                default: return false;
             }
         }
 
@@ -314,14 +314,14 @@ namespace SME.AST.Transform
 
             var ifs = new IfElseStatement(statement.Condition,
                 statement.Body, new EmptyStatement())
-                { Parent = statement.Parent };
+            { Parent = statement.Parent };
             ifs.UpdateParents();
 
             var rewired = SplitStatement(ifs, collected, fragments);
             var trailfragment = fragments.Last();
             var exitlabel = fragments.Count;
 
-            for (int i = selflabel+1; i < fragments.Count; i++)
+            for (int i = selflabel + 1; i < fragments.Count; i++)
             {
                 fragments[i]
                     .SelectMany(x => x.All())
@@ -571,7 +571,7 @@ namespace SME.AST.Transform
                     // Do not inject if it tries to go to itself
                     if (s.FallThrough && (s.CaseLabel == current || s.CaseLabel == start))
                     {
-                        return new CommentStatement($"FSM_RunState := State{s.CaseLabel}") { Parent = s.Parent };
+                        return new CommentStatement($"FSM_RunState := State{s.CaseLabel}") { Parent = s.Parent };
                     }
                     // Only inject when it is a back jump
                     if (s.FallThrough && s.CaseLabel < start)
@@ -628,7 +628,8 @@ namespace SME.AST.Transform
             var ns = (method.Parent as Process).MSCAType.ContainingNamespace.Name;
 
             var enumtype = m_compilation.GetTypeByMetadataName($"{ns}.{enumname}");
-            if (enumtype == null) {
+            if (enumtype == null)
+            {
                 // Construct an enum type that matches the desired states
                 var enumsyntax = SyntaxFactory.EnumDeclaration(enumname);
                 enumsyntax = enumsyntax.AddModifiers(
@@ -696,7 +697,7 @@ namespace SME.AST.Transform
                 ReturnVariable = null,
                 Parent = method.Parent,
                 Variables = method.AllVariables.Concat(new Variable[] { run_state_var }).ToArray(),
-                AllVariables =  method.AllVariables.Concat(new Variable[] { }).ToArray(),
+                AllVariables = method.AllVariables.Concat(new Variable[] { }).ToArray(),
                 IsStateMachine = true
             };
 
