@@ -93,7 +93,7 @@ namespace SME.AST
                 if (its.TypeKind is TypeKind.Array)
                 {
                     var elt = (its as IArrayTypeSymbol).ElementType;
-                    if ((elt is INamedTypeSymbol && ((INamedTypeSymbol) elt).IsGenericType) || elt is ITypeParameterSymbol)
+                    if ((elt is INamedTypeSymbol && ((INamedTypeSymbol)elt).IsGenericType) || elt is ITypeParameterSymbol)
                     {
                         return m_compilation.CreateArrayTypeSymbol(GenericTypes[elt.Name]);
                     }
@@ -255,7 +255,8 @@ namespace SME.AST
             var workspace = MSBuildWorkspace.Create();
             var proj_task = workspace.OpenProjectAsync(project_path);
             proj_task.Wait();
-            if (workspace.Diagnostics.Count > 0) {
+            if (workspace.Diagnostics.Count > 0)
+            {
                 var messages = workspace.Diagnostics.Select(x => x.Message);
                 var message_string = string.Join(Environment.NewLine, messages);
                 throw new Exception($"{workspace.Diagnostics.Count} errors when opening the workspace.{Environment.NewLine}{message_string}");
@@ -430,12 +431,12 @@ namespace SME.AST
 
             res.InputBusses = inputbusses.Select(x => Parse(network, res, x, simulation)).ToArray();
             res.OutputBusses = outputbusses.Select(x => Parse(network, res, x, simulation)).ToArray();
-            res.InternalBusses = process.Instance.InternalBusses.Select(x => Parse(network, res, x,simulation)).ToArray();
+            res.InternalBusses = process.Instance.InternalBusses.Select(x => Parse(network, res, x, simulation)).ToArray();
             foreach (var ib in res.InternalBusses)
                 ib.IsInternal = true;
 
             // Set up the local names by finding the field that holds the instance reference
-            foreach(var b in res.InputBusses.Union(res.OutputBusses).Union(res.InternalBusses))
+            foreach (var b in res.InputBusses.Union(res.OutputBusses).Union(res.InternalBusses))
             {
                 var f = st
                     .GetFields(
@@ -472,7 +473,7 @@ namespace SME.AST
                         .Where(x => !x
                             .GetAttributes<IgnoreAttribute>()
                             .Any()
-                        ), (IEqualityComparer<IFieldSymbol>) SymbolEqualityComparer.Default);
+                        ), (IEqualityComparer<IFieldSymbol>)SymbolEqualityComparer.Default);
                 }
                 // Register all variables
                 foreach (var f in Fields)
