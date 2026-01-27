@@ -10,6 +10,7 @@
         <OutputType>library</OutputType>
         <TargetFramework>net10.0</TargetFramework>
         <RootNamespace>SME</RootNamespace>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <!-- Nuget package metadata -->

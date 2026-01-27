@@ -15,6 +15,7 @@
         <OutputType>library</OutputType>
         <TargetFramework>net10.0</TargetFramework>
         <RootNamespace>SME.AST</RootNamespace>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <!-- Nuget package metadata -->
