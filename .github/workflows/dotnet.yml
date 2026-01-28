@@ -40,7 +40,7 @@ jobs:
           backend: ${{ matrix.ghdl-backend }}
           investigate: ${{ matrix.ghdl-investigate }}
       - name: Restore
-        run: dotnet restore src/SME.sln
+        run: dotnet restore src/SME.slnx
       - name: Build
         run: dotnet build --no-restore src/UnitTest
       - name: Test
