@@ -87,7 +87,7 @@ namespace SME.Components
         /// </summary>
         /// <param name="size">The size of the allocated memory area.</param>
         /// <param name="initial">The initial memory contents (optional).</param>
-        public TrueDualPortMemory(int size, T[] initial = null)
+        public TrueDualPortMemory(int size, T[]? initial = null)
         {
             m_memory = new T[size];
             if (initial != null)
