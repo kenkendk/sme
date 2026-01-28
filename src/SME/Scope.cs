@@ -18,7 +18,7 @@ namespace SME
         /// <summary>
         /// The parent scope.
         /// </summary>
-        private readonly Scope m_parent;
+        private readonly Scope? m_parent;
         /// <summary>
         /// The call context key for this scope.
         /// </summary>
@@ -54,7 +54,7 @@ namespace SME
         /// </summary>
         /// <param name="isolated">If set to <c>true</c> this scope is isolated.</param>
         /// <param name="clock">The clock to use, if not using the inherited clock.</param>
-        public Scope(bool isolated = true, Clock clock = null)
+        public Scope(bool isolated = true, Clock? clock = null)
             : this(Current, isolated, clock, false)
         {
         }
@@ -66,7 +66,7 @@ namespace SME
         /// <param name="isolated">If set to <c>true</c> this scope is isolated.</param>
         /// <param name="isRoot">If set to <c>true</c> this scope is the root scope.</param>
         /// <param name="clock">The clock to use if not using the inherited clock.</param>
-        private Scope(Scope parent, bool isolated, Clock clock, bool isRoot)
+        private Scope(Scope? parent, bool isolated, Clock? clock, bool isRoot)
         {
             if (!isRoot && parent == null)
                 throw new ArgumentNullException(nameof(parent));
@@ -74,7 +74,7 @@ namespace SME
             m_parent = parent;
             m_isolated = isolated;
             ScopeKey = m_scopeKey = (isRoot ? "ROOT" : Guid.NewGuid().ToString());
-            m_clock = isRoot ? new Clock() : (clock ?? m_parent.Clock);
+            m_clock = isRoot ? new Clock() : (clock ?? m_parent?.Clock ?? new Clock());
             Current = this;
         }
 
@@ -96,16 +96,16 @@ namespace SME
 
                 if (Current == this)
                 {
-                    Current = null;
+                    Current = null!;
 
                     var parent = m_parent;
-                    ScopeKey = parent.m_scopeKey;
+                    ScopeKey = parent?.m_scopeKey;
                     while (parent != null && parent.m_disposed)
                     {
                         parent = parent.m_parent;
 
-                        Current = null;
-                        ScopeKey = parent.m_scopeKey;
+                        Current = null!;
+                        ScopeKey = parent?.m_scopeKey;
                     }
                 }
             }
@@ -141,7 +141,7 @@ namespace SME
         /// <param name="name">The name of the bus to create.</param>
         /// <typeparam name="T">The bus type.</typeparam>
         /// <param name="internalBus">A flag indicating if this is an internal bus.</param>
-        public static T CreateBus<T>(string name = null, bool internalBus = false) where T : class, IBus
+        public static T CreateBus<T>(string? name = null, bool internalBus = false) where T : class, IBus
         {
             return (T)CreateBus(typeof(T), name, internalBus);
         }
@@ -153,7 +153,7 @@ namespace SME
         /// <param name="name">The name of the bus to create.</param>
         /// <param name="bustype">The bus type.</param>
         /// <param name="internalBus">A flag indicating if this is an internal bus.</param>
-        public static IBus CreateBus(Type bustype, string name = null, bool internalBus = false)
+        public static IBus CreateBus(Type bustype, string? name = null, bool internalBus = false)
         {
             return CreateOrLoadBus(bustype, name, internalBus, true);
         }
@@ -165,7 +165,7 @@ namespace SME
         /// <param name="name">The name of the bus to find.</param>
         /// <typeparam name="T">The bus type.</typeparam>
         /// <param name="internalBus">A flag indicating if this is an internal bus.</param>
-        public static T LoadBus<T>(string name = null, bool internalBus = false) where T : class, IBus
+        public static T LoadBus<T>(string? name = null, bool internalBus = false) where T : class, IBus
         {
             return (T)LoadBus(typeof(T), name, internalBus);
         }
@@ -177,11 +177,11 @@ namespace SME
         /// <param name="name">The name of the bus to find.</param>
         /// <param name="bustype">The bus type.</param>
         /// <param name="internalBus">A flag indicating if this is an internal bus.</param>
-        public static IBus LoadBus(Type bustype, string name = null, bool internalBus = false)
+        public static IBus LoadBus(Type bustype, string? name = null, bool internalBus = false)
         {
             var scope = GetTargetScope(bustype, ref name, internalBus);
-            if (scope.FindBus(name) == null)
-                throw new Exception($"Unable to find the bus, make sure it is created before calling {nameof(LoadBus)}");
+            if (scope?.FindBus(name) == null)
+                throw new Exception($"Unable to find the bus, make sure it is created before calling {nameof(LoadBus)}. Bus name: {name}, Bus type: {bustype.FullName}, Scope: {scope}");
 
             return CreateOrLoadBus(bustype, name, internalBus, false);
         }
@@ -194,7 +194,7 @@ namespace SME
         /// <typeparam name="T">The bus type.</typeparam>
         /// <param name="internalBus">A flag indicating if this is an internal bus.</param>
         /// <param name="forceCreate">A flag indicating if the bus should be created even if it exists.</param>
-        public static T CreateOrLoadBus<T>(string name = null, bool internalBus = false, bool forceCreate = false) where T : class, IBus
+        public static T CreateOrLoadBus<T>(string? name = null, bool internalBus = false, bool forceCreate = false) where T : class, IBus
         {
             return (T)CreateOrLoadBus(typeof(T), name, internalBus, forceCreate);
         }
@@ -206,7 +206,7 @@ namespace SME
         /// <param name="name">The name of the bus to find.</param>
         /// <param name="bustype">The bus type.</param>
         /// <param name="internalBus">A flag indicating if this is an internal bus.</param>
-        private static Scope GetTargetScope(Type bustype, ref string name, bool internalBus)
+        private static Scope? GetTargetScope(Type bustype, ref string? name, bool internalBus)
         {
             Scope targetScope;
             var isClocked = (bustype.GetCustomAttributes(typeof(ClockedBusAttribute), true).FirstOrDefault() as ClockedBusAttribute) != null;
@@ -241,7 +241,7 @@ namespace SME
         /// <param name="bustype">The bus type.</param>
         /// <param name="internalBus">A flag indicating if this is an internal bus.</param>
         /// <param name="forceCreate">A flag indicating if the bus should be created even if it exists.</param>
-        public static IBus CreateOrLoadBus(Type bustype, string name = null, bool internalBus = false, bool forceCreate = false)
+        public static IBus CreateOrLoadBus(Type bustype, string? name = null, bool internalBus = false, bool forceCreate = false)
         {
             var targetScope = GetTargetScope(bustype, ref name, internalBus);
             var isClocked = (bustype.GetCustomAttributes(typeof(ClockedBusAttribute), true).FirstOrDefault() as ClockedBusAttribute) != null;
@@ -256,8 +256,9 @@ namespace SME
             if (res != null && res.BusType != bustype)
                 throw new InvalidOperationException($"Attempted to create a bus with the name {name} and the type {bustype.FullName}, but a bus is already registered under that name with the type {res.GetType().FullName}");
 
-            if (res == null)
-                targetScope.m_busses[name] = res = Bus.CreateFromInterface(bustype, targetScope.Clock, isClocked, false);
+            res ??= Bus.CreateFromInterface(bustype, targetScope.Clock, isClocked, false);
+            if (name != null)
+                targetScope.m_busses[name] = res;
 
             return res;
         }
@@ -277,7 +278,7 @@ namespace SME
         /// </summary>
         /// <returns>The bus or null.</returns>
         /// <param name="name">The name of the bus to find.</param>
-        internal IRuntimeBus FindBus(string name)
+        internal IRuntimeBus? FindBus(string? name)
         {
             return RecursiveLookup(x => x.m_busses, name);
         }
@@ -286,7 +287,7 @@ namespace SME
         /// </summary>
         /// <returns>The process or null.</returns>
         /// <param name="name">The name of the process to find.</param>
-        internal IProcess FindProcess(string name)
+        internal IProcess? FindProcess(string? name)
         {
             return RecursiveLookup(x => x.m_processes, name);
         }
@@ -298,14 +299,14 @@ namespace SME
         /// <param name="dict_fun">The function used to extract the dictionary.</param>
         /// <param name="name">The name of the item to find.</param>
         /// <typeparam name="T">The type of the element to find.</typeparam>
-        internal T RecursiveLookup<T>(Func<Scope, Dictionary<string, T>> dict_fun, string name)
+        internal T? RecursiveLookup<T>(Func<Scope, Dictionary<string, T>> dict_fun, string? name)
         {
-            T res = default(T);
+            T? res = default;
             var cur = this;
             while (cur != null)
             {
                 var dict = dict_fun(cur);
-                if (dict.TryGetValue(name, out res))
+                if (name != null && dict.TryGetValue(name, out res))
                     break;
 
                 cur = cur.m_isolated ? null : cur.m_parent;
@@ -345,8 +346,7 @@ namespace SME
                 if (key == null)
                     return ROOT_SCOPE;
 
-                Scope res;
-                _scopes.TryGetValue(key, out res);
+                _scopes.TryGetValue(key, out var res);
                 return res ?? ROOT_SCOPE;
             }
 
@@ -370,13 +370,13 @@ namespace SME
         /// <summary>
         /// The shared scope key.
         /// </summary>
-        private static AsyncLocal<string> _scopekey = new AsyncLocal<string>();
+        private static AsyncLocal<string?> _scopekey = new AsyncLocal<string?>();
 
         /// <summary>
         /// Gets or sets the scope key from the call context.
         /// </summary>
         /// <value>The scope key.</value>
-        private static string ScopeKey
+        private static string? ScopeKey
         {
             get => _scopekey.Value;
             set => _scopekey.Value = value;

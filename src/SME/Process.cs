@@ -17,40 +17,40 @@ namespace SME
         /// <summary>
         /// The collection of clocked input buses.
         /// </summary>
-        private IRuntimeBus[][] m_clockedinputbusses;
+        private IRuntimeBus[][]? m_clockedinputbusses;
         /// <summary>
         /// The collection of input buses.
         /// </summary>
-        private IRuntimeBus[][] m_inputbusses;
+        private IRuntimeBus[][]? m_inputbusses;
         /// <summary>
         /// The collection of output buses.
         /// </summary>
-        private IRuntimeBus[][] m_outputbusses;
+        private IRuntimeBus[][]? m_outputbusses;
         /// <summary>
         /// The collection of internal buses.
         /// </summary>
-        private IRuntimeBus[][] m_internalbusses;
+        private IRuntimeBus[][]? m_internalbusses;
 
         /// <summary>
         /// Gets the collection of clocked input buses.
         /// </summary>
         /// <value>The collection of input buses.</value>
-        IRuntimeBus[][] IProcess.ClockedInputBusses { get { return m_clockedinputbusses; } }
+        IRuntimeBus[][] IProcess.ClockedInputBusses { get { return m_clockedinputbusses ?? []; } }
         /// <summary>
         /// Gets the collection of input buses.
         /// </summary>
         /// <value>The collection of input buses.</value>
-        IRuntimeBus[][] IProcess.InputBusses { get { return m_inputbusses; } }
+        IRuntimeBus[][] IProcess.InputBusses { get { return m_inputbusses ?? []; } }
         /// <summary>
         /// Gets the collection of output buses.
         /// </summary>
         /// <value>The collection of output buses.</value>
-        IRuntimeBus[][] IProcess.OutputBusses { get { return m_outputbusses; } }
+        IRuntimeBus[][] IProcess.OutputBusses { get { return m_outputbusses ?? []; } }
         /// <summary>
         /// Gets the collection of output buses.
         /// </summary>
         /// <value>The collection of output buses.</value>
-        IRuntimeBus[][] IProcess.InternalBusses { get { return m_internalbusses; } }
+        IRuntimeBus[][] IProcess.InternalBusses { get { return m_internalbusses ?? []; } }
 
         /// <summary>
         /// Gets a value indicating whether this instance is a clocked process.
@@ -76,7 +76,7 @@ namespace SME
         /// <summary>
         /// Gets the name of this process.
         /// </summary>
-        string IProcess.Name { get { return null; } }
+        string? IProcess.Name { get { return null; } }
 
         /// <summary>
         /// Resets the inputready task.
@@ -192,7 +192,7 @@ namespace SME
 
             var violator = m_internalbusses
                 .FirstOrDefault(x =>
-                    x.FirstOrDefault().BusType
+                    x.FirstOrDefault()?.BusType
                         .GetCustomAttributes(typeof(TopLevelInputBusAttribute), true)
                         .FirstOrDefault() != null
                 )?.FirstOrDefault();
@@ -201,7 +201,7 @@ namespace SME
 
             violator = m_internalbusses
                 .FirstOrDefault(x =>
-                    x.FirstOrDefault().BusType
+                    x.FirstOrDefault()?.BusType
                         .GetCustomAttributes(typeof(TopLevelOutputBusAttribute), true)
                         .FirstOrDefault() != null
                 )?.FirstOrDefault();
@@ -309,6 +309,6 @@ namespace SME
         /// TODO it is an object, since SME should not depend on SME.VHDL,
         /// but the type should be ICustomRenderer
         /// </summary>
-        public virtual object CustomRenderer { get { return null; } }
+        public virtual object? CustomRenderer { get { return null; } }
     }
 }

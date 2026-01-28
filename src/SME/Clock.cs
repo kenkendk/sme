@@ -16,7 +16,7 @@ namespace SME
         /// <summary>
         /// Guard to prevent overlapping ticks of the clock.
         /// </summary>
-        private TaskCompletionSource<bool> m_previousRelease = null;
+        private TaskCompletionSource<bool>? m_previousRelease = null;
 
         /// <summary>
         /// Gets the number of ticks issued by this clock.
@@ -69,8 +69,7 @@ namespace SME
         /// </summary>
         private void Release()
         {
-            if (m_previousRelease != null)
-                m_previousRelease.Task.Wait();
+            m_previousRelease?.Task.Wait();
 
             Ticks++;
 
@@ -81,9 +80,9 @@ namespace SME
             var waiters = System.Threading.Interlocked.Exchange(ref m_release, new TaskCompletionSource<bool>());
 
             // Register unlock of this method after completion of all tasks
-            waiters.Task.ContinueWith(x => {
-                if (m_previousRelease != null)
-                    m_previousRelease.SetResult(true);
+            waiters.Task.ContinueWith(x =>
+            {
+                m_previousRelease?.SetResult(true);
             });
 
             // Signal clock has ticked

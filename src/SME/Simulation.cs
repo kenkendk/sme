@@ -82,9 +82,9 @@ namespace SME
         /// <summary>
         /// Gets the current running dependency graph.
         /// </summary>
-        public DependencyGraph Graph { get; private set; }
+        public DependencyGraph? Graph { get; private set; }
 
-        public static string ProjectPath { get; set; }
+        public static string? ProjectPath { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="T:SME.Simulation"/> class.
@@ -235,7 +235,7 @@ namespace SME
         /// <param name="processes">The processes to run.</param>
         /// <param name="exitMethod">The exit method, return true to keep running.</param>
         /// <returns>The awaitable task.</returns>
-        public void Run(IProcess[] processes = null, Func<bool> exitMethod = null)
+        public void Run(IProcess[]? processes = null, Func<bool>? exitMethod = null)
         {
             if (processes != null)
                 foreach (var p in processes)
@@ -251,11 +251,11 @@ namespace SME
             var processmap = new Dictionary<string, List<ProcessMetadata>>();
             foreach (var p in m_processes.Values)
             {
-                List<ProcessMetadata> lp;
-                var pn = string.IsNullOrWhiteSpace(p.Instance.Name) ? TypeNameToName(p.Instance.GetType()) : p.InstanceName;
+                var pn = string.IsNullOrWhiteSpace(p.Instance.Name) ? TypeNameToName(p.Instance.GetType()) : p.InstanceName!;
 
-                if (!processmap.TryGetValue(pn, out lp))
+                if (!processmap.TryGetValue(pn, out var lp))
                     processmap[pn] = lp = new List<ProcessMetadata>();
+
                 lp.Add(p);
             }
 
@@ -287,8 +287,7 @@ namespace SME
 
             foreach (var b in allBusses)
             {
-                List<IRuntimeBus> lp;
-                if (!busmap.TryGetValue(b.BusType, out lp))
+                if (!busmap.TryGetValue(b.BusType, out var lp))
                     busmap[b.BusType] = lp = new List<IRuntimeBus>();
                 lp.Add(b);
 
@@ -372,7 +371,7 @@ namespace SME
                             t.Task.Wait();
                     var crashes = running_tasks
                         .Where(x => x.Task.Exception != null)
-                        .SelectMany(x => x.Task.Exception.InnerExceptions);
+                        .SelectMany(x => x.Task.Exception?.InnerExceptions ?? []);
                     if (crashes.Any())
                         throw new AggregateException(crashes);
 
@@ -396,11 +395,13 @@ namespace SME
         /// <param name="type">The type to get the name for.</param>
         public string TypeNameToName(Type type)
         {
-            var fullname = type.FullName;
+            var fullname = type.FullName
+                ?? throw new InvalidProgramException($"The type {type.Name} does not have a full name, cannot convert to friendly name.");
             var extras = string.Empty;
             if (type.IsGenericType)
             {
-                fullname = type.GetGenericTypeDefinition().FullName;
+                fullname = type.GetGenericTypeDefinition().FullName
+                    ?? throw new InvalidProgramException($"The type {type.Name} does not have a full name, cannot convert to friendly name.");
                 extras = "<" + string.Join(", ", type.GenericTypeArguments.Select(x => x.Name)) + ">";
             }
 
@@ -422,7 +423,7 @@ namespace SME
         {
             if (Current == this)
             {
-                Current = null;
+                Current = null!;
                 m_scope.Dispose();
             }
         }
@@ -443,7 +444,7 @@ namespace SME
         /// Gets the current scope.
         /// </summary>
         /// <value>The current scope.</value>
-        public static Simulation Current
+        public static Simulation? Current
         {
             get
             {
@@ -451,8 +452,7 @@ namespace SME
                 if (key == null)
                     return null;
 
-                Simulation res;
-                _scopes.TryGetValue(key, out res);
+                _scopes.TryGetValue(key, out var res);
                 return res;
             }
 
@@ -478,13 +478,13 @@ namespace SME
         /// <summary>
         /// The shared scope key3
         /// </summary>
-        private static AsyncLocal<string> _scopekey = new AsyncLocal<string>();
+        private static AsyncLocal<string?> _scopekey = new AsyncLocal<string?>();
 
         /// <summary>
         /// Gets or sets the scope key from the call context.
         /// </summary>
         /// <value>The scope key.</value>
-        private static string ScopeKey
+        private static string? ScopeKey
         {
             get => _scopekey.Value;
             set => _scopekey.Value = value;

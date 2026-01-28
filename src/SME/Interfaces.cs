@@ -79,7 +79,7 @@ namespace SME
         /// <summary>
         /// The name of the process.
         /// </summary>
-        string Name { get; }
+        string? Name { get; }
 
         /// <summary>
         /// Array of buses, from which the process can read and which are clocked.
@@ -135,6 +135,6 @@ namespace SME
         /// A custom renderer object, which will be called rather than the
         /// standard VHDL renderer.
         /// </summary>
-        object CustomRenderer { get; }
+        object? CustomRenderer { get; }
     }
 }

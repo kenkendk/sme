@@ -165,15 +165,18 @@ namespace SME
             if (dfv.Length > 1)
                 throw new Exception(string.Format("The field {0} on type {1} has {2} default values, only one or zero is allowed", n.Name, BusType.FullName, dfv.Length));
             else if (dfv.Length == 1)
-                m_readValues[n.Name] = Convert.ChangeType(((InitialValueAttribute)dfv[0]).Value ?? Activator.CreateInstance(memberType), memberType);
+                m_readValues[n.Name] = Convert.ChangeType(((InitialValueAttribute)dfv[0]).Value
+                    ?? Activator.CreateInstance(memberType), memberType)
+                    ?? throw new Exception($"Could not create an instance of {memberType} with initial value {dfv[0]}.");
             else if (BusType.GetCustomAttributes(typeof(InitializedBusAttribute), true).FirstOrDefault() != null)
-                m_readValues[n.Name] = Activator.CreateInstance(memberType);
+                m_readValues[n.Name] = Activator.CreateInstance(memberType)
+                    ?? throw new Exception($"Could not create an instance of {memberType} with initial default value.");
             else if (memberType.IsGenericType && memberType.GetGenericTypeDefinition() == typeof(IFixedArray<>))
             {
-                var len = n.GetCustomAttributes(typeof(FixedArrayLengthAttribute), true).FirstOrDefault() as FixedArrayLengthAttribute;
-                if (len == null)
-                    throw new Exception(string.Format("Field {0} on {1} is missing a length attribute, add a an attribute of type {2}", n.Name, n.DeclaringType.FullName, typeof(FixedArrayLengthAttribute).Name));
-                m_readValues[n.Name] = Activator.CreateInstance(typeof(FixedArray<>).MakeGenericType(memberType.GetGenericArguments()), len.Length);
+                if (n.GetCustomAttributes(typeof(FixedArrayLengthAttribute), true).FirstOrDefault() is not FixedArrayLengthAttribute len)
+                    throw new Exception(string.Format("Field {0} on {1} is missing a length attribute, add a an attribute of type {2}", n.Name, n.DeclaringType?.FullName, typeof(FixedArrayLengthAttribute).Name));
+                m_readValues[n.Name] = Activator.CreateInstance(typeof(FixedArray<>).MakeGenericType(memberType.GetGenericArguments()), len.Length)
+                    ?? throw new Exception($"Could not create a FixedArray instance of {memberType} with size {len.Length}");
             }
         }
 
@@ -197,8 +200,7 @@ namespace SME
         /// <param name="name">Name of the signal to read.</param>
         public object Read(string name)
         {
-            object obj;
-            if (m_readValues.TryGetValue(name, out obj))
+            if (m_readValues.TryGetValue(name, out var obj))
                 return obj;
 
             if (m_signalTypes.ContainsKey(name))
@@ -239,7 +241,7 @@ namespace SME
 
             m_writeValues.Clear();
 
-            foreach (var n in m_readValues.Values.Select(x => x as IFixedArrayInteraction).Where(x => x != null))
+            foreach (var n in m_readValues.Values.OfType<IFixedArrayInteraction>())
                 n.Propagate();
         }
 
@@ -256,7 +258,7 @@ namespace SME
 
             m_stageValues.Clear();
 
-            foreach (var n in m_readValues.Values.Select(x => x as IFixedArrayInteraction).Where(x => x != null))
+            foreach (var n in m_readValues.Values.OfType<IFixedArrayInteraction>())
                 n.Forward();
 
         }

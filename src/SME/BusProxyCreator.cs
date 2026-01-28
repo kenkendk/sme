@@ -25,8 +25,8 @@ namespace SME
         /// <param name="isInternal">A value indicating if the bus is internal.</param>
         internal static IRuntimeBus CreateBusProxy(Type @interface, Clock clock, bool isClocked, bool isInternal)
         {
-            if (@interface == null)
-                throw new ArgumentNullException(nameof(@interface));
+            ArgumentNullException.ThrowIfNull(@interface);
+
             if (!@interface.IsInterface)
                 throw new Exception($"Cannot create proxy from non-interface type: {@interface.FullName}");
             if (!typeof(IBus).IsAssignableFrom(@interface))
@@ -37,9 +37,9 @@ namespace SME
                 // Check if the interface has methods defined, as we do not support that
                 var userprops = new HashSet<MethodInfo>(
                     @interface
-                    .GetProperties(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance)
-                    .SelectMany(x => new[] { x.GetGetMethod(), x.GetSetMethod() })
-                    .Where(x => x != null)
+                        .GetProperties(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance)
+                        .SelectMany(x => new[] { x.GetGetMethod(), x.GetSetMethod() })
+                        .OfType<MethodInfo>()
                 );
 
                 if (@interface.GetMethods(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance).Where(x => !userprops.Contains(x)).Any())
@@ -51,6 +51,8 @@ namespace SME
                 // Build an assembly and a module to contain the type
                 var assemblyName = new AssemblyName($"{nameof(SME)}.{nameof(Bus)}Proxy.{typename}");
                 var assembly = AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run);
+                if (assemblyName.Name is null)
+                    throw new Exception("Could not create dynamic assembly for bus proxy.");
                 var module = assembly.DefineDynamicModule(assemblyName.Name);
 
                 // Create the type definition
@@ -163,7 +165,8 @@ namespace SME
                         setMethodIL.Emit(OpCodes.Ldarg_1);
                         if (sourceProperty.PropertyType.IsValueType)
                             setMethodIL.Emit(OpCodes.Box, sourceProperty.PropertyType);
-                        var destMethod = typeof(Bus).GetMethod(nameof(Bus.Write));
+                        var destMethod = typeof(Bus).GetMethod(nameof(Bus.Write))
+                            ?? throw new NullReferenceException($"");
                         setMethodIL.Emit(OpCodes.Call, destMethod);
                         setMethodIL.Emit(OpCodes.Ret);
 
@@ -175,7 +178,11 @@ namespace SME
                 _interfaceCache[@interface] = typeBuilder.CreateTypeInfo();
             }
 
-            return (IRuntimeBus)Activator.CreateInstance(_interfaceCache[@interface], new object[] { new Bus(@interface, clock, isClocked, isInternal) });
+            var interfacetype = _interfaceCache[@interface];
+            object[] interfaceargs = [new Bus(@interface, clock, isClocked, isInternal)];
+            var finalbus = Activator.CreateInstance(interfacetype, interfaceargs) as IRuntimeBus
+                ?? throw new Exception($"Could not create an instance of dynamic bus proxy for interface: {@interface.FullName}");
+            return finalbus;
 
         }
 

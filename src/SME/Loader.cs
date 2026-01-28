@@ -52,10 +52,12 @@ namespace SME
             {
                 var a = (Array)v;
                 for (var i = 0; i < a.GetLength(0); i++)
-                    yield return (IBus)a.GetValue(i);
+                    yield return a.GetValue(i) as IBus ??
+                        throw new Exception($"Bus array field {field.Name} contains null bus instance at index {i}");
             }
             else
-                yield return (IBus)field.GetValue(source);
+                yield return field.GetValue(source) as IBus ??
+                    throw new Exception($"Bus field {field.Name} contains null bus instance");
         }
 
         /// <summary>
@@ -83,7 +85,7 @@ namespace SME
                     {
                         var bus = Scope.CreateOrLoadBus(f.FieldType, null, internalBus, componentBus);
                         if (DebugBusAssignments)
-                            Console.WriteLine("Setting field {0}.{1} = {2}:{3}:{4} -> {5}", f.DeclaringType.Name, f.Name, null, bus, f.FieldType.FullName, bus.GetHashCode());
+                            Console.WriteLine("Setting field {0}.{1} = {2}:{3}:{4} -> {5}", f.DeclaringType?.Name, f.Name, null, bus, f.FieldType.FullName, bus.GetHashCode());
 
                         f.SetValue(o, Scope.CreateOrLoadBus(f.FieldType, null, internalBus));
                     }
@@ -102,7 +104,9 @@ namespace SME
             var procs = asm
                 .GetTypes()
                 .Where(x => typeof(IProcess).IsAssignableFrom(x) && x.GetConstructor(new Type[0]) != null)
-                .Select(x => (IProcess)Activator.CreateInstance(x))
+                // Null-forgiving operator is used here as we filter for types with a default constructor,
+                // so Activator.CreateInstance should not return null.
+                .Select(x => (IProcess)Activator.CreateInstance(x)!)
                 .ToArray();
 
             foreach (var p in procs)

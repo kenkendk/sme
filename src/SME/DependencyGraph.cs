@@ -173,17 +173,17 @@ namespace SME
         /// <summary>
         /// A callback method to invoke before each tick.
         /// </summary>
-        private readonly Action<DependencyGraph> m_pretickcallback;
+        private readonly Action<DependencyGraph>? m_pretickcallback;
 
         /// <summary>
         /// A callback method to invoke before each tick.
         /// </summary>
-        private readonly Action<DependencyGraph> m_posttickcallback;
+        private readonly Action<DependencyGraph>? m_posttickcallback;
 
         /// <summary>
         /// A callback method to invoke after propagating clocked processes.
         /// </summary>
-        private readonly Action<DependencyGraph> m_clocktickcallback;
+        private readonly Action<DependencyGraph>? m_clocktickcallback;
 
         /// <summary>
         /// List of all clocked busses.
@@ -229,7 +229,7 @@ namespace SME
         /// Initializes a new instance of the <see cref="SME.DependencyGraph"/> class.
         /// </summary>
         /// <param name="components">The components in the graph.</param>
-        public DependencyGraph(IEnumerable<IProcess> components, Action<DependencyGraph> pretickcallback = null, Action<DependencyGraph> posttickcallback = null, Action<DependencyGraph> clocktickcallback = null)
+        public DependencyGraph(IEnumerable<IProcess> components, Action<DependencyGraph>? pretickcallback = null, Action<DependencyGraph>? posttickcallback = null, Action<DependencyGraph>? clocktickcallback = null)
         {
             m_pretickcallback = pretickcallback;
             m_posttickcallback = posttickcallback;
@@ -281,8 +281,7 @@ namespace SME
                     if (b == null)
                         throw new Exception(string.Format("Found an unassigned input bus for {0}", n.Item.GetType().FullName));
 
-                    List<Node> waitsFor;
-                    if (!neededForOutput.TryGetValue(b, out waitsFor))
+                    if (!neededForOutput.TryGetValue(b, out var waitsFor))
                     {
                         var target = nodeLookup.Where(x => x.Key.OutputBusses.Any(y => y == null)).FirstOrDefault();
                         if (target.Key == null)
@@ -307,7 +306,7 @@ namespace SME
                 .Where(x => x.Item.IsClockedProcess)
                 .ToList();
             var completed = finished
-                .ToDictionary(k => k, v => (string)null);
+                .ToDictionary(k => k, v => (string?)null);
 
             // The last clocked process drives the bus signals for clocked
             // processes

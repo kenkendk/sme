@@ -17,7 +17,7 @@ namespace SME
         /// <summary>
         /// Gets or sets the name of the instance.
         /// </summary>
-        public string InstanceName { get; set; }
+        public string? InstanceName { get; set; }
 
         /// <summary>
         /// The instance that is recorded.
@@ -27,7 +27,7 @@ namespace SME
         /// <summary>
         /// Gets or sets the initialization capture values.
         /// </summary>
-        public Dictionary<string, object> Initialization { get; } = new Dictionary<string, object>();
+        public Dictionary<string, object?> Initialization { get; } = new Dictionary<string, object?>();
 
 
         /// <summary>
@@ -61,7 +61,10 @@ namespace SME
                     int[] lengths = new int[arraysource.Rank];
                     for (int i = 0; i < arraysource.Rank; i++)
                         lengths[i] = arraysource.GetLength(i);
-                    var target = Array.CreateInstance(t.GetElementType(), lengths);
+                    var eltype = t.GetElementType();
+                    if (eltype is null)
+                        throw new InvalidProgramException($"The field {fi.Name} in {fi.DeclaringType?.FullName} has an array type with no element type, which is not supported for initialization capture.");
+                    var target = Array.CreateInstance(eltype, lengths);
                     Array.Copy(arraysource, target, arraysource.Length);
                     Initialization[fi.Name] = target;
                 }
@@ -69,7 +72,7 @@ namespace SME
                 {
                     var attr = fi.GetCustomAttributes(typeof(FixedArrayLengthAttribute), true).OfType<FixedArrayLengthAttribute>().FirstOrDefault();
                     if (attr == null)
-                        throw new InvalidProgramException($"The field {fi.Name} in {fi.DeclaringType.FullName} is missing the {nameof(FixedArrayLengthAttribute)} attribute");
+                        throw new InvalidProgramException($"The field {fi.Name} in {fi.DeclaringType?.FullName} is missing the {nameof(FixedArrayLengthAttribute)} attribute");
 
                     var target = Array.CreateInstance(t.GenericTypeArguments[0], attr.Length);
 

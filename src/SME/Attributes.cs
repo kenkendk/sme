@@ -33,7 +33,7 @@ namespace SME
         /// <summary>
         /// Gets or sets the default value of the bus signal.
         /// </summary>
-        public object Value { get; set; }
+        public object? Value { get; set; }
 
         /// <summary>
         /// Creates a new instance of the <see cref="T:SME.InitialValue"/> attribute with the default value of the datatype.
