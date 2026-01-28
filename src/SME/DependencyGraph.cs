@@ -246,10 +246,10 @@ namespace SME
                     .SelectMany(y => y)
                     .Where(y => y != null)
                     .Select(y => new
-                        {
-                            Bus = y,
-                            Node = x.Value
-                        }
+                    {
+                        Bus = y,
+                        Node = x.Value
+                    }
                     )
                 )
                 .GroupBy(x => x.Bus)
@@ -319,7 +319,7 @@ namespace SME
                     .Distinct());
 
             var count = 0;
-            while(count != unfinishedProcesses.Count)
+            while (count != unfinishedProcesses.Count)
             {
                 count = unfinishedProcesses.Count;
 
@@ -385,7 +385,7 @@ namespace SME
         /// </summary>
         public class UnclockedCycleException : Exception
         {
-            public UnclockedCycleException() { }
+            public UnclockedCycleException() { }
             public UnclockedCycleException(string message) : base(message) { }
         }
 
@@ -418,7 +418,8 @@ namespace SME
                 .Where(x => x.Item.IsClockedProcess)
                 .ToArray();
             var first = true;
-            do {
+            do
+            {
                 // Reset and get a new processready task
                 var outputready_or_done =
                     next

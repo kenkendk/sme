@@ -88,7 +88,7 @@ namespace SME
 
                     // Replicate the source method
                     var method = typeBuilder.DefineMethod(
-                        typeof(IRuntimeBus).Name  + "." + sourceMethod.Name,
+                        typeof(IRuntimeBus).Name + "." + sourceMethod.Name,
                         MethodAttributes.Public | MethodAttributes.Final | MethodAttributes.Virtual,
                         CallingConventions.Standard,
                         sourceMethod.ReturnType,

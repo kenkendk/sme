@@ -278,8 +278,8 @@ namespace SME
         {
             return
                 from n in m_signalTypes.Keys
-                 where !m_stageValues.ContainsKey(n)
-                 select n;
+                where !m_stageValues.ContainsKey(n)
+                select n;
         }
 
         /// <summary>

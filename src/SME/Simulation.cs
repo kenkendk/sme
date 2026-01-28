@@ -333,7 +333,8 @@ namespace SME
                         SME.Loader.AutoloadBusses(x);
                         return new
                         {
-                            Task = x.Run().ContinueWith(y => {
+                            Task = x.Run().ContinueWith(y =>
+                            {
                                 x.SignalFinished();
                                 if (y.Exception != null)
                                     throw new AggregateException(y.Exception.InnerExceptions);
@@ -476,7 +477,7 @@ namespace SME
         private static readonly Dictionary<string, Simulation> _scopes = new Dictionary<string, Simulation>();
 
         /// <summary>
-        /// The shared scope key3
+        /// The shared scope key.
         /// </summary>
         private static AsyncLocal<string?> _scopekey = new AsyncLocal<string?>();
 

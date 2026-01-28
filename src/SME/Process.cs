@@ -156,7 +156,8 @@ namespace SME
 
             m_outputbusses =
                 Loader.GetBusFields(this.GetType())
-                        .Where(n => {
+                        .Where(n =>
+                        {
                             var attrIn = n.GetCustomAttributes(typeof(InputBusAttribute), true).FirstOrDefault();
                             var attrOut = n.GetCustomAttributes(typeof(OutputBusAttribute), true).FirstOrDefault();
                             var attrInternal = n.GetCustomAttributes(typeof(InternalBusAttribute), true).FirstOrDefault();
@@ -174,7 +175,8 @@ namespace SME
 
             var inputList =
                 Loader.GetBusFields(this.GetType())
-                        .Where(n => {
+                        .Where(n =>
+                        {
                             var attrIn = n.GetCustomAttributes(typeof(InputBusAttribute), true).FirstOrDefault();
                             var attrOut = n.GetCustomAttributes(typeof(OutputBusAttribute), true).FirstOrDefault();
                             var attrInternal = n.GetCustomAttributes(typeof(InternalBusAttribute), true).FirstOrDefault();
@@ -287,7 +289,7 @@ namespace SME
             do
             {
                 await ClockAsync();
-            } while(!condition());
+            } while (!condition());
         }
 
         /// <summary>
