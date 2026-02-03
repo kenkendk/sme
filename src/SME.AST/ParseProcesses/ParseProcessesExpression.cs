@@ -16,73 +16,71 @@ namespace SME.AST
         /// <param name="method">The method where the statement is found.</param>
         /// <param name="statement">The statement where the expression is found.</param>
         /// <param name="expression">The expression to decompile</param>
-        protected Expression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ExpressionSyntax expression)
+        protected Expression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, ExpressionSyntax? expression)
         {
-            if (expression is AssignmentExpressionSyntax)
-                return Decompile(network, proc, method, statement, expression as AssignmentExpressionSyntax);
-            else if (expression is IdentifierNameSyntax)
-                return Decompile(network, proc, method, statement, expression as IdentifierNameSyntax);
-            else if (expression is MemberAccessExpressionSyntax)
-                return Decompile(network, proc, method, statement, expression as MemberAccessExpressionSyntax);
-            else if (expression is LiteralExpressionSyntax)
-                return Decompile(network, proc, method, statement, expression as LiteralExpressionSyntax);
-            else if (expression is BinaryExpressionSyntax)
-                return Decompile(network, proc, method, statement, expression as BinaryExpressionSyntax);
-            else if (expression is PrefixUnaryExpressionSyntax)
-                return Decompile(network, proc, method, statement, expression as PrefixUnaryExpressionSyntax);
-            else if (expression is PostfixUnaryExpressionSyntax)
-                return Decompile(network, proc, method, statement, expression as PostfixUnaryExpressionSyntax);
-            else if (expression is ElementAccessExpressionSyntax)
-                return Decompile(network, proc, method, statement, expression as ElementAccessExpressionSyntax);
-            else if (expression is CastExpressionSyntax)
-                return Decompile(network, proc, method, statement, expression as CastExpressionSyntax);
-            else if (expression is ConditionalExpressionSyntax)
-                return Decompile(network, proc, method, statement, expression as ConditionalExpressionSyntax);
-            else if (expression is InvocationExpressionSyntax)
+            if (expression is AssignmentExpressionSyntax assexp)
+                return Decompile(network, proc, method, statement, assexp);
+            else if (expression is IdentifierNameSyntax idexp)
+                return Decompile(network, proc, method, statement, idexp);
+            else if (expression is MemberAccessExpressionSyntax maexp)
+                return Decompile(network, proc, method, statement, maexp);
+            else if (expression is LiteralExpressionSyntax litexp)
+                return Decompile(network, proc, method, statement, litexp);
+            else if (expression is BinaryExpressionSyntax binexp)
+                return Decompile(network, proc, method, statement, binexp);
+            else if (expression is PrefixUnaryExpressionSyntax preunexp)
+                return Decompile(network, proc, method, statement, preunexp);
+            else if (expression is PostfixUnaryExpressionSyntax postunexp)
+                return Decompile(network, proc, method, statement, postunexp);
+            else if (expression is ElementAccessExpressionSyntax elacc)
+                return Decompile(network, proc, method, statement, elacc);
+            else if (expression is CastExpressionSyntax castexp)
+                return Decompile(network, proc, method, statement, castexp);
+            else if (expression is ConditionalExpressionSyntax condexp)
+                return Decompile(network, proc, method, statement, condexp);
+            else if (expression is InvocationExpressionSyntax invexp)
             {
-                var si = expression as InvocationExpressionSyntax;
-                if (si.Expression is MemberAccessExpressionSyntax)
+                if (invexp.Expression is MemberAccessExpressionSyntax mt)
                 {
-                    var mt = si.Expression as MemberAccessExpressionSyntax;
-
                     if (mt.ToString() == "base.SimulationOnly" ||
                         mt.ToString() == "Console.WriteLine" ||
                         mt.ToString() == "Console.Write")
                         return new EmptyExpression()
                         {
-                            SourceExpression = si,
+                            SourceExpression = invexp,
                             Parent = statement
                         };
                 }
-                if (si.Expression is IdentifierNameSyntax)
+                if (invexp.Expression is IdentifierNameSyntax)
                 {
-                    var method_name = ((IdentifierNameSyntax)si.Expression).Identifier.ValueText;
+                    var method_name = ((IdentifierNameSyntax)invexp.Expression).Identifier.ValueText;
                     if (method_name.Equals("SimulationOnly"))
                         return new EmptyExpression()
                         {
-                            SourceExpression = si,
+                            SourceExpression = invexp,
                             Parent = statement
                         };
                 }
 
-                return Decompile(network, proc, method, statement, expression as InvocationExpressionSyntax);
+                return Decompile(network, proc, method, statement, invexp);
             }
-            else if (expression is ParenthesizedExpressionSyntax)
-                return Decompile(network, proc, method, statement, expression as ParenthesizedExpressionSyntax);
-            else if (expression is ArrayCreationExpressionSyntax)
-                return Decompile(network, proc, method, statement, expression as ArrayCreationExpressionSyntax);
-            else if (expression is CheckedExpressionSyntax)
-                return Decompile(network, proc, method, statement, expression as CheckedExpressionSyntax);
-            else if (expression is AwaitExpressionSyntax)
-                return Decompile(network, proc, method, statement, expression as AwaitExpressionSyntax);
+            else if (expression is ParenthesizedExpressionSyntax parexp)
+                return Decompile(network, proc, method, statement, parexp);
+            else if (expression is ArrayCreationExpressionSyntax arrayexp)
+                return Decompile(network, proc, method, statement, arrayexp);
+            else if (expression is CheckedExpressionSyntax checkedexp)
+                return Decompile(network, proc, method, statement, checkedexp);
+            else if (expression is AwaitExpressionSyntax awaitexp)
+                return Decompile(network, proc, method, statement, awaitexp);
             else if (expression is BaseExpressionSyntax)
                 // TODO: handle base expressions properly
-                return new EmptyExpression() {
+                return new EmptyExpression()
+                {
                     SourceExpression = expression,
                     Parent = statement
                 };
             else
-                throw new Exception(string.Format("Unsupported expression: {0} ({1})", expression, expression.GetType().FullName));
+                throw new Exception(string.Format("Unsupported expression: {0} ({1})", expression, expression?.GetType().FullName));
         }
 
 
@@ -101,7 +99,7 @@ namespace SME.AST
 
             var res = new AssignmentExpression()
             {
-                Operator = (SyntaxKind) expression.OperatorToken.RawKind,
+                Operator = (SyntaxKind)expression.OperatorToken.RawKind,
                 SourceResultType = ResolveExpressionType(network, proc, method, statement, expression),
                 SourceExpression = expression,
                 Left = lhs,
@@ -132,8 +130,7 @@ namespace SME.AST
                 Parent = statement
             };
 
-            var pred = expression.Expression as InvocationExpressionSyntax;
-            if (pred == null || !((pred.Expression as IdentifierNameSyntax).Identifier.Text.Equals("ClockAsync")))
+            if (expression.Expression is not InvocationExpressionSyntax pred || !(pred.Expression is IdentifierNameSyntax idexp && idexp.Identifier.Text.Equals("ClockAsync")))
                 throw new Exception("Only clock waits are supported for now");
 
             return res;
@@ -177,8 +174,13 @@ namespace SME.AST
             };
             // TODO proper evaluation for not-buses. Could be useful for supporting array of constant classes. Maybe also nested structs?
             // TODO if the length checks are removed, then normal buses are evaluated as well. This shouldn't be a problem, but for simpleMIPS, it sets the terminate opcode as being a global constant, which then break later evaluation, as the CPU uses a bus named terminate as well. This is a bug because there's a nameclash, but it should be able to handle it, as while they share a name, it's in two widely different scopes.
-            if ((mre.Target is Bus && (mre.Target as Bus).SourceInstances.Length > 1) || (mre.Target is BusSignal &&((mre.Target as BusSignal).Parent as Bus).SourceInstances.Length > 1))
+            if (mre.Target is Bus bus && bus.SourceInstances.Length > 1)
                 mre.TargetExpression = Decompile(network, proc, method, statement, expression.Expression);
+            else if (mre.Target is BusSignal sig &&
+                    sig.Parent is Bus parentBus &&
+                    parentBus.SourceInstances.Length > 1)
+                mre.TargetExpression = Decompile(network, proc, method, statement, expression.Expression);
+
             return mre;
         }
 
@@ -196,7 +198,7 @@ namespace SME.AST
             {
                 SourceResultType = ResolveExpressionType(network, proc, method, statement, expression),
                 SourceExpression = expression,
-                Value = expression.Token.Value,
+                Value = expression.Token.Value!,
                 Parent = statement
             };
         }
@@ -211,13 +213,15 @@ namespace SME.AST
         /// <param name="expression">The expression to decompile.</param>
         protected BinaryOperatorExpression Decompile(NetworkState network, ProcessState proc, MethodState method, Statement statement, BinaryExpressionSyntax expression)
         {
+            var left = Decompile(network, proc, method, statement, expression.Left);
+            var right = Decompile(network, proc, method, statement, expression.Right);
             var res = new BinaryOperatorExpression()
             {
                 SourceResultType = ResolveExpressionType(network, proc, method, statement, expression),
                 SourceExpression = expression,
-                Operator = (SyntaxKind) expression.OperatorToken.RawKind,
-                Left = Decompile(network, proc, method, statement, expression.Left),
-                Right = Decompile(network, proc, method, statement, expression.Right),
+                Operator = (SyntaxKind)expression.OperatorToken.RawKind,
+                Left = left,
+                Right = right,
                 Parent = statement
             };
 
@@ -241,7 +245,7 @@ namespace SME.AST
             {
                 SourceResultType = ResolveExpressionType(network, proc, method, statement, expression),
                 SourceExpression = expression,
-                Operator = (SyntaxKind) expression.OperatorToken.RawKind,
+                Operator = (SyntaxKind)expression.OperatorToken.RawKind,
                 Operand = Decompile(network, proc, method, statement, expression.Operand),
                 Parent = statement
             };
@@ -265,7 +269,7 @@ namespace SME.AST
             {
                 SourceResultType = ResolveExpressionType(network, proc, method, statement, expression),
                 SourceExpression = expression,
-                Operator = (SyntaxKind) expression.OperatorToken.RawKind,
+                Operator = (SyntaxKind)expression.OperatorToken.RawKind,
                 Operand = Decompile(network, proc, method, statement, expression.Operand),
                 Parent = statement
             };
@@ -416,11 +420,11 @@ namespace SME.AST
             {
                 SourceResultType = ResolveExpressionType(network, proc, method, statement, expression),
                 SourceExpression = expression,
-                ElementExpressions = expression.Initializer.Expressions.Select(x => Decompile(network, proc, method, statement, x)).ToArray(),
+                ElementExpressions = expression.Initializer?.Expressions.Select(x => Decompile(network, proc, method, statement, x)).ToArray(),
                 Parent = statement
             };
 
-            foreach (var x in res.ElementExpressions)
+            foreach (var x in res.ElementExpressions ?? [])
                 x.Parent = res;
 
             return res;

@@ -20,7 +20,7 @@ namespace SME.AST
         /// <param name="method">The method where the statement is found.</param>
         /// <param name="statement">The statement where the expression is found.</param>
         /// <param name="expression">The expression to examine.</param>
-        protected virtual DataElement LocateDataElement(NetworkState network, ProcessState proc, MethodState method, Statement statement, ExpressionSyntax expression)
+        protected virtual DataElement LocateDataElement(NetworkState network, ProcessState? proc, MethodState method, Statement? statement, ExpressionSyntax expression)
         {
             var res = TryLocateDataElement(network, proc, method, statement, expression);
             if (res == null)
@@ -38,27 +38,24 @@ namespace SME.AST
         /// <param name="method">The method where the statement is found.</param>
         /// <param name="statement">The statement where the expression is found.</param>
         /// <param name="expression">The expression to examine.</param>
-        protected ASTItem TryLocateElement(NetworkState network, ProcessState proc, MethodState method, Statement statement, ExpressionSyntax expression)
+        protected ASTItem? TryLocateElement(NetworkState network, ProcessState? proc, MethodState method, Statement? statement, ExpressionSyntax? expression)
         {
-            if (expression is InvocationExpressionSyntax)
+            if (expression is InvocationExpressionSyntax iesyn)
             {
-                var e = expression as InvocationExpressionSyntax;
-                var target = e.Expression;
+                var target = iesyn.Expression;
                 return LocateDataElement(network, proc, method, statement, target);
             }
-            else if (expression is ElementAccessExpressionSyntax)
+            else if (expression is ElementAccessExpressionSyntax eaesyn)
             {
-                var e = expression as ElementAccessExpressionSyntax;
-                var target = e.Expression;
+                var target = eaesyn.Expression;
                 return LocateDataElement(network, proc, method, statement, target);
             }
-            else if (expression is IdentifierNameSyntax)
+            else if (expression is IdentifierNameSyntax insyn)
             {
-                var e = expression as IdentifierNameSyntax;
-                var name = e.Identifier.Text;
+                var name = insyn.Identifier.Text;
 
-                Variable variable;
-                if (method != null && method.TryGetVariable(name, out variable))
+                Variable? variable;
+                if (method != null && method.TryGetVariable(name, out variable) && variable != null)
                     return variable;
 
                 if (method != null)
@@ -68,27 +65,27 @@ namespace SME.AST
                         return p;
                 }
 
-                if (proc.Variables.TryGetValue(name, out variable))
+                if (proc != null && proc.Variables.TryGetValue(name, out variable))
                     return variable;
 
-                Constant constant;
-                if (proc.Constants.TryGetValue(name, out constant))
+                Constant? constant;
+                if (proc != null && proc.Constants.TryGetValue(name, out constant))
                     return constant;
 
-                constant = network.ConstantLookup.Values.FirstOrDefault(x => x.Name.Equals(name));
+                constant = network.ConstantLookup.Values.FirstOrDefault(x => x?.Name?.Equals(name) ?? false);
                 if (constant != null)
                     return constant;
 
-                Signal signal;
+                Signal? signal;
                 if (proc != null && proc.Signals.TryGetValue(name, out signal))
                     return signal;
 
-                Bus bus;
+                Bus? bus;
                 if (proc != null && proc.BusInstances.TryGetValue(name, out bus))
                     return bus;
 
-                var constsymbol = m_compilation.GetSymbolsWithName(name).FirstOrDefault() as IFieldSymbol;
-                if (constsymbol != null && constsymbol.IsStatic && constsymbol.HasConstantValue)
+                var constsymbol = m_compilation?.GetSymbolsWithName(name).FirstOrDefault() as IFieldSymbol;
+                if (proc != null && constsymbol != null && constsymbol.IsStatic && constsymbol.HasConstantValue)
                 {
                     var global_constant = new Constant()
                     {
@@ -108,10 +105,10 @@ namespace SME.AST
             {
                 var e = expression as MemberAccessExpressionSyntax;
 
-                ASTItem current = null;
+                ASTItem? current = null;
 
                 var parts = new List<string>();
-                ExpressionSyntax ec = e;
+                ExpressionSyntax? ec = e;
                 while (ec != null)
                 {
                     if (ec is MemberAccessExpressionSyntax)
@@ -129,10 +126,9 @@ namespace SME.AST
                         ec = null;
                         break;
                     }
-                    else if (ec is IdentifierNameSyntax)
+                    else if (ec is IdentifierNameSyntax ecins)
                     {
-                        var ins = ec as IdentifierNameSyntax;
-                        var ecs = ins.Identifier.Text;
+                        var ecs = ecins.Identifier.Text;
                         var targetproc = network.Processes
                             .FirstOrDefault(x =>
                                 x.MSCAType.Name.Equals(ecs) ||
@@ -149,12 +145,11 @@ namespace SME.AST
                         ec = null;
                         break;
                     }
-                    else if (ec is ElementAccessExpressionSyntax)
+                    else if (ec is ElementAccessExpressionSyntax eae)
                     {
                         // For now, an element access within a member access is only supported for buses.
                         // In the future, this should be extended to support structs as well.
                         // TODO Handle this properly, it is an array of buses, so it should lookup the type of the field, and return it.
-                        var eae = ec as ElementAccessExpressionSyntax;
                         var ecs = eae.Expression as IdentifierNameSyntax;
                         var idxs = eae.ArgumentList.Arguments.Select(x => "0"); // Hardcoded to 0, as we are after the type, not the value
                         // Otherwise, lookup the index variable in the constants. If it is not found, just go with 0.
@@ -162,7 +157,7 @@ namespace SME.AST
                     }
                     else if (ec is TypeSyntax)
                     {
-                        ISymbol dc = method?.MSCAMethod.LoadSymbol(m_semantics) ?? proc?.MSCAType;
+                        ISymbol? dc = method?.MSCAMethod.LoadSymbol(m_semantics) ?? proc?.MSCAType;
 
                         var ecs = ec.ToString();
 
@@ -176,7 +171,7 @@ namespace SME.AST
                             if (bt == null && proc != null && proc.SourceType != null)
                                 bt = LoadTypeByName(proc.SourceType.Namespace + "." + ecs);
 
-                            if (bt != null && parts.Count == 1)
+                            if (bt != null && proc != null && parts.Count == 1)
                             {
                                 var br = bt.ContainingType;
                                 var px = br.GetMembers().OfType<IFieldSymbol>().FirstOrDefault(x => x.Name.Equals(parts[0]));
@@ -200,6 +195,9 @@ namespace SME.AST
                                     var pe = network.ConstantLookup.Keys.FirstOrDefault(x => x.Item2.Name.Equals(parts[0]));
                                     if (pe != null)
                                         return network.ConstantLookup[pe];
+
+                                    if (px == null)
+                                        throw new Exception($"Unable to find field {parts[0]} in {br.ToDisplayString()}");
 
                                     return network.ConstantLookup[new Tuple<ProcessState, IFieldSymbol>(proc, px)] = new Constant()
                                     {
@@ -236,7 +234,7 @@ namespace SME.AST
                 }
 
                 // Shortcut for getting array of buses length
-                if (proc.Constants.ContainsKey(fullname))
+                if (proc != null && proc.Constants.ContainsKey(fullname))
                     return proc.Constants[fullname];
 
                 var first = true;
@@ -260,14 +258,14 @@ namespace SME.AST
                         var mt = current as MethodState ?? method;
                         if (mt != null)
                         {
-                            Variable temp;
+                            Variable? temp;
                             if (mt.TryGetVariable(el, out temp))
                             {
                                 current = temp;
                                 continue;
                             }
 
-                            var p = mt.Parameters.FirstOrDefault(x => x.Name.Equals(el));
+                            var p = mt.Parameters.FirstOrDefault(x => x.Name?.Equals(el) ?? false);
                             if (p != null)
                             {
                                 current = p;
@@ -314,7 +312,7 @@ namespace SME.AST
 
                             if (pr.Methods != null)
                             {
-                                var p = pr.Methods.FirstOrDefault(x => x.Name.Equals(el));
+                                var p = pr.Methods.FirstOrDefault(x => x.Name?.Equals(el) ?? false);
                                 if (p != null)
                                 {
                                     current = p;
@@ -326,15 +324,14 @@ namespace SME.AST
 
                     if (current is Bus)
                     {
-                        current = ((Bus)current).Signals.FirstOrDefault(x => x.Name.Equals(el));
+                        current = ((Bus)current).Signals.FirstOrDefault(x => x.Name?.Equals(el) ?? false);
                         if (current != null)
                             continue;
                     }
 
-                    if (current is Variable)
+                    if (current is Variable vc)
                     {
-                        var vc = current as Variable;
-                        var fi = vc.MSCAType.GetMembers().OfType<IFieldSymbol>().FirstOrDefault(x => x.Name.Equals(el));
+                        var fi = vc.MSCAType.GetMembers().OfType<IFieldSymbol>().FirstOrDefault(x => x.Name?.Equals(el) ?? false);
                         if (fi != null)
                         {
                             current = new Variable()
@@ -365,26 +362,29 @@ namespace SME.AST
                         }
                     }
 
-                    if (el == "Length" && (current is DataElement) && ((DataElement)current).MSCAType.IsArrayType())
+                    if (el == "Length" && (current is DataElement de) && de.MSCAType.IsArrayType())
                     {
                         return new Constant()
                         {
-                            ArrayLengthSource = current as DataElement,
+                            ArrayLengthSource = de,
                             MSCAType = LoadType(typeof(int)),
                             DefaultValue = null,
-                            Source = (current as DataElement).Source
+                            Source = de.Source
                         };
                     }
 
-                    var sy = m_compilation.GetSymbolsWithName(el).FirstOrDefault() as ITypeSymbol;
-                    var px = sy.GetMembers().OfType<IFieldSymbol>().FirstOrDefault(x => x.Name.Equals(parts.Last()));
-                    if (sy != null && sy.IsEnum())
-                        return new Constant()
-                        {
-                            MSCAType = px.Type,
-                            DefaultValue = px,
-                            Source = expression
-                        };
+                    var sy = m_compilation?.GetSymbolsWithName(el).FirstOrDefault() as ITypeSymbol;
+                    if (sy != null)
+                    {
+                        var px = sy.GetMembers().OfType<IFieldSymbol>().FirstOrDefault(x => x.Name?.Equals(parts.Last()) ?? false);
+                        if (px != null && sy.IsEnum())
+                            return new Constant()
+                            {
+                                MSCAType = px.Type,
+                                DefaultValue = px,
+                                Source = expression
+                            };
+                    }
 
                     throw new Exception($"Failed lookup at {el} in {fullname}");
                 }
@@ -396,7 +396,7 @@ namespace SME.AST
             }
             else
             {
-                throw new Exception($"Unable to find a data element for an expression of type {expression.GetType().FullName}");
+                throw new Exception($"Unable to find a data element for an expression of type {expression?.GetType().FullName}");
             }
         }
 
@@ -409,7 +409,7 @@ namespace SME.AST
         /// <param name="method">The method where the statement is found.</param>
         /// <param name="statement">The statement where the expression is found.</param>
         /// <param name="expression">The expression to examine.</param>
-        protected DataElement TryLocateDataElement(NetworkState network, ProcessState proc, MethodState method, Statement statement, ExpressionSyntax expression)
+        protected DataElement? TryLocateDataElement(NetworkState network, ProcessState? proc, MethodState method, Statement? statement, ExpressionSyntax expression)
         {
             var el = TryLocateElement(network, proc, method, statement, expression);
             if (el == null)
@@ -438,7 +438,7 @@ namespace SME.AST
                 MSCAType = vartype,
                 Name = varname,
                 Source = source,
-                Parent = (ASTItem)method ?? proc
+                Parent = method as ASTItem ?? proc
             };
 
             return method.AddVariable(res);
@@ -461,7 +461,7 @@ namespace SME.AST
                 Name = variable.Identifier.Text,
                 DefaultValue = variable.Initializer,
                 Source = variable,
-                Parent = (ASTItem)method ?? proc
+                Parent = method as ASTItem ?? proc
             };
 
             return method.AddVariable(c);
@@ -483,21 +483,32 @@ namespace SME.AST
             var fdinstance = fd.GetValue(proc.SourceInstance.Instance);
             if (fdinstance == null)
                 return;
-            var businstance = fdinstance.GetType().IsArray ? fdinstance as IBus[] : new IBus[] {fdinstance as IBus};
+
+            IBus[] businstance = fdinstance switch
+            {
+                IBus[] arr => arr,
+                IBus single => [single],
+                _ => throw new Exception($"No such bus: {field.Name}")
+            };
 
             var allBusses = proc.InputBusses.Concat(proc.OutputBusses).Concat(proc.InternalBusses);
 
             var bus = allBusses.FirstOrDefault(x => x.SourceInstances.Zip(businstance).All(y => y.First == y.Second));
-                if (bus == null)
-                    throw new Exception($"No such bus: {field.ToDisplayString()}");
+            if (bus == null)
+                throw new Exception($"No such bus: {field.ToDisplayString()}");
 
             proc.BusInstances.Add(field.Name, bus);
 
             if (bus.SourceInstances.Length > 1 || fd.FieldType.IsArray)
             {
+                if (m_compilation is null)
+                    throw new Exception("Compilation not set in ParseProcesses");
+
                 // Add a constant to the process for the length of the array
-                var l = new Constant {
-                    MSCAType = m_compilation.GetSpecialType(SpecialType.System_Int32), DefaultValue = bus.SourceInstances.Length,
+                var l = new Constant
+                {
+                    MSCAType = m_compilation.GetSpecialType(SpecialType.System_Int32),
+                    DefaultValue = bus.SourceInstances.Length,
                     Name = $"{field.Name}.Length",
                     Source = field,
                     Parent = proc
@@ -513,18 +524,19 @@ namespace SME.AST
         /// <param name="network">The top-level network.</param>
         /// <param name="proc">The process where the method is located.</param>
         /// <param name="field">The field to parse.</param>
-        protected virtual DataElement RegisterVariable(NetworkState network, ProcessState proc, IFieldSymbol field)
+        protected virtual DataElement? RegisterVariable(NetworkState network, ProcessState proc, IFieldSymbol field)
         {
-            DataElement res;
+            DataElement? res;
 
             var mscatype = proc.ResolveGenericType(field.Type);
-            object defaultvalue = null;
+            object? defaultvalue = null;
             proc.SourceInstance.Initialization.TryGetValue(field.Name, out defaultvalue);
             defaultvalue = field.ConstantValue ?? defaultvalue;
 
             if (field.HasConstantValue || field.IsReadOnly)
             {
-                var c = new Constant() {
+                var c = new Constant()
+                {
                     MSCAType = mscatype,
                     DefaultValue = defaultvalue,
                     Name = field.Name,
@@ -541,7 +553,7 @@ namespace SME.AST
             {
                 res = null;
             }
-            else if (!field.GetAttributes().Any(x => Type.GetType(x.AttributeClass.ToDisplayString()) == typeof(Signal)))
+            else if (!field.GetAttributes().Any(x => x.AttributeClass?.ToDisplayString() is string s && Type.GetType(s) == typeof(Signal)))
             {
                 var c = new Variable()
                 {
@@ -614,11 +626,11 @@ namespace SME.AST
         /// <param name="proc">The process where the method is located.</param>
         /// <param name="method">The method the expression is found.</param>
         /// <param name="expression">The expression used to initialize the bus.</param>
-        protected virtual Bus LocateBus(NetworkState network, ProcessState proc, MethodState method, ExpressionSyntax expression)
+        protected virtual Bus? LocateBus(NetworkState network, ProcessState proc, MethodState method, ExpressionSyntax? expression)
         {
             var de = TryLocateElement(network, proc, method, null, expression);
-            var det = de.GetType();
-            if (det.IsArray && det.GetElementType() == typeof(Bus))
+            var det = de?.GetType();
+            if (det is not null && det.IsArray && det.GetElementType() == typeof(Bus))
                 return de as Bus;
 
             throw new Exception("Need to walk the tree?");

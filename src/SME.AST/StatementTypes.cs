@@ -275,7 +275,7 @@ namespace SME.AST
         /// <summary>
         /// The target label.
         /// </summary>
-        public string Label;
+        public string? Label;
 
         /// <summary>
         /// Default constructor.

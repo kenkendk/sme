@@ -18,18 +18,20 @@ namespace SME.AST
         /// <param name="method">The method to decompile.</param>
         protected virtual Statement[] Decompile(NetworkState network, ProcessState proc, MethodState method)
         {
-            var sx = method.MSCAMethod.Body.Statements;
+            var sx = method.MSCAMethod.Body?.Statements;
+            if (sx == null)
+                return [];
 
             foreach (var s in sx.OfType<UsingStatementSyntax>())
-                proc.Imports.Add(s.Expression.ToString());
+                // Ignore empty using statements
+                if (s.Expression != null)
+                    proc.Imports.Add(s.Expression.ToString());
 
             method.MSCAReturnType = LoadType(method.MSCAMethod.ReturnType);
-            method.ReturnVariable =
-                (
-                    method.MSCAReturnType.IsSameTypeReference(typeof(void))
-                    ||
-                    method.MSCAReturnType.IsSameTypeReference(typeof(System.Threading.Tasks.Task))
-                )
+            var isVoid = method.MSCAReturnType.IsSameTypeReference(typeof(void));
+            var isTask = method.MSCAReturnType.IsSameTypeReference<System.Threading.Tasks.Task>();
+
+            method.ReturnVariable = (isVoid || isTask)
                 ? null
                 : RegisterTemporaryVariable(network, proc, method, LoadType(method.MSCAMethod.ReturnType, method), method.MSCAMethod);
 
@@ -54,14 +56,14 @@ namespace SME.AST
             foreach (var n in instructions)
                 /*try
                 {*/
-                    statements.Add(Decompile(network, proc, method, n));
-                /*}
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Failed to process statement: {n} -> {ex}");
-                    statements.Add(new CommentStatement($"Failed to process statement: {n} -> {ex}"));
-                    throw ex;
-                }*/
+                statements.Add(Decompile(network, proc, method, n));
+            /*}
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to process statement: {n} -> {ex}");
+                statements.Add(new CommentStatement($"Failed to process statement: {n} -> {ex}"));
+                throw ex;
+            }*/
 
             return statements.ToArray();
         }
@@ -75,12 +77,12 @@ namespace SME.AST
         protected virtual void Decompile(NetworkState network, ProcessState proc, System.Reflection.MethodInfo method)
         {
             var statements = new List<Statement>();
-            if (proc.MSCAType == null)
-                proc.MSCAType = LoadType(proc.SourceType);
+            proc.MSCAType ??= LoadType(proc.SourceType);
 
             var proctype = proc.MSCAType;
-            IEnumerable<IMethodSymbol> methsyns = new List<IMethodSymbol>();
-            while (proctype.ContainingNamespace.ToString().Equals(method.DeclaringType.Namespace ?? "<global namespace>"))
+            IEnumerable<IMethodSymbol> methsyns = [];
+            var methodnamespace = method.DeclaringType?.Namespace ?? "<global namespace>";
+            while (proctype is not null && (proctype.ContainingNamespace.ToString() ?? string.Empty).Equals(methodnamespace))
             {
                 methsyns = methsyns.Concat(proctype
                     .GetMembers()
@@ -108,27 +110,27 @@ namespace SME.AST
 
             var methods = new List<MethodState>();
 
-            while(proc.MethodTargets.Count > 0)
+            while (proc.MethodTargets.Count > 0)
             {
                 var tp = proc.MethodTargets.Dequeue();
                 var ix = tp.Item3;
 
-                var ic = (ix.SourceExpression as InvocationExpressionSyntax);
+                if (ix.SourceExpression is not InvocationExpressionSyntax ic)
+                    throw new Exception("Expected an invocation expression");
                 string r;
-                if (ic.Expression is MemberAccessExpressionSyntax)
-                    r = ((MemberAccessExpressionSyntax)ic.Expression).TryGetInferredMemberName();
-                else if (ic.Expression is IdentifierNameSyntax)
-                    r = ((IdentifierNameSyntax)ic.Expression).Identifier.ValueText;
+                if (ic.Expression is MemberAccessExpressionSyntax maexp)
+                    r = maexp.TryGetInferredMemberName() ?? "";
+                else if (ic.Expression is IdentifierNameSyntax insyn)
+                    r = insyn.Identifier.ValueText;
                 else
                     r = "";
 
                 // TODO: Maybe we can support overloads here as well
-                var dm = methods.FirstOrDefault(x => x.Name.Equals(r));
+                var dm = methods.FirstOrDefault(x => x.Name?.Equals(r) ?? false);
                 if (dm == null)
                 {
-                    var mrsy = methsyns.FirstOrDefault(x => x.Name.Equals(r));
-                    if (mrsy == null)
-                        throw new Exception($"Unable to resolve method call to {r}");
+                    var mrsy = methsyns.FirstOrDefault(x => x.Name.Equals(r))
+                        ?? throw new Exception($"Unable to resolve method call to {r}");
                     dm = Decompile(network, proc, mrsy);
                     methods.Add(dm);
                 }
@@ -139,7 +141,7 @@ namespace SME.AST
                 {
                     Parent = ix,
                     SourceExpression = ix.SourceExpression,
-                    SourceResultType = dm.ReturnVariable.MSCAType,
+                    SourceResultType = dm.ReturnVariable?.MSCAType ?? LoadType(typeof(void)),
                     Target = dm
                 };
                 ix.SourceResultType = ix.TargetExpression.SourceResultType;
@@ -159,7 +161,8 @@ namespace SME.AST
         /// <param name="method">The method to decompile.</param>
         protected virtual MethodState Decompile(NetworkState network, ProcessState proc, IMethodSymbol method)
         {
-            var synmeth = method.GetSyntax() as MethodDeclarationSyntax;
+            var synmeth = method.GetSyntax() as MethodDeclarationSyntax
+                ?? throw new Exception("Unable to get method syntax");
             var res = new MethodState()
             {
                 Name = synmeth.Identifier.Text,
@@ -181,7 +184,7 @@ namespace SME.AST
             else
             {
                 res.Statements = Decompile(network, proc, res);
-                res.AllVariables = res.CollectedVariables.Select(x => {x.Name = $"{res.Name}_{x.Name}"; return x; }).ToArray();
+                res.AllVariables = res.CollectedVariables.Select(x => { x.Name = $"{res.Name}_{x.Name}"; return x; }).ToArray();
                 res.Variables = res.Scopes.First().Value.Values.ToArray();
             }
 

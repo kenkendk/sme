@@ -62,7 +62,7 @@ namespace SME.AST
             /// <summary>
             /// The compilation of the project.
             /// </summary>
-            public Compilation compilation;
+            public required Compilation compilation;
             /// <summary>
             /// The import statements.
             /// </summary>
@@ -88,11 +88,14 @@ namespace SME.AST
             /// <returns>The resolved type.</returns>
             /// <param name="ft">The type to resolve.</param>
             /// <param name="method">The method context, if any.</param>
-            public ITypeSymbol ResolveGenericType(ITypeSymbol its, MethodState method = null)
+            public ITypeSymbol ResolveGenericType(ITypeSymbol its, MethodState? method = null)
             {
+                if (m_compilation is null)
+                    throw new Exception("Compilation not set in ParseProcesses");
+
                 if (its.TypeKind is TypeKind.Array)
                 {
-                    var elt = (its as IArrayTypeSymbol).ElementType;
+                    var elt = (its as IArrayTypeSymbol)?.ElementType;
                     if ((elt is INamedTypeSymbol && ((INamedTypeSymbol)elt).IsGenericType) || elt is ITypeParameterSymbol)
                     {
                         return m_compilation.CreateArrayTypeSymbol(GenericTypes[elt.Name]);
@@ -109,6 +112,10 @@ namespace SME.AST
                 {
                     return this.GenericTypes[ft.Name];
                 }
+
+                if (ft is null)
+                    throw new Exception($"Type {its.Name} not found.");
+
                 return ft;
             }
         }
@@ -142,6 +149,8 @@ namespace SME.AST
             /// <param name="variable">The variable to add.</param>
             public Variable AddVariable(AST.Variable variable)
             {
+                if (variable.Name is null)
+                    throw new Exception("Variable name cannot be null.");
                 Scopes.Last().Value.Add(variable.Name, variable);
                 CollectedVariables.Add(variable);
                 return variable;
@@ -183,7 +192,7 @@ namespace SME.AST
             /// <returns><c>true</c>, if the variable was found, <c>false</c> otherwise.</returns>
             /// <param name="name">The name of the variable to locate.</param>
             /// <param name="variable">The variable, if any.</param>
-            public bool TryGetVariable(string name, out Variable variable)
+            public bool TryGetVariable(string name, out Variable? variable)
             {
                 variable = null;
 
@@ -227,11 +236,13 @@ namespace SME.AST
         public virtual Network Parse(Simulation simulation, bool decompile = false)
         {
             // Get the path to the .csproj file
-            var sourceasm = simulation.Processes.First().Instance.GetType().Assembly;
+            var sourceasm = simulation.Processes.First().Instance.GetType().Assembly
+                ?? throw new Exception("Could not determine the assembly containing the simulation processes.");
             var project_path = Simulation.ProjectPath;
             if (project_path == null)
             {
-                var folder_path = Directory.GetParent(sourceasm.Location).FullName;
+                var folder_path = (Directory.GetParent(sourceasm.Location)?.FullName)
+                    ?? throw new Exception("Could not determine the folder of the assembly containing the simulation processes.");
                 project_path = GetCSProjInParents(folder_path);
             }
 
@@ -252,8 +263,11 @@ namespace SME.AST
                 throw new Exception($"{workspace.Diagnostics.Count} errors when opening the workspace.{Environment.NewLine}{message_string}");
             }
             var project = proj_task.Result;
-            var compile_task = project.GetCompilationAsync();
+            var compile_task = project.GetCompilationAsync()
+                ?? throw new Exception("Could not compile the project.");
             compile_task.Wait();
+            if (compile_task.Result is null)
+                throw new Exception("Could not compile the project.");
             m_compilation = compile_task.Result;
             var diags = m_compilation.GetDiagnostics();
             foreach (var diag in diags)
@@ -264,7 +278,7 @@ namespace SME.AST
 
             var network = new NetworkState()
             {
-                Name = sourceasm.GetName().Name,
+                Name = sourceasm.GetName().Name ?? throw new Exception("Could not determine the name of the assembly containing the simulation processes."),
                 Parent = null,
                 compilation = m_compilation
             };
@@ -314,7 +328,8 @@ namespace SME.AST
 
             // Patch up all types if they are missing
             foreach (var el in network.All().OfType<DataElement>().Where(x => x.MSCAType == null))
-                el.MSCAType = LoadType(el.Type);
+                if (el.Type != null)
+                    el.MSCAType = LoadType(el.Type);
 
             foreach (var el in network.All().OfType<DataElement>().Where(x => x.DefaultValue == null))
             {
@@ -346,7 +361,11 @@ namespace SME.AST
             if (csprojs.Any())
                 return csprojs.First();
             else
-                return GetCSProjInParents(Directory.GetParent(folder_path).FullName);
+            {
+                var parent = Directory.GetParent(folder_path)
+                    ?? throw new Exception("Could not find a .csproj file in any parent folders.");
+                return GetCSProjInParents(parent.FullName);
+            }
         }
 
         /// <summary>
@@ -361,11 +380,12 @@ namespace SME.AST
             var extras = string.Empty;
             if (sourcetype.IsGenericType)
             {
-                fullname = sourcetype.GetGenericTypeDefinition().FullName;
+                fullname = sourcetype.GetGenericTypeDefinition().FullName
+                    ?? throw new Exception("Could not determine the full name of the generic type definition.");
                 extras = "<" + string.Join(", ", sourcetype.GenericTypeArguments.Select(x => x.Name)) + ">";
             }
 
-            if (fullname.StartsWith(network.Name + ".", StringComparison.Ordinal) && fullname.Length > network.Name.Length - 1)
+            if (network.Name is not null && fullname.StartsWith(network.Name + ".", StringComparison.Ordinal) && fullname.Length > network.Name.Length - 1)
                 fullname = fullname.Substring(network.Name.Length + 1);
 
             return fullname + extras;
@@ -380,6 +400,11 @@ namespace SME.AST
         protected virtual Process Parse(NetworkState network, ProcessMetadata process, Simulation simulation)
         {
             var st = process.Instance.GetType();
+
+            if (st.FullName is null)
+                throw new Exception("Could not determine the full name of the process type.");
+            if (process.InstanceName is null)
+                throw new Exception("Could not determine the name of the process instance.");
 
             var inputbusses = process.Instance.InputBusses.Union(process.Instance.ClockedInputBusses).ToArray();
             var outputbusses = process.Instance.OutputBusses.Distinct().ToArray();
@@ -407,8 +432,8 @@ namespace SME.AST
                 compilation = network.compilation
             };
 
-            var proctype = res.MSCAType as INamedTypeSymbol;
-
+            var proctype = res.MSCAType as INamedTypeSymbol
+                ?? throw new Exception("Could not determine the named type symbol of the process type.");
             if (proctype.IsGenericType)
             {
                 var gennames = proctype.TypeParameters.Select(x => x.Name).ToArray();
@@ -437,10 +462,12 @@ namespace SME.AST
                     .FirstOrDefault(x =>
                         {
                             var bus = x.GetValue(process.Instance);
-                            var bust = bus.GetType();
-                            if (!(bus is IBus || (bust.IsArray && (bust.GetElementType().GetInterfaces().Any(y => y == typeof(IBus))))))
+                            var bust = bus?.GetType();
+                            if (!(bus is IBus || (bust is not null && bust.IsArray && (bust.GetElementType()?.GetInterfaces().Any(y => y == typeof(IBus)) is not null))))
                                 return false;
-                            var busarr = bust.IsArray ? bus as IBus[] : new[] { bus as IBus };
+                            var busarr = bust is not null && bust.IsArray ? bus as IBus[] : new[] { bus as IBus };
+                            if (busarr is null)
+                                return false;
                             return busarr.Zip(b.SourceInstances)
                                 .All(y => y.First == y.Second);
                         });
@@ -452,9 +479,8 @@ namespace SME.AST
             {
                 var Fields = proctype.GetMembers()
                         .OfType<IFieldSymbol>()
-                        .Where(x => !x.GetAttributes<IgnoreAttribute>()
-                        .Any());
-                while (!proctype.BaseType.ToDisplayString().StartsWith("SME"))
+                        .Where(x => !x.GetAttributes<IgnoreAttribute>().Any());
+                while (proctype.BaseType is not null && !proctype.BaseType.ToDisplayString().StartsWith("SME"))
                 {
                     proctype = proctype.BaseType;
                     Fields = Fields.Union(proctype
@@ -465,6 +491,7 @@ namespace SME.AST
                             .Any()
                         ), (IEqualityComparer<IFieldSymbol>)SymbolEqualityComparer.Default);
                 }
+
                 // Register all variables
                 foreach (var f in Fields)
                 {
@@ -482,7 +509,7 @@ namespace SME.AST
                 if (f.Value == null)
                     continue;
 
-                Variable v;
+                Variable? v;
                 if (res.Variables.TryGetValue(f.Key, out v))
                     SetDataElementDefaultValue(network, res, v, f.Value, false);
             }
@@ -504,6 +531,11 @@ namespace SME.AST
         protected virtual Bus Parse(NetworkState network, ProcessState proc, IBus[] bus, Simulation simulation)
         {
             var bu = bus.FirstOrDefault();
+
+            // TODO should be able to handle empty bus arrays, but need to figure out how to map them first.
+            if (bu == null)
+                throw new Exception("Cannot parse an empty bus array.");
+
             var st = ((IRuntimeBus)bu).BusType;
 
             if (network.BusInstanceLookup.ContainsKey(bu))
@@ -511,7 +543,7 @@ namespace SME.AST
 
             var res = new Bus()
             {
-                Name = NameWithoutPrefix(network, st.FullName, st),
+                Name = NameWithoutPrefix(network, st.FullName ?? st.Name, st),
                 SourceType = st,
                 SourceInstances = bus,
                 IsTopLevelInput = bus.Any(x => simulation.TopLevelInputBusses.Contains(x)),
@@ -539,7 +571,7 @@ namespace SME.AST
         protected virtual BusSignal Parse(NetworkState network, ProcessState proc, Bus bus, PropertyInfo pi)
         {
             var st = pi.PropertyType;
-            object defaultvalue =
+            object? defaultvalue =
                     pi.PropertyType.IsValueType
                       ? Activator.CreateInstance(pi.PropertyType)
                       : null;

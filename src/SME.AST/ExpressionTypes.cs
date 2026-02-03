@@ -19,7 +19,7 @@ namespace SME.AST
         /// <summary>
         /// The source result type.
         /// </summary>
-        public ITypeSymbol SourceResultType;
+        public ITypeSymbol? SourceResultType;
 
         /// <summary>
         /// Returns a string representation of the Expression.
@@ -103,7 +103,7 @@ namespace SME.AST
         /// <summary>
         /// The elements in the array.
         /// </summary>
-        public Expression[] ElementExpressions;
+        public Expression[]? ElementExpressions;
 
         /// <summary>
         /// Default constructor.

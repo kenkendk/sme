@@ -13,12 +13,12 @@ namespace SME.AST
         /// <summary>
         /// The name of the item.
         /// </summary>
-        public string Name;
+        public string? Name;
 
         /// <summary>
         /// The parent item.
         /// </summary>
-        public ASTItem Parent;
+        public ASTItem? Parent;
     }
 
     /// <summary>
@@ -96,7 +96,7 @@ namespace SME.AST
         /// <summary>
         /// The data type of this element.
         /// </summary>
-        public Type Type;
+        public Type? Type;
 
         /// <summary>
         /// The Microsoft.Codeanalysis type.
@@ -106,12 +106,12 @@ namespace SME.AST
         /// <summary>
         /// The source obtained with reflection, if any.
         /// </summary>
-        public object Source;
+        public object? Source;
 
         /// <summary>
         /// The default source value, if any.
         /// </summary>
-        public object DefaultValue;
+        public object? DefaultValue;
     }
 
     /// <summary>
@@ -359,7 +359,7 @@ namespace SME.AST
         /// <summary>
         /// The return variable, if any.
         /// </summary>
-        public Variable ReturnVariable;
+        public Variable? ReturnVariable;
         /// <summary>
         /// A flag indicating if this method should be ignored.
         /// </summary>

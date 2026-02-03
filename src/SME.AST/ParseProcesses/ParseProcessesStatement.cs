@@ -17,35 +17,35 @@ namespace SME.AST
         /// <param name="proc">The process where the method is located.</param>
         /// <param name="method">The method where the statement is found.</param>
         /// <param name="statement">The decompiler statement to process.</param>
-        protected virtual Statement Decompile(NetworkState network, ProcessState proc, MethodState method, StatementSyntax statement)
+        protected virtual Statement Decompile(NetworkState network, ProcessState proc, MethodState method, StatementSyntax? statement)
         {
-            if (statement is ExpressionStatementSyntax)
-                return Decompile(network, proc, method, statement as ExpressionStatementSyntax);
-            else if (statement is IfStatementSyntax)
-                return Decompile(network, proc, method, statement as IfStatementSyntax);
-            else if (statement is BlockSyntax)
-                return Decompile(network, proc, method, statement as BlockSyntax);
-            else if (statement is LocalDeclarationStatementSyntax)
-                return Decompile(network, proc, method, statement as LocalDeclarationStatementSyntax);
-            else if (statement is SwitchStatementSyntax)
-                return Decompile(network, proc, method, statement as SwitchStatementSyntax);
-            else if (statement is ReturnStatementSyntax)
-                return Decompile(network, proc, method, statement as ReturnStatementSyntax);
-            else if (statement is ForStatementSyntax)
-                return Decompile(network, proc, method, statement as ForStatementSyntax);
-            else if (statement is BreakStatementSyntax)
-                return Decompile(network, proc, method, statement as BreakStatementSyntax);
-            else if (statement is CheckedStatementSyntax)
+            if (statement is ExpressionStatementSyntax essyn)
+                return Decompile(network, proc, method, essyn);
+            else if (statement is IfStatementSyntax ifsyn)
+                return Decompile(network, proc, method, ifsyn);
+            else if (statement is BlockSyntax blocksyn)
+                return Decompile(network, proc, method, blocksyn);
+            else if (statement is LocalDeclarationStatementSyntax localdeclsyn)
+                return Decompile(network, proc, method, localdeclsyn);
+            else if (statement is SwitchStatementSyntax switchsyn)
+                return Decompile(network, proc, method, switchsyn);
+            else if (statement is ReturnStatementSyntax returnsyn)
+                return Decompile(network, proc, method, returnsyn);
+            else if (statement is ForStatementSyntax forsyn)
+                return Decompile(network, proc, method, forsyn);
+            else if (statement is BreakStatementSyntax breaksyn)
+                return Decompile(network, proc, method, breaksyn);
+            else if (statement is CheckedStatementSyntax cssyn)
             {
                 // Checking for overflow is not translated.
-                return Decompile(network, proc, method, (statement as CheckedStatementSyntax).Block);
+                return Decompile(network, proc, method, cssyn.Block);
             }
-            else if (statement is GotoStatementSyntax)
-                return Decompile(network, proc, method, statement as GotoStatementSyntax);
-            else if (statement is LabeledStatementSyntax)
-                return Decompile(network, proc, method, statement as LabeledStatementSyntax);
-            else if (statement is WhileStatementSyntax)
-                return Decompile(network, proc, method, statement as WhileStatementSyntax);
+            else if (statement is GotoStatementSyntax gotosyn)
+                return Decompile(network, proc, method, gotosyn);
+            else if (statement is LabeledStatementSyntax labeledsyn)
+                return Decompile(network, proc, method, labeledsyn);
+            else if (statement is WhileStatementSyntax whilesyn)
+                return Decompile(network, proc, method, whilesyn);
             else if (statement is null)
                 return new EmptyStatement();
             else
@@ -135,34 +135,41 @@ namespace SME.AST
         /// <param name="statement">The decompiler statement to process.</param>
         protected virtual Statement Decompile(NetworkState network, ProcessState proc, MethodState method, LocalDeclarationStatementSyntax statement)
         {
-            ITypeSymbol vartype = null;
+            ITypeSymbol? vartype = null;
 
             var init = statement.Declaration.Variables.FirstOrDefault(x => x.Initializer != null && x.Initializer.Value is MemberAccessExpressionSyntax);
             if (init != null)
             {
-                var mt = TryLocateElement(network, proc, method, null, init.Initializer.Value);
-                if (mt != null && mt is AST.Bus)
-                    vartype = LoadType(((AST.Bus)mt).SourceType);
+                var mt = TryLocateElement(network, proc, method, null, init.Initializer?.Value);
+                if (mt != null && mt is AST.Bus mtbus)
+                    vartype = LoadType(mtbus.SourceType);
             }
 
-            if (vartype == null)
-                vartype = LoadType(statement.Declaration.Type, method);
+            vartype ??= LoadType(statement.Declaration.Type, method);
 
             if (vartype.IsBusType())
             {
                 foreach (var n in statement.Declaration.Variables)
                 {
-                    if (n.Initializer.Value is MemberAccessExpressionSyntax)
+                    if (n.Initializer?.Value is MemberAccessExpressionSyntax)
                     {
-                        proc.BusInstances[n.Identifier.Text] = LocateBus(network, proc, method, n.Initializer.Value);
+                        proc.BusInstances[n.Identifier.Text] = LocateBus(network, proc, method, n.Initializer.Value)
+                            ?? throw new Exception($"Unable to locate bus for variable {n.Identifier.Text}");
                     }
                     else
                     {
-                        var match = proc.MSCAType.GetClassDecl().Members.OfType<FieldDeclarationSyntax>().Where(x => LoadType(x.Declaration.Type).IsSameTypeReference(vartype)).FirstOrDefault();
+                        var match = proc.MSCAType
+                            .GetClassDecl()
+                            .Members
+                            .OfType<FieldDeclarationSyntax>()
+                            .Where(x => LoadType(x.Declaration.Type).IsSameTypeReference(vartype))
+                            .FirstOrDefault();
+
                         if (match != null)
-                            proc.BusInstances[n.Identifier.Text] = LocateBus(network, proc, method, n.Initializer.Value);
+                            proc.BusInstances[n.Identifier.Text] = LocateBus(network, proc, method, n.Initializer?.Value)
+                                ?? throw new Exception($"Unable to locate bus for variable {n.Identifier.Text}");
                         else
-                            Console.WriteLine("Unable to determine what bus is assigned to variable {0}", n.Identifier.Text);
+                            Console.WriteLine($"Unable to determine what bus is assigned to variable {n.Identifier.Text}");
                     }
                 }
 
@@ -238,7 +245,7 @@ namespace SME.AST
             s.Cases = statement
                 .Sections
                 .Select(x => new Tuple<Expression[], Statement[]>(
-                    x.Labels.Select(y => y is CaseSwitchLabelSyntax ? Decompile(network, proc, method, s, (y as CaseSwitchLabelSyntax).Value) : new EmptyExpression()).ToArray(),
+                    x.Labels.Select(y => y is CaseSwitchLabelSyntax cslsyn ? Decompile(network, proc, method, s, cslsyn.Value) : new EmptyExpression()).ToArray(),
                     x.Statements.Select(y => Decompile(network, proc, method, y)).ToArray()
                 ))
                 .ToArray();
@@ -281,15 +288,15 @@ namespace SME.AST
         /// <param name="proc">The process where the method is located.</param>
         /// <param name="method">The method where the statement is found.</param>
         /// <param name="src">The expression to examine.</param>
-        protected virtual DataElement ResolveArrayLengthOrPrimitive(NetworkState network, ProcessState proc, MethodState method, ExpressionSyntax src)
+        protected virtual DataElement ResolveArrayLengthOrPrimitive(NetworkState network, ProcessState proc, MethodState method, ExpressionSyntax? src)
         {
-            if (src is LiteralExpressionSyntax)
+            if (src is LiteralExpressionSyntax lesyn)
                 try
                 {
                     return new Constant
                     {
                         Source = src,
-                        DefaultValue = Convert.ToInt32((src as LiteralExpressionSyntax).Token.Value),
+                        DefaultValue = Convert.ToInt32(lesyn.Token.Value),
                         MSCAType = LoadType(typeof(int)),
                         Parent = method
                     };
@@ -338,28 +345,26 @@ namespace SME.AST
 
             var value = member.DefaultValue;
 
-            if (value is AST.ArrayCreateExpression)
+            if (value is AST.ArrayCreateExpression ace)
             {
-                var ce = (value as ArrayCreateExpression);
-                var target = ce.ElementExpressions.Length;
+                var target = ace.ElementExpressions?.Length ?? 0;
                 return new Constant()
                 {
                     DefaultValue = target,
-                    Source = ce,
+                    Source = ace,
                     MSCAType = LoadType(typeof(int))
                 };
 
             }
-            else if (value is AST.EmptyArrayCreateExpression)
+            else if (value is AST.EmptyArrayCreateExpression eace)
             {
-                var ce = (value as EmptyArrayCreateExpression);
-                var target = ce.SizeExpression.GetTarget();
+                var target = eace.SizeExpression.GetTarget();
                 if (target == null)
                 {
                     return new Constant()
                     {
-                        DefaultValue = ((PrimitiveExpression)ce.SizeExpression).Value,
-                        Source = ce,
+                        DefaultValue = ((PrimitiveExpression)eace.SizeExpression).Value,
+                        Source = eace,
                         MSCAType = LoadType(typeof(int))
                     };
                 }
@@ -375,32 +380,31 @@ namespace SME.AST
             }
 
 
-            if (value is ArrayCreationExpressionSyntax)
+            if (value is ArrayCreationExpressionSyntax acesyn)
                 return new Constant()
                 {
                     Source = value,
-                    DefaultValue = (value as ArrayCreationExpressionSyntax).Initializer.Expressions.Count(),
+                    DefaultValue = acesyn.Initializer?.Expressions.Count,
                     MSCAType = LoadType(typeof(int)),
                     Parent = method
                 };
 
-            if (value is Array)
+            if (value is Array arrayvalue)
                 return new Constant()
                 {
-                    DefaultValue = ((Array)value).Length,
+                    DefaultValue = arrayvalue.Length,
                     Source = value,
                     MSCAType = LoadType(typeof(int))
                 };
 
-            if (value is MemberDeclarationSyntax)
+            if (value is MemberDeclarationSyntax mr)
             {
                 try
                 {
-                    var mr = value as MemberDeclarationSyntax;
-                    var mrsym = (mr as FieldDeclarationSyntax).LoadSymbol(m_semantics) as IFieldSymbol;
-                    if (mr is FieldDeclarationSyntax && network.ConstantLookup.Keys.Where(x => SymbolEqualityComparer.Default.Equals(x.Item2,mrsym)).Any())
+                    var mrsym = (mr as FieldDeclarationSyntax)?.LoadSymbol(m_semantics) as IFieldSymbol;
+                    if (mr is FieldDeclarationSyntax syntax && network.ConstantLookup.Keys.Where(x => SymbolEqualityComparer.Default.Equals(x.Item2, mrsym)).Any())
                     {
-                        return ResolveArrayLengthOrPrimitive(network, proc, method, ((FieldDeclarationSyntax)mr).Declaration.Variables.First().Initializer.Value);
+                        return ResolveArrayLengthOrPrimitive(network, proc, method, syntax.Declaration.Variables.First().Initializer?.Value);
                     }
                 }
                 catch (Exception ex)
@@ -409,11 +413,10 @@ namespace SME.AST
                 }
             }
 
-
-
             try
             {
-                return new Constant() {
+                return new Constant()
+                {
                     Source = value,
                     DefaultValue = Convert.ToInt32(value),
                     MSCAType = LoadType(typeof(int)),
@@ -452,7 +455,7 @@ namespace SME.AST
             return new GotoStatement()
             {
                 Parent = method,
-                Label = (statement.Expression as IdentifierNameSyntax).Identifier.ValueText
+                Label = (statement.Expression as IdentifierNameSyntax)?.Identifier.ValueText
             };
         }
 
@@ -506,7 +509,7 @@ namespace SME.AST
             if (statement.Incrementors.Count != 1)
                 throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
 
-            if (statement.Declaration.Variables.Count != 1)
+            if (statement.Declaration?.Variables.Count != 1)
                 throw new Exception(string.Format("Only plain style for loops supported: {0}", statement));
 
             var vari = statement.Declaration.Variables.First();
@@ -524,11 +527,11 @@ namespace SME.AST
                 isLoopIndex = true
             };
 
-            var initial = SyntaxFactory.AssignmentExpression(
-                SyntaxKind.SimpleAssignmentExpression,
-                SyntaxFactory.IdentifierName(vari.Identifier.ValueText),
-                SyntaxFactory.Token(SyntaxKind.EqualsToken),
-                vari.Initializer.Value);
+            // var initial = SyntaxFactory.AssignmentExpression(
+            //     SyntaxKind.SimpleAssignmentExpression,
+            //     SyntaxFactory.IdentifierName(vari.Identifier.ValueText),
+            //     SyntaxFactory.Token(SyntaxKind.EqualsToken),
+            //     vari.Initializer.Value);
 
             var res = new ForStatement()
             {
@@ -540,7 +543,7 @@ namespace SME.AST
             method.AddVariable(loopvar);
 
             loopvar.Parent = res;
-            res.Initializer = Decompile(network, proc, method, res, vari.Initializer.Value);
+            res.Initializer = Decompile(network, proc, method, res, vari.Initializer?.Value);
             res.Condition = Decompile(network, proc, method, res, statement.Condition);
             res.Increment = Decompile(network, proc, method, res, itr);
             res.LoopBody = Decompile(network, proc, method, statement.Statement);

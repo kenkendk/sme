@@ -17,15 +17,15 @@ namespace SME.AST
         /// <summary>
         /// Compilation the process belongs to.
         /// </summary>
-        public static Compilation m_compilation;
+        public static Compilation? m_compilation;
         /// <summary>
         /// Collection of syntax trees from the current compilation.
         /// </summary>
-        protected IEnumerable<SyntaxTree> m_syntaxtrees;
+        protected IEnumerable<SyntaxTree> m_syntaxtrees = [];
         /// <summary>
         /// Collection of semantic models, which are derived from the syntax trees.
         /// </summary>
-        protected IEnumerable<SemanticModel> m_semantics;
+        protected IEnumerable<SemanticModel> m_semantics = [];
 
         /// <summary>
         /// Examines the given expression and returns the resulting output type from the expression.
@@ -36,12 +36,14 @@ namespace SME.AST
         /// <param name="method">The method where the statement is found.</param>
         /// <param name="statement">The statement where the expression is found.</param>
         /// <param name="expression">The expression to examine.</param>
-        protected ITypeSymbol ResolveExpressionType(NetworkState network, ProcessState proc, MethodState method, Statement statement, ExpressionSyntax expression)
+        protected ITypeSymbol? ResolveExpressionType(NetworkState network, ProcessState proc, MethodState method, Statement statement, ExpressionSyntax? expression)
         {
-            if (expression is AssignmentExpressionSyntax)
-                return ResolveExpressionType(network, proc, method, statement, (expression as AssignmentExpressionSyntax).Left);
-            else if (expression is IdentifierNameSyntax)
-                return LocateDataElement(network, proc, method, statement, expression as IdentifierNameSyntax).MSCAType;
+            if (m_compilation is null)
+                throw new Exception("Compilation not set in ParseProcesses");
+            if (expression is AssignmentExpressionSyntax aesyn)
+                return ResolveExpressionType(network, proc, method, statement, aesyn.Left);
+            else if (expression is IdentifierNameSyntax insyn)
+                return LocateDataElement(network, proc, method, statement, insyn).MSCAType;
             else if (expression is MemberAccessExpressionSyntax)
             {
                 var el = TryLocateElement(network, proc, method, statement, expression as MemberAccessExpressionSyntax);
@@ -60,21 +62,22 @@ namespace SME.AST
                 else
                     throw new Exception($"Unexpected result for {expression} {el.GetType().FullName}");
             }
-            else if (expression is LiteralExpressionSyntax)
-                return LoadType((expression as LiteralExpressionSyntax).Token.Value.GetType());
-            else if (expression is BinaryExpressionSyntax)
+            else if (expression is LiteralExpressionSyntax lesyn)
+                return LoadType(lesyn.Token.Value!.GetType());
+            else if (expression is BinaryExpressionSyntax besyn)
             {
-                var e = expression as BinaryExpressionSyntax;
-                var op = e.OperatorToken.Kind();
+                var op = besyn.OperatorToken.Kind();
                 if (op.IsCompareOperator() || op.IsLogicalOperator())
                     return LoadType(typeof(bool));
 
-                var lefttype = ResolveExpressionType(network, proc, method, statement, e.Left);
-                //var righttype = ResolveExpressionType(network, proc, method, statement, e.Right);
+                var lefttype = ResolveExpressionType(network, proc, method, statement, besyn.Left);
+                //var righttype = ResolveExpressionType(network, proc, method, statement, besyn.Right);
 
                 if (op.IsArithmeticOperator() || op.IsBitwiseOperator())
                 {
-                    var righttype = ResolveExpressionType(network, proc, method, statement, e.Right);
+                    var righttype = ResolveExpressionType(network, proc, method, statement, besyn.Right);
+                    if (lefttype == null || righttype == null)
+                        throw new Exception($"Unable to resolve types for binary expression {besyn}");
 
                     // Custom resolve of the resulting type as dictated by the .Net rules
                     if (righttype.IsSameTypeReference<double>() || lefttype.IsSameTypeReference<double>())
@@ -102,7 +105,7 @@ namespace SME.AST
                             return m_compilation.GetSpecialType(SpecialType.System_Int32);
                     }
 
-                    if(righttype.IsSameTypeReference<ushort>() || lefttype.IsSameTypeReference<ushort>())
+                    if (righttype.IsSameTypeReference<ushort>() || lefttype.IsSameTypeReference<ushort>())
                         return m_compilation.GetSpecialType(SpecialType.System_Int32);
                     if (righttype.IsSameTypeReference<short>() || lefttype.IsSameTypeReference<short>())
                         return m_compilation.GetSpecialType(SpecialType.System_Int32);
@@ -123,49 +126,47 @@ namespace SME.AST
                     return lefttype;
                 }
             }
-            else if (expression is PostfixUnaryExpressionSyntax)
-                return ResolveExpressionType(network, proc, method, statement, (expression as PostfixUnaryExpressionSyntax).Operand);
-            else if (expression is PrefixUnaryExpressionSyntax)
-                return ResolveExpressionType(network, proc, method, statement, (expression as PrefixUnaryExpressionSyntax).Operand);
-            else if (expression is ElementAccessExpressionSyntax)
+            else if (expression is PostfixUnaryExpressionSyntax pestuesyn)
+                return ResolveExpressionType(network, proc, method, statement, pestuesyn.Operand);
+            else if (expression is PrefixUnaryExpressionSyntax preuesyn)
+                return ResolveExpressionType(network, proc, method, statement, preuesyn.Operand);
+            else if (expression is ElementAccessExpressionSyntax eaesyn)
             {
-                var arraytype = ResolveExpressionType(network, proc, method, statement, (expression as ElementAccessExpressionSyntax).Expression);
-                return arraytype.GetArrayElementType();
+                var arraytype = ResolveExpressionType(network, proc, method, statement, eaesyn.Expression);
+                return arraytype?.GetArrayElementType();
             }
-            else if (expression is CastExpressionSyntax)
-                return LoadType((expression as CastExpressionSyntax).Type, method);
-            else if (expression is ConditionalExpressionSyntax)
-                return ResolveExpressionType(network, proc, method, statement, (expression as ConditionalExpressionSyntax).WhenTrue);
-            else if (expression is InvocationExpressionSyntax)
+            else if (expression is CastExpressionSyntax cesyn)
+                return LoadType(cesyn.Type, method);
+            else if (expression is ConditionalExpressionSyntax condsyn)
+                return ResolveExpressionType(network, proc, method, statement, condsyn.WhenTrue);
+            else if (expression is InvocationExpressionSyntax iesyn)
             {
-                var si = expression as InvocationExpressionSyntax;
                 string method_name = "";
-                if (si.Expression is MemberAccessExpressionSyntax)
-                {
-                    var mt = si.Expression as MemberAccessExpressionSyntax;
-                    method_name = mt.TryGetInferredMemberName();
-                }
-                if (si.Expression is IdentifierNameSyntax)
-                    method_name = ((IdentifierNameSyntax)si.Expression).Identifier.ValueText;
+                if (iesyn.Expression is MemberAccessExpressionSyntax mt)
+                    method_name = mt.TryGetInferredMemberName() ?? "";
+                if (iesyn.Expression is IdentifierNameSyntax idnsyn)
+                    method_name = idnsyn.Identifier.ValueText;
 
-                var proc_syntax = proc.MSCAType.DeclaringSyntaxReferences.FirstOrDefault().GetSyntax();
-                var proc_decl = proc_syntax as ClassDeclarationSyntax;
+                var proc_syntax = proc.MSCAType.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax();
+                var proc_decl = proc_syntax as ClassDeclarationSyntax
+                    ?? throw new Exception($"Unable to get process declaration syntax for process {proc.Name}");
                 var members = proc_decl.Members.OfType<MethodDeclarationSyntax>();
                 var m = members.FirstOrDefault(x => x.Identifier.ValueText.Equals(method_name));
                 if (m != null)
-                    return m_semantics.Select(x => x.GetTypeInfo(m).Type).FirstOrDefault(x => x != null);
+                    return LoadType(m.ReturnType);
+                //return m_semantics.Select(x => x.GetTypeInfo(m).Type).FirstOrDefault(x => x != null);
 
-                return ResolveExpressionType(network, proc, method, statement, (expression as InvocationExpressionSyntax).Expression);
+                return ResolveExpressionType(network, proc, method, statement, iesyn.Expression);
             }
-            else if (expression is ParenthesizedExpressionSyntax)
-                return ResolveExpressionType(network, proc, method, statement, (expression as ParenthesizedExpressionSyntax).Expression);
+            else if (expression is ParenthesizedExpressionSyntax pesyn)
+                return ResolveExpressionType(network, proc, method, statement, pesyn.Expression);
             // TODO handle DirectionExpression (if they exist in roslyn)
-            else if (expression is ArrayCreationExpressionSyntax)
-                return ResolveExpressionType(network, proc, method, statement, (expression as ArrayCreationExpressionSyntax).Initializer.DescendantNodes().First() as ExpressionSyntax);
-            else if (expression is CheckedExpressionSyntax)
-                return ResolveExpressionType(network, proc, method, statement, (expression as CheckedExpressionSyntax).Expression);
+            else if (expression is ArrayCreationExpressionSyntax acesyn)
+                return ResolveExpressionType(network, proc, method, statement, acesyn.Initializer?.DescendantNodes().First() as ExpressionSyntax);
+            else if (expression is CheckedExpressionSyntax chesyn)
+                return ResolveExpressionType(network, proc, method, statement, chesyn.Expression);
             else
-                throw new Exception(string.Format("Unsupported expression: {0} ({1})", expression, expression.GetType().FullName));
+                throw new Exception(string.Format("Unsupported expression: {0} ({1})", expression, expression?.GetType().FullName));
         }
 
         /// <summary>
@@ -183,11 +184,12 @@ namespace SME.AST
         /// </summary>
         /// <param name="t">The loaded instance of the type.</param>
         /// <param name="tps">The type parameter to load the type of.</param>
-        protected virtual ITypeSymbol LoadGenericType(Type t, ITypeParameterSymbol tps)
+        protected virtual ITypeSymbol? LoadGenericType(Type t, ITypeParameterSymbol tps)
         {
             foreach (var p in t.GetGenericArguments())
                 if (p.Name.Equals(tps.Name))
                     return LoadType(p);
+
             return null;
         }
 
@@ -198,18 +200,21 @@ namespace SME.AST
         /// <param name="t">The type to load.</param>
         protected virtual ITypeSymbol LoadType(Type t)
         {
-            if (m_typelookup.ContainsKey(t))
-                return m_typelookup[t];
+            if (m_compilation is null)
+                throw new Exception("Compilation not set in ParseProcesses");
 
-            var res = LoadTypeByName(t.FullName);
+            if (m_typelookup.TryGetValue(t, out ITypeSymbol? value))
+                return value;
+
+            var res = LoadTypeByName(t.FullName ?? t.Name);
 
             if (res == null && t.IsGenericType)
             {
                 var gt = t.GetGenericTypeDefinition();
 
-                res = LoadTypeByName(gt.FullName);
+                res = LoadTypeByName(gt.FullName ?? gt.Name);
 
-                if (res.IsArrayType())
+                if (res is not null && res.IsArrayType())
                 {
                     res = m_compilation.CreateArrayTypeSymbol(LoadType(t.GenericTypeArguments[0]));
                 }
@@ -218,7 +223,8 @@ namespace SME.AST
             if (res == null && t.IsArray)
             {
                 var el = t.GetElementType();
-                res = m_compilation.CreateArrayTypeSymbol(LoadType(el));
+                if (el != null)
+                    res = m_compilation.CreateArrayTypeSymbol(LoadType(el));
             }
 
             if (res == null)
@@ -232,8 +238,11 @@ namespace SME.AST
         /// Loads the type corresponding to the given name.
         /// </summary>
         /// <param name="name">The name to lookup</param>
-        protected virtual ITypeSymbol LoadTypeByName(string name)
+        protected virtual ITypeSymbol? LoadTypeByName(string name)
         {
+            if (m_compilation is null)
+                throw new Exception("Compilation not set in ParseProcesses");
+
             return m_compilation.GetTypeByMetadataName(name);
         }
 
@@ -242,28 +251,31 @@ namespace SME.AST
         /// </summary>
         /// <returns>The loaded type.</returns>
         /// <param name="t">The type to load.</param>
-        protected virtual ITypeSymbol LoadType(TypeSyntax t, Method sourcemethod = null)
+        protected virtual ITypeSymbol LoadType(TypeSyntax? t, Method? sourcemethod = null)
         {
+            if (m_compilation is null)
+                throw new Exception("Compilation not set in ParseProcesses");
+
             if (t is PredefinedTypeSyntax)
                 switch (((PredefinedTypeSyntax)t).Keyword.Kind())
                 {
-                    case SyntaxKind.BoolKeyword:   return LoadType(typeof(bool));
-                    case SyntaxKind.ByteKeyword:   return LoadType(typeof(byte));
-                    case SyntaxKind.SByteKeyword:  return LoadType(typeof(sbyte));
-                    case SyntaxKind.ShortKeyword:  return LoadType(typeof(short));
+                    case SyntaxKind.BoolKeyword: return LoadType(typeof(bool));
+                    case SyntaxKind.ByteKeyword: return LoadType(typeof(byte));
+                    case SyntaxKind.SByteKeyword: return LoadType(typeof(sbyte));
+                    case SyntaxKind.ShortKeyword: return LoadType(typeof(short));
                     case SyntaxKind.UShortKeyword: return LoadType(typeof(ushort));
-                    case SyntaxKind.IntKeyword:    return LoadType(typeof(int));
-                    case SyntaxKind.UIntKeyword:   return LoadType(typeof(uint));
-                    case SyntaxKind.LongKeyword:   return LoadType(typeof(long));
-                    case SyntaxKind.ULongKeyword:  return LoadType(typeof(ulong));
-                    case SyntaxKind.FloatKeyword:  return LoadType(typeof(float));
+                    case SyntaxKind.IntKeyword: return LoadType(typeof(int));
+                    case SyntaxKind.UIntKeyword: return LoadType(typeof(uint));
+                    case SyntaxKind.LongKeyword: return LoadType(typeof(long));
+                    case SyntaxKind.ULongKeyword: return LoadType(typeof(ulong));
+                    case SyntaxKind.FloatKeyword: return LoadType(typeof(float));
                     case SyntaxKind.DoubleKeyword: return LoadType(typeof(double));
-                    case SyntaxKind.VoidKeyword:   return LoadType(typeof(void));
+                    case SyntaxKind.VoidKeyword: return LoadType(typeof(void));
                 }
-            var res = t.LoadType(m_semantics) ?? m_compilation.GetSymbolsWithName(t.ToString()).FirstOrDefault() as ITypeSymbol;
+            var res = t?.LoadType(m_semantics) ?? m_compilation.GetSymbolsWithName(t?.ToString() ?? "").FirstOrDefault() as ITypeSymbol;
 
             if (res == null)
-                throw new Exception($"Failed to load {t.ToString()}");
+                throw new Exception($"Failed to load {t}");
             else
                 return res;
         }
